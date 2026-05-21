@@ -175,7 +175,7 @@ description: >-
 
 详细键级要求以 **`npm run validate:all`** 与 **`src/block-contract`** 为准；此处只列**易漏人查项**：
 
-- [ ] **template + configSchema + tokenPresets + payload + meta** 自洽；已 **`validate:all`**  
+- [ ] **template + tokenPresets + payload + meta** 自洽；已 **`validate:all`**  
 - [ ] **资源 Network 先查**（再谈像素）  
 - [ ] **画布滚到底**（`.canvas-scroll` 等，见 **`email-config-motherboard`**）  
 - [ ] **比例 / 间距**对照截图过一遍  

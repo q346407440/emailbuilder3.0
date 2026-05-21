@@ -7,7 +7,6 @@ describe("emailDataSyncToast", () => {
     const snap = emailDataSyncEditorSnapshot({
       template: null,
       payload: null,
-      configSchema: null,
       tokenPresets: null,
     });
     assert.equal(

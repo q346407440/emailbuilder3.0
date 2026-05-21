@@ -6,6 +6,6 @@ alwaysApply: false
 
 # 前端改动与浏览器验收
 
-若本次改动影响**模板预览、画布、区块树、Inspector、加载/保存**等可在浏览器中验证的行为，或修改了 **`data/emails/**` 下邮件数据**（`template.json`、`configSchema.json`、`tokenPresets.json`、`payload.json`、`meta.json` 等）从而改变预览中的版式/图片/文案，收尾前在本地已运行 `./start.sh`（或 `npm run dev:all`）的前提下，按技能 **`easy-email-frontend-chrome-verify`**（`.cursor/skills/easy-email-frontend-chrome-verify/SKILL.md`）使用 **`user-chrome-devtools`** MCP 打开 `http://127.0.0.1:5180` 并走验收步骤（含切换到目标邮件、粗查图片加载与控制台/网络）。
+若本次改动影响**模板预览、画布、区块树、Inspector、加载/保存**等可在浏览器中验证的行为，或修改了 **`data/emails/**` 下邮件数据**（`template.json`、`tokenPresets.json`、`payload.json`、`meta.json` 等）从而改变预览中的版式/图片/文案，收尾前在本地已运行 `./start.sh`（或 `npm run dev:all`）的前提下，按技能 **`easy-email-frontend-chrome-verify`**（`.cursor/skills/easy-email-frontend-chrome-verify/SKILL.md`）使用 **`user-chrome-devtools`** MCP 打开 `http://127.0.0.1:5180` 并走验收步骤（含切换到目标邮件、粗查图片加载与控制台/网络）。
 
 MCP 报 profile 占用冲突时，按技能 **`easy-email-frontend-chrome-verify`** 附录「MCP profile 冲突」处理。

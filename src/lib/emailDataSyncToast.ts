@@ -1,12 +1,10 @@
 import type { EmailPayload, EmailTemplate } from "../types/email";
-import type { ConfigSchema } from "../types/configSchema";
 import type { TokenPresets } from "../types/tokenPreset";
 import { stableStringify } from "./stableStringify";
 
 export type EmailDataSyncEditorState = {
   template: EmailTemplate | null;
   payload: EmailPayload | null;
-  configSchema: ConfigSchema | null;
   tokenPresets: TokenPresets | null;
 };
 
@@ -16,12 +14,11 @@ function tokenPresetsForSnapshot(tp: TokenPresets): TokenPresets {
   return next;
 }
 
-/** 用于判断 SSE 同步是否改变了当前编辑态（template / payload / configSchema / tokenPresets）。 */
+/** 用于判断 SSE 同步是否改变了当前编辑态（template / payload / tokenPresets）。 */
 export function emailDataSyncEditorSnapshot(state: EmailDataSyncEditorState): string {
   return stableStringify({
     template: state.template,
     payload: state.payload,
-    configSchema: state.configSchema,
     tokenPresets: state.tokenPresets ? tokenPresetsForSnapshot(state.tokenPresets) : null,
   });
 }

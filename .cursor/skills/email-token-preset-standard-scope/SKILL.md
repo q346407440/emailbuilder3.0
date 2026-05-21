@@ -16,7 +16,7 @@ description: >-
 | 预设 JSON 校验 | **`src/token-preset-contract/validate.ts`**（已接入 **`npm run validate:all`**） |
 | **`$themeRef` 路径白名单** | **`src/token-preset-contract/theme-ref-paths.ts`** |
 | 某模板字段是否允许出现 `$themeRef` | **`src/lib/resolveThemeInTemplate.ts`**（如 `isThemeRefAllowed`） |
-| configSchema 中外壳字段 | **`src/lib/validateConfigSchema.ts`** |
+| tokenPresets 外壳字段 | **`src/lib/validateTokenPresets.ts`** · **`src/token-preset-contract/validate.ts`** |
 | 样例邮件 | **`data/emails/on-cart-abandon-2/tokenPresets.json`**（与该校验通过的 template 对齐） |
 
 **不**在本技能重复打印 14 行键表；与 `standard-keys.ts` 冲突以 **代码** 为准。

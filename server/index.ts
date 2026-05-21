@@ -7,7 +7,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { EmailMeta, EmailPayload, EmailTemplate } from "../src/types/email";
-import type { ConfigSchema } from "../src/types/configSchema";
 import type { TokenPresets } from "../src/types/tokenPreset";
 import {
   assertEmailKeySafe,
@@ -15,7 +14,7 @@ import {
   validatePayloadAgainstTemplate,
   validateTemplate,
 } from "../src/lib/validate";
-import { validateConfigSchema, validateTokenPresets } from "../src/lib/validateConfigSchema";
+import { validateTokenPresets } from "../src/lib/validateTokenPresets";
 import { mergeTemplatePayload } from "../src/lib/merge";
 import {
   collectMasterValidationIssues,
@@ -236,11 +235,6 @@ async function emailHasTemplateFiles(base: string, manifest: LayoutManifest | nu
   return Boolean(await readJson(path.join(base, "template.json")));
 }
 
-function validateConfigSchemaShape(schema: ConfigSchema, template: EmailTemplate): ValidationIssueResponse | null {
-  const issues = validateConfigSchema(schema, template);
-  return issues.length ? { message: "配置面校验失败", details: issues } : null;
-}
-
 function validateTokenPresetsShape(tokenPresets: TokenPresets): ValidationIssueResponse | null {
   const issues = validateTokenPresets(tokenPresets);
   return issues.length ? { message: "样式预设校验失败", details: issues } : null;
@@ -299,28 +293,19 @@ app.get("/api/v1/emails", async (c) => {
         ? resolveEmailFilePaths(base, manifest, manifest.activeLayoutVariantId)
         : {
             templatePath: path.join(base, "template.json"),
-            configSchemaPath: path.join(base, "configSchema.json"),
             tokenPresetsPath: path.join(base, "tokenPresets.json"),
           };
       const templatePath = layoutResolved.templatePath;
       const payloadPath = path.join(base, "payload.json");
-      const configSchemaPath = layoutResolved.configSchemaPath;
       const tokenPresetsPath = layoutResolved.tokenPresetsPath;
       const meta = await readJson<{ displayName?: string; updatedAt?: string }>(
         metaPath
       );
       const template = await readJson<EmailTemplate>(templatePath);
-      const [
-        templateMtimeMs,
-        payloadMtimeMs,
-        metaMtimeMs,
-        configSchemaMtimeMs,
-        tokenPresetsMtimeMs,
-      ] = await Promise.all([
+      const [templateMtimeMs, payloadMtimeMs, metaMtimeMs, tokenPresetsMtimeMs] = await Promise.all([
         statMtimeMs(templatePath),
         statMtimeMs(payloadPath),
         statMtimeMs(metaPath),
-        statMtimeMs(configSchemaPath),
         statMtimeMs(tokenPresetsPath),
       ]);
       const metaUpdatedAtMs =
@@ -330,7 +315,6 @@ app.get("/api/v1/emails", async (c) => {
         templateMtimeMs,
         payloadMtimeMs,
         metaMtimeMs,
-        configSchemaMtimeMs,
         tokenPresetsMtimeMs
       );
       return {
@@ -339,7 +323,6 @@ app.get("/api/v1/emails", async (c) => {
         templateId: template?.templateId ?? emailKey,
         templateVersion: template?.templateVersion ?? 1,
         hasPayload: payloadMtimeMs > 0,
-        hasConfigSchema: configSchemaMtimeMs > 0,
         hasTokenPresets: tokenPresetsMtimeMs > 0,
         hasLayoutVariants: Boolean(manifest),
         activeLayoutVariantId: manifest?.activeLayoutVariantId,
@@ -606,11 +589,10 @@ app.get("/api/v1/emails/:emailKey/data-revision", async (c) => {
   const { base, ctx, manifest } = resolved;
   const tMs = await statMtimeMs(ctx.templatePath);
   const pMs = await statMtimeMs(path.join(base, "payload.json"));
-  const cMs = await statMtimeMs(ctx.configSchemaPath);
   const tpMs = await statMtimeMs(ctx.tokenPresetsPath);
   const mMs = manifest ? await statMtimeMs(layoutManifestPath(base)) : 0;
   const layoutKey = ctx.layoutVariantId ?? "legacy";
-  return c.json({ revision: `${layoutKey}:${tMs}:${pMs}:${cMs}:${tpMs}:${mMs}` });
+  return c.json({ revision: `${layoutKey}:${tMs}:${pMs}:${tpMs}:${mMs}` });
 });
 
 app.get("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
@@ -739,24 +721,6 @@ app.get("/api/v1/emails/:emailKey/payload-presets", async (c) => {
   return c.json({ presets });
 });
 
-app.get("/api/v1/emails/:emailKey/config-schema", async (c) => {
-  const emailKey = c.req.param("emailKey");
-  const bad = assertEmailKeySafe(emailKey);
-  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
-  const layoutQuery = c.req.query("layout");
-  const resolved = await resolveLayoutForEmail(emailKey, layoutQuery);
-  if (!resolved.ok) {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: resolved.message } }, resolved.status);
-  }
-  const template = await readJson<EmailTemplate>(resolved.ctx.templatePath);
-  if (!template) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
-  const schema = await readJson<ConfigSchema>(resolved.ctx.configSchemaPath);
-  if (!schema) return c.json({ error: { code: "NOT_FOUND", message: "配置面文件不存在" } }, 404);
-  const issue = validateConfigSchemaShape(schema, template);
-  if (issue) return c.json({ error: { code: "VALIDATION_FAILED", ...issue } }, 422);
-  return c.json(schema);
-});
-
 app.get("/api/v1/emails/:emailKey/token-presets", async (c) => {
   const emailKey = c.req.param("emailKey");
   const bad = assertEmailKeySafe(emailKey);
@@ -844,30 +808,6 @@ app.put("/api/v1/emails/:emailKey/payload", async (c) => {
     );
   }
   await atomicWriteJson(path.join(DATA_ROOT, emailKey, "payload.json"), body);
-  scheduleEmailsChanged("api_write", emailKey);
-  return c.body(null, 204);
-});
-
-app.put("/api/v1/emails/:emailKey/config-schema", async (c) => {
-  const emailKey = c.req.param("emailKey");
-  const bad = assertEmailKeySafe(emailKey);
-  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
-  const layoutQuery = c.req.query("layout");
-  const resolved = await resolveLayoutForEmail(emailKey, layoutQuery);
-  if (!resolved.ok) {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: resolved.message } }, resolved.status);
-  }
-  const template = await readJson<EmailTemplate>(resolved.ctx.templatePath);
-  if (!template) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
-  let body: ConfigSchema;
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
-  }
-  const issue = validateConfigSchemaShape(body, template);
-  if (issue) return c.json({ error: { code: "VALIDATION_FAILED", ...issue } }, 422);
-  await atomicWriteJson(resolved.ctx.configSchemaPath, body);
   scheduleEmailsChanged("api_write", emailKey);
   return c.body(null, 204);
 });

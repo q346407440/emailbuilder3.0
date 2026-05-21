@@ -487,7 +487,6 @@ export type EmailListItem = {
   templateId: string;
   templateVersion: number;
   hasPayload: boolean;
-  hasConfigSchema?: boolean;
   hasTokenPresets?: boolean;
   /** 是否存在 layout-manifest.json（场景级多版式） */
   hasLayoutVariants?: boolean;

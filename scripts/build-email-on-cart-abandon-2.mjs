@@ -987,32 +987,12 @@ function build() {
     appliedGlobalPresetId: "public-neutral-saas",
   };
 
-  const configSchema = {
-    schemaVersion: "1.0.0",
-    scopes: [
-      {
-        scopeId: "template",
-        kind: "template",
-        label: "整封邮件",
-        fields: [
-          {
-            key: "templateWidth",
-            label: "邮件宽度",
-            control: "text",
-            target: { kind: "templatePath", path: `blocks.${ROOT_ID}.props.width` },
-          },
-        ],
-      },
-    ],
-  };
-
   mkdirSync(OUT_DIR, { recursive: true });
 mkdirSync(LAYOUT_DIR, { recursive: true });
   writeFileSync(join(LAYOUT_DIR, "template.json"), JSON.stringify(template, null, 2), "utf8");
   writeFileSync(join(OUT_DIR, "meta.json"), JSON.stringify(meta, null, 2), "utf8");
   writeFileSync(join(OUT_DIR, "payload.json"), JSON.stringify(payload, null, 2), "utf8");
   writeFileSync(join(LAYOUT_DIR, "tokenPresets.json"), JSON.stringify(tokenPresets, null, 2), "utf8");
-  writeFileSync(join(LAYOUT_DIR, "configSchema.json"), JSON.stringify(configSchema, null, 2), "utf8");
   const bindScript = join(__dirname, "bind-on-cart-abandon-2-theme-refs.mjs");
   const bind = spawnSync(process.execPath, [bindScript], { stdio: "inherit" });
   if (bind.status !== 0) process.exit(bind.status ?? 1);

@@ -1045,29 +1045,6 @@ function writeMeta() {
   };
 }
 
-function writeConfigSchema() {
-  return {
-    schemaVersion: "1.0.0",
-    scopes: [
-      {
-        scopeId: "template",
-        kind: "template",
-        label: "整封邮件",
-        fields: [
-          {
-            key: "templateWidth",
-            label: "邮件宽度",
-            control: "text",
-            target: {
-              kind: "templatePath",
-              path: "blocks.mj-root.props.width",
-            },
-          },
-        ],
-      },
-    ],
-  };
-}
 
 mkdirSync(OUT_DIR, { recursive: true });
 mkdirSync(LAYOUT_DIR, { recursive: true });
@@ -1078,11 +1055,6 @@ writeFileSync(
   `${JSON.stringify(writeTokenPresets(), null, 2)}\n`,
 );
 writeFileSync(join(OUT_DIR, "meta.json"), `${JSON.stringify(writeMeta(), null, 2)}\n`);
-writeFileSync(
-  join(LAYOUT_DIR, "configSchema.json"),
-  `${JSON.stringify(writeConfigSchema(), null, 2)}\n`,
-);
-
 const norm = spawnSync(
   "npx",
   [

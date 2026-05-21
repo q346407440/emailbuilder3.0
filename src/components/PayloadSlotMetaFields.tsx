@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { message } from "@shoplazza/sds";
 import type { EmailPayload, EmailTemplate } from "../types/email";
-import type { ConfigSchema } from "../types/configSchema";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import {
   renameExternalVariableSlot,
@@ -20,10 +19,8 @@ export type PayloadSlotMetaFieldsProps = {
   slot: ExternalVariableSlotInfo;
   template: EmailTemplate;
   payload: EmailPayload;
-  configSchema?: ConfigSchema | null;
   onPayloadChange: (next: EmailPayload) => void;
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
-  onConfigSchemaChange?: (next: ConfigSchema) => void;
   onSlotIdChange?: (slotId: string) => void;
 };
 
@@ -31,10 +28,8 @@ export function usePayloadSlotMetaFields({
   slot,
   template,
   payload,
-  configSchema,
   onPayloadChange,
   onTemplatePayloadChange,
-  onConfigSchemaChange,
   onSlotIdChange,
 }: PayloadSlotMetaFieldsProps) {
   const [labelDraft, setLabelDraft] = useState(slot.label ?? "");
@@ -58,7 +53,7 @@ export function usePayloadSlotMetaFields({
   const commitSlotId = () => {
     const nextId = slotIdDraft.trim();
     if (nextId === slot.slotId) return;
-    const result = renameExternalVariableSlot(template, payload, slot.slotId, nextId, configSchema);
+    const result = renameExternalVariableSlot(template, payload, slot.slotId, nextId);
     if (result.error) {
       setMetaError(result.error);
       setSlotIdDraft(slot.slotId);
@@ -67,7 +62,6 @@ export function usePayloadSlotMetaFields({
     }
     setMetaError("");
     onTemplatePayloadChange?.({ template: result.template, payload: result.payload });
-    if (result.configSchema) onConfigSchemaChange?.(result.configSchema);
     onSlotIdChange?.(nextId);
   };
 
@@ -115,7 +109,7 @@ export function PayloadSlotMetaLabelSection({ meta }: { meta: PayloadSlotMetaSta
       ) : null}
       <Field
         label="变量名称"
-        hint="在左侧列表、Inspector 与配置面中展示；写入 payload.slots（变量目录唯一真源）。"
+        hint="在左侧列表与 Inspector 中展示；写入 payload.slots（变量目录唯一真源）。"
       >
         <ShopInput
           value={meta.labelDraft}
@@ -182,7 +176,7 @@ export function PayloadSlotMetaFields(props: PayloadSlotMetaFieldsProps) {
       ) : null}
       <Field
         label="变量名称"
-        hint="在左侧列表、Inspector 与配置面中展示；写入 payload.slots（变量目录唯一真源）。"
+        hint="在左侧列表与 Inspector 中展示；写入 payload.slots（变量目录唯一真源）。"
       >
         <ShopInput
           value={meta.labelDraft}

@@ -7,6 +7,7 @@ import type {
   RepeatFieldMapping,
   RepeatRegionBinding,
 } from "../types/email";
+import { collectionBindingUsesItemIndex } from "../payload-contract/repeat-list-item-binding";
 import { mergeTemplatePayload } from "./merge";
 import { getAtPath, setAtPath } from "./paths";
 
@@ -504,6 +505,103 @@ export function materializedRepeatRowBlockId(prototypeBlockId: string, itemIndex
   return `${prototypeBlockId}-${itemIndex + 1}`;
 }
 
+/**
+ * 嵌套物化时按父级 SPU 行作用域生成唯一 id，避免多组 SPU 共用 `sku-1-1` 等同名块。
+ * 例：`cell-1` + `sku-1-3` → `rfj-picked-spotlight-cell-1-sku-1-3`
+ */
+export function scopeMaterializedSubtreeBlockId(
+  topScopePermanentId: string,
+  localMaterializedId: string
+): string {
+  if (localMaterializedId === topScopePermanentId) return localMaterializedId;
+  const hostPrefix = topScopePermanentId.replace(/-cell-\d+$/, "");
+  if (localMaterializedId.startsWith(`${hostPrefix}-`)) {
+    const rel = localMaterializedId.slice(hostPrefix.length + 1);
+    return `${topScopePermanentId}-${rel}`;
+  }
+  return `${topScopePermanentId}-${localMaterializedId}`;
+}
+
+/** 去掉 `cell-N-` 作用域前缀，供物化行 id 归一为原型 id */
+export function stripCellScopeFromMaterializedBlockId(blockId: string): string | null {
+  const match = blockId.match(/^(.+-cell-\d+)-(.+)$/);
+  if (!match) return null;
+  const [, scope, tail] = match;
+  const hostPrefix = scope.replace(/-cell-\d+$/, "");
+  return `${hostPrefix}-${tail}`;
+}
+
+function resolvePermanentIdForMaterializedClone(
+  cloneId: string,
+  topCloneId: string,
+  topScopePermanentId: string,
+  existingBlocks: EmailTemplate["blocks"]
+): string {
+  const protoId = sourceBlockIdFromRepeatClone(cloneId);
+  const itemIndex = repeatCloneItemIndex(cloneId) ?? 0;
+  const localId = materializedRepeatRowBlockId(protoId, itemIndex);
+  if (cloneId === topCloneId) return localId;
+  const scoped = scopeMaterializedSubtreeBlockId(topScopePermanentId, localId);
+  if (!existingBlocks[localId]) return localId;
+  return scoped;
+}
+
+/** 按 children 树结构回写 parentId，修正物化时 id 映射遗漏 */
+export function reconcileBlockParentIdsFromChildren(
+  template: EmailTemplate,
+  rootBlockIds: string[]
+): void {
+  const visit = (parentId: string, childIds: string[]) => {
+    for (const childId of childIds) {
+      const child = template.blocks[childId];
+      if (!child) continue;
+      child.parentId = parentId;
+      visit(childId, child.children ?? []);
+    }
+  };
+  for (const rootId of rootBlockIds) {
+    const root = template.blocks[rootId];
+    if (!root) continue;
+    visit(rootId, root.children ?? []);
+  }
+}
+
+function bindingValuePresentAtPath(block: EmailBlock, bindPath: string): boolean {
+  const [root, ...rest] = bindPath.split(".");
+  if (root !== "props" && root !== "wrapperStyle") return false;
+  const target =
+    root === "props" ? (block.props ?? {}) : (block.wrapperStyle ?? {});
+  if (!rest.length) return false;
+  const value = getAtPath(target as Record<string, unknown>, rest.join("."));
+  return value !== undefined && value !== null && value !== "";
+}
+
+/** 嵌套 SKU 列表项字段绑定写在物化静态行上会导致 collection 与字段类型硬错误 */
+function isNestedSkuCollectionItemBinding(slotPath: string | undefined): boolean {
+  if (!slotPath?.trim()) return false;
+  return /\.\d+\.skus\.\d+/.test(slotPath) || /^\d+\.skus\.\d+/.test(slotPath);
+}
+
+/** 物化静态行：剥离嵌套 skus 下标绑定（预览值已写入 props/wrapperStyle），SPU 级 0.xxx 保留 */
+function finalizeMaterializedStaticBlock(block: EmailBlock): void {
+  if (!block.bindings) return;
+  for (const [bindPath, spec] of Object.entries(block.bindings)) {
+    if (
+      spec.mode !== "variable" ||
+      spec.valueType !== "collection" ||
+      !isNestedSkuCollectionItemBinding(spec.slotPath)
+    ) {
+      continue;
+    }
+    if (bindingValuePresentAtPath(block, bindPath)) {
+      delete block.bindings[bindPath];
+    }
+  }
+  if (block.bindings && Object.keys(block.bindings).length === 0) {
+    delete block.bindings;
+  }
+}
+
 /** 区块是否为解除绑定物化出的静态行（名称含「第 N 项」或原型块已从 blocks 移除） */
 export function isMaterializedRepeatRowBlockId(
   blockId: string,
@@ -558,7 +656,9 @@ export function resolveMaterializedRowToPrototypeId(
   prototypeIdSet: Set<string>,
   template?: Pick<EmailTemplate, "blocks" | "blockMeta">
 ): string {
-  const parsed = parseMaterializedRepeatRowBlockId(blockId, prototypeIdSet, template);
+  const scoped = stripCellScopeFromMaterializedBlockId(blockId);
+  const candidate = scoped ?? blockId;
+  const parsed = parseMaterializedRepeatRowBlockId(candidate, prototypeIdSet, template);
   if (parsed) return parsed.prototypeId;
   return blockId;
 }
@@ -602,12 +702,21 @@ function materializeRepeatExpandedSubtree(
     if (!isRepeatCloneBlockId(topCloneId)) continue;
     const subtreeCloneIds = collectSubtreeBlockIds(merged, topCloneId);
     const idMap = new Map<string, string>();
+    const topProtoId = sourceBlockIdFromRepeatClone(topCloneId);
+    const topItemIndex = repeatCloneItemIndex(topCloneId) ?? 0;
+    const topScopePermanentId = materializedRepeatRowBlockId(topProtoId, topItemIndex);
 
     for (const cloneId of subtreeCloneIds) {
-      const protoId = sourceBlockIdFromRepeatClone(cloneId);
-      const itemIndex = repeatCloneItemIndex(cloneId) ?? 0;
-      idMap.set(cloneId, materializedRepeatRowBlockId(protoId, itemIndex));
-      idsToRemove.add(protoId);
+      idMap.set(
+        cloneId,
+        resolvePermanentIdForMaterializedClone(
+          cloneId,
+          topCloneId,
+          topScopePermanentId,
+          next.blocks
+        )
+      );
+      idsToRemove.add(sourceBlockIdFromRepeatClone(cloneId));
     }
 
     for (const cloneId of subtreeCloneIds) {
@@ -625,6 +734,7 @@ function materializeRepeatExpandedSubtree(
         (childId) => idMap.get(childId) ?? childId
       );
 
+      finalizeMaterializedStaticBlock(permanentBlock);
       next.blocks[permanentId] = permanentBlock;
 
       const metaFromClone = merged.blockMeta?.[cloneId] ?? next.blockMeta?.[sourceBlockIdFromRepeatClone(cloneId)];
@@ -636,6 +746,8 @@ function materializeRepeatExpandedSubtree(
 
     permanentTopIds.push(idMap.get(topCloneId)!);
   }
+
+  reconcileBlockParentIdsFromChildren(next, permanentTopIds);
 
   for (const id of idsToRemove) {
     delete next.blocks[id];

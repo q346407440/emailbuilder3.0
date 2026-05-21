@@ -383,18 +383,12 @@ function build() {
     scopeSelections: {},
   };
 
-  const configSchema = {
-    schemaVersion: "1.0.0",
-    scopes: [],
-  };
-
   mkdirSync(OUT_DIR, { recursive: true });
 mkdirSync(LAYOUT_DIR, { recursive: true });
   writeFileSync(join(LAYOUT_DIR, "template.json"), JSON.stringify(template, null, 2), "utf8");
   writeFileSync(join(OUT_DIR, "meta.json"), JSON.stringify(meta, null, 2), "utf8");
   writeFileSync(join(OUT_DIR, "payload.json"), JSON.stringify(payload, null, 2), "utf8");
   writeFileSync(join(LAYOUT_DIR, "tokenPresets.json"), JSON.stringify(tokenPresets, null, 2), "utf8");
-  writeFileSync(join(LAYOUT_DIR, "configSchema.json"), JSON.stringify(configSchema, null, 2), "utf8");
   process.stdout.write(`Wrote ${OUT_DIR}\n`);
 }
 

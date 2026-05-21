@@ -17,6 +17,9 @@ const SKILL_ORDER = [
   "email-template-restore-guide",
   "email-template-restore-check",
   "easy-email-frontend-chrome-verify",
+  "easy-email-payload-contract",
+  "easy-email-repeat-binding",
+  "easy-email-render-defaults",
 ];
 
 const RULE_ORDER = [

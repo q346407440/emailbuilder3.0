@@ -105,15 +105,14 @@ export function RepeatRegionInspectorSummary({
         <div className="inspector-repeat-card__row">
           <dt>当前数据</dt>
           <dd>
-            <span className="inspector-repeat-card__metric">{itemCount} 项</span>
-            {fixedCount != null ? (
-              <span className="inspector-repeat-card__hint-pill">固定 {fixedCount} 项</span>
-            ) : null}
-            {repeat.minItems != null && repeat.maxItems != null && fixedCount == null ? (
-              <span className="inspector-repeat-card__hint-pill">
-                {repeat.minItems}–{repeat.maxItems} 项
-              </span>
-            ) : null}
+            <span className="inspector-repeat-card__metric">
+              {itemCount} 项
+              {repeat.minItems != null && repeat.maxItems != null && fixedCount == null
+                ? `（目录 ${repeat.minItems}–${repeat.maxItems} 项）`
+                : fixedCount != null
+                  ? `（固定 ${fixedCount} 项）`
+                  : null}
+            </span>
           </dd>
         </div>
 

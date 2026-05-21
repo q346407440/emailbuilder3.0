@@ -1,7 +1,5 @@
 import type { EmailBlock, EmailTemplate } from "../types/email";
-import type { ConfigSchema } from "../types/configSchema";
 import type { SectionMaster } from "../types/master";
-import { createDefaultConfigSchema } from "./defaultConfigSchema";
 import { decorateThemeAndKindBindings } from "./decorateBindings";
 import { CATALOG_ROOT_ID, buildCatalogEmailRoot } from "./blockDefaults";
 import { normalizeTemplateBlockDefaults } from "./placementMigration";
@@ -64,28 +62,6 @@ export function extractSectionMasterFromTemplate(
   normalizeTemplateBlockDefaults(miniTemplate);
   decorateThemeAndKindBindings(miniTemplate);
 
-  const autoSchema = createDefaultConfigSchema(miniTemplate);
-  const configSchema: ConfigSchema = {
-    schemaVersion: "1.0.0",
-    scopes: autoSchema.scopes.map((scope) => {
-      if (scope.kind === "block" && scope.scopeId === `block:${spec.sourceRootBlockId}`) {
-        return {
-          ...scope,
-          kind: "section" as const,
-          scopeId: `section:${spec.masterId}`,
-          label: spec.name,
-          description: spec.description,
-          blockIds: [spec.sourceRootBlockId],
-          masterRef: { kind: "section" as const, id: spec.masterId, version: "1.0.0" },
-        };
-      }
-      return {
-        ...scope,
-        masterRef: scope.kind === "block" ? { kind: "block" as const, id: scope.scopeId.replace(/^block:/, "") } : scope.masterRef,
-      };
-    }),
-  };
-
   return {
     masterId: spec.masterId,
     name: spec.name,
@@ -95,7 +71,6 @@ export function extractSectionMasterFromTemplate(
     catalogRootBlockId: CATALOG_ROOT_ID,
     blocks: miniTemplate.blocks,
     blockMeta: miniTemplate.blockMeta,
-    configSchema,
   };
 }
 

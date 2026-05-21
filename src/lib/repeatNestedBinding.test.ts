@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import type { EmailPayload, EmailTemplate } from "../types/email";
+import type { EmailPayload, EmailTemplate, RepeatFieldMapping } from "../types/email";
 import { expandRepeatRegions } from "./repeatRegion";
 import {
   applyUnifiedRepeatBinding,
@@ -14,10 +14,12 @@ import {
   flattenChildRepeatPrototypePickerRows,
   flattenParentRepeatPrototypePickerRows,
   filterParentRepeatMappingTargets,
+  isDisallowedChildRepeatPrototypeOption,
   listChildRepeatPrototypeOptions,
   listNestedCollectionFields,
 } from "./repeatNestedBinding";
 import { listRepeatMappableContentBindPaths } from "./repeatMappableContentBindPaths";
+import { validateTemplate } from "./validate";
 
 function miniNestedTemplate(): EmailTemplate {
   return {
@@ -487,6 +489,42 @@ describe("repeatNestedBinding", () => {
     assert.ok(rowIds.every((id) => !unbound.blocks[id]?.repeat));
   });
 
+  it("removeUnifiedRepeatBinding 嵌套主推区物化后 parentId 一致且 SKU 子块无 collection 硬错误", () => {
+    const template = JSON.parse(
+      readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
+    ) as EmailTemplate;
+    const payload = JSON.parse(
+      readFileSync("data/emails/referral-friend-joined/payload.json", "utf8")
+    ) as EmailPayload;
+    const unbound = removeUnifiedRepeatBinding(template, "rfj-picked-spotlight", payload);
+    const issues = validateTemplate(unbound, payload).filter((i) =>
+      i.path.includes("rfj-picked-spotlight")
+    );
+    const hard = issues.filter((i) => !i.level);
+    assert.ok(
+      hard.every(
+        (i) =>
+          !i.path.endsWith(".parentId") &&
+          !i.reason.includes("检测到环") &&
+          !i.path.includes("sku-1-img") &&
+          !i.path.includes("sku-1-title")
+      ),
+      hard.map((i) => `${i.path}: ${i.reason}`).join("\n")
+    );
+    const strip1 = unbound.blocks["rfj-picked-spotlight-sku-strip-1"];
+    for (const childId of strip1?.children ?? []) {
+      assert.equal(unbound.blocks[childId]?.parentId, "rfj-picked-spotlight-sku-strip-1");
+    }
+    const strip2 = unbound.blocks["rfj-picked-spotlight-sku-strip-2"];
+    for (const childId of strip2?.children ?? []) {
+      assert.equal(
+        unbound.blocks[childId]?.parentId,
+        "rfj-picked-spotlight-sku-strip-2",
+        childId
+      );
+    }
+  });
+
   it("removeUnifiedRepeatBinding 嵌套主推区物化后 sku-strip 无 repeat", () => {
     const template = JSON.parse(
       readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
@@ -567,5 +605,67 @@ describe("repeatNestedBinding", () => {
     const pulseStripId = findSkuStripInSpuRow(spuRows[1]!);
     assert.ok(pulseStripId, "Pulse 行内应有 SKU 规格列表 repeat 宿主");
     assert.equal(expanded.blocks[pulseStripId!]?.children?.length ?? 0, 2, "Pulse 应有 2 个 SKU");
+  });
+
+  it("applyUnifiedRepeatBinding 物化态重绑时 fieldMappings 的 targetBlockId 随归一化", () => {
+    const template = JSON.parse(
+      readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
+    ) as EmailTemplate;
+    const payload = JSON.parse(
+      readFileSync("data/emails/referral-friend-joined/payload.json", "utf8")
+    ) as EmailPayload;
+    const parentRepeat = template.blocks["rfj-picked-spotlight"]?.repeat;
+    assert.ok(parentRepeat);
+
+    const unbound = removeUnifiedRepeatBinding(template, "rfj-picked-spotlight", payload);
+    const materializedMappings: RepeatFieldMapping[] = [
+      {
+        id: "rfj-picked-spotlight-main-img-1.props.src:imageSrc",
+        sourcePath: "imageSrc",
+        targetBlockId: "rfj-picked-spotlight-main-img-1",
+        targetBindPath: "props.src",
+        label: "商品图",
+        valueType: "image",
+      },
+      {
+        id: "rfj-picked-spotlight-name-1.props.text:name",
+        sourcePath: "name",
+        targetBlockId: "rfj-picked-spotlight-name-1",
+        targetBindPath: "props.text",
+        label: "商品名",
+        valueType: "string",
+      },
+    ];
+
+    const rebound = applyUnifiedRepeatBinding(unbound, {
+      scope: "parentAndChild",
+      slotId: "pickedSpotlightProduct",
+      parentHostId: "rfj-picked-spotlight",
+      parentPrototypeChildIds: ["rfj-picked-spotlight-cell-1"],
+      parentItemFields: parentRepeat.itemFields,
+      parentFieldMappings: materializedMappings,
+      parentMinItems: parentRepeat.minItems,
+      parentMaxItems: parentRepeat.maxItems,
+      childItemPath: "skus",
+      childHostId: "rfj-picked-spotlight-cell-1",
+      childPrototypeChildIds: ["rfj-picked-spotlight-sku-strip-1"],
+      childItemFields: parentRepeat.itemFields.find(
+        (f) => f.key === "skus" && f.valueType === "collection"
+      )?.itemFields,
+      childFieldMappings: [],
+    });
+
+    const hostRepeat = rebound.blocks["rfj-picked-spotlight"]?.repeat;
+    assert.ok(hostRepeat?.fieldMappings?.length);
+    const targets = (hostRepeat.fieldMappings ?? []).map((m) => m.targetBlockId);
+    assert.ok(targets.includes("rfj-picked-spotlight-main-img"));
+    assert.ok(targets.includes("rfj-picked-spotlight-name"));
+    assert.ok(!targets.some((id) => /-1$/.test(id)), "物化 -1 后缀应已归一为原型 id");
+    for (const mapping of hostRepeat.fieldMappings ?? []) {
+      assert.ok(
+        rebound.blocks[mapping.targetBlockId],
+        `映射目标应存在：${mapping.targetBlockId}`
+      );
+    }
   });
 });

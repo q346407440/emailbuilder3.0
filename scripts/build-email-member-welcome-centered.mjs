@@ -884,41 +884,6 @@ function writeTokenPresets() {
   };
 }
 
-function writeConfigSchema() {
-  return {
-    schemaVersion: "1.0.0",
-    scopes: [
-      {
-        scopeId: "template",
-        kind: "template",
-        label: "整封邮件",
-        fields: [
-          {
-            key: "templateWidth",
-            label: "邮件宽度",
-            control: "text",
-            target: {
-              kind: "templatePath",
-              path: "blocks.mwc-root.props.width",
-            },
-          },
-          {
-            key: "rootGap",
-            label: "模块间距（根 gap）",
-            control: "tokenScale",
-            tokenFamily: "spacing",
-            defaultScale: "gap",
-            allowCustom: true,
-            target: {
-              kind: "templatePath",
-              path: "blocks.mwc-root.props.gap",
-            },
-          },
-        ],
-      },
-    ],
-  };
-}
 
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(join(OUT_DIR, "template.json"), `${JSON.stringify(build(), null, 2)}\n`);
@@ -926,11 +891,6 @@ writeFileSync(
   join(OUT_DIR, "tokenPresets.json"),
   `${JSON.stringify(writeTokenPresets(), null, 2)}\n`,
 );
-writeFileSync(
-  join(OUT_DIR, "configSchema.json"),
-  `${JSON.stringify(writeConfigSchema(), null, 2)}\n`,
-);
-
 const norm = spawnSync(
   "npx",
   [

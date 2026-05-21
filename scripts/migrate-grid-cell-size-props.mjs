@@ -72,23 +72,6 @@ function migrateBindings(blocks) {
   }
 }
 
-function migrateConfigSchema(data) {
-  for (const scope of data.configSchema?.scopes ?? []) {
-    for (const field of scope.fields ?? []) {
-      if (field?.target?.path && typeof field.target.path === "string") {
-        field.target.path = field.target.path
-          .replaceAll("props.rowHeightMode", "props.cellHeightMode")
-          .replaceAll("props.rowHeight", "props.cellHeight");
-      }
-      if (field?.key && typeof field.key === "string") {
-        field.key = field.key
-          .replaceAll("props_rowHeightMode", "props_cellHeightMode")
-          .replaceAll("props_rowHeight", "props_cellHeight");
-      }
-    }
-  }
-}
-
 function migrateFile(filePath, label) {
   if (!existsSync(filePath)) return;
   const raw = readFileSync(filePath, "utf8");
@@ -98,7 +81,6 @@ function migrateFile(filePath, label) {
     migrateBlocksMap(data.blocks);
     migrateBindings(data.blocks);
   }
-  migrateConfigSchema(data);
   const after = JSON.stringify(data);
   if (before === after) {
     console.log(`[skip] ${label}`);

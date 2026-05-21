@@ -1,4 +1,3 @@
-import type { ConfigSchema } from "../types/configSchema";
 import type { EmailPayload, EmailTemplate, PayloadSlotDefinition } from "../types/email";
 import { SLOT_ID_PATTERN } from "../payload-contract/value-types";
 import {
@@ -81,22 +80,19 @@ export function updateExternalVariableSlotValueType(
   }
 
   const p = structuredClone(payload);
-  p.slots = { ...p.slots, [slotId]: { ...entry, valueType } };
-
-  const coerced = coerceScalarPayloadValue(p.values[slotId], valueType);
-  if (coerced === undefined) {
-    const nextValues = { ...p.values };
-    delete nextValues[slotId];
-    p.values = nextValues;
-  } else {
-    p.values = { ...p.values, [slotId]: coerced };
+  p.slots = {
+    ...p.slots,
+    [slotId]: { ...entry, valueType },
+  };
+  if (Object.prototype.hasOwnProperty.call(p.values, slotId)) {
+    p.values = {
+      ...p.values,
+      [slotId]: coerceScalarPayloadValue(p.values[slotId], valueType),
+    };
   }
 
   const t = structuredClone(template);
   for (const block of Object.values(t.blocks)) {
-    if (block.repeat?.slotId === slotId) {
-      block.repeat = { ...block.repeat, valueType };
-    }
     if (block.visibility?.slotId === slotId && block.visibility.valueType) {
       block.visibility = { ...block.visibility, valueType };
     }
@@ -111,53 +107,34 @@ export function updateExternalVariableSlotValueType(
   return { template: t, payload: p };
 }
 
-export function renameConfigSchemaPayloadSlot(
-  schema: ConfigSchema,
-  oldSlotId: string,
-  newSlotId: string
-): ConfigSchema {
-  const next = structuredClone(schema);
-  for (const scope of next.scopes) {
-    for (const field of scope.fields) {
-      if (field.target.kind === "payload" && field.target.slotId === oldSlotId) {
-        field.target = { kind: "payload", slotId: newSlotId };
-      }
-    }
-  }
-  return next;
-}
-
 export type RenameExternalVariableSlotResult = {
   template: EmailTemplate;
   payload: EmailPayload;
-  configSchema?: ConfigSchema | null;
   error?: string;
 };
 
 /**
- * 重命名外部变量槽：同步 payload.slots、values、template 全部绑定、interpolate 占位符与 configSchema。
+ * 重命名外部变量槽：同步 payload.slots、values、template 全部绑定与 interpolate 占位符。
  */
 export function renameExternalVariableSlot(
   template: EmailTemplate,
   payload: EmailPayload,
   oldSlotId: string,
-  newSlotId: string,
-  configSchema?: ConfigSchema | null
+  newSlotId: string
 ): RenameExternalVariableSlotResult {
   const trimmed = newSlotId.trim();
-  if (!trimmed) return { template, payload, configSchema, error: "变量标识不能为空。" };
+  if (!trimmed) return { template, payload, error: "变量标识不能为空。" };
   if (!SLOT_ID_PATTERN.test(trimmed)) {
     return {
       template,
       payload,
-      configSchema,
       error: "变量标识须以字母开头，且只能包含字母、数字和下划线。",
     };
   }
-  if (trimmed === oldSlotId) return { template, payload, configSchema };
+  if (trimmed === oldSlotId) return { template, payload };
 
   if (payload.slots[trimmed]) {
-    return { template, payload, configSchema, error: `变量标识「${trimmed}」已被其他变量使用。` };
+    return { template, payload, error: `变量标识「${trimmed}」已被其他变量使用。` };
   }
 
   const t = structuredClone(template);
@@ -207,10 +184,5 @@ export function renameExternalVariableSlot(
     p.detachedVariableSlotIds = p.detachedVariableSlotIds.map((id) => (id === oldSlotId ? trimmed : id));
   }
 
-  let nextSchema = configSchema;
-  if (configSchema) {
-    nextSchema = renameConfigSchemaPayloadSlot(configSchema, oldSlotId, trimmed);
-  }
-
-  return { template: t, payload: p, configSchema: nextSchema };
+  return { template: t, payload: p };
 }

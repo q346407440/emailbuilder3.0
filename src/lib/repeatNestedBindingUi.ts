@@ -1,5 +1,10 @@
 import type { BindingCollectionField, EmailTemplate } from "../types/email";
 import { isCollectionField } from "../payload-contract/collection-item-fields";
+import {
+  buildRepeatPrototypeIdSet,
+  isMaterializedRepeatRowBlockId,
+  resolveMaterializedRowToPrototypeId,
+} from "./repeatRegion";
 
 /** 用户可见文案：去掉区块名等遗留的 repeat 英文标记 */
 export function sanitizeListRepeatUserLabel(text: string): string {
@@ -72,4 +77,55 @@ export function parentScalarItemFieldsFromItemFields(
   itemFields: BindingCollectionField[]
 ): BindingCollectionField[] {
   return itemFields.filter((field) => !isCollectionField(field));
+}
+
+export type RepeatCollectionCandidateLike = {
+  key: string;
+  slotId: string;
+  label: string;
+};
+
+/**
+ * 同模块多列表变量时，优先与宿主区块语义一致的槽（如 rfj-picked-spotlight → pickedSpotlightProduct）。
+ */
+export function pickRepeatCollectionCandidateForHost(
+  candidates: RepeatCollectionCandidateLike[],
+  hostBlockId: string,
+  preferredSlotId?: string
+): RepeatCollectionCandidateLike | undefined {
+  if (!candidates.length) return undefined;
+  if (preferredSlotId) {
+    const hit = candidates.find((c) => c.key === preferredSlotId);
+    if (hit) return hit;
+  }
+  if (hostBlockId.includes("picked-spotlight")) {
+    const spotlight = candidates.find((c) => c.slotId === "pickedSpotlightProduct");
+    if (spotlight) return spotlight;
+  }
+  const hostToken = hostBlockId.split("-").pop()?.toLowerCase() ?? "";
+  if (hostToken) {
+    const semantic = candidates.find((c) => {
+      const slot = c.slotId.toLowerCase();
+      const label = c.label.toLowerCase();
+      return slot.includes(hostToken) || label.includes("主推");
+    });
+    if (semantic) return semantic;
+  }
+  return candidates[0];
+}
+
+/** 物化行模板选择器：应用后将归一为的原型 id 副文案 */
+export function repeatPrototypePickerCanonicalHint(
+  template: EmailTemplate,
+  blockId: string
+): string | null {
+  if (!isMaterializedRepeatRowBlockId(blockId, template)) return null;
+  const canonical = resolveMaterializedRowToPrototypeId(
+    blockId,
+    buildRepeatPrototypeIdSet(template),
+    template
+  );
+  if (canonical === blockId) return null;
+  const name = template.blockMeta?.[canonical]?.name?.trim() || canonical;
+  return `应用后将归一为 ${name}`;
 }

@@ -1,14 +1,10 @@
 import type { ValidationIssue } from "./validate";
 import type { EmailTemplate } from "../types/email";
 import type { BlockMaster, MasterKind, SectionMaster } from "../types/master";
-import type { ConfigSchema } from "../types/configSchema";
-import { createDefaultConfigSchema } from "./defaultConfigSchema";
 import { decorateThemeAndKindBindings } from "./decorateBindings";
 import { normalizeTemplateBlockDefaults } from "./placementMigration";
-import { validateConfigSchema } from "./validateConfigSchema";
 import { validateTemplate } from "./validate";
 import { BLOCK_CATALOG_ENTRIES, buildBlockMasterTemplate, CATALOG_ROOT_ID } from "./blockDefaults";
-import { readConfigTargetValue } from "./configSchemaTargets";
 
 export type MasterListItemParsed<T> = {
   masterId: string;
@@ -28,7 +24,6 @@ export function buildBlockMasters(): BlockMaster[] {
     };
     normalizeTemplateBlockDefaults(template);
     decorateThemeAndKindBindings(template);
-    const configSchema = createDefaultConfigSchema(template);
     const sampleBlockId = Object.keys(template.blocks).find((id) => id !== CATALOG_ROOT_ID)!;
     return {
       masterId: entry.masterId,
@@ -41,7 +36,6 @@ export function buildBlockMasters(): BlockMaster[] {
       catalogRootBlockId: CATALOG_ROOT_ID,
       blocks: template.blocks,
       blockMeta: template.blockMeta,
-      configSchema,
     };
   });
 }
@@ -66,35 +60,21 @@ export function collectMasterValidationIssues(
   const template = masterToEmailTemplate(master, { templateId: `master-${master.masterId}` });
   normalizeTemplateBlockDefaults(template);
   decorateThemeAndKindBindings(template);
-  return [
-    ...validateTemplate(template),
-    ...validateConfigSchema(master.configSchema, template),
-  ];
+  return [...validateTemplate(template)];
 }
 
 export function parseBlockMaster(raw: Record<string, unknown>): BlockMaster | null {
   if (typeof raw.masterId !== "string" || typeof raw.name !== "string") return null;
-  if (!raw.blocks || !raw.blockMeta || !raw.configSchema) return null;
+  if (!raw.blocks || !raw.blockMeta) return null;
   return raw as unknown as BlockMaster;
 }
 
 export function parseSectionMaster(raw: Record<string, unknown>): SectionMaster | null {
   if (typeof raw.masterId !== "string" || typeof raw.name !== "string") return null;
-  if (!raw.blocks || !raw.blockMeta || !raw.configSchema || typeof raw.rootBlockId !== "string") {
+  if (!raw.blocks || !raw.blockMeta || typeof raw.rootBlockId !== "string") {
     return null;
   }
   return raw as unknown as SectionMaster;
-}
-
-export function readMasterFieldValue(
-  template: EmailTemplate,
-  field: ConfigSchema["scopes"][number]["fields"][number]
-): unknown {
-  return readConfigTargetValue(field.target, {
-    template,
-    payload: { schemaVersion: "1.0.0", slots: {}, values: {} },
-    tokenPresets: null,
-  });
 }
 
 export function sectionSubtreeBlockCount(master: SectionMaster): number {

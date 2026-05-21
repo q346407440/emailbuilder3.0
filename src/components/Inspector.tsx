@@ -93,11 +93,13 @@ import { mergeTemplatePayload } from "../lib/merge";
 import { applyVisibilityRules } from "../lib/visibility";
 import { filterSlotsForVisibilityPicker } from "../lib/variableSlotCompatibility";
 import {
+  buildRepeatPrototypeIdSet,
   collectionItemCount,
   expandRepeatRegions,
   isRepeatHostBlock,
   resolveRepeatContextForBlock,
 } from "../lib/repeatRegion";
+import { remapRepeatFieldMappingTargets } from "../lib/repeatMaterializedNormalize";
 import type { RepeatLoopScope } from "../lib/repeatNestedBinding";
 import {
   applyUnifiedRepeatBinding,
@@ -110,10 +112,14 @@ import {
   isChildRepeatPrototypeReservedByParent,
   listChildRepeatPrototypeOptions,
   listNestedCollectionFields,
+  preferredChildRepeatPrototypeOptionKey,
   removeUnifiedRepeatBinding,
   resolveUnifiedBindParentHostId,
 } from "../lib/repeatNestedBinding";
-import { parentScalarItemFieldsFromItemFields } from "../lib/repeatNestedBindingUi";
+import {
+  parentScalarItemFieldsFromItemFields,
+  pickRepeatCollectionCandidateForHost,
+} from "../lib/repeatNestedBindingUi";
 import { resolveThemeInTemplate } from "../lib/resolveThemeInTemplate";
 import { containsThemeRefDeep, readTemplateFieldOnly } from "../lib/themeBindingEdit";
 import { IMAGE_BACKGROUND_FALLBACK_COLOR } from "../lib/imageBackgroundFallback";
@@ -388,8 +394,14 @@ function inferRepeatMappingDraft(
   currentMappings?: RepeatFieldMapping[]
 ): Record<string, string> {
   const draft: Record<string, string> = {};
+  const prototypeSet = buildRepeatPrototypeIdSet(template);
+  const normalizedMappings = remapRepeatFieldMappingTargets(
+    currentMappings,
+    template,
+    prototypeSet
+  );
   const currentByTarget = new Map(
-    (currentMappings ?? []).map((mapping) => [
+    normalizedMappings.map((mapping) => [
       `${mapping.targetBlockId}:${mapping.targetBindPath}`,
       mapping.sourcePath,
     ])
@@ -975,6 +987,7 @@ export function Inspector({
     const nextKey =
       pickKey(repeatChildPrototypeOptionKey) ??
       pickKey(keyFromDerived) ??
+      pickKey(preferredChildRepeatPrototypeOptionKey(template, selectableProtos)) ??
       selectableProtos[0]?.key ??
       "";
     setRepeatChildItemPath(itemPath);
@@ -982,11 +995,16 @@ export function Inspector({
   };
 
   const openRepeatModal = () => {
-    const firstCandidate = repeatCollectionCandidates[0];
-    const initialSlotId =
-      parentHostRepeat?.slotId || currentRepeat?.slotId || firstCandidate?.key || "";
+    const preferredSlot = parentHostRepeat?.slotId || currentRepeat?.slotId;
+    const defaultCandidate = pickRepeatCollectionCandidateForHost(
+      repeatCollectionCandidates,
+      unifiedBindParentHostId,
+      preferredSlot
+    );
+    const initialSlotId = preferredSlot || defaultCandidate?.key || "";
     const initialCandidate =
-      repeatCollectionCandidates.find((candidate) => candidate.key === initialSlotId) ?? firstCandidate;
+      repeatCollectionCandidates.find((candidate) => candidate.key === initialSlotId) ??
+      defaultCandidate;
     const derived =
       initialCandidate && unifiedBindParentHostId
         ? deriveUnifiedRepeatPlanFromTemplate(
@@ -1098,6 +1116,7 @@ export function Inspector({
         )
       );
       setRepeatModalOpen(false);
+      message.success("列表绑定已应用");
     } catch (error) {
       message.error(error instanceof Error ? error.message : "列表绑定失败，请检查重复宿主。");
     }
@@ -1285,8 +1304,12 @@ export function Inspector({
                     : "查看/更换绑定"}
                 </ShopSecondaryButton>
                 {id === unifiedBindParentHostId && (parentHostRepeat || currentRepeat) ? (
-                  <ShopSecondaryButton htmlType="button" onClick={removeRepeat}>
-                    解除列表绑定
+                  <ShopSecondaryButton
+                    htmlType="button"
+                    onClick={removeRepeat}
+                    title="将物化为静态预览行，并清除父级与子级（如 skus）列表循环"
+                  >
+                    解除列表绑定（含子级 skus）
                   </ShopSecondaryButton>
                 ) : null}
               </div>

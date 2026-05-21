@@ -115,7 +115,6 @@ function migrateOne(emailKey, variantPlan) {
   const primaryDir = path.join(base, "layouts", primary.id);
   const moved = [
     moveIfExists(path.join(base, "template.json"), path.join(primaryDir, "template.json")),
-    moveIfExists(path.join(base, "configSchema.json"), path.join(primaryDir, "configSchema.json")),
     moveIfExists(path.join(base, "tokenPresets.json"), path.join(primaryDir, "tokenPresets.json")),
   ];
   if (!moved[0]) {
@@ -125,7 +124,7 @@ function migrateOne(emailKey, variantPlan) {
 
   for (const variant of variantPlan.slice(1)) {
     const dest = path.join(base, "layouts", variant.id);
-    copyDirFiles(primaryDir, dest, ["template.json", "configSchema.json", "tokenPresets.json"]);
+    copyDirFiles(primaryDir, dest, ["template.json", "tokenPresets.json"]);
   }
 
   const manifest = {

@@ -12,7 +12,7 @@ description: >-
 
 ## 何时读
 
-- 写 **`template.json` / `configSchema` / `payload`** 中的图片、图标、Logo URL  
+- 写 **`template.json` / `payload`** 中的图片、图标、Logo URL  
 - 要求可公开直链、不落本地  
 - 与 **`easy-email-frontend-chrome-verify`**（先验资源）配套  
 

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { message } from "@shoplazza/sds";
 import type { EmailPayload, EmailTemplate } from "../types/email";
-import type { ConfigSchema } from "../types/configSchema";
 import {
   collectPayloadVariableSlots,
   type ExternalVariableSlotInfo,
@@ -41,10 +40,8 @@ type Props = {
   slotDrafts?: PayloadSlotDraftMap;
   onSlotDraftChange?: (slotId: string, draft: PayloadSlotDraft | null) => void;
   onCommitSlot?: (slotId: string) => void;
-  configSchema?: ConfigSchema | null;
   onPayloadChange: (next: EmailPayload) => void;
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
-  onConfigSchemaChange?: (next: ConfigSchema) => void;
   onSlotIdChange?: (slotId: string) => void;
   selectedSlotId?: string | null;
   /** 创建列表变量后自动打开数据源配置弹窗 */
@@ -91,10 +88,8 @@ function SlotEditor({
   slotDrafts,
   onSlotDraftChange,
   template,
-  configSchema,
   onPatch,
   onTemplatePayloadChange,
-  onConfigSchemaChange,
   onSlotIdChange,
   dataSourceModalOpen,
   onDataSourceModalOpenChange,
@@ -105,10 +100,8 @@ function SlotEditor({
   slotDrafts: PayloadSlotDraftMap;
   onSlotDraftChange?: (slotId: string, draft: PayloadSlotDraft | null) => void;
   template: EmailTemplate;
-  configSchema?: ConfigSchema | null;
   onPatch: (next: EmailPayload) => void;
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
-  onConfigSchemaChange?: (next: ConfigSchema) => void;
   onSlotIdChange?: (slotId: string) => void;
   dataSourceModalOpen: boolean;
   onDataSourceModalOpenChange: (open: boolean) => void;
@@ -178,10 +171,8 @@ function SlotEditor({
     slot,
     template,
     payload,
-    configSchema,
     onPayloadChange: onPatch,
     onTemplatePayloadChange,
-    onConfigSchemaChange,
     onSlotIdChange,
   };
   if (slot.valueType === "collection") {
@@ -380,10 +371,8 @@ export function PayloadInspector({
   slotDrafts = {},
   onSlotDraftChange,
   onCommitSlot,
-  configSchema = null,
   onPayloadChange,
   onTemplatePayloadChange,
-  onConfigSchemaChange,
   onSlotIdChange,
   selectedSlotId = null,
   autoOpenDataSourceSlotId = null,
@@ -468,7 +457,7 @@ export function PayloadInspector({
 
   const emptyHint = (
     <p className="inspector__muted">
-      当前模板没有可在赋值里替换的字段。请在底层 Block 的绑定中声明可外部赋值变量，或通过配置面开放需要替换的字段。
+      当前模板没有可在赋值里替换的字段。请在底层 Block 的绑定中声明可外部赋值变量。
     </p>
   );
 
@@ -488,10 +477,8 @@ export function PayloadInspector({
               slotDrafts={slotDrafts}
               onSlotDraftChange={onSlotDraftChange}
               template={template}
-              configSchema={configSchema}
               onPatch={onPayloadChange}
               onTemplatePayloadChange={onTemplatePayloadChange}
-              onConfigSchemaChange={onConfigSchemaChange}
               onSlotIdChange={onSlotIdChange}
               dataSourceModalOpen={dataSourceModalOpen}
               onDataSourceModalOpenChange={setDataSourceModalOpen}

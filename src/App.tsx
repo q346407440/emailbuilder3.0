@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EmailListItem, EmailMeta, EmailPayload, EmailTemplate } from "./types/email";
 import type { LayoutManifest } from "./layout-variant-contract/types";
-import type { ConfigSchema } from "./types/configSchema";
 import type { TokenPresets } from "./types/tokenPreset";
 import * as api from "./api/client";
 import { mergeTemplatePayload } from "./lib/merge";
@@ -22,19 +21,17 @@ import {
   validatePayloadAgainstTemplateUnion,
   validateTemplate,
 } from "./lib/validate";
-import { validateConfigSchema, validateTokenPresets } from "./lib/validateConfigSchema";
+import { validateTokenPresets } from "./lib/validateTokenPresets";
 import { createDefaultTokenPresets } from "./lib/defaultTokenPresets";
-import { createDefaultConfigSchema } from "./lib/defaultConfigSchema";
 import { resolveDesignTokens } from "./lib/resolveTokenPreset";
 import { resolveThemeInTemplate } from "./lib/resolveThemeInTemplate";
 import { isThemeRef } from "./types/themeRef";
 import { getLastSelectedEmailKey, setLastSelectedEmailKey } from "./lib/lastSelectedEmail";
 import { normalizeEmailRootBlock } from "./lib/normalizeEmailRoot";
 import { BlockTree } from "./components/BlockTree";
+import { ValidationIssuesBanner } from "./components/ValidationIssuesBanner";
 import { EmailPreview } from "./components/EmailPreview";
 import { Inspector } from "./components/Inspector";
-import { ConfigInspector } from "./components/ConfigInspector";
-import { ConfigTree } from "./components/ConfigTree";
 import { stableStringify } from "./lib/stableStringify";
 import { TokenPresetInspector } from "./components/TokenPresetInspector";
 import { TokenPresetPanel } from "./components/TokenPresetPanel";
@@ -55,7 +52,7 @@ import { goToLibrary } from "./lib/appNavigation";
 import "./app.css";
 import "./sds-admin-field-overrides.css";
 
-type WorkbenchView = "config" | "tokens" | "payload" | "meta" | "block";
+type WorkbenchView = "tokens" | "payload" | "meta" | "block";
 
 function defaultPayload(_t: EmailTemplate): EmailPayload {
   return {
@@ -190,11 +187,9 @@ export default function App() {
   const [payload, setPayload] = useState<EmailPayload | null>(null);
   /** 单变量未保存草稿：合并进画布预览，点「保存变量」后写入 payload */
   const [payloadSlotDrafts, setPayloadSlotDrafts] = useState<PayloadSlotDraftMap>({});
-  const [configSchema, setConfigSchema] = useState<ConfigSchema | null>(null);
   const [tokenPresets, setTokenPresets] = useState<TokenPresets | null>(null);
   const [globalTokenPresets, setGlobalTokenPresets] = useState<Record<string, TokenPresets>>({});
   const [workbenchView, setWorkbenchView] = useState<WorkbenchView>("block");
-  const [selectedConfigScopeId, setSelectedConfigScopeId] = useState<string | null>(null);
   const [selectedPayloadSlotId, setSelectedPayloadSlotId] = useState<string | null>(null);
   const [autoOpenDataSourceSlotId, setAutoOpenDataSourceSlotId] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
@@ -210,8 +205,6 @@ export default function App() {
   } | null>(null);
   /** 最近一次加载或保存 tokenPresets.json 后的样式预设快照 */
   const [diskTokenPresets, setDiskTokenPresets] = useState<TokenPresets | null>(null);
-  /** 最近一次加载或保存 configSchema.json 后的配置面快照 */
-  const [diskConfigSchema, setDiskConfigSchema] = useState<ConfigSchema | null>(null);
   /** 样式预设侧栏：本邮件 `local`，否则为公共预设 id（与画布/右侧编辑源一致） */
   const [stylePresetListSelection, setStylePresetListSelection] = useState<"local" | string>("local");
   const [emailMeta, setEmailMeta] = useState<EmailMeta | null>(null);
@@ -255,10 +248,9 @@ export default function App() {
   const editorSyncStateRef = useRef({
     template,
     payload,
-    configSchema,
     tokenPresets,
   });
-  editorSyncStateRef.current = { template, payload, configSchema, tokenPresets };
+  editorSyncStateRef.current = { template, payload, tokenPresets };
 
   const loadList = useCallback(async (opts?: { silent?: boolean }) => {
     const silent = opts?.silent ?? false;
@@ -360,19 +352,12 @@ export default function App() {
         p = null;
       }
       if (!p) p = defaultPayload(t);
-      let nextConfigSchema: ConfigSchema | null = null;
       let nextTokenPresets: TokenPresets | null = null;
-      try {
-        nextConfigSchema = await api.getConfigSchema(key, layoutId);
-      } catch {
-        nextConfigSchema = null;
-      }
       try {
         nextTokenPresets = await api.getTokenPresets(key, layoutId);
       } catch {
         nextTokenPresets = null;
       }
-      if (!nextConfigSchema) nextConfigSchema = createDefaultConfigSchema(t);
       if (!nextTokenPresets) nextTokenPresets = createDefaultTokenPresets();
       const [meta, globalList] = await Promise.all([
         api.getEmailMeta(key).catch(() => null),
@@ -403,15 +388,12 @@ export default function App() {
       setTemplate(t);
       setPayload(p);
       setPayloadSlotDrafts({});
-      setConfigSchema(nextConfigSchema);
       setTokenPresets(tpNorm);
-      setSelectedConfigScopeId(null);
       setSelectedPayloadSlotId(null);
       selectBlock(null);
       setLastSelectedEmailKey(key);
       setDiskTemplatePayload({ template: structuredClone(t), payload: structuredClone(p) });
       setDiskTokenPresets(structuredClone(tpNorm));
-      setDiskConfigSchema(nextConfigSchema ? structuredClone(nextConfigSchema) : null);
       setStatus("");
     } catch (e) {
       if (requestId !== loadEmailRequestIdRef.current) return;
@@ -451,7 +433,6 @@ export default function App() {
       setTemplate(null);
       setPayload(null);
       setPayloadSlotDrafts({});
-      setConfigSchema(null);
       setTokenPresets(null);
       setGlobalTokenPresets({});
       setStylePresetListSelection("local");
@@ -460,8 +441,6 @@ export default function App() {
       setDiskGlobalTokenPresets({});
       setDiskTemplatePayload(null);
       setDiskTokenPresets(null);
-      setDiskConfigSchema(null);
-      setSelectedConfigScopeId(null);
       selectBlock(null);
     }
   }, [items, emailKey, selectBlock]);
@@ -567,11 +546,10 @@ export default function App() {
     return [
       ...validateTemplate(template),
       ...payloadIssues,
-      ...validateConfigSchema(configSchema, template),
       ...validateTokenPresets(tokenPresets),
       ...(resolvedPreview?.issues ?? []),
     ];
-  }, [template, payload, configSchema, tokenPresets, resolvedPreview, templatesForPayloadValidation]);
+  }, [template, payload, tokenPresets, resolvedPreview, templatesForPayloadValidation]);
 
   const payloadSlotDraftsDirty = useMemo(() => {
     if (!payload) return false;
@@ -609,11 +587,6 @@ export default function App() {
     return stableStringify(eff) !== stableStringify(disk);
   }, [stylePresetListSelection, diskGlobalTokenPresets, globalTokenPresets, globalPresetDraft]);
 
-  const configSchemaDirty = useMemo(() => {
-    if (!diskConfigSchema || !configSchema) return false;
-    return stableStringify(configSchema) !== stableStringify(diskConfigSchema);
-  }, [diskConfigSchema, configSchema]);
-
   const onUpdate = useCallback(
     (next: { template: EmailTemplate; payload: EmailPayload }) => {
       setTemplate(next.template);
@@ -650,8 +623,7 @@ export default function App() {
     onPersistError,
   });
 
-  const hasLayoutDirty =
-    templatePayloadDirty || configSchemaDirty || tokenPresetsDirty || globalStylePresetDirty;
+  const hasLayoutDirty = templatePayloadDirty || tokenPresetsDirty || globalStylePresetDirty;
 
   const switchLayoutVariant = useCallback(
     async (nextLayoutId: string) => {
@@ -685,7 +657,6 @@ export default function App() {
     const ok = await flushPersist();
     if (ok) {
       try {
-        if (configSchema) await api.putConfigSchema(emailKey, configSchema, layoutVariantId);
         if (tokenPresets) {
           const normalizedTp = normalizeTokenPresetsDocument(tokenPresetsWithoutAppliedGlobal(tokenPresets));
           await api.putTokenPresets(emailKey, normalizedTp, layoutVariantId);
@@ -695,7 +666,6 @@ export default function App() {
           setDiskTokenPresets(null);
         }
         setDiskTemplatePayload({ template: structuredClone(template), payload: structuredClone(payload) });
-        setDiskConfigSchema(configSchema ? structuredClone(configSchema) : null);
       } catch (e) {
         setStatus("");
         setError(e instanceof Error ? e.message : String(e));
@@ -703,18 +673,17 @@ export default function App() {
     } else {
       setStatus("");
     }
-  }, [emailKey, layoutVariantId, template, payload, configSchema, tokenPresets, flushPersist]);
+  }, [emailKey, layoutVariantId, template, payload, tokenPresets, flushPersist]);
 
   const discardDraft = useCallback(() => {
     if (!diskTemplatePayload) return;
     setTemplate(structuredClone(diskTemplatePayload.template));
     setPayload(structuredClone(diskTemplatePayload.payload));
     setPayloadSlotDrafts({});
-    setConfigSchema(diskConfigSchema ? structuredClone(diskConfigSchema) : null);
     setTokenPresets(diskTokenPresets ? structuredClone(diskTokenPresets) : null);
     setGlobalPresetDraft({});
     setStatus("已放弃未保存更改");
-  }, [diskTemplatePayload, diskConfigSchema, diskTokenPresets]);
+  }, [diskTemplatePayload, diskTokenPresets]);
 
   const saveTokenPresets = useCallback(async () => {
     if (!emailKey || !tokenPresets) return;
@@ -791,31 +760,6 @@ export default function App() {
     }
   }, [emailKey, stylePresetListSelection]);
 
-  const mergeConfigInspectorState = useCallback(
-    (next: { template: EmailTemplate; payload: EmailPayload; tokenPresets: TokenPresets | null }) => {
-      setTemplate(next.template);
-      setPayload(next.payload);
-      if (!next.tokenPresets) {
-        setTokenPresets(null);
-        return;
-      }
-      let tp = structuredClone(next.tokenPresets) as TokenPresets;
-      if (tokenPresets) {
-        const core = (t: TokenPresets) =>
-          stableStringify({
-            presets: t.presets,
-            activePresetId: t.activePresetId,
-            scopeSelections: t.scopeSelections ?? {},
-          });
-        if (core(tp) !== core(tokenPresets)) {
-          delete tp.appliedGlobalPresetId;
-        }
-      }
-      setTokenPresets(tp);
-    },
-    [tokenPresets]
-  );
-
   const renameCurrentTemplate = useCallback(
     async (displayName: string) => {
       if (!emailKey) return;
@@ -868,33 +812,23 @@ export default function App() {
           p = null;
         }
         if (!p) p = defaultPayload(t);
-        let nextConfigSchema: ConfigSchema | null = null;
         let nextTokenPresets: TokenPresets | null = null;
-        try {
-          nextConfigSchema = await api.getConfigSchema(emailKey, layoutId);
-        } catch {
-          nextConfigSchema = null;
-        }
         try {
           nextTokenPresets = await api.getTokenPresets(emailKey, layoutId);
         } catch {
           nextTokenPresets = null;
         }
-        if (!nextConfigSchema) nextConfigSchema = createDefaultConfigSchema(t);
         if (!nextTokenPresets) nextTokenPresets = createDefaultTokenPresets();
         if (cancelled) return;
         const tpSynced = tokenPresetsWithoutAppliedGlobal(nextTokenPresets);
         const afterSnapshot = emailDataSyncEditorSnapshot({
           template: t,
           payload: p,
-          configSchema: nextConfigSchema,
           tokenPresets: tpSynced,
         });
         setTemplate(t);
         setPayload(p);
-        setConfigSchema(nextConfigSchema);
         setTokenPresets(tpSynced);
-        setDiskConfigSchema(structuredClone(nextConfigSchema));
         setDiskTokenPresets(structuredClone(tpSynced));
         if (
           shouldShowEmailDataSyncToast({
@@ -955,7 +889,7 @@ export default function App() {
         <p className="app__empty-catalog-title">暂无邮件模板</p>
         <p className="app__hint">
           在仓库 <code>data/emails/&lt;场景&gt;/</code> 下放入 <code>template.json</code>（推荐同时维护{" "}
-          <code>configSchema.json</code>、<code>tokenPresets.json</code>、<code>payload.json</code>）。
+          <code>tokenPresets.json</code>、<code>payload.json</code>）。
           多版式场景另建 <code>layout-manifest.json</code> 与 <code>layouts/&lt;版式&gt;/</code> 三件套；保存后列表会自动刷新。
         </p>
       </div>
@@ -1000,7 +934,6 @@ export default function App() {
         <div className="topbar__view-switch" role="tablist" aria-label="工作台视图">
           {(
             [
-              ["config", "配置项"],
               ["tokens", "样式预设"],
               ["payload", "变量赋值"],
               ["meta", "元信息"],
@@ -1023,7 +956,7 @@ export default function App() {
         <ShopPrimaryButton className="topbar__btn" onClick={() => void save()}>
           保存
         </ShopPrimaryButton>
-        {(templatePayloadDirty || configSchemaDirty || tokenPresetsDirty || globalStylePresetDirty) &&
+        {(templatePayloadDirty || tokenPresetsDirty || globalStylePresetDirty) &&
         diskTemplatePayload ? (
           <ShopSecondaryButton className="topbar__btn" htmlType="button" onClick={discardDraft}>
             放弃未保存更改
@@ -1036,19 +969,9 @@ export default function App() {
       </header>
 
       {error ? <div className="app__banner app__banner--error">{error}</div> : null}
-      {validationIssues.length ? (
-        <div className="app__banner app__banner--warn">
-          校验提示：{validationIssues.map((i) => `${i.path}：${i.reason}`).join("；")}
-        </div>
-      ) : null}
+      {validationIssues.length ? <ValidationIssuesBanner issues={validationIssues} /> : null}
       <main className="workspace">
-        {workbenchView === "config" ? (
-          <ConfigTree
-            configSchema={configSchema}
-            selectedScopeId={selectedConfigScopeId}
-            onSelect={setSelectedConfigScopeId}
-          />
-        ) : workbenchView === "tokens" ? (
+        {workbenchView === "tokens" ? (
           <TokenPresetPanel
             tokenPresets={tokenPresets}
             globalTokenPresets={Object.entries(globalTokenPresets)
@@ -1107,16 +1030,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        {workbenchView === "config" ? (
-          <ConfigInspector
-            configSchema={configSchema}
-            selectedScopeId={selectedConfigScopeId}
-            template={template}
-            payload={payload}
-            tokenPresets={tokenPresets}
-            onChange={mergeConfigInspectorState}
-          />
-        ) : workbenchView === "tokens" ? (
+        {workbenchView === "tokens" ? (
           <TokenPresetInspector
             tokenPresets={tokenPresetForInspector}
             dirty={stylePresetInspectorDirty}
@@ -1143,13 +1057,11 @@ export default function App() {
             slotDrafts={payloadSlotDrafts}
             onSlotDraftChange={handleSlotDraftChange}
             onCommitSlot={handleCommitPayloadSlot}
-            configSchema={configSchema}
             selectedSlotId={selectedPayloadSlotId}
             autoOpenDataSourceSlotId={autoOpenDataSourceSlotId}
             onAutoOpenDataSourceHandled={() => setAutoOpenDataSourceSlotId(null)}
             onPayloadChange={setPayload}
             onTemplatePayloadChange={onUpdate}
-            onConfigSchemaChange={setConfigSchema}
             onSlotIdChange={setSelectedPayloadSlotId}
           />
         ) : (

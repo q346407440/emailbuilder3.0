@@ -1,6 +1,6 @@
 # Easy-Email
 
-邮件模板与编辑相关的本地优先项目：用 **规范化 JSON（block 树）** 描述邮件，配合 **模板 + 配置面 + 样式预设 + 变量赋值**，按目录隔离存储，便于前端编辑与本地 Agent 批量产出模板。
+邮件模板与编辑相关的本地优先项目：用 **规范化 JSON（block 树）** 描述邮件，配合 **模板 + 样式预设 + 变量赋值**，按目录隔离存储，便于前端编辑与本地 Agent 批量产出模板。
 
 ---
 
@@ -10,7 +10,7 @@
 
 | 技能 | 内容 |
 |------|------|
-| [easy-email-concepts](./.cursor/skills/easy-email-concepts/SKILL.md) | 概念、四层 JSON、编辑器 MVP |
+| [easy-email-concepts](./.cursor/skills/easy-email-concepts/SKILL.md) | 概念、三层 JSON、编辑器 MVP |
 | [easy-email-storage-api](./.cursor/skills/easy-email-storage-api/SKILL.md) | `data/emails/` 落盘、本地 API |
 | [email-config-motherboard](./.cursor/skills/email-config-motherboard/SKILL.md) | 配置母版与 block 架构 |
 | [email-template-restore-guide](./.cursor/skills/email-template-restore-guide/SKILL.md) | 按图还原流程与模块壳/token |
@@ -35,11 +35,12 @@
 
 ```
 data/emails/<emailKey>/
-  template.json
-  configSchema.json
-  tokenPresets.json
-  payload.json
-  meta.json          # 可选
+  payload.json              # 场景级共用
+  layout-manifest.json      # 多版式时
+  meta.json                 # 可选
+  layouts/<layoutVariantId>/
+    template.json
+    tokenPresets.json
 ```
 
 详见技能 **[easy-email-storage-api](./.cursor/skills/easy-email-storage-api/SKILL.md)**。
@@ -50,10 +51,9 @@ data/emails/<emailKey>/
 
 | 场景 | 命令 |
 |------|------|
-| 补齐配置面与样式预设 | `npm run migrate:config-surface -- --write` |
 | YAML 夹具展开调试 | `npm run template-yaml:expand -- --in <夹具.yaml> --out <输出.json>`（见 `email-template-yaml-check` 技能） |
 
-长期维护入口：`template.json` + `configSchema.json` + `tokenPresets.json` + `payload.json` + `meta.json`。
+长期维护入口：`template.json` + `tokenPresets.json` + `payload.json` + `meta.json`（版式场景下 template/tokenPresets 在 `layouts/<id>/`）。
 
 ---
 

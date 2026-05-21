@@ -1236,29 +1236,9 @@ const meta = {
   },
 };
 
-const configSchema = {
-  schemaVersion: "1.0.0",
-  scopes: [
-    {
-      scopeId: "template",
-      kind: "template",
-      label: "整封邮件",
-      fields: [
-        {
-          key: "templateWidth",
-          label: "邮件宽度",
-          control: "text",
-          target: { kind: "templatePath", path: `blocks.${P}-root.props.width` },
-        },
-      ],
-    },
-  ],
-};
-
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "template.json"), `${JSON.stringify(buildTemplate(), null, 2)}\n`);
 fs.writeFileSync(path.join(OUT, "tokenPresets.json"), `${JSON.stringify(tokenPresets, null, 2)}\n`);
 fs.writeFileSync(path.join(OUT, "payload.json"), `${JSON.stringify(payload, null, 2)}\n`);
 fs.writeFileSync(path.join(OUT, "meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
-fs.writeFileSync(path.join(OUT, "configSchema.json"), `${JSON.stringify(configSchema, null, 2)}\n`);
 console.log(`Wrote ${OUT}`);

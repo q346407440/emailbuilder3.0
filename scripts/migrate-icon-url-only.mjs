@@ -101,18 +101,6 @@ function migrateFile(filePath, label) {
   const data = JSON.parse(raw);
   const before = JSON.stringify(data);
   if (data.blocks) migrateBlocksMap(data.blocks);
-  if (data.configSchema?.scopes) {
-    for (const scope of data.configSchema.scopes) {
-      for (const field of scope.fields ?? []) {
-        if (field?.target?.path && typeof field.target.path === "string") {
-          field.target.path = field.target.path.replaceAll("props.customSrc", "props.src");
-        }
-        if (field?.key && typeof field.key === "string") {
-          field.key = field.key.replaceAll("props_customSrc", "props_src");
-        }
-      }
-    }
-  }
   const after = JSON.stringify(data);
   if (before === after) {
     console.log(`[skip] ${label}`);

@@ -1,7 +1,7 @@
 ---
 name: easy-email-concepts
 description: >-
-  Easy-Email 当前维护概念（template 结构真源、configSchema 受控配置面、tokenPresets 样式预设、payload 变量值、render-defaults 渲染默认）与口语↔技术路径对照；含「每个 block 自己的容器 / 宽高模式 / placement 与 contentAlign」等必读公共定义。
+  Easy-Email 当前维护概念（template 结构真源、tokenPresets 样式预设、payload 变量值、render-defaults 渲染默认）与口语↔技术路径对照；含「每个 block 自己的容器 / 宽高模式 / placement 与 contentAlign」等必读公共定义。
   当用户讨论「还原邮件该改哪一层」「配置面 vs template」「样式预设 vs 结构」或需要一句话说清维护入口时读取；常与「按图还原邮件」类需求下的 business-components / block-architecture 技能一起出现。
 ---
 
@@ -23,26 +23,28 @@ description: >-
 | 禁止写进 template 的渲染默认、底图 padding 语义 | `src/render-defaults-contract/`（`rules.ts` 为规则目录） |
 | token 标准 14 键、`$themeRef` 路径 | `src/token-preset-contract/`（`standard-keys.ts`、`theme-ref-paths.ts`） |
 | payload 槽枚举与对照校验 | `src/payload-contract/` |
+| 列表重复绑定、物化、重绑、fieldMappings | `src/lib/repeatRegion.ts`、`repeatMaterializedNormalize.ts`、`repeatNestedBinding.ts`（技能 **`easy-email-repeat-binding`**） |
 | visibility 运算符合法性 | `src/visibility-contract/` |
-| configSchema | `src/lib/validateConfigSchema.ts` |
+| tokenPresets 外壳校验 | `src/lib/validateTokenPresets.ts` · `src/token-preset-contract/validate.ts` |
 | 容器内边距 `SpacingValue`（`unified` 单边 / `separate` 四边） | `src/lib/validate.ts` · `validateSpacingValue`；批量审计 `npm run normalize:spacing-unified` |
 | 落盘目录与 HTTP API | `easy-email-storage-api` 技能 + `server/index.ts` |
 | 场景版式变体（layoutVariant）路径与 manifest | `src/layout-variant-contract/`、`src/lib/emailLayoutVariant.ts` |
 
 交付前统一跑：**`npm run validate:all`**。
 
-## 四层落盘（口语 → 文件）
+## 三层落盘（口语 → 文件）
 
-**单版式（legacy）**：三件套在 `data/emails/<emailKey>/` 根目录。
+**单版式（legacy）**：`template.json` + `tokenPresets.json` 在 `data/emails/<emailKey>/` 根目录；`payload.json` 在场景根。
 
 | 层 | 文件 | 一句话 |
 |----|--------|--------|
 | 结构 | `template.json` | 完整 block 树 + bindings |
-| 配置面 | `configSchema.json` | 对用户暴露的字段与 target |
 | 样式预设 | `tokenPresets.json` | 档位与 token 值、`$themeRef` 解析 |
 | 变量 | `payload.json` | **场景级共享**：**`slots`** 目录 + **`values`** 取值；template 仅 bindings/repeat 关系 |
 
-**多版式（layoutVariant）**：`payload.json` 仍在场景根；每个版式独立三件套 → `layouts/<layoutVariantId>/`；清单 → `layout-manifest.json`（`activeLayoutVariantId` + `variants[]`）。路径解析真源 **`src/lib/emailLayoutVariant.ts`**；迁移 **`npm run migrate:layout-variants:write`**。
+**多版式（layoutVariant）**：`payload.json` 仍在场景根；每个版式 `layouts/<layoutVariantId>/` 含 **template + tokenPresets**；清单 → `layout-manifest.json`。路径解析真源 **`src/lib/emailLayoutVariant.ts`**；迁移 **`npm run migrate:layout-variants:write`**。
+
+**已移除**：`configSchema.json` 与顶栏「配置项」视图；可编辑项由 **底层 Block Inspector**、**变量赋值**、**样式预设** 承担。
 
 元数据：`meta.json`（如 **`defaultStylePresetSelection`** 与展示名）。
 
@@ -65,14 +67,15 @@ description: >-
 
 | 用户说法 | 优先落点 |
 |----------|----------|
-| 改结构 / 区块树 | 当前版式 `layouts/<id>/template.json` 或 legacy 根 `template.json`（必要时同目录 `configSchema.json`） |
-| 同场景换大版式 / 第二套结构 | 新建 `layouts/<layoutVariantId>/` 三件套 + 更新 `layout-manifest.json`；**勿**复制第二份 `payload.json` |
-| 只开放少量参数 | `configSchema.json` |
+| 改结构 / 区块树 | 当前版式 `layouts/<id>/template.json` 或 legacy 根 `template.json` |
+| 同场景换大版式 / 第二套结构 | 新建 `layouts/<layoutVariantId>/`（template + tokenPresets）+ 更新 `layout-manifest.json`；**勿**复制第二份 `payload.json` |
+| 改某 block 字段 / 宽高 / 对齐 | **底层 Block** Inspector + `template.json` |
 | 换主题档 / 字号节奏 / 圆角体系 | `tokenPresets.json` + `$themeRef` |
 | 默认打开哪套预设 | `meta.json` → `defaultStylePresetSelection` |
 | 业务数据 / 槽目录与取值 | **`payload.slots` + `payload.values`**（**`src/payload-contract/`**）；template 只写 slotId 绑定，见 **`docs/邮件变量与绑定真源.md`** |
+| 列表绑定 / 解除 / 父级+子级循环 / 物化重绑 | 技能 **`easy-email-repeat-binding`**；勿在 template 长期写物化 `*-1` id |
 | 标准 token 键范围与绑法 | **`email-token-preset-standard-scope`** + `standard-keys.ts` |
-| 已废弃「意图层」口语 | 译为 template + configSchema；无独立意图 JSON |
+| 已废弃「意图层」/ configSchema 口语 | 译为 template + Inspector / payload / tokenPresets；无独立意图 JSON |
 | 只要上边距 / 四边不同 padding | **`separate`** 分边写；**勿**在 **`unified`** 里写 `"8px 0 0 0"` |
 
 ## 编辑器 MVP（产品行为）
@@ -93,6 +96,7 @@ description: >-
 | 场景 | 技能 |
 |------|------|
 | 落盘 / API / `emailKey` | `easy-email-storage-api` |
+| 列表 repeat 绑定、物化态重绑 | `easy-email-repeat-binding` |
 | block 语义、配置母版与还原流程 | `email-config-motherboard` |
 | 按图易错与自检 | `email-template-restore-check` |
 | 按图还原流程与模块壳/token | `email-template-restore-guide` |

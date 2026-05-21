@@ -14,7 +14,7 @@
 | [email-token-preset-standard-scope](../.cursor/skills/email-token-preset-standard-scope/SKILL.md) | 样式预设标准键索引 |
 | 其余技能 | 见 [CLAUDE.md](../CLAUDE.md) 技能表 |
 
-**实现真源（机器校验）**：`src/block-contract/`、`src/lib/validate.ts`、`src/types/email.ts`、`src/payload-contract/`、`src/render-defaults-contract/`、`src/token-preset-contract/`、`src/visibility-contract/`、`src/lib/validateConfigSchema.ts`、`server/index.ts`。
+**实现真源（机器校验）**：`src/block-contract/`、`src/lib/validate.ts`、`src/types/email.ts`、`src/payload-contract/`、`src/render-defaults-contract/`、`src/token-preset-contract/`、`src/visibility-contract/`、`src/lib/validateTokenPresets.ts`、`server/index.ts`。
 
 ## 本目录其他文件
 

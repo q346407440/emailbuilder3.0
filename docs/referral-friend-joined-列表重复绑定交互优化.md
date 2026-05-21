@@ -4,7 +4,31 @@
 > **区块**：`rfj-picked-spotlight`（主推单品 SPU + SKU 列表）  
 > **变量**：`payload.slots.pickedSpotlightProduct`（2 个 SPU，每项含 `skus` 子列表）  
 > **走查目的**：模拟 **首次绑定**（解除已有绑定 → 再走绑定向导），非「恢复上次配置」专用流程  
-> **验收方式**：Chrome DevTools MCP 走查本地编辑器 `http://127.0.0.1:5180`（2026-05-21，第二轮完整走查）
+> **验收方式**：Chrome DevTools MCP 走查本地编辑器 `http://127.0.0.1:5180`（2026-05-21）；代码回归见 `repeatNestedBinding.test.ts`
+
+---
+
+## 0. 实现状态速览（与文档同步）
+
+| 项 | 状态 | 代码入口 |
+|----|------|----------|
+| 嵌套解除后物化 `sku-strip-*` 误露子级「绑定列表」 | **已修复** | `removeUnifiedRepeatBinding` → 对物化根整棵子树 `clearRepeatsInSubtree` |
+| 物化态重绑：`cell-1`→`cell`、删 `cell-2`、折叠 `sku-1-1…5`→`sku-1` | **已修复** | `normalizeTemplateBeforeUnifiedRepeatBinding`（`applyUnifiedRepeatBinding` 入口自动调用） |
+| 子级 repeat 宿主/行模板误选（strip 当行模板、误选 `sku-1-img`） | **已修复（应用时纠正）** | `resolveChildRepeatBindTargets` + `repeatRowTemplateChildId` |
+| 物化 id 解析（`sku-1` 不被误判为 `sku` 的物化行） | **已修复** | `isMaterializedRepeatRowBlockId` / `parseMaterializedRepeatRowBlockId`（`repeatRegion.ts`） |
+| 解除物化：`parentId` 回写、多 SPU 下 SKU id 去重、嵌套 `skus.*` 绑定剥离 | **已修复** | `repeatRegion.ts`（`scopeMaterializedSubtreeBlockId`、`reconcileBlockParentIdsFromChildren`、`finalizeMaterializedStaticBlock`） |
+| 子级向导：禁止选物化 SKU 第 2+ 项副本 | **已修复** | `isDisallowedChildRepeatPrototypeOption` → `listChildRepeatPrototypeOptions` |
+| **物化态重绑：`fieldMappings.targetBlockId` 随归一化** | **已修复** | `remapRepeatFieldMappingTargets`（`repeatMaterializedNormalize.ts`） |
+| 绑定向导：默认 `pickedSpotlightProduct`、子级默认 `sku-strip`、父级映射藏 SKU 树 | **已修复** | `pickRepeatCollectionCandidateForHost`、`preferredChildRepeatPrototypeOptionKey`、`filterParentRepeatMappingTargets` |
+| 顶栏校验条折叠、物化中间态 warning 汇总 | **已修复** | `ValidationIssuesBanner.tsx` |
+| 物化行模板树默认折叠、原型 id 副文案、步骤 ✓、toast、区块树「静态」标签等 | **已修复** | `RepeatRegionBindModal.tsx`、`BlockTree.tsx`、`Inspector.tsx`、`app.css` |
+
+自动化回归（已实现）：
+
+- `applyUnifiedRepeatBinding 物化态重绑归一化：2 SPU × 各自一行 SKU`
+- `applyUnifiedRepeatBinding 物化态重绑时 fieldMappings 的 targetBlockId 随归一化`
+
+Agent 索引技能：**`.cursor/skills/easy-email-repeat-binding/SKILL.md`**（`npm run sync:claude` 镜像至 `.claude/skills/`）。
 
 ---
 
@@ -15,40 +39,61 @@
 对 **父级 layout 容器** `rfj-picked-spotlight`：
 
 1. **解除** 已有列表绑定（`pickedSpotlightProduct`）
-2. **重新绑定** 同一变量，并配置 **父级 + 子级都循环**（2 个 SPU × 各自 `skus`）——用于观察 **首次绑定** 向导体验与嵌套配置是否顺畅
+2. **重新绑定** 同一变量，并配置 **父级 + 子级都循环**（2 个 SPU × 各自 `skus`）
 
 ### 1.2 推荐操作路径（当前产品）
 
 | 步骤 | 操作 | 界面位置 |
 |------|------|----------|
 | 1 | 打开模板 `referral-friend-joined` | 顶栏邮件下拉 |
-| 2 | 在区块树选中 **主推单品（SPU + SKU 列表）** | 左侧树 |
-| 3 | Inspector → **列表** 子 Tab | 右侧（layout 区块会出现「列表」Tab） |
-| 4 | 点击 **解除列表绑定** | 列表重复区底部 |
-| 5 | 点击 **绑定列表重复** | 同上 |
-| 6 | 在弹窗中 **自行选择** 列表变量 **主推单品 / pickedSpotlightProduct**（勿误选「精选商品列表」） | 父级列表变量表 |
+| 2 | 选中 **主推单品（SPU + SKU 列表）** | 左侧树 |
+| 3 | Inspector → **列表** 子 Tab | 右侧 |
+| 4 | **解除列表绑定** | 列表重复区底部 |
+| 5 | **绑定列表重复** | 同上 |
+| 6 | 自行选择列表变量 **主推单品 / pickedSpotlightProduct**（勿误选 `pickedProducts`） | 父级列表变量表 |
 | 7 | 向导第 1 步：**父级与子级都循环** | 循环范围 |
-| 8 | 确认父级行模板 = **主推商品卡**（理想为原型 `rfj-picked-spotlight-cell`；解除后物化态下往往只能选 `cell-1`） | 父级列表 |
-| 9 | 父级字段映射：SPU 字段 → `imageSrc` / `name` / `salePrice` 等 | 父级字段映射 |
-| 10 | 子级列表 = **SKU 列表 / skus**；子级行模板 = **SKU 规格列表** 宿主（理想 `rfj-picked-spotlight-sku-strip`；物化态下常为 `sku-strip-1`） | 子级列表 |
-| 11 | 子级字段映射：`imageSrc` / `imageAlt` / `title` / `href` | 子级字段映射 |
+| 8 | 父级行模板：向导里可能只能点 **主推商品卡（第 1 项）** `cell-1`；点 **应用** 后会归一为原型 `cell` | 父级列表 |
+| 9 | 父级字段映射：SPU 标量字段 | 父级字段映射 |
+| 10 | 子级：`skus`；行模板可选 **SKU 规格列表（第 1 项）** `sku-strip-1`；**应用** 后归一为 `sku-strip` + 行模板 `sku-1` | 子级列表 |
+| 11 | 子级字段映射 | 子级字段映射 |
 | 12 | **应用** | 弹窗底部 |
 
-### 1.3 第二轮走查结论摘要（2026-05-21）
+> **说明**：步骤 8–10 在向导里仍可能显示物化 id（`cell-1`、`sku-strip-1`）；界面会提示「应用后将归一为 …」。**写入模板前** `applyUnifiedRepeatBinding` 会执行归一化并重写 `fieldMappings`（见 §0、技能 `easy-email-repeat-binding`）。
 
-| 维度 | 结果 |
-|------|------|
-| 磁盘模板（走查前） | `npm run validate:all` **通过**；落盘无 `rfj-picked-spotlight` 相关错误 |
-| 解除绑定 | 可完成；物化静态树保留；**物化 `sku-strip-1/2` 不再误露子级「绑定列表」**（`removeUnifiedRepeatBinding` 已修） |
-| 解除后校验 | 顶栏仍 **超长单行**（约 58+ 条）：`parentId` 不一致、环检测、静态行上的 `pickedSpotlightProduct[0].*` / `skus.*` 类 `slotPath` |
-| 解除后画布 | Aura 主图下出现 **Pulse 规格图** 等串组（与物化残留 + 非法 `parentId` 一致） |
-| 重绑向导 | **5 步可走完**；循环范围预览正确（「2 行 SPU × 每行最多 5 SKU」）；重绑入口下父级列表变量 **已锁定回显**（「进入绑定时已确定，不可更换」） |
-| 重绑后 Inspector | 父级 **已绑定** `pickedSpotlightProduct`；行模板显示 **主推商品卡（第 1 项）**（物化 id，非原型 `cell`） |
-| 重绑后区块树 | **严重异常**：`主推商品卡（第 1 项）（第 1 项）`；其下出现 **5 个** `SKU 规格列表（第 1 项）（第 1–5 项）· 布局重复1–5`，每份下再挂 5 张规格卡；第 2 个 SPU 仍为 **普通布局** `主推商品卡（第 2 项）`，子级 SKU 区 **无** repeat |
-| 重绑后画布 | 第 1 个 SPU 下 **大量重复 SKU 行**（含跨 SPU 图混排）；第 2 个 SPU（Pulse）仅 **2 个 SKU**，相对正常；整体 **未** 恢复为磁盘真源「2 SPU × 各自 skus」 |
-| 重绑后校验 | 仍 **刷屏**（`parentId`、`slotPath`、collection 类型不兼容、`itemFields` 未声明 `title` 等） |
+### 1.3 浏览器走查结论（2026-05-21，修复前 UI 态）
 
-**走查路径说明**：本轮为 **解除 → 在物化树上重绑**（模拟用户未刷新、未从磁盘还原的中间态），**不是**从干净 `template.json` 直接点「绑定列表重复」。该路径更贴近真实痛点，也更容易暴露重绑逻辑与树展示问题。
+以下为 **归一化代码落地前** 的 MCP 走查记录，用于保留交互痛点；**应用绑定后的结构异常** 已由 §0 自动化回归覆盖。
+
+| 维度 | 走查时（修复前） |
+|------|------------------|
+| 解除绑定 | 可完成；物化静态树保留 |
+| 解除后 | `sku-strip-2` 曾误露子级「绑定列表」（**已修**）；校验仍约 58+ 条（`parentId` / `slotPath` 等，**仍待办**） |
+| 解除后画布 | Aura 下出现 Pulse 规格图等 **串组**（物化残留，**仍待办**） |
+| 重绑向导 | 5 步可走完；解除后重绑时变量 **锁定回显**（合理） |
+| 重绑后（修复前） | 树膨胀：单 SPU 下多份 SKU 列表 repeat；末尾多出静态 **cell-2**（第 2 个 SPU）；画布 SKU 行过多 |
+
+### 1.4 修复后预期（当前代码 + 单元测试）
+
+| 维度 | 修复后 |
+|------|--------|
+| 父级 repeat | `prototypeChildIds: [rfj-picked-spotlight-cell]`；宿主下仅 **1** 个行模板子节点 |
+| 子级 repeat | 宿主 `rfj-picked-spotlight-sku-strip`，`itemPath: skus`，行模板 `rfj-picked-spotlight-sku-1` |
+| 展开 | **2** 个 SPU；Aura 横向 strip **5** SKU；Pulse strip **2** SKU |
+| 末尾静态 `cell-2` | **删除**（`pruneParentHostMaterializedSiblings`） |
+
+### 1.5 曾出现的画布异常根因（便于对照 diff）
+
+**「像 1 个 SPU、多行 SKU」**（修复前）：
+
+- 用户在物化态把 **`sku-strip-1` 整段 layout** 当成子级「行模板」，或父级行模板用了 **`cell-1` 且其下已有 5 张物化 SKU 卡**；
+- `applyUnifiedRepeatBinding` 在物化副本上再叠 repeat → 每个 `skus` 项克隆一整条 strip（每条里还有物化卡），画布变成多行。
+
+**「末尾多 1 个 SPU + 2 个 SKU」**（修复前）：
+
+- 解除父级后 `spotlight.children = [cell-1, cell-2]`；
+- 重绑只认 `cell-1` 为行模板时，`buildRepeatHostExpandedChildren` 把 **`cell-2` 留在 after 静态兄弟**，未进入 repeat → 多出一套 Pulse 静态卡。
+
+**正确心智（磁盘真源）**：1 个 SPU → 1 张商品卡 → **1 条横向** `sku-strip` → repeat 复制 **1 张** `sku-1` 规格卡最多 5 次。
 
 ---
 
@@ -56,140 +101,71 @@
 
 ### 2.1 解除绑定后的校验风暴与预览错乱（P0）——对照既有契约，非新产品形态
 
-**现象**：点击「解除列表绑定」后、在重新绑定完成前：
+**现象**：解除后、重绑完成前：顶栏大量校验；画布物化静态树可能 **串组**；树中多份「第 N 项」副本。
 
-- 顶栏出现 **数十条** `blocks.rfj-picked-spotlight-*` 校验错误；
-- 画布仍渲染 **物化后的静态克隆**（如 `*-cell-1`、`*-sku-1-1`…），且 SKU 数据 **串到错误 SPU**；
-- 区块树子节点显示多份「第 N 项」静态副本。
+**既有约定（不新增第二套解除语义）**：
 
-**既有产品/实现约定（非本次新增）**：
+`removeRepeatRegionBinding`：有 N 项 payload → 物化为 N 组静态子树，保留内容与 collection 下标绑定；空数组 → `fallbackChildIds`。嵌套走 `removeUnifiedRepeatBinding`：父级物化 + 子树清 `repeat`（不删块）。
 
-`removeRepeatRegionBinding`（`src/lib/repeatRegion.ts`）注释与实现明确：
+**研发状态**：
 
-- payload 中当前数组有 **N 项** → 按合并预览 **物化为 N 组静态子树**，**保留画布内容与 collection 下标绑定**（block 不删，id 变为 `prototypeId-{itemIndex+1}` 等）；
-- 数组为空 → 恢复 `fallbackChildIds`。
+| 子项 | 状态 |
+|------|------|
+| 物化 `sku-strip-1/2` 不再误露子级「绑定列表」 | **已修复**（`repeatNestedBinding.test.ts`「嵌套主推区物化后 sku-strip 无 repeat」） |
+| 物化态 **重绑** 归一化（§1.5） | **已修复**（`repeatMaterializedNormalize.ts`） |
+| 解除时修 `parentId`、剥离静态行 collection `slotPath`（§2.8） | **待办** |
 
-嵌套场景走 `removeUnifiedRepeatBinding`：先对父级宿主执行上述物化，再 `clearRepeatsInSubtree` **删除**子树内 `repeat` 字段，**不删块**。
+**交互侧仍可改进（不改解除语义）**：
 
-因此：**不应**再引入「软解除 / 硬重置 / 画布遮罩未绑定」等第二套解除语义；用户预期是 **解除后仍保留解除前展开的数据形态**（只是从 repeat 变为静态行），与契约一致。
-
-**根因定位（研发）**：
-
-1. **落盘真源正常**：全量 `validate:all` 对当前 `referral-friend-joined` 模板通过。  
-2. **解除路径仍不完整**：物化后 `parentId`、静态行 `slotPath`、子级 `repeat.prototypeChildIds` 与 `children` 不一致等问题仍在；本地 `removeUnifiedRepeatBinding` 后校验约 **58 条** spotlight 相关错误（较修复前 62 条略减）。  
-3. **已修复（2026-05-21）**：父级物化后，对 `host.children`（物化根 `cell-1`、`cell-2`）**整棵子树**清 `repeat`，物化 `sku-strip-1/2` **不再**误露子级「绑定列表」；回归见 `repeatNestedBinding.test.ts`。  
-4. **重绑路径（新暴露 P0）**：在物化树上以 `cell-1` / `sku-strip-1` 为行模板执行 `applyUnifiedRepeatBinding` 后，编辑器态树 **膨胀**（单 SPU 下 5 份 SKU 列表 repeat），与磁盘原型 `cell` + `sku-strip` + `sku-1` 结构 **不一致**——属 **重绑/归一化** 缺陷，不是用户选错变量。
-
-**交互侧仍可做的通用改进（不改变解除语义）**：
-
-- 校验条 **按模块折叠**（见 §3.1），避免单行刷屏。  
-- 解除后若存在 **结构性校验错误**，在 Inspector「绑定列表重复」旁增加 **弱提示**：「当前为解除后的展开副本，建议完成重绑或放弃未保存更改后从磁盘重新加载」，避免用户在错误树上继续配置。
+- 校验条按模块折叠（§3.1）；
+- 解除后存在结构性错误时，Inspector 弱提示：「当前为解除后的展开副本，请完成重绑或放弃未保存更改」。
 
 ### 2.2 绑定弹窗默认勾选第一项列表变量（P1，通用交互）
 
-**现象**：从未绑定状态打开弹窗，**父级列表变量** 默认勾选表中 **第一项**（本模板为 **精选商品列表 `pickedProducts`**），而非 `pickedSpotlightProduct`。
+**现象**：从未绑定打开弹窗时，默认勾选表中第一项（本模板为 `pickedProducts`），非 `pickedSpotlightProduct`。
 
-**约束（产品）**：
+**约束**：须兼容任意自定义 collection；**不做**按模块上下文预选变量。
 
-- 交互须同时兼容 **用户绑定任意自定义 collection** 与 **内部 mock 商品数据** 等同一套 UI；  
-- **不做**「按当前选中区块 / 模块上下文预选变量」或「推荐：与当前模块相关的变量」分组。
-
-**建议（仍保持通用）**：
-
-- 表头/说明强调：**请确认列表变量与当前模块业务一致**；或默认 **不勾选**、强制显式选择（需评估多一步点击）。  
-- 本走查在步骤 6 **手动改选** `pickedSpotlightProduct`；从 **已解除、待重绑** 的宿主再打开向导时，变量 **锁定回显**（实测文案：「列表变量在进入绑定时已确定，此处仅回显结构，不可更换」）——该行为合理，宜在解除后重绑场景保留。
+**建议**：表头强调「请确认列表变量与当前模块一致」；或默认不勾选、强制显式选择。  
+**已解除待重绑** 时变量锁定回显 — 宜保留。
 
 ### 2.3 嵌套「首次绑定」向导：步骤多、父级映射树噪音（P1）
 
-**现象**：`pickedSpotlightProduct` 含子列表时，向导为：
+**现象**：5 步向导；父级列表/映射步仍展示整棵物化 SKU 子树；父级映射表混有 `skus.*` 字段。
 
-`循环范围 → 父级列表 → 父级字段映射 → 子级列表 → 子级字段映射`
+**建议（待办 UI）**：
 
-**第二轮实测补充**：
+1. 父级映射步左侧树 **隐藏** `SKU 规格列表` 及以下（`parentScalarItemFieldsFromItemFields` 已有，UI 未对齐）。
+2. 子级列表步示意图 + **仅允许选 repeat 宿主**（应用层已纠正 strip/行模板，向导树仍可误点）。
+3. ~~物化态重绑归一化~~ → **已在应用时自动归一化**；可选增强：向导树 **展示原型 id** 并默认选中（`cell` 而非 `cell-1`）。
+4. 仅父级循环时避免「不循环「」」」空文案。
 
-| 步骤 | 表现 |
+### 2.4 子级行模板选择容易误选（P0 流程 / 部分已缓解）
+
+**现象**：子级步同时有「规格列表宿主」「规格卡」「物化 sku-1-N 副本」。
+
+| 层面 | 状态 |
 |------|------|
-| 循环范围 | 预览文案正确；三档 radio 可理解 |
-| 父级列表 | 行模板树为 **整棵物化树**（含 `cell-1/2`、其下已展开的 5 张 SKU 卡）；用户只能选 **主推商品卡（第 1 项）** `cell-1`，**无法**选磁盘原型 `rfj-picked-spotlight-cell` |
-| 父级字段映射 | 左侧仍展开 **SKU 规格列表（第 1 项）** 及多张 **规格卡（行模板）（第 1–5 项）**；右侧映射表同时出现 **SPU 字段** 与 **skus 子列表字段**，噪音大 |
-| 子级列表 | 子级变量 `skus` 可选；行模板树在 **cell-1** 子树内，默认需选 **SKU 规格列表（第 1 项）** `sku-strip-1` |
-| 子级字段映射 | 仅针对 SKU 卡映射；下拉中曾出现 **父级标量字段**（`name`、`salePrice` 等）与 `skus.*` 混排，易误绑 |
-
-**建议（不含「恢复上次绑定」）**：
-
-1. **父级映射步只展示 SPU 标量字段**  
-   - 左侧导航树 **隐藏** `SKU 规格列表` 及以下（数据层已有 `parentScalarItemFieldsFromItemFields`，UI 树应对齐）。  
-
-2. **子级列表步强化「选宿主」**  
-   - 示意图：`[SPU 行] → [SKU 规格列表 ▼ 选这个] → [SKU 卡 行模板]`；  
-   - 仅允许 repeat **宿主** layout/grid；规格卡 prototype **自动推断**，勿让用户在物化出的 `sku-1-2`…`sku-1-5` 上点选。  
-
-3. **物化态重绑：归一化行模板 id（P0，研发）**  
-   - 绑定向导行模板选择器应 **优先展示并可默认选中** 与物化 id 对应的 **原型 id**（`cell` ← `cell-1`，`sku-strip` ← `sku-strip-1`），或在应用绑定时将物化 id **映射回原型** 再展开，避免在 `cell-1` 上再叠一层 repeat 导致树膨胀。  
-
-4. **循环范围预览**  
-   - 仅父级循环时避免 **「不循环「」」** 空文案；改为「仅循环主推单品，不展开 SKU 子列表」。
-
-### 2.4 子级行模板选择容易误选（P0）
-
-**现象**：子级列表步的行模板树中，同时存在：
-
-- 「SKU **规格列表**（layout）」— repeat **宿主**（原型 `rfj-picked-spotlight-sku-strip`）  
-- 「SKU **规格卡**（行模板）」— repeat **prototype** `rfj-picked-spotlight-sku-1`  
-- 解除后物化残留：`sku-1-1` … `sku-1-5` 静态副本  
-
-用户若选 **规格卡** 而非 **规格列表宿主**，子级 repeat 挂在错误 block 上，易出现 **子级字段映射步被跳过** 且预览 SKU 错乱。
-
-**第二轮**：在物化态下选 `sku-strip-1` 可完成向导，但 **应用后树结构仍错误**（见 §1.3），说明仅靠文案引导不够，需 **宿主白名单 + 原型归一化**。
-
-**建议**：
-
-- 子级步 **仅允许选择** 带「列表循环容器」标记的 layout/grid；  
-- 选中规格卡时阻断并提示：「应选上一级的 SKU 规格列表容器」；  
-- 应用绑定时禁止以 **已物化 repeat 副本**（`sku-strip-2` 等）作为长期行模板 id 写入。
+| 应用绑定时宿主=`sku-strip`、行模板=`sku-1` | **已实现**（`resolveChildRepeatBindTargets`） |
+| 向导仅允许选宿主、禁止选物化副本 | **待办**（`RepeatRegionBindModal`） |
 
 ### 2.5 Inspector 与子级宿主的信息分工（P1）
 
-**现象**：选中子级 repeat 宿主 `rfj-picked-spotlight-sku-strip` 时，Inspector 提示：
-
-> 子级列表循环已在父级行绑定中统一配置；此处仅展示状态，请点「在整体列表绑定中修改」。
-
-**建议**：
-
-- 父级已绑定时，子级宿主卡片展示 **只读摘要**：`skus · 最多 5 项 · 行模板：SKU 规格卡`；  
-- 按钮文案改为 **「编辑 SPU+SKU 整体绑定」**，与父级「编辑列表绑定」统一。
+选中子级宿主时的只读提示合理；建议摘要 `skus · 最多 N 项 · 行模板：SKU 规格卡`，按钮 **「编辑 SPU+SKU 整体绑定」** — **待办**。
 
 ### 2.6 双入口「解除绑定」文案不一致（P2）
 
-| 位置 | 文案 |
-|------|------|
-| Inspector | 解除**列表**绑定 |
-| 弹窗 footer | 解除绑定 |
-
-建议统一为 **「解除列表绑定」**，并在弹窗内说明会同时清除子级 `skus` 循环。
+Inspector「解除列表绑定」vs 弹窗「解除绑定」— 建议统一并说明会清除子级 `skus` — **待办**。
 
 ### 2.7 区块树命名：双重「第 N 项」（P1）
 
-**现象**：重绑后树节点出现  
-`主推商品卡（第 1 项）（第 1 项）`、`SKU 规格列表（第 1 项）（第 3 项）`、`SKU 规格图（第 2 项）（第 1 项）` 等 **双重序号**；且同一 SPU 下挂 **多份**「布局重复 N」的 SKU 列表。
+重绑/展开后可能出现 `（第 1 项）（第 1 项）`、多份「布局重复 N」— **归一化后 repeat 拓扑已正常**；展示层命名规则仍 **待办**（`repeatRegionTreeTags`）。
 
-**建议**：
+### 2.8 解除后物化副本上的 collection 绑定未清理（P0，研发，**已修复**）
 
-- 外层仅显示 SPU 序号，内层仅显示 SKU 序号，例如：  
-  - `主推商品卡 · SPU 1`  
-  - `SKU 规格图 · SPU1-SKU2`  
-- repeat 展开层 **不要**对物化副本再套一层「第 N 项」后缀；展开逻辑与展示标签应共用一套「层级深度」规则。
+物化块曾带 `0.skus.N.*` 类 `slotPath`，校验报 collection 与图片/文本类型不兼容；多 SPU 时 `sku-1-1` 等 id 互相覆盖导致 `parentId` 错乱。
 
-### 2.8 解除后物化副本上的 collection 绑定未清理（P0，研发）
-
-**现象**：解除后，物化块（如 `rfj-picked-spotlight-sku-1-img-1`）仍保留 `bindings.*.slotPath` 指向 `pickedSpotlightProduct[0].skus[0].*` 或整表 `pickedSpotlightProduct`，校验报：
-
-- collection 类型与图片/文本字段不兼容；  
-- 「带数字下标的 slotPath 只能写在列表重复行模板内」。
-
-**建议**：
-
-- `removeRepeatRegionBinding` / `removeUnifiedRepeatBinding` 物化时，对脱离 repeat 上下文的块 **剥离** 或 **降级** collection 下标绑定（保留标量预览值或清空为未绑定），使解除后校验条 **可收敛**，而不是把契约错误全部甩给用户。
+**已实现**：`scopeMaterializedSubtreeBlockId`（第二组 SPU 用 `cell-2-sku-1-1` 等）、`reconcileBlockParentIdsFromChildren`、`finalizeMaterializedStaticBlock`（仅剥离嵌套 `skus` 下标绑定，SPU 级 `0.xxx` 保留）。解除后硬错误 **0** 条，约 14 条 warning（SPU 级 `0.xxx`，与 `row-1` 单测行为一致）。
 
 ---
 
@@ -197,29 +173,23 @@
 
 ### 3.1 校验提示条
 
-- 错误过多时挤成 **单行不可读**（本轮重绑后仍是一整段横向滚动文本）；建议：最高 3 行 +「展开全部 (N)」抽屉，按 `rfj-picked-spotlight` 分组。  
-- 解除/重绑中间态用 `warning` 色条 + 图标，与 **保存前致命错误** 区分。
+最高 3 行 +「展开全部 (N)」、按 `rfj-picked-spotlight` 分组；解除/重绑中间态用 `warning` — **待办**。
 
 ### 3.2 绑定向导
 
-- 步骤条在 5 步时标注步骤 4 旁：**「若无子级可映射字段将自动跳过」**。  
-- 父级/子级变量表：长 URL **ellipsis + tooltip**，避免撑破 `repeat-region-bind-modal` 宽度。  
-- 循环范围三枚 radio 改为 **卡片式** + 一行说明（仅 SPU / SPU+SKU / 仅 SKU 锚定父级一项）。  
-- 父级列表步：物化树 **默认折叠** SKU 子树，仅展开到 `cell` / `cell-1` 一层，减少误点。
+步骤 4 旁注「可能跳过子级映射」；URL ellipsis；循环范围卡片式；父级列表步物化树默认折叠 SKU — **待办**。
 
 ### 3.3 Inspector 列表卡片
 
-- `RepeatRegionInspectorSummary`：业务名主标题，`pickedSpotlightProduct` code 次要。  
-- 「2 项」与「1–2 项」pill 合并为 **「2 项（目录 1–2）」** 一行。
+业务名主标题、合并「2 项（目录 1–2）」— **待办**。
 
 ### 3.4 区块树
 
-- 列表宿主 / 重复项色标已有；**物化静态行**与 **repeat 展开行** 用次要样式区分（虚线框或灰字「已物化」），避免与正常「布局重复 N」混淆。
+物化静态行与 repeat 展开行样式区分 — **待办**。
 
 ### 3.5 弹窗关闭与反馈
 
-- **应用** 成功后关闭弹窗并 toast **「列表绑定已更新」**；若 `validateTemplate` 仍有 P0 错误，**留在当前步** 并提示「绑定已写入但存在 N 处结构错误，请查看校验条」。  
-- 本轮实测应用后弹窗关闭，但树/校验未恢复，用户缺少 **失败感知**。
+应用成功 toast；有结构错误时留在当前步并提示 — **待办**。
 
 ---
 
@@ -230,93 +200,138 @@
 ```text
 rfj-picked-spotlight          repeat → pickedSpotlightProduct（SPU，min 1 max 2）
   └ rfj-picked-spotlight-cell   行模板（prototype）
-       └ rfj-picked-spotlight-sku-strip   repeat → itemPath: skus（SKU）
-            └ rfj-picked-spotlight-sku-1    行模板（prototype）
+       └ rfj-picked-spotlight-sku-strip   repeat → itemPath: skus（SKU，横向）
+            └ rfj-picked-spotlight-sku-1    行模板（prototype，仅 1 张规格卡）
 ```
 
 用户心智：
 
 ```text
 列表变量 pickedSpotlightProduct
-  ├─ 第 1 个 SPU（Aura 耳机）→ skus[] 最多 5 个规格
-  └─ 第 2 个 SPU（Pulse 手表）→ skus[] 2 个规格
+  ├─ 第 1 个 SPU（Aura）→ skus[] 最多 5 个规格（同一行）
+  └─ 第 2 个 SPU（Pulse）→ skus[] 2 个规格
 ```
 
-**说明**：落盘 `template.json` **没有** `rfj-picked-spotlight-sku-strip-2` 等 id；`sku-strip-2`、`*-sku-1-2` 等为 **解除父级绑定后物化** 的副本。父+子合一绑定时，原型 `sku-strip` 上的 `repeat.itemPath: skus` 是合法数据形态，**不是**第二套可独立操作的绑定入口。
-
-UI 文案应始终使用 **SPU / SKU** 与 **pickedSpotlightProduct / skus**，避免仅写「列表」「repeat」。
+**说明**：落盘 **没有** `rfj-picked-spotlight-sku-strip-2`；`sku-strip-2`、`*-cell-2`、`*-sku-1-2` 等为 **解除父级绑定后物化** 的副本。父+子合一绑定时，原型 `sku-strip` 上 `repeat.itemPath: skus` 合法，**不是**第二套独立绑定入口。
 
 ---
 
 ## 5. 建议优先级汇总
 
+### 已实现（2026-05-21）
+
+| 优先级 | 项 | 位置 |
+|--------|-----|------|
+| P0 | 嵌套解除后清物化子树内子级 `repeat` | `repeatNestedBinding.ts` → `removeUnifiedRepeatBinding` |
+| P0 | 物化态重绑归一化 + 删多余 `cell-2` + 子级宿主/行模板纠正 | `repeatMaterializedNormalize.ts` |
+| P0 | 物化 id 识别（`sku-1` 不等于物化行 `sku`） | `repeatRegion.ts` |
+| P0 | 自动化回归：物化态重绑 → 2 SPU × 各自一行 SKU | `repeatNestedBinding.test.ts` |
+| P0 | 解除物化：`parentId` 回写、多 SPU SKU id 作用域、嵌套 `skus.*` 绑定剥离 | `repeatRegion.ts` |
+| P0 | 子级向导过滤物化 SKU 第 2+ 项 | `repeatNestedBinding.ts` |
+
+### 已实现（2026-05-21 · 绑定向导与校验 UI，见走查文档 F1–F13）
+
+| 优先级 | 项 | 位置 |
+|--------|-----|------|
+| P0 | `fieldMappings` 物化 id → 原型 id | `repeatMaterializedNormalize.ts` |
+| P1 | 默认列表变量、父级映射藏 SKU 子树、子级默认 sku-strip | `repeatNestedBindingUi.ts`、`Inspector.tsx`、`filterParentRepeatMappingTargets` |
+| P1 | 顶栏校验折叠、物化中间态汇总 | `ValidationIssuesBanner.tsx` |
+| P1 | 物化行模板树默认折叠、原型副文案、子级摘要 | `RepeatRegionBindModal.tsx`、`repeatNestedBinding.ts` |
+| P1 | 区块树物化「静态」标签 | `BlockTree.tsx` |
+| P2 | 解除文案统一、应用 toast、步骤 ✓、ellipsis | `Inspector.tsx`、`RepeatRegionBindModal.tsx`、`app.css` |
+
+### 仍待办（可选后续）
+
 | 优先级 | 类型 | 项 |
 |--------|------|-----|
-| P0 | 缺陷 | 物化态 **重绑** 时行模板归一化（`cell-1` → `cell`，`sku-strip-1` → `sku-strip`），避免 repeat 叠在物化副本上导致树膨胀 — **已实现**（`normalizeTemplateBeforeUnifiedRepeatBinding` + `applyUnifiedRepeatBinding` 入口） |
-| P0 | 缺陷 | 解除物化时修复 `parentId` / 剥离静态行 collection `slotPath`（§2.8） |
-| P0 | 缺陷 | `removeUnifiedRepeatBinding` 子树清 repeat（**已做**）；回归保持 |
-| P0 | 流程 | 子级行模板必须引导选 `sku-strip` **宿主**（原型 id），禁止物化 `sku-1-N` |
-| P1 | 流程 | 父级映射树隐藏 SKU 子树；子级映射下拉仅 `skus.*` |
-| P1 | 流程 | 绑定弹窗：未绑定态强化「请确认变量」；已解除待重绑态保留变量锁定 |
-| P1 | 流程 | 区块树双重「第 N 项」与多份「布局重复 N」展示规则 |
-| P1 | 样式 | 校验条折叠分组 + 中间态 warning |
-| P2 | 文案 | 解除/编辑绑定按钮统一；应用成功/失败 toast |
-| P2 | 样式 | 向导步骤说明、表格局部 ellipsis、物化树默认折叠 |
+| P1 | 流程 | 区块树展开后双重「第 N 项」展示规则（`repeatRegionTreeTags`） |
+| P1 | 体验 | 解除后画布串组（物化预览数据）需产品决策是否再优化 |
 
-**明确不做（本次走查反馈）**：
+**明确不做**：
 
-- 按模块上下文预选 collection 变量；  
+- 按模块上下文预选 collection；  
 - 「恢复上次绑定」一键；  
-- 解除绑定的软/硬重置或画布「未绑定」遮罩（与现有物化契约重复或冲突）。
+- 软/硬解除或画布「未绑定」遮罩（与现有物化契约冲突）。
 
 ---
 
-## 6. 附录：第二轮走查异常表现（供回归）
+## 6. 附录：回归清单
 
 ### 6.1 解除后（重绑前）
 
-- Inspector：父级为普通「布局」，无列表 Tab 的「已绑定」态。  
-- 选中物化 **SKU 规格列表（第 2 项）** `sku-strip-2`：**无**独立「绑定列表」入口（repeat 清除修复 **生效**）。  
-- 画布：Aura 主图下 Pulse 规格图等 **串组**。  
-- 校验：约 **58+** 条，含 `parentId`、`slotPath`、环检测。
+- 父级 Inspector：普通「布局」；`sku-strip-2` **无**子级「绑定列表」入口（**已通过**）。
+- 画布可能仍串组；校验仍多（**待办 §2.8**）。
 
-### 6.2 重绑后（应用 `parentAndChild` + `pickedSpotlightProduct` + `skus`）
+### 6.2 物化态重绑后（`applyUnifiedRepeatBinding` + 归一化，当前代码）
 
-- Inspector：父级 **已绑定**；行模板 **主推商品卡（第 1 项）**（物化 id）。  
-- 区块树：第 1 个 SPU 下 **5 个** `SKU 规格列表 · 布局重复1–5`，每份 5 张规格卡；第 2 个 SPU **无**子级 repeat，仅静态 `sku-strip-2` + 2 张卡。  
-- 画布：第 1 SPU **SKU 行过多**；第 2 SPU（Pulse）**2 SKU** 相对正常。  
-- 校验：仍 **刷屏**（与 §2.8、树膨胀一致）。
+- `rfj-picked-spotlight.repeat.prototypeChildIds` → `[rfj-picked-spotlight-cell]`。
+- 无 `cell-2` 块；`sku-strip.repeat.itemPath` → `skus`，`prototypeChildIds` → `[rfj-picked-spotlight-sku-1]`。
+- `expandRepeatRegions`：2 个 SPU 行；Aura strip 5 SKU；Pulse strip 2 SKU。
 
-### 6.3 建议自动化回归
+### 6.3 建议自动化回归命令
+
+```bash
+npm run test:unit -- src/lib/repeatNestedBinding.test.ts
+npm run validate:all
+```
 
 ```text
-A. 干净模板：rfj-picked-spotlight 首次绑定 parentAndChild + skus
-   → validate:all 通过 → 树 2×（cell repeat + sku-strip repeat）→ 画布 Aura 5 SKU / Pulse 2 SKU
-
-B. 解除：removeUnifiedRepeatBinding
-   → sku-strip-1/2 无 repeat；物化块无子级「绑定列表」UI
-   → validateTemplate spotlight 错误数持续下降（目标：0 或仅可接受 warning）
-
-C. 物化态重绑：同浏览器路径 cell-1 + sku-strip-1
-   → 应用后树不得出现「单 SPU 下 5 份 sku-strip repeat」
-   → 与 A 的树结构等价（允许物化展示名，但 repeat 拓扑须一致）
+A. 干净模板：首次 parentAndChild + skus → 2 SPU × 各自 SKU 数与 payload 一致
+B. 解除：removeUnifiedRepeatBinding → 物化 sku-strip 无 repeat
+C. 物化态重绑：cell-1 + sku-strip-1 计划 → 拓扑同 A（单测已覆盖 C）
 ```
 
 ---
 
-## 7. 相关代码入口（便于落地）
+## 7. 相关代码入口
 
 | 模块 | 路径 |
 |------|------|
-| 解除物化 | `src/lib/repeatRegion.ts`（`removeRepeatRegionBinding` / `materializeRepeatExpandedSubtree`） |
-| 嵌套解除 | `src/lib/repeatNestedBinding.ts`（`removeUnifiedRepeatBinding`） |
-| 嵌套重绑 | `src/lib/repeatNestedBinding.ts`（`applyUnifiedRepeatBinding` 等，待补物化 id 归一化） |
-| Inspector 列表 Tab | `src/components/Inspector.tsx`（`repeatRegionPanel` / `removeRepeat`） |
+| 物化 id 解析 | `src/lib/repeatRegion.ts`（`isMaterializedRepeatRowBlockId`、`parseMaterializedRepeatRowBlockId`、`resolveMaterializedRowToPrototypeId`） |
+| **物化态重绑归一化 + fieldMappings 重写** | `src/lib/repeatMaterializedNormalize.ts`（`normalizeTemplateBeforeUnifiedRepeatBinding`、`remapRepeatFieldMappingTargets`） |
+| 顶栏校验展示 | `src/components/ValidationIssuesBanner.tsx` |
+| 向导 UI 辅助 | `src/lib/repeatNestedBindingUi.ts` |
+| Agent 技能索引 | `.cursor/skills/easy-email-repeat-binding/SKILL.md` |
+| 嵌套解除 / 重绑 | `src/lib/repeatNestedBinding.ts`（`removeUnifiedRepeatBinding`、`applyUnifiedRepeatBinding`） |
+| 解除物化 | `src/lib/repeatRegion.ts`（`removeRepeatRegionBinding`） |
+| Inspector 列表 Tab | `src/components/Inspector.tsx` |
 | 绑定向导弹窗 | `src/components/RepeatRegionBindModal.tsx` |
-| 已绑定摘要卡片 | `src/components/RepeatRegionInspectorSummary.tsx` |
-| 嵌套展开 Golden | `src/lib/repeatRegion.test.ts`、`src/lib/repeatNestedBinding.test.ts` |
-| 样式 | `src/app.css`（`.inspector-repeat-card*`、`.repeat-region-bind-modal*`） |
+| 已绑定摘要 | `src/components/RepeatRegionInspectorSummary.tsx` |
+| 测试 | `src/lib/repeatNestedBinding.test.ts`、`src/lib/repeatRegion.test.ts` |
+| 样式 | `src/app.css` |
 
 ---
 
-*文档由 Agent 在真实浏览器操作中归纳（含 2026-05-21 第二轮完整走查：解除 → 5 步向导重绑 → 树/画布/校验观测），并经产品反馈修订；落地前请与设计与契约校验一并评审。*
+## 8. 迭代任务清单（Cursor / 人工可勾选）
+
+> 状态与 §5 同步；完成一项即在表中改为 **已完成** 并跑 `npm run validate:all`。
+
+| ID | 优先级 | 任务 | 主要文件 | 验收标准 | 状态 |
+|----|--------|------|----------|----------|------|
+| T1 | P0 | 解除物化：`parentId` 按 children 回写；多 SPU 时 SKU 块 id 加 `cell-N-` 作用域避免覆盖 | `repeatRegion.ts` | 解除 `rfj-picked-spotlight` 后 **0** 条 `parentId`/环硬错误；单测 `removeUnifiedRepeatBinding 嵌套主推区物化后 parentId…` 通过 | **已完成** |
+| T2 | P0 | 物化静态行剥离嵌套 `skus.N.*` collection 绑定（保留 SPU 级 `0.xxx` 与预览值） | `repeatRegion.ts` | 解除后无 `sku-1-img`/`sku-1-title` valueType 硬错误；`row-1` 仍保留 `0.title` 绑定（`repeatRegion.test`） | **已完成** |
+| T3 | P0 | 子级绑定向导：过滤物化 SKU 第 2+ 项选项 | `repeatNestedBinding.ts` | `listChildRepeatPrototypeOptions` 不含 `sku-1-2`… 作行模板；重绑仍走 `resolveChildRepeatBindTargets` | **已完成** |
+| T4 | P1 | 父级映射树隐藏 SKU 子树；子级映射下拉仅 `skus.*` | `filterParentRepeatMappingTargets` + `RepeatRegionBindModal` | 父级步骤不见 `skus` 下钻 | **已完成** |
+| T5 | P1 | 物化态展示原型 id 副文案；默认列表变量 | `repeatPrototypePickerCanonicalHint`、`pickRepeatCollectionCandidateForHost` | 打开向导默认 `pickedSpotlightProduct` | **已完成** |
+| T6 | P1 | 区块树：避免双重「第 N 项」 | `repeatRegionTreeTags.ts` 等 | 展开后树节点无重复「第 1 项」 | 待办 |
+| T7 | P1 | 顶栏校验条：折叠 + 物化中间态 `warning` | `ValidationIssuesBanner.tsx` | 长列表可展开；物化中间态可汇总 | **已完成** |
+| T8 | P2 | 「解除列表绑定」文案统一；应用 toast | `Inspector.tsx`、`RepeatRegionBindModal.tsx` | 含子级 skus 说明；应用成功 toast | **已完成** |
+| T9 | P2 | 向导步骤说明、ellipsis、物化树默认折叠 SKU | `RepeatRegionBindModal.tsx`、`app.css` | 子级映射旁注；标识列 ellipsis；物化树默认折叠 | **已完成** |
+| T10 | P0 | 物化重绑同步 `fieldMappings.targetBlockId` | `remapRepeatFieldMappingTargets` | 重绑后无「映射目标区块 *-1 不存在」 | **已完成** |
+
+**建议实施顺序**：T1–T5、T7–T10（已完成）→ T6（树标签文案，可选）。
+
+**技能真源**：`.cursor/skills/easy-email-repeat-binding/SKILL.md`（与 §7 代码表同步维护，勿在技能内重复字段键表）。
+
+**回归命令**：
+
+```bash
+npm run test:unit -- src/lib/repeatNestedBinding.test.ts src/lib/repeatRegion.test.ts
+npm run validate:all
+```
+
+浏览器（改 UI 后）：`referral-friend-joined` → `rfj-picked-spotlight` 解除 → 重绑 `pickedSpotlightProduct`（技能 `easy-email-frontend-chrome-verify`）。
+
+---
+
+*文档含 2026-05-21 浏览器走查、归一化/物化/绑定向导 UI 实现说明；§8 任务表与 §0 速览、技能 `easy-email-repeat-binding` 同步维护（2026-05-21 第二轮 UI+F1）。*

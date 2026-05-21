@@ -12,7 +12,6 @@ export type ResolvedLayoutContext = {
   mode: EmailStorageMode;
   layoutVariantId: string | null;
   templatePath: string;
-  configSchemaPath: string;
   tokenPresetsPath: string;
 };
 
@@ -92,7 +91,6 @@ export function resolveEmailFilePaths(
       mode: "legacy",
       layoutVariantId: null,
       templatePath: path.join(emailBaseDir, "template.json"),
-      configSchemaPath: path.join(emailBaseDir, "configSchema.json"),
       tokenPresetsPath: path.join(emailBaseDir, "tokenPresets.json"),
     };
   }
@@ -101,7 +99,6 @@ export function resolveEmailFilePaths(
     mode: "layout-variants",
     layoutVariantId,
     templatePath: path.join(variantBase, "template.json"),
-    configSchemaPath: path.join(variantBase, "configSchema.json"),
     tokenPresetsPath: path.join(variantBase, "tokenPresets.json"),
   };
 }

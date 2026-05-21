@@ -13,7 +13,14 @@ import {
 } from "../payload-contract/collection-item-fields";
 import { collectionBindingUsesItemIndex } from "../payload-contract/repeat-list-item-binding";
 import { normalizeTemplateBeforeUnifiedRepeatBinding } from "./repeatMaterializedNormalize";
-import { applyRepeatRegionBinding, isRepeatHostBlock, removeRepeatRegionBinding } from "./repeatRegion";
+import {
+  applyRepeatRegionBinding,
+  buildRepeatPrototypeIdSet,
+  isMaterializedRepeatRowBlockId,
+  isRepeatHostBlock,
+  parseMaterializedRepeatRowBlockId,
+  removeRepeatRegionBinding,
+} from "./repeatRegion";
 import { sanitizeListRepeatUserLabel } from "./repeatNestedBindingUi";
 
 /** 列表重复循环范围（通用父级/子级文案） */
@@ -216,6 +223,27 @@ export function listNestedCollectionFields(
   }));
 }
 
+/** 子级绑定向导：禁止选物化 SKU 副本行或非 layout/grid 宿主（应用层与 resolveChildRepeatBindTargets 对齐） */
+export function isDisallowedChildRepeatPrototypeOption(
+  template: EmailTemplate,
+  hostId: string,
+  prototypeChildIds: readonly string[]
+): boolean {
+  const host = template.blocks[hostId];
+  if (!host || !isRepeatHostBlock(host)) return true;
+
+  const prototypeSet = buildRepeatPrototypeIdSet(template);
+  for (const protoId of prototypeChildIds) {
+    const proto = template.blocks[protoId];
+    if (!proto) return true;
+    if (isRepeatHostBlock(proto)) continue;
+    if (!isMaterializedRepeatRowBlockId(protoId, template)) continue;
+    const parsed = parseMaterializedRepeatRowBlockId(protoId, prototypeSet, template);
+    if (parsed && parsed.itemIndex > 0) return true;
+  }
+  return false;
+}
+
 /**
  * 父级行模板子树内的子级行模板选项（与 Inspector 父级行模板逻辑对齐：
  * 选单块 → 仅复制该块；选 layout/grid → 复制该容器及其子级）。
@@ -229,6 +257,9 @@ export function listChildRepeatPrototypeOptions(
   const seen = new Set<string>();
 
   const push = (entry: Omit<ChildRepeatPrototypeOption, "key">) => {
+    if (isDisallowedChildRepeatPrototypeOption(template, entry.hostId, entry.prototypeChildIds)) {
+      return;
+    }
     const key = childRepeatPrototypeOptionKey(entry.hostId, entry.prototypeChildIds);
     if (seen.has(key)) return;
     seen.add(key);
@@ -428,14 +459,53 @@ export function flattenParentRepeatPrototypePickerRows(
 }
 
 export function defaultExpandedRepeatPrototypePickerBranches(
-  rows: ReadonlyArray<ChildRepeatPrototypePickerRow>
+  rows: ReadonlyArray<ChildRepeatPrototypePickerRow>,
+  template?: EmailTemplate
 ): Set<string> {
+  const materialized =
+    template &&
+    rows.some(
+      (row) =>
+        row.kind !== "context" && isMaterializedRepeatRowBlockId(row.blockId, template)
+    );
+
   const keys = new Set<string>();
+  if (!materialized) {
+    for (const row of rows) {
+      if (row.kind === "block" && row.expandable) keys.add(row.branchKey);
+      if (row.kind === "choice" && row.branchKey) keys.add(row.branchKey);
+    }
+    return keys;
+  }
+
+  const prototypeSet = buildRepeatPrototypeIdSet(template);
   for (const row of rows) {
-    if (row.kind === "block" && row.expandable) keys.add(row.branchKey);
-    if (row.kind === "choice" && row.branchKey) keys.add(row.branchKey);
+    if (row.kind === "choice" && row.branchKey) {
+      const parsed = parseMaterializedRepeatRowBlockId(row.blockId, prototypeSet, template);
+      if (!parsed || parsed.itemIndex === 0) keys.add(row.branchKey);
+      continue;
+    }
+    if (row.kind === "block" && row.expandable) {
+      const parsed = parseMaterializedRepeatRowBlockId(row.blockId, prototypeSet, template);
+      if (!parsed && row.depth <= 2) keys.add(row.branchKey);
+      else if (parsed && parsed.itemIndex === 0 && row.depth <= 2) keys.add(row.branchKey);
+    }
   }
   return keys;
+}
+
+/** 子级行模板默认选项：优先 SKU 规格列表宿主（sku-strip），避免误选价格行 */
+export function preferredChildRepeatPrototypeOptionKey(
+  template: EmailTemplate,
+  options: ReadonlyArray<ChildRepeatPrototypeOption>
+): string | undefined {
+  const skuStrip = options.find((opt) => {
+    const anchor = opt.prototypeChildIds[opt.prototypeChildIds.length - 1] ?? "";
+    if (/sku-strip/i.test(anchor)) return true;
+    const name = template.blockMeta?.[anchor]?.name ?? "";
+    return /SKU/i.test(name) && /列表|规格/.test(name);
+  });
+  return skuStrip?.key;
 }
 
 /** @deprecated 使用 defaultExpandedRepeatPrototypePickerBranches */

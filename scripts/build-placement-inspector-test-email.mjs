@@ -299,25 +299,6 @@ const layoutManifest = {
   ],
 };
 
-const configSchema = {
-  schemaVersion: "1.0.0",
-  scopes: [
-    {
-      scopeId: "template",
-      kind: "template",
-      label: "整封邮件",
-      fields: [
-        {
-          key: "templateWidth",
-          label: "邮件宽度",
-          control: "text",
-          target: { kind: "templatePath", path: "blocks.pt-root.props.width" },
-        },
-      ],
-    },
-  ],
-};
-
 const tokenPresets = {
   schemaVersion: "1.0.0",
   activePresetId: "default",
@@ -356,7 +337,6 @@ writeJson(path.join(OUT, "meta.json"), meta);
 writeJson(path.join(OUT, "payload.json"), payload);
 writeJson(path.join(OUT, "layout-manifest.json"), layoutManifest);
 writeJson(path.join(LAYOUT, "template.json"), template);
-writeJson(path.join(LAYOUT, "configSchema.json"), configSchema);
 writeJson(path.join(LAYOUT, "tokenPresets.json"), tokenPresets);
 
 console.log(`已写入 data/emails/${EMAIL_KEY}/`);

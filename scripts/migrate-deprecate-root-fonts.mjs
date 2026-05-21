@@ -4,7 +4,6 @@
  * - emailRoot 移除 fontFamily / headingFontFamily / bodyFontFamily 及对应 bindings
  * - text 移除 fontMode；缺 fontFamily 时补 fonts.body
  * - button 补 buttonStyle.fontFamily → fonts.body
- * - configSchema 剔除指向已删根字体路径的 fields
  *
  * 用法：node scripts/migrate-deprecate-root-fonts.mjs --write
  */
@@ -35,17 +34,6 @@ function walkJsonFiles(dir) {
     else if (name.endsWith(".json") && !name.startsWith("_")) out.push(p);
   }
   return out;
-}
-
-function pruneConfigSchema(configSchema) {
-  if (!configSchema?.scopes) return;
-  for (const scope of configSchema.scopes) {
-    if (!Array.isArray(scope.fields)) continue;
-    scope.fields = scope.fields.filter((f) => {
-      const path = f?.target?.path;
-      return !(typeof path === "string" && ROOT_FONT_KEYS.some((k) => path.endsWith(k)));
-    });
-  }
 }
 
 function migrateDocument(data) {
@@ -109,12 +97,6 @@ function migrateDocument(data) {
         changed = true;
       }
     }
-  }
-
-  if (data.configSchema) {
-    const before = JSON.stringify(data.configSchema);
-    pruneConfigSchema(data.configSchema);
-    if (JSON.stringify(data.configSchema) !== before) changed = true;
   }
 
   return changed;

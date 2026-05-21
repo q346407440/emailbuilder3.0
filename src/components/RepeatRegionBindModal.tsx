@@ -35,6 +35,7 @@ import {
 import {
   parentScalarItemFieldsFromItemFields,
   repeatPrototypeOptionsToPickerOptions,
+  repeatPrototypePickerCanonicalHint,
   type RepeatPrototypePickerOption,
 } from "../lib/repeatNestedBindingUi";
 import { Field } from "./ui/Field";
@@ -95,7 +96,9 @@ function WizardStepNav({
               }${done ? " repeat-region-bind-modal__wizard-step--done" : ""}`}
               aria-current={active ? "step" : undefined}
             >
-              <span className="repeat-region-bind-modal__wizard-step-index">{index + 1}</span>
+              <span className="repeat-region-bind-modal__wizard-step-index">
+                {done ? "✓" : index + 1}
+              </span>
               <span className="repeat-region-bind-modal__wizard-step-title">{step.title}</span>
             </li>
           );
@@ -491,9 +494,24 @@ export function RepeatRegionBindModal({
           </div>
         </Field>
       ) : loopScope === "parentAndChild" ? (
-        <p className="repeat-region-bind-modal__section-hint inspector__muted">
-          循环上下文：当前父级项（继承父级列表循环）
-        </p>
+        <>
+          <p className="repeat-region-bind-modal__section-hint inspector__muted">
+            循环上下文：当前父级项（继承父级列表循环）
+          </p>
+          {selectedChildNested ? (
+            <p className="repeat-region-bind-modal__child-bind-summary" role="status">
+              子级循环宿主：
+              {childPrototypeOptions.find((o) => o.key === childPrototypeOptionKey)?.label ??
+                "（请选择行模板）"}
+              · 行模板：
+              {childPrototypeOptions.find((o) => o.key === childPrototypeOptionKey)
+                ?.prototypeChildIds
+                .map((cid) => template.blockMeta?.[cid]?.name?.trim() || cid)
+                .join("、") || "—"}
+              · 变量路径：{childItemPath || "—"}
+            </p>
+          ) : null}
+        </>
       ) : null}
       {onChildPrototypeOptionKeyChange && childPrototypeOptions.length > 0 ? (
         <Field label="子级行模板" className="inspector-field--modal-table">
@@ -542,7 +560,13 @@ export function RepeatRegionBindModal({
 
   const childMappingStep =
     showChildMapping && repeatCandidate && onChildMappingDraftChange ? (
-      <FieldMappingSplitPanel
+      <>
+        {loopScope === "parentAndChild" ? (
+          <p className="repeat-region-bind-modal__section-hint inspector__muted">
+            已选「父级与子级都循环」时，请完成子级字段映射；SKU 等子列表字段仅在此步骤配置。
+          </p>
+        ) : null}
+        <FieldMappingSplitPanel
         visible={visible}
         template={template}
         payload={payload}
@@ -553,7 +577,8 @@ export function RepeatRegionBindModal({
         mappingDraft={childMappingDraft}
         onMappingDraftChange={onChildMappingDraftChange}
         mappingAriaLabel="子级列表项字段映射"
-      />
+        />
+      </>
     ) : (
       <p className="repeat-region-bind-modal__empty-hint">
         子级行模板内没有可映射的业务字段，将沿用模板已有变量绑定。
@@ -637,8 +662,12 @@ export function RepeatRegionBindModal({
         <div className="repeat-region-bind-modal__footer">
           <div className="repeat-region-bind-modal__footer-start">
             {hasCurrentRepeat && onRemove ? (
-              <ShopSecondaryButton htmlType="button" onClick={onRemove}>
-                解除绑定
+              <ShopSecondaryButton
+                htmlType="button"
+                onClick={onRemove}
+                title="将物化为静态预览行，并清除父级与子级列表循环"
+              >
+                解除列表绑定（含子级 skus）
               </ShopSecondaryButton>
             ) : null}
           </div>
@@ -1236,12 +1265,12 @@ function RepeatPrototypePickerTable({
     [template, contextRootIds, contextLabelSuffix, options]
   );
   const [expandedBranches, setExpandedBranches] = useState<Set<string>>(() =>
-    defaultExpandedRepeatPrototypePickerBranches(allRows)
+    defaultExpandedRepeatPrototypePickerBranches(allRows, template)
   );
 
   useEffect(() => {
-    setExpandedBranches(defaultExpandedRepeatPrototypePickerBranches(allRows));
-  }, [allRows]);
+    setExpandedBranches(defaultExpandedRepeatPrototypePickerBranches(allRows, template));
+  }, [allRows, template]);
 
   useEffect(() => {
     const selected = options.find((opt) => opt.key === selectedOptionKey);
@@ -1318,9 +1347,18 @@ function RepeatPrototypePickerTable({
               <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
             )}
           </td>
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">{row.label}</td>
+          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
+            {row.label}
+            {repeatPrototypePickerCanonicalHint(template, row.blockId) ? (
+              <span className="repeat-region-bind-modal__prototype-hint inspector__muted">
+                {repeatPrototypePickerCanonicalHint(template, row.blockId)}
+              </span>
+            ) : null}
+          </td>
           <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-            <code>{row.blockId}</code>
+            <code className="repeat-region-bind-modal__block-id-ellipsis" title={row.blockId}>
+              {row.blockId}
+            </code>
           </td>
           <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">{row.typeLabel}</td>
           <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value inspector__muted">
@@ -1393,9 +1431,18 @@ function RepeatPrototypePickerTable({
             aria-label={`选择 ${row.label}，${row.modeLabel}`}
           />
         </td>
-        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">{row.label}</td>
+        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
+          {row.label}
+          {repeatPrototypePickerCanonicalHint(template, row.blockId) ? (
+            <span className="repeat-region-bind-modal__prototype-hint inspector__muted">
+              {repeatPrototypePickerCanonicalHint(template, row.blockId)}
+            </span>
+          ) : null}
+        </td>
         <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-          <code>{row.blockId}</code>
+          <code className="repeat-region-bind-modal__block-id-ellipsis" title={row.blockId}>
+            {row.blockId}
+          </code>
         </td>
         <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">{row.typeLabel}</td>
         <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value" title={hint}>

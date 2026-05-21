@@ -4,7 +4,7 @@
  *  1. 跑 lib 层单测（含 validate / textBody 等）
  *  2. 对 data/emails/<id>/ legacy 或 layouts/<variant>/ template 跑 validateTemplate
  *  3. 对同目录 payload.json 跑 validatePayloadAgainstTemplate（版式场景对每个版式 template 校验）
- *  4. 校验 configSchema.json / tokenPresets.json
+ *  4. 校验 tokenPresets.json
  *  5. 校验 data/token-presets/*.json（公共样式预设）
  *  6. 跑 template-yaml:golden（防止 YAML 夹具展开输出与 expected 漂移）
  *
@@ -28,7 +28,6 @@ import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateTemplate, validatePayloadAgainstTemplate } from "../src/lib/validate.ts";
-import { validateConfigSchema } from "../src/lib/validateConfigSchema.ts";
 import { validateTokenPresets } from "../src/token-preset-contract/validate.ts";
 import {
   allLayoutTemplatePaths,
@@ -95,14 +94,10 @@ function runStep(label, args) {
   }
 }
 
-function validateTemplateBundle(tplPath, configPath, tokenPath, label) {
+function validateTemplateBundle(tplPath, tokenPath, label) {
   const issues = [];
   const tpl = JSON.parse(readFileSync(tplPath, "utf8"));
   issues.push(...validateTemplate(tpl));
-  if (statSync(configPath, { throwIfNoEntry: false })?.isFile()) {
-    const configSchema = JSON.parse(readFileSync(configPath, "utf8"));
-    issues.push(...validateConfigSchema(configSchema, tpl));
-  }
   if (statSync(tokenPath, { throwIfNoEntry: false })?.isFile()) {
     const tokenPresets = JSON.parse(readFileSync(tokenPath, "utf8"));
     issues.push(...validateTokenPresets(tokenPresets));
@@ -182,14 +177,8 @@ function validateAllTemplates(emailKey) {
 
       const templates = [];
       for (const { layoutVariantId, templatePath } of allLayoutTemplatePaths(dir, manifest)) {
-        const configPath = join(dir, "layouts", layoutVariantId, "configSchema.json");
         const tokenPath = join(dir, "layouts", layoutVariantId, "tokenPresets.json");
-        const bundle = validateTemplateBundle(
-          templatePath,
-          configPath,
-          tokenPath,
-          templatePath
-        );
+        const bundle = validateTemplateBundle(templatePath, tokenPath, templatePath);
         if (!bundle.ok) {
           failed += 1;
           continue;
@@ -209,7 +198,6 @@ function validateAllTemplates(emailKey) {
     try {
       const bundle = validateTemplateBundle(
         tplPath,
-        join(dir, "configSchema.json"),
         join(dir, "tokenPresets.json"),
         tplPath
       );

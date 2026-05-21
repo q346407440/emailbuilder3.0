@@ -39,32 +39,6 @@ function stripDocument(doc) {
     }
   }
 
-  if (Array.isArray(doc.scopes)) {
-    for (const scope of doc.scopes) {
-      if (!scope?.fields) continue;
-      const before = scope.fields.length;
-      scope.fields = scope.fields.filter(
-        (f) =>
-          f?.target?.path !== "wrapperStyle.backgroundImage.fallbackColor" &&
-          !String(f?.key ?? "").includes("fallbackColor")
-      );
-      if (scope.fields.length !== before) changed += before - scope.fields.length;
-    }
-  }
-
-  if (doc.configSchema?.scopes) {
-    for (const scope of doc.configSchema.scopes) {
-      if (!scope?.fields) continue;
-      const before = scope.fields.length;
-      scope.fields = scope.fields.filter(
-        (f) =>
-          f?.target?.path !== "wrapperStyle.backgroundImage.fallbackColor" &&
-          !String(f?.key ?? "").includes("fallbackColor")
-      );
-      if (scope.fields.length !== before) changed += before - scope.fields.length;
-    }
-  }
-
   return changed;
 }
 

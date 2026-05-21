@@ -1,5 +1,4 @@
 import type { EmailListItem, EmailMeta, EmailPayload, EmailTemplate } from "../types/email";
-import type { ConfigSchema } from "../types/configSchema";
 import type { TokenPresets } from "../types/tokenPreset";
 import type { ProjectIconManifest } from "../types/iconAsset";
 import type { LayoutManifest } from "../layout-variant-contract/types";
@@ -197,18 +196,6 @@ export async function listPayloadPresets(emailKey: string): Promise<string[]> {
   return body.presets ?? ["default"];
 }
 
-export async function getConfigSchema(
-  emailKey: string,
-  layoutVariantId?: string | null
-): Promise<ConfigSchema | null> {
-  const r = await fetch(
-    `${base}/emails/${encodeURIComponent(emailKey)}/config-schema${layoutQuery(layoutVariantId)}`
-  );
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
-  return r.json() as Promise<ConfigSchema>;
-}
-
 export async function getTokenPresets(
   emailKey: string,
   layoutVariantId?: string | null
@@ -293,24 +280,6 @@ export async function putTemplate(
 
 export async function putPayload(emailKey: string, body: EmailPayload): Promise<void> {
   const r = await fetch(`${base}/emails/${encodeURIComponent(emailKey)}/payload`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error(await errorMessageFromResponse(r, t));
-  }
-}
-
-export async function putConfigSchema(
-  emailKey: string,
-  body: ConfigSchema,
-  layoutVariantId?: string | null
-): Promise<void> {
-  const r = await fetch(
-    `${base}/emails/${encodeURIComponent(emailKey)}/config-schema${layoutQuery(layoutVariantId)}`,
-    {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

@@ -14,15 +14,14 @@ description: >-
 
 ---
 
-## 大白话：五件事别搞混
+## 大白话：四件事别搞混
 
 1. **`template.json`**：邮件**长什么样**的真源——区块谁套谁、间距、图、字、按钮，以及哪些样式走了 **`$themeRef`**。  
 2. **`tokenPresets.json`**：这封邮件自己的**「字号/颜色/间距档位」出生档**——还原时一般要**新建一份**，别指望全靠默认值凑。  
-3. **`configSchema.json`**：以后编辑器里**给用户暴露哪些旋钮**；还原交付通常要有一份，和 template 对得上。  
-4. **`payload.json`**：文案、链接、图地址等**变量真实值**；有列表（商品、导航等）就按契约填。  
-5. **`meta.json`**：标题等元信息，**可选**，有就一并补齐。
+3. **`payload.json`**：文案、链接、图地址等**变量真实值**；有列表（商品、导航等）就按契约填。  
+4. **`meta.json`**：标题等元信息，**可选**，有就一并补齐。
 
-**一句话**：先定「这封邮件的样式档位」（tokenPresets），再在 template 里把该绑的都绑上，最后把配置面、变量、校验、浏览器粗看一眼跑通。
+**一句话**：先定「这封邮件的样式档位」（tokenPresets），再在 template 里把该绑的都绑上，最后把变量、校验、浏览器粗看一眼跑通。可编辑项由 **底层 Block Inspector**、**变量赋值**、**样式预设** 承担（**不再**维护 `configSchema.json`）。
 
 ---
 
@@ -30,7 +29,7 @@ description: >-
 
 ### 第一步：开目录、认设计图
 
-- 在 **`data/emails/<emailKey>/`** 下准备五件套目录（见 **`easy-email-storage-api`**）。  
+- 在 **`data/emails/<emailKey>/`** 下准备目录（见 **`easy-email-storage-api`**：`layouts/<id>/` 含 template + tokenPresets，场景根 payload）。  
 - 把设计图里**从上到下几大块**在心里命名成「模块」：头图区、标题区、商品卡、页脚……后面搭 **`template.json`** 就按块拆，别一上来抠像素。
 
 ### 第二步：先读「会翻车的点」
@@ -50,9 +49,9 @@ description: >-
 - 需要跟档位走的样式，用 **`$themeRef` + bindings.tokenPath`** 绑到上一步 preset 里**已经声明**的键；别绑契约不允许 theme 的字段。  
 - 有 grid 列表、按钮、图标等，对照 **`src/block-contract/`** 与样例邮件（如 **`on-cart-abandon-2`**）写法。
 
-### 第五步：configSchema + payload + meta
+### 第五步：payload + meta
 
-- 按 **`email-config-motherboard`**：从 template 里抽出**真的要给人改**的项写进 configSchema；payload 与 bindings 对齐（契约见 **`easy-email-payload-contract`**）。
+- 按 **`easy-email-payload-contract`**：payload 与 template bindings / repeat 对齐；业务文案与链接写入 **`payload.slots` + `values`**。
 
 ### 第六步：终端校验
 
@@ -66,7 +65,7 @@ description: >-
 
 ## 交付最低标准（自检打勾）
 
-- [ ] **`data/emails/<emailKey>/`** 下 **`template.json`**、**`tokenPresets.json`**、**`configSchema.json`**、**`payload.json`** 齐全且能过校验；**`meta.json`** 按项目约定。  
+- [ ] **`data/emails/<emailKey>/`** 下 **`template.json`**、**`tokenPresets.json`**、**`payload.json`** 齐全且能过校验；**`meta.json`** 按项目约定。  
 - [ ] **`tokenPresets`** 里为这封邮件准备的内容**覆盖** template 里会用到的 **`$themeRef`**，没有「绑了却未声明」的键。  
 - [ ] **`npm run validate:all`** 通过。  
 - [ ] 涉及预览效果的改动已按 **`easy-email-frontend-chrome-verify`** 粗看过页面。
@@ -91,7 +90,7 @@ description: >-
 
 1. **`tokenPresets.json`**：`activePresetId` + 至少一份预设，**`tokens` 显式覆盖将用到的标准键**（勿依赖缺键隐式兜底）。样例：**`data/emails/on-cart-abandon-2`**。  
 2. **`template.json`**：模块壳的 padding / gap / 字号色圆角等 **style 路径** 用 **`$themeRef`** + **`bindings.tokenPath`** 对齐上一步键。  
-3. 其余层：**`email-config-motherboard`**（configSchema / payload / meta）。
+3. 其余层：**`payload.json`**、**`meta.json`**（见 **`email-config-motherboard`**）。
 
 ### 画布根外侧灰（勿动）
 

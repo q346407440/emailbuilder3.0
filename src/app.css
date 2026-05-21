@@ -73,6 +73,77 @@ body {
   border-color: #f5e0b8;
 }
 
+.validation-issues-banner {
+  max-height: none;
+}
+
+.validation-issues-banner__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.validation-issues-banner__title {
+  font-weight: 600;
+}
+
+.validation-issues-banner__toggle {
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.validation-issues-banner__list {
+  margin: 0;
+  padding-left: 1.1em;
+  list-style: disc;
+}
+
+.validation-issues-banner__item {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.45;
+}
+
+.validation-issues-banner__item--more {
+  list-style: none;
+  margin-left: -1.1em;
+  opacity: 0.85;
+}
+
+.validation-issues-banner__materialized-details {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.validation-issues-banner__materialized-details summary {
+  cursor: pointer;
+}
+
+.block-tree__row--materialized {
+  background: #f4f4f5;
+}
+
+.block-tree__materialized-tag {
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 1.4;
+  border: 1px solid #d4d4d8;
+  background: #fafafa;
+  color: #52525b;
+}
+
 .topbar {
   display: flex;
   align-items: center;
@@ -3369,6 +3440,42 @@ body {
 .repeat-region-bind-modal-wrap--wizard .sds-modal-body,
 .repeat-region-bind-modal-wrap--wizard .shop-section-modal__body {
   max-height: min(88vh, 920px);
+}
+
+.repeat-region-bind-modal-wrap--wizard .sds-modal,
+.repeat-region-bind-modal-wrap--wizard .shop-section-modal {
+  min-width: min(96vw, 720px);
+}
+
+.repeat-region-bind-modal__prototype-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.repeat-region-bind-modal__block-id-ellipsis {
+  display: inline-block;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.repeat-region-bind-modal__child-bind-summary {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f5f3ff;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #4338ca;
+}
+
+.repeat-region-bind-modal__wizard-step--done .repeat-region-bind-modal__wizard-step-index {
+  color: #059669;
+  font-weight: 600;
 }
 
 .repeat-region-bind-modal--wizard {

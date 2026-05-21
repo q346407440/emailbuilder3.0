@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { EmailTemplate } from "../types/email";
 import { blockTypeLabel } from "../lib/blockTypeLabel";
-import { sourceBlockIdFromRepeatClone } from "../lib/repeatRegion";
+import { isMaterializedRepeatRowBlockId, sourceBlockIdFromRepeatClone } from "../lib/repeatRegion";
 import {
   buildRepeatRegionTreeTagIndex,
   repeatTreeTagForBlock,
@@ -52,6 +52,7 @@ function Row({
   onToggle,
   repeatTag,
   repeatGroupStripe,
+  materializedStatic,
   template,
 }: {
   blockTreeRowId: string;
@@ -64,6 +65,7 @@ function Row({
   onToggle: () => void;
   repeatTag: RepeatTreeBlockTag | null;
   repeatGroupStripe: RepeatTreeBlockTag | null;
+  materializedStatic: boolean;
   template: EmailTemplate;
 }) {
   const stripePalette = repeatGroupStripe ? repeatTreeTagPalette(repeatGroupStripe.colorIndex) : null;
@@ -72,7 +74,7 @@ function Row({
     <div
       className={`block-tree__row ${selected ? "block-tree__row--selected" : ""} ${
         repeatGroupStripe ? "block-tree__row--repeat-group" : ""
-      }`}
+      }${materializedStatic ? " block-tree__row--materialized" : ""}`}
       data-block-tree-row={blockTreeRowId}
       style={{
         paddingLeft: 8 + depth * 14,
@@ -96,6 +98,11 @@ function Row({
         <span className="block-tree__label-inner">
           <span className="block-tree__label-text">{label}</span>
           {repeatTag ? <RepeatTreeTag template={template} tag={repeatTag} /> : null}
+          {materializedStatic ? (
+            <span className="block-tree__materialized-tag" title="解除绑定后的物化静态行，重绑列表后将恢复为循环">
+              静态
+            </span>
+          ) : null}
         </span>
       </ShopSecondaryButton>
     </div>
@@ -185,6 +192,7 @@ export function BlockTree({
         : groupTag && groupTag.role !== "host"
           ? groupTag
           : null;
+    const materializedStatic = !repeatTag && isMaterializedRepeatRowBlockId(id, template);
 
     return (
       <div key={id}>
@@ -199,6 +207,7 @@ export function BlockTree({
           onToggle={() => toggle(id)}
           repeatTag={repeatTag}
           repeatGroupStripe={repeatGroupStripe}
+          materializedStatic={materializedStatic}
           template={template}
         />
         {hasKids && isOpen(id) ? b.children.map((cid) => renderNode(cid, depth + 1)) : null}

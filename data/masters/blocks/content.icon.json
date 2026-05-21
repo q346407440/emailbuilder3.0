@@ -94,49 +94,5 @@
       "blockType": "content.icon",
       "name": "图标"
     }
-  },
-  "configSchema": {
-    "schemaVersion": "1.0.0",
-    "scopes": [
-      {
-        "scopeId": "template",
-        "kind": "template",
-        "label": "整封邮件",
-        "fields": [
-          {
-            "key": "templateWidth",
-            "label": "邮件宽度",
-            "control": "text",
-            "target": {
-              "kind": "templatePath",
-              "path": "blocks.__catalog_root__.props.width"
-            }
-          }
-        ]
-      },
-      {
-        "scopeId": "block:__sample_icon__",
-        "kind": "block",
-        "label": "图标",
-        "blockIds": [
-          "__sample_icon__"
-        ],
-        "fields": [
-          {
-            "key": "props_color_token",
-            "label": "props.color 样式档位",
-            "control": "tokenScale",
-            "tokenFamily": "colors",
-            "defaultScale": "primary",
-            "allowCustom": true,
-            "target": {
-              "kind": "blockPath",
-              "blockId": "__sample_icon__",
-              "path": "props.color"
-            }
-          }
-        ]
-      }
-    ]
   }
 }

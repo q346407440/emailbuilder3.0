@@ -1,4 +1,4 @@
-import type { EmailTemplate } from "../types/email";
+import type { EmailTemplate, RepeatFieldMapping } from "../types/email";
 import type { UnifiedRepeatBindPlan } from "./repeatNestedBinding";
 import {
   buildRepeatPrototypeIdSet,
@@ -7,6 +7,49 @@ import {
   parseMaterializedRepeatRowBlockId,
   resolveMaterializedRowToPrototypeId,
 } from "./repeatRegion";
+
+/** 折叠后映射目标：物化 id（如 main-img-1）对齐到已存在的原型块（main-img） */
+function remapFieldMappingTargetBlockId(
+  targetBlockId: string,
+  template: EmailTemplate,
+  prototypeSet: Set<string>
+): string {
+  if (template.blocks[targetBlockId]) return targetBlockId;
+
+  const resolved = resolveMaterializedRowToPrototypeId(targetBlockId, prototypeSet, template);
+  if (template.blocks[resolved]) return resolved;
+
+  const suffixMatch = targetBlockId.match(/^(.+)-(\d+)$/);
+  const prototypeCandidate = suffixMatch?.[1];
+  if (prototypeCandidate && template.blocks[prototypeCandidate]) {
+    return prototypeCandidate;
+  }
+
+  return resolved;
+}
+
+/** 物化态重绑：将 fieldMappings 的 targetBlockId 与行模板归一化后的原型 id 对齐 */
+export function remapRepeatFieldMappingTargets(
+  mappings: RepeatFieldMapping[] | undefined,
+  template: EmailTemplate,
+  prototypeSet?: Set<string>
+): RepeatFieldMapping[] {
+  if (!mappings?.length) return [];
+  const set = prototypeSet ?? buildRepeatPrototypeIdSet(template);
+  return mappings.map((mapping) => {
+    const targetBlockId = remapFieldMappingTargetBlockId(
+      mapping.targetBlockId,
+      template,
+      set
+    );
+    if (targetBlockId === mapping.targetBlockId) return mapping;
+    return {
+      ...mapping,
+      targetBlockId,
+      id: `${targetBlockId}.${mapping.targetBindPath}:${mapping.sourcePath}`,
+    };
+  });
+}
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -271,7 +314,21 @@ export function normalizeTemplateBeforeUnifiedRepeatBinding(
   };
 
   if (!parentHostHasMaterializedChildren(next, normalizedPlan.parentHostId)) {
-    return { template: next, plan: normalizedPlan };
+    const set = buildRepeatPrototypeIdSet(next);
+    return {
+      template: next,
+      plan: {
+        ...normalizedPlan,
+        parentFieldMappings: remapRepeatFieldMappingTargets(
+          normalizedPlan.parentFieldMappings,
+          next,
+          set
+        ),
+        childFieldMappings: normalizedPlan.childFieldMappings
+          ? remapRepeatFieldMappingTargets(normalizedPlan.childFieldMappings, next, set)
+          : normalizedPlan.childFieldMappings,
+      },
+    };
   }
 
   const prototypeRootId = normalizedPlan.parentPrototypeChildIds[0];
@@ -303,6 +360,14 @@ export function normalizeTemplateBeforeUnifiedRepeatBinding(
       resolveMaterializedRowToPrototypeId(id, refreshedSet, next)
     ),
     ...resolveChildRepeatBindTargets(next, normalizedPlan, refreshedSet),
+    parentFieldMappings: remapRepeatFieldMappingTargets(
+      normalizedPlan.parentFieldMappings,
+      next,
+      refreshedSet
+    ),
+    childFieldMappings: normalizedPlan.childFieldMappings
+      ? remapRepeatFieldMappingTargets(normalizedPlan.childFieldMappings, next, refreshedSet)
+      : normalizedPlan.childFieldMappings,
   };
 
   return { template: next, plan: normalizedPlan };
