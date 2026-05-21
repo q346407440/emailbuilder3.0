@@ -1,0 +1,142 @@
+{
+  "masterId": "content.icon",
+  "name": "图标",
+  "version": "1.0.0",
+  "description": "小尺寸图标，src 与跳转链接为内容字段。",
+  "runtimeType": "icon",
+  "blockType": "content.icon",
+  "sampleBlockId": "__sample_icon__",
+  "catalogRootBlockId": "__catalog_root__",
+  "blocks": {
+    "__catalog_root__": {
+      "id": "__catalog_root__",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "__sample_icon__"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#FFFFFF",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "__sample_icon__": {
+      "id": "__sample_icon__",
+      "type": "icon",
+      "parentId": "__catalog_root__",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.21.0/icons/outline/photo.svg",
+        "link": "",
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "size": "20px"
+      },
+      "bindings": {
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    }
+  },
+  "blockMeta": {
+    "__catalog_root__": {
+      "blockType": "layout.container",
+      "name": "预览根"
+    },
+    "__sample_icon__": {
+      "blockType": "content.icon",
+      "name": "图标"
+    }
+  },
+  "configSchema": {
+    "schemaVersion": "1.0.0",
+    "scopes": [
+      {
+        "scopeId": "template",
+        "kind": "template",
+        "label": "整封邮件",
+        "fields": [
+          {
+            "key": "templateWidth",
+            "label": "邮件宽度",
+            "control": "text",
+            "target": {
+              "kind": "templatePath",
+              "path": "blocks.__catalog_root__.props.width"
+            }
+          }
+        ]
+      },
+      {
+        "scopeId": "block:__sample_icon__",
+        "kind": "block",
+        "label": "图标",
+        "blockIds": [
+          "__sample_icon__"
+        ],
+        "fields": [
+          {
+            "key": "props_color_token",
+            "label": "props.color 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "primary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_icon__",
+              "path": "props.color"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

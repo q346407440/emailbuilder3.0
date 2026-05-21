@@ -1,0 +1,198 @@
+{
+  "masterId": "content.text",
+  "name": "文本",
+  "version": "1.0.0",
+  "description": "富文本段落，支持字号、颜色与对齐。",
+  "runtimeType": "text",
+  "blockType": "content.text",
+  "sampleBlockId": "__sample_text__",
+  "catalogRootBlockId": "__catalog_root__",
+  "blocks": {
+    "__catalog_root__": {
+      "id": "__catalog_root__",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "__sample_text__"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#FFFFFF",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "__sample_text__": {
+      "id": "__sample_text__",
+      "type": "text",
+      "parentId": "__catalog_root__",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "示例正文"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        }
+      }
+    }
+  },
+  "blockMeta": {
+    "__catalog_root__": {
+      "blockType": "layout.container",
+      "name": "预览根"
+    },
+    "__sample_text__": {
+      "blockType": "content.text",
+      "name": "文本"
+    }
+  },
+  "configSchema": {
+    "schemaVersion": "1.0.0",
+    "scopes": [
+      {
+        "scopeId": "template",
+        "kind": "template",
+        "label": "整封邮件",
+        "fields": [
+          {
+            "key": "templateWidth",
+            "label": "邮件宽度",
+            "control": "text",
+            "target": {
+              "kind": "templatePath",
+              "path": "blocks.__catalog_root__.props.width"
+            }
+          }
+        ]
+      },
+      {
+        "scopeId": "block:__sample_text__",
+        "kind": "block",
+        "label": "文本",
+        "blockIds": [
+          "__sample_text__"
+        ],
+        "fields": [
+          {
+            "key": "props_fontSize_token",
+            "label": "props.fontSize 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "typography",
+            "defaultScale": "body",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_text__",
+              "path": "props.fontSize"
+            }
+          },
+          {
+            "key": "props_color_token",
+            "label": "props.color 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "primary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_text__",
+              "path": "props.color"
+            }
+          },
+          {
+            "key": "props_fontFamily_token",
+            "label": "props.fontFamily 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "fonts",
+            "defaultScale": "body",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_text__",
+              "path": "props.fontFamily"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

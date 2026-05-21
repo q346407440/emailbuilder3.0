@@ -1,0 +1,190 @@
+{
+  "masterId": "indicator.progress",
+  "name": "进度条",
+  "version": "1.0.0",
+  "description": "横向进度条；槽/进度色与数值在 props；条带宽度、高度与圆角在 props，外层容器样式在 wrapperStyle。",
+  "runtimeType": "progress",
+  "blockType": "indicator.progress",
+  "sampleBlockId": "__sample_progress__",
+  "catalogRootBlockId": "__catalog_root__",
+  "blocks": {
+    "__catalog_root__": {
+      "id": "__catalog_root__",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "__sample_progress__"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#FFFFFF",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "__sample_progress__": {
+      "id": "__sample_progress__",
+      "type": "progress",
+      "parentId": "__catalog_root__",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "trackColor": {
+          "$themeRef": "colors.surface"
+        },
+        "fillColor": {
+          "$themeRef": "colors.primary"
+        },
+        "value": 20,
+        "max": 100,
+        "barWidthMode": "fill",
+        "barHeight": "10px",
+        "barBorderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.cta"
+          }
+        }
+      },
+      "bindings": {
+        "props.trackColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "props.fillColor": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        },
+        "props.barBorderRadius.radius": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        }
+      }
+    }
+  },
+  "blockMeta": {
+    "__catalog_root__": {
+      "blockType": "layout.container",
+      "name": "预览根"
+    },
+    "__sample_progress__": {
+      "blockType": "indicator.progress",
+      "name": "进度条"
+    }
+  },
+  "configSchema": {
+    "schemaVersion": "1.0.0",
+    "scopes": [
+      {
+        "scopeId": "template",
+        "kind": "template",
+        "label": "整封邮件",
+        "fields": [
+          {
+            "key": "templateWidth",
+            "label": "邮件宽度",
+            "control": "text",
+            "target": {
+              "kind": "templatePath",
+              "path": "blocks.__catalog_root__.props.width"
+            }
+          }
+        ]
+      },
+      {
+        "scopeId": "block:__sample_progress__",
+        "kind": "block",
+        "label": "进度条",
+        "blockIds": [
+          "__sample_progress__"
+        ],
+        "fields": [
+          {
+            "key": "props_trackColor_token",
+            "label": "props.trackColor 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "surface",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_progress__",
+              "path": "props.trackColor"
+            }
+          },
+          {
+            "key": "props_fillColor_token",
+            "label": "props.fillColor 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "primary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_progress__",
+              "path": "props.fillColor"
+            }
+          },
+          {
+            "key": "props_barBorderRadius_radius_token",
+            "label": "props.barBorderRadius.radius 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "cta",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_progress__",
+              "path": "props.barBorderRadius.radius"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

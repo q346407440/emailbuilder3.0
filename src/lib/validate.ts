@@ -1,0 +1,1524 @@
+import {
+  EMAIL_TEMPLATE_SCHEMA_VERSION,
+  type EmailBlock,
+  type EmailTemplate,
+} from "../types/email";
+import { isThemeRef } from "../types/themeRef";
+import { classifyField } from "./blockFieldClassification";
+import { validateTemplateBlockContracts } from "../block-contract/validate";
+import {
+  collectionSlotMissingItemFields,
+  validateExternalInterpolateBindingSpec,
+  validateExternalVariableBindingSpec,
+  validatePayloadAgainstTemplate as validatePayloadAgainstTemplateContract,
+  validatePayloadAgainstTemplateUnion as validatePayloadAgainstTemplateUnionContract,
+} from "../payload-contract/validate";
+import {
+  COLLECTION_ITEM_FIELDS_NESTING_ERROR,
+  findCollectionFieldByPath,
+  isItemPathWithinCollectionListLevelMax,
+} from "../payload-contract/collection-item-fields";
+import {
+  collectionBindingUsesItemIndex,
+  resolveEffectiveBindingSlotValueType,
+} from "../payload-contract/repeat-list-item-binding";
+import { validateVariableBindingFieldCompatibility } from "../payload-contract/variable-slot-compatibility";
+import { validateRenderDefaultsForbiddenFields } from "../render-defaults-contract/validate";
+import { EMAIL_ROOT_FIXED_WIDTH, emailRootWidthMismatchReason } from "../render-defaults-contract/values";
+import { layoutBackgroundImageRenderable } from "./wrapperBackgroundImage";
+import { getFillValidationReason, isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
+import { extractInterpolationSlotIds } from "./interpolateText";
+import { getAtPath } from "./paths";
+import { isRepeatHostBlock, resolveRepeatContextForBlock } from "./repeatRegion";
+import { validateVisibilityRule } from "../visibility-contract";
+import {
+  buildPlacementResolveInputForBlock,
+  placementAxisValidationReason,
+  relativePlacementValidationReason,
+} from "./placementConfigurability";
+import { placementParentKindForBlock } from "./placementParentContext";
+import { checkTokenPresetFontStorageValue } from "./emailFontFamily";
+
+export type ValidationIssue = {
+  path: string;
+  reason: string;
+  /** 默认 error；warning 不参与 run-validate-all 失败计数（待全量迁移后改为 error） */
+  level?: "error" | "warning";
+};
+
+/** 与 run-validate-all / 落盘 API 一致：仅 level=warning 的不阻断读写 */
+export function isBlockingValidationIssue(issue: ValidationIssue): boolean {
+  return issue.level !== "warning";
+}
+
+export function blockingValidationIssues(issues: ValidationIssue[]): ValidationIssue[] {
+  return issues.filter(isBlockingValidationIssue);
+}
+
+const ROOT_FONT_KEYS = ["fontFamily", "headingFontFamily", "bodyFontFamily"] as const;
+
+function validateSpacingValue(path: string, raw: unknown, issues: ValidationIssue[]): void {
+  if (isThemeRef(raw)) return;
+  if (typeof raw !== "string") {
+    issues.push({ path, reason: "边距值必须为字符串（如 0、8px）" });
+    return;
+  }
+  const trimmed = raw.trim();
+  if (trimmed === "") {
+    issues.push({ path, reason: "边距值不允许为空字符串，请至少使用 0" });
+    return;
+  }
+  if (/\s/.test(trimmed)) {
+    issues.push({
+      path,
+      reason:
+        "边距值须为单边长度（如 8px、0），禁止使用 CSS 多值简写；四边不同请使用 mode: separate",
+    });
+  }
+}
+
+function validateSpacingObject(
+  path: string,
+  spacing: unknown,
+  issues: ValidationIssue[]
+): void {
+  if (!spacing || typeof spacing !== "object") return;
+  const obj = spacing as Record<string, unknown>;
+  if (obj.mode === "unified") {
+    validateSpacingValue(`${path}.unified`, obj.unified, issues);
+    return;
+  }
+  if (obj.mode === "separate") {
+    validateSpacingValue(`${path}.top`, obj.top, issues);
+    validateSpacingValue(`${path}.right`, obj.right, issues);
+    validateSpacingValue(`${path}.bottom`, obj.bottom, issues);
+    validateSpacingValue(`${path}.left`, obj.left, issues);
+    return;
+  }
+  issues.push({
+    path,
+    reason: "间距对象须显式包含 mode: unified 或 separate",
+  });
+}
+
+function validatePlacementAxis(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[],
+  axisLabel: string
+): void {
+  if (raw === undefined) return;
+  if (raw !== "start" && raw !== "center" && raw !== "end") {
+    issues.push({
+      path,
+      reason: `${axisLabel}仅允许 start / center / end`,
+    });
+  }
+}
+
+function validateContentAlignHorizontalRequired(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[]
+): void {
+  if (raw !== "left" && raw !== "center" && raw !== "right") {
+    issues.push({
+      path,
+      reason: "内容水平对齐为必填，且仅允许 left / center / right",
+    });
+  }
+}
+
+function validateContentAlignVerticalRequired(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[]
+): void {
+  if (raw !== "top" && raw !== "center" && raw !== "bottom") {
+    issues.push({
+      path,
+      reason: "内容垂直对齐为必填，且仅允许 top / center / bottom",
+    });
+  }
+}
+
+function validateWrapperDimensionSemantics(
+  path: string,
+  ws: Record<string, unknown> | undefined,
+  issues: ValidationIssue[]
+): void {
+  if (!ws) return;
+  if (ws.widthMode === "fitContent" || ws.heightMode === "fitContent") {
+    issues.push({
+      path,
+      reason: "widthMode / heightMode 不再支持 fitContent，请改为 hug",
+    });
+  }
+  const wm = ws.widthMode;
+  const hm = ws.heightMode;
+  if (wm !== "hug" && wm !== "fill" && wm !== "fixed") {
+    issues.push({
+      path: `${path}.widthMode`,
+      reason: "必填，仅允许 hug / fill / fixed",
+    });
+  }
+  if (hm !== "hug" && hm !== "fill" && hm !== "fixed") {
+    issues.push({
+      path: `${path}.heightMode`,
+      reason: "必填，仅允许 hug / fill / fixed",
+    });
+  }
+  if (wm === "fixed") {
+    validateRequiredString(`${path}.width`, ws.width, issues);
+  }
+  if (hm === "fixed") {
+    validateRequiredString(`${path}.height`, ws.height, issues);
+  }
+}
+
+function validateRequiredString(path: string, raw: unknown, issues: ValidationIssue[]): string | null {
+  if (isThemeRef(raw)) return null;
+  if (typeof raw !== "string" || raw.trim() === "") {
+    issues.push({ path, reason: "必须为非空字符串" });
+    return null;
+  }
+  return raw;
+}
+
+/**
+ * 模板 / tokenPresets 落盘字体口径：仅允许单一主字体（`fonts.*` token 由预设解析层追加通用族名）。
+ * `$themeRef` 指向的档位在 tokenPresets 校验中检查。
+ */
+export function validatePersistedSingleFontFamily(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[]
+): void {
+  if (isThemeRef(raw)) return;
+  if (typeof raw !== "string") return;
+  const check = checkTokenPresetFontStorageValue(raw);
+  if (!check.ok) {
+    issues.push({ path, reason: check.reason });
+  }
+}
+
+function validateOverlayStackProps(
+  blockTypeLabel: "layout" | "image",
+  blockPath: string,
+  props: Record<string, unknown>,
+  issues: ValidationIssue[]
+) {
+  const direction = props.direction;
+  if (
+    direction !== undefined &&
+    direction !== "vertical" &&
+    direction !== "horizontal"
+  ) {
+    issues.push({
+      path: `${blockPath}.props.direction`,
+      reason: `${blockTypeLabel}.direction 仅允许 vertical（纵向）或 horizontal（横向）`,
+    });
+  }
+
+  const gapMode = props.gapMode;
+  if (
+    gapMode !== undefined &&
+    gapMode !== "fixed" &&
+    gapMode !== "auto"
+  ) {
+    issues.push({
+      path: `${blockPath}.props.gapMode`,
+      reason: `${blockTypeLabel}.gapMode 仅允许 fixed（固定像素间距）或 auto（主轴剩余空间在子项之间均分）`,
+    });
+  }
+
+  if (props.gap !== undefined) {
+    const gap = props.gap;
+    if (!isThemeRef(gap) && (typeof gap !== "string" || gap.trim() === "")) {
+      issues.push({
+        path: `${blockPath}.props.gap`,
+        reason: `${blockTypeLabel}.gap 必须为非空字符串或主题引用`,
+      });
+    }
+  }
+}
+
+function validateOptionalWrapperBackgroundImage(
+  blockTypeLabel: "emailRoot" | "layout",
+  path: string,
+  wsBg: Record<string, unknown> | undefined,
+  issues: ValidationIssue[]
+): void {
+  if (wsBg === undefined || wsBg === null) return;
+  if (typeof wsBg !== "object" || Array.isArray(wsBg)) {
+    issues.push({
+      path,
+      reason: `${blockTypeLabel} 背景图必须为对象`,
+    });
+    return;
+  }
+
+  const hasSrc = typeof wsBg.src === "string" && wsBg.src.trim() !== "";
+  if (!hasSrc) {
+    issues.push({
+      path: `${path}.src`,
+      reason: `${blockTypeLabel} 背景图若配置则 src 必须为非空字符串`,
+    });
+  } else {
+    validateBorderConfig(`${path}.border`, wsBg.border, issues, {
+      required: true,
+    });
+    validateBorderRadiusConfig(`${path}.borderRadius`, wsBg.borderRadius, issues, {
+      required: true,
+    });
+  }
+
+  const fit = wsBg.fit;
+  if (fit !== undefined && fit !== "cover" && fit !== "contain") {
+    issues.push({
+      path: `${path}.fit`,
+      reason: `${blockTypeLabel} 背景图 fit 仅允许 cover / contain`,
+    });
+  }
+}
+
+function validateBodyWidthMode(
+  path: string,
+  mode: unknown,
+  width: unknown,
+  issues: ValidationIssue[],
+  options: { allowHug?: boolean; label: string }
+) {
+  const allowedModes = options.allowHug ? ["hug", "fill", "fixed"] : ["fill", "fixed"];
+  if (mode !== undefined && !allowedModes.includes(String(mode))) {
+    issues.push({
+      path: `${path}Mode`,
+      reason: `${options.label}宽度模式仅允许 ${allowedModes.join(" / ")}`,
+    });
+  }
+  if (mode === "fixed") {
+    validateRequiredString(path, width, issues);
+  } else if (width !== undefined && !isThemeRef(width) && (typeof width !== "string" || width.trim() === "")) {
+    issues.push({
+      path,
+      reason: `${options.label}宽度必须为非空字符串或主题引用`,
+    });
+  }
+}
+
+function validateBorderStyleField(path: string, raw: unknown, issues: ValidationIssue[]): void {
+  if (raw !== "solid" && raw !== "dashed" && raw !== "dotted") {
+    issues.push({ path, reason: "描边样式仅允许 solid / dashed / dotted" });
+  }
+}
+
+function validateBorderConfig(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[],
+  options: { required?: boolean } = {}
+): void {
+  const required = options.required === true;
+  if (raw === undefined || raw === null) {
+    if (required) {
+      issues.push({
+        path,
+        reason: "涉及背景时必须配置描边（mode=unified、width=0、color=透明色也需要显式写出）",
+      });
+    }
+    return;
+  }
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    issues.push({ path, reason: "描边必须为两级模式对象（mode: unified | custom）" });
+    return;
+  }
+  const b = raw as Record<string, unknown>;
+  if (b.mode === "unified") {
+    validateRequiredString(`${path}.width`, b.width, issues);
+    validateBorderStyleField(`${path}.style`, b.style, issues);
+    validateRequiredString(`${path}.color`, b.color, issues);
+    return;
+  }
+  if (b.mode === "custom") {
+    validateBorderStyleField(`${path}.style`, b.style, issues);
+    validateRequiredString(`${path}.color`, b.color, issues);
+    for (const side of ["top", "right", "bottom", "left"] as const) {
+      const s = b[side];
+      if (!s || typeof s !== "object" || Array.isArray(s)) {
+        issues.push({ path: `${path}.${side}`, reason: "自定义描边四边对象必须显式存在" });
+        continue;
+      }
+      validateRequiredString(`${path}.${side}.width`, (s as Record<string, unknown>).width, issues);
+    }
+    return;
+  }
+  issues.push({
+    path: `${path}.mode`,
+    reason: "描边 mode 必填，仅允许 unified 或 custom",
+  });
+}
+
+function validateBorderRadiusConfig(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[],
+  options: { required?: boolean } = {}
+): void {
+  const required = options.required === true;
+  if (raw === undefined || raw === null) {
+    if (required) {
+      issues.push({
+        path,
+        reason: "涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
+      });
+    }
+    return;
+  }
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    issues.push({ path, reason: "圆角必须为两级模式对象（mode: unified | corners）" });
+    return;
+  }
+  const r = raw as Record<string, unknown>;
+  if (r.mode === "unified") {
+    validateRequiredString(`${path}.radius`, r.radius, issues);
+    return;
+  }
+  if (r.mode === "corners") {
+    validateRequiredString(`${path}.topLeft`, r.topLeft, issues);
+    validateRequiredString(`${path}.topRight`, r.topRight, issues);
+    validateRequiredString(`${path}.bottomRight`, r.bottomRight, issues);
+    validateRequiredString(`${path}.bottomLeft`, r.bottomLeft, issues);
+    return;
+  }
+  issues.push({
+    path: `${path}.mode`,
+    reason: "圆角 mode 必填，仅允许 unified 或 corners",
+  });
+}
+
+const TEXT_DECO_SET = new Set([
+  "none",
+  "underline",
+  "line-through",
+  "overline",
+]);
+
+function validateTextBodyStructure(
+  path: string,
+  raw: unknown,
+  issues: ValidationIssue[]
+): void {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    issues.push({ path, reason: "textBody 必须为对象" });
+    return;
+  }
+  const o = raw as Record<string, unknown>;
+  if (o.version !== 1) {
+    issues.push({ path: `${path}.version`, reason: "textBody.version 仅支持 1" });
+    return;
+  }
+  if (!Array.isArray(o.paragraphs)) {
+    issues.push({ path: `${path}.paragraphs`, reason: "textBody.paragraphs 必须为数组" });
+    return;
+  }
+  o.paragraphs.forEach((para, pi) => {
+    const pPath = `${path}.paragraphs[${pi}]`;
+    if (para === null || typeof para !== "object" || Array.isArray(para)) {
+      issues.push({ path: pPath, reason: "段落必须为对象" });
+      return;
+    }
+    const pr = para as Record<string, unknown>;
+    if (!Array.isArray(pr.runs)) {
+      issues.push({ path: `${pPath}.runs`, reason: "每段必须包含 runs 数组" });
+      return;
+    }
+    pr.runs.forEach((run, ri) => {
+      const rPath = `${pPath}.runs[${ri}]`;
+      if (run === null || typeof run !== "object" || Array.isArray(run)) {
+        issues.push({ path: rPath, reason: "每个 run 必须为对象" });
+        return;
+      }
+      const r = run as Record<string, unknown>;
+      if (typeof r.text !== "string") {
+        issues.push({ path: `${rPath}.text`, reason: "run.text 必须为字符串" });
+      }
+      if (r.bold !== undefined && typeof r.bold !== "boolean") {
+        issues.push({ path: `${rPath}.bold`, reason: "run.bold 必须为布尔值或省略" });
+      }
+      if (r.italic !== undefined && typeof r.italic !== "boolean") {
+        issues.push({ path: `${rPath}.italic`, reason: "run.italic 必须为布尔值或省略" });
+      }
+      if (r.decoration !== undefined && !TEXT_DECO_SET.has(r.decoration as string)) {
+        issues.push({
+          path: `${rPath}.decoration`,
+          reason: "run.decoration 仅允许 none / underline / line-through / overline 或省略",
+        });
+      }
+      if (r.link !== undefined && typeof r.link !== "string") {
+        issues.push({ path: `${rPath}.link`, reason: "run.link 必须为字符串或省略" });
+      }
+      if (typeof r.link === "string" && /^\s*javascript:/i.test(r.link)) {
+        issues.push({ path: `${rPath}.link`, reason: "不允许 javascript: 链接" });
+      }
+    });
+  });
+}
+
+export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  if (t.schemaVersion !== EMAIL_TEMPLATE_SCHEMA_VERSION) {
+    issues.push({
+      path: "schemaVersion",
+      reason: `template.schemaVersion 必须为 ${EMAIL_TEMPLATE_SCHEMA_VERSION}`,
+    });
+  }
+  if (!t.rootBlockId) issues.push({ path: "rootBlockId", reason: "缺失" });
+  const root = t.blocks[t.rootBlockId];
+  if (!root) {
+    issues.push({ path: "rootBlockId", reason: "指向不存在的区块" });
+    return issues;
+  }
+  if (root.type !== "emailRoot") {
+    issues.push({
+      path: `blocks.${root.id}.type`,
+      reason: "根节点类型必须为 emailRoot（邮件根节点）",
+    });
+  }
+  if (root.type === "emailRoot") {
+    const rawWidth = root.props.width;
+    const width = typeof rawWidth === "string" ? rawWidth.trim() : rawWidth;
+    if (width !== EMAIL_ROOT_FIXED_WIDTH) {
+      issues.push({
+        path: `blocks.${root.id}.props.width`,
+        reason: emailRootWidthMismatchReason(rawWidth),
+      });
+    }
+    if ("outerBackgroundColor" in root.props) {
+      issues.push({
+        path: `blocks.${root.id}.props.outerBackgroundColor`,
+        reason:
+          "emailRoot 禁止配置画布外侧底色；工作区灰底由项目固定 EMAIL_CANVAS_WORKSPACE_BACKGROUND（#f1f1f1）",
+      });
+    }
+    validateRequiredString(`blocks.${root.id}.props.backgroundColor`, root.props.backgroundColor, issues);
+    for (const legacyKey of ROOT_FONT_KEYS) {
+      if (legacyKey in root.props) {
+        issues.push({
+          path: `blocks.${root.id}.props.${legacyKey}`,
+          reason: "emailRoot 已废弃画布根字体字段，请在 text/button 块级绑定 fonts.* token",
+        });
+      }
+    }
+    if (
+      root.props.padding === undefined ||
+      root.props.padding === null ||
+      typeof root.props.padding !== "object" ||
+      Array.isArray(root.props.padding)
+    ) {
+      issues.push({
+        path: `blocks.${root.id}.props.padding`,
+        reason: "画布根节点必须显式配置 padding（禁止依赖系统默认）",
+      });
+    } else {
+      validateSpacingObject(`blocks.${root.id}.props.padding`, root.props.padding, issues);
+    }
+    validateBorderConfig(`blocks.${root.id}.props.border`, root.props.border, issues, {
+      required: true,
+    });
+    if ("direction" in root.props) {
+      issues.push({
+        path: `blocks.${root.id}.props.direction`,
+        reason: "画布根节点固定纵向排列，不再支持配置排列方向",
+      });
+    }
+    if ("contentAlign" in root.props) {
+      issues.push({
+        path: `blocks.${root.id}.props.contentAlign`,
+        reason: "画布根节点不再支持内容对齐配置，请使用子区块相对父级对齐",
+      });
+    }
+    const rootGapMode = root.props.gapMode;
+    if (
+      rootGapMode !== undefined &&
+      rootGapMode !== "fixed" &&
+      rootGapMode !== "auto"
+    ) {
+      issues.push({
+        path: `blocks.${root.id}.props.gapMode`,
+        reason: "画布根节点 gapMode 仅允许 fixed 或 auto",
+      });
+    }
+    if (root.props.gap !== undefined) {
+      if (
+        !isThemeRef(root.props.gap) &&
+        (typeof root.props.gap !== "string" || root.props.gap.trim() === "")
+      ) {
+        issues.push({
+          path: `blocks.${root.id}.props.gap`,
+          reason: "画布根节点 gap 必须为非空字符串（至少为 0）",
+        });
+      }
+    }
+    validateOptionalWrapperBackgroundImage(
+      "emailRoot",
+      `blocks.${root.id}.wrapperStyle.backgroundImage`,
+      root.wrapperStyle?.backgroundImage as Record<string, unknown> | undefined,
+      issues
+    );
+  }
+
+  const seen = new Set<string>();
+  function walk(id: string, parentId: string | null): void {
+    if (seen.has(id)) {
+      issues.push({ path: `blocks.${id}`, reason: "检测到环或重复访问" });
+      return;
+    }
+    seen.add(id);
+    const b = t.blocks[id];
+    if (!b) {
+      issues.push({ path: `children.${id}`, reason: "子节点 id 在区块表中不存在" });
+      return;
+    }
+    if (b.parentId !== parentId) {
+      issues.push({
+        path: `blocks.${id}.parentId`,
+        reason: `父节点 id（parentId）与树结构不一致，期望为 ${parentId ?? "null（无）"}`,
+      });
+    }
+    for (const c of b.children) walk(c, b.id);
+  }
+  walk(t.rootBlockId, null);
+
+  for (const id of Object.keys(t.blocks)) {
+    if (!seen.has(id)) {
+      issues.push({ path: `blocks.${id}`, reason: "悬空区块（无法从根节点到达）" });
+    }
+  }
+
+  for (const [id, block] of Object.entries(t.blocks)) {
+    const parent = block.parentId ? t.blocks[block.parentId] : undefined;
+    const widthFillBlocked = isChildFillBlockedByParentHug(parent, "width");
+    const heightFillBlocked = isChildFillBlockedByParentHug(parent, "height");
+    if (widthFillBlocked && block.wrapperStyle?.widthMode === "fill") {
+      issues.push({
+        path: `blocks.${id}.wrapperStyle.widthMode`,
+        reason: getFillValidationReason("width"),
+      });
+    }
+    if (heightFillBlocked && block.wrapperStyle?.heightMode === "fill") {
+      issues.push({
+        path: `blocks.${id}.wrapperStyle.heightMode`,
+        reason: getFillValidationReason("height"),
+      });
+    }
+
+    const wsRaw = block.wrapperStyle;
+    if (
+      wsRaw === undefined ||
+      wsRaw === null ||
+      typeof wsRaw !== "object" ||
+      Array.isArray(wsRaw)
+    ) {
+      issues.push({
+        path: `blocks.${id}.wrapperStyle`,
+        reason: "每个区块必须包含 wrapperStyle 对象（不可省略）",
+      });
+    }
+
+    validateSpacingObject(`blocks.${id}.wrapperStyle.padding`, block.wrapperStyle?.padding, issues);
+    validatePlacementAxis(
+      `blocks.${id}.wrapperStyle.placement.horizontal`,
+      (block.wrapperStyle as { placement?: { horizontal?: unknown } } | undefined)?.placement
+        ?.horizontal,
+      issues,
+      "相对父级水平放置（placement.horizontal）"
+    );
+    validatePlacementAxis(
+      `blocks.${id}.wrapperStyle.placement.vertical`,
+      (block.wrapperStyle as { placement?: { vertical?: unknown } } | undefined)?.placement
+        ?.vertical,
+      issues,
+      "相对父级竖直放置（placement.vertical）"
+    );
+    const placementInput = buildPlacementResolveInputForBlock(t, id);
+    const placementRaw = (
+      block.wrapperStyle as { placement?: { horizontal?: unknown; vertical?: unknown } } | undefined
+    )?.placement;
+    const relativeReason = relativePlacementValidationReason(placementRaw, placementInput);
+    if (relativeReason) {
+      issues.push({ path: `blocks.${id}.wrapperStyle.placement`, reason: relativeReason });
+    }
+    const hReason = placementAxisValidationReason(
+      "horizontal",
+      placementRaw?.horizontal,
+      placementInput
+    );
+    if (hReason) {
+      issues.push({ path: `blocks.${id}.wrapperStyle.placement.horizontal`, reason: hReason });
+    }
+    const vReason = placementAxisValidationReason("vertical", placementRaw?.vertical, placementInput);
+    if (vReason) {
+      issues.push({ path: `blocks.${id}.wrapperStyle.placement.vertical`, reason: vReason });
+    }
+    if (placementParentKindForBlock(t, id) === "none" && placementRaw) {
+      const hasNonStart =
+        (placementRaw.horizontal && placementRaw.horizontal !== "start") ||
+        (placementRaw.vertical && placementRaw.vertical !== "start");
+      if (hasNonStart) {
+        issues.push({
+          path: `blocks.${id}.wrapperStyle.placement`,
+          reason:
+            "当前父级非表格槽位，不可配置相对父级摆放；请删除 placement 或仅保留 start",
+        });
+      }
+    }
+    validateWrapperDimensionSemantics(
+      `blocks.${id}.wrapperStyle`,
+      block.wrapperStyle as Record<string, unknown> | undefined,
+      issues
+    );
+    const hasWrapperBackground =
+      isThemeRef(block.wrapperStyle?.backgroundColor) ||
+      (typeof block.wrapperStyle?.backgroundColor === "string" &&
+        block.wrapperStyle.backgroundColor.trim() !== "");
+
+    validateBorderConfig(`blocks.${id}.wrapperStyle.border`, block.wrapperStyle?.border, issues, {
+      required: hasWrapperBackground,
+    });
+    /** 背景相关圆角覆盖范围（root 排除）：layout/grid 的 wrapperStyle.borderRadius；
+     *  text 块仅在带背景色时要求圆角。其余（image/button/overlay）由各自块内分支检查。 */
+    if (block.type === "layout" || block.type === "grid" || block.type === "image") {
+      validateBorderRadiusConfig(
+        `blocks.${id}.wrapperStyle.borderRadius`,
+        block.wrapperStyle?.borderRadius,
+        issues,
+        { required: true }
+      );
+    } else if (block.type === "text" && hasWrapperBackground) {
+      validateBorderRadiusConfig(
+        `blocks.${id}.wrapperStyle.borderRadius`,
+        block.wrapperStyle?.borderRadius,
+        issues,
+        { required: true }
+      );
+    } else if (block.wrapperStyle?.borderRadius !== undefined) {
+      validateBorderRadiusConfig(
+        `blocks.${id}.wrapperStyle.borderRadius`,
+        block.wrapperStyle.borderRadius,
+        issues
+      );
+    }
+
+    if (block.type === "image") {
+      const props = block.props as Record<string, unknown>;
+      validateOverlayStackProps("image", `blocks.${id}`, props, issues);
+      const wsBg = block.wrapperStyle?.backgroundImage as Record<string, unknown> | undefined;
+      const hasSrc = typeof wsBg?.src === "string" && wsBg.src.trim() !== "";
+      if (!wsBg || typeof wsBg !== "object") {
+        issues.push({
+          path: `blocks.${id}.wrapperStyle.backgroundImage`,
+          reason: "图片块必须设置 wrapperStyle.backgroundImage",
+        });
+      } else if (!hasSrc) {
+        issues.push({
+          path: `blocks.${id}.wrapperStyle.backgroundImage.src`,
+          reason: "图片地址 src 必须为非空字符串",
+        });
+      } else {
+        validateBorderConfig(`blocks.${id}.wrapperStyle.backgroundImage.border`, wsBg.border, issues, {
+          required: true,
+        });
+        validateBorderRadiusConfig(
+          `blocks.${id}.wrapperStyle.backgroundImage.borderRadius`,
+          wsBg.borderRadius,
+          issues,
+          { required: true }
+        );
+        const fit = wsBg.fit;
+        if (fit !== undefined && fit !== "cover" && fit !== "contain") {
+          issues.push({
+            path: `blocks.${id}.wrapperStyle.backgroundImage.fit`,
+            reason: "仅允许 cover / contain",
+          });
+        }
+        validateRequiredString(
+          `blocks.${id}.wrapperStyle.backgroundImage.position`,
+          wsBg.position,
+          issues
+        );
+      }
+    }
+
+    if (block.type === "icon") {
+      const props = block.props as Record<string, unknown>;
+      validateRequiredString(`blocks.${id}.props.src`, props.src, issues);
+      validateRequiredString(`blocks.${id}.props.color`, props.color, issues);
+      validateRequiredString(`blocks.${id}.props.size`, props.size, issues);
+      for (const legacyKey of ["customSrc", "iconSrcMode", "libraryAssetId", "uploadedAssetId"] as const) {
+        if (legacyKey in props) {
+          issues.push({
+            path: `blocks.${id}.props.${legacyKey}`,
+            reason: "已废弃：图标地址仅使用 props.src（URL），请移除该字段",
+          });
+        }
+      }
+    }
+
+    if (block.type === "layout") {
+      const wsBg = block.wrapperStyle?.backgroundImage as Record<string, unknown> | undefined;
+      validateOptionalWrapperBackgroundImage(
+        "layout",
+        `blocks.${id}.wrapperStyle.backgroundImage`,
+        wsBg,
+        issues
+      );
+
+      const lp = block.props as Record<string, unknown>;
+      validateOverlayStackProps("layout", `blocks.${id}`, lp, issues);
+      if ("minHeight" in lp) {
+        issues.push({
+          path: `blocks.${id}.props.minHeight`,
+          reason: "layout 容器高度已迁移至 wrapperStyle.heightMode / wrapperStyle.height",
+        });
+      }
+      if ("height" in lp) {
+        issues.push({
+          path: `blocks.${id}.props.height`,
+          reason: "layout 容器高度已迁移至 wrapperStyle.heightMode / wrapperStyle.height",
+        });
+      }
+      if ("crossAlign" in lp) {
+        issues.push({
+          path: `blocks.${id}.props.crossAlign`,
+          reason:
+            "layout.crossAlign 已移除，请改为在各子区块使用 wrapperStyle.placement",
+        });
+      }
+    }
+
+    if (block.type === "grid") {
+      const gp = block.props as Record<string, unknown>;
+      if ("items" in gp) {
+        issues.push({
+          path: `blocks.${id}.props.items`,
+          reason: "栅格固定按 children 顺序排布，不再支持跨列/跨行单元格配置",
+        });
+      }
+      if ("columnsPerRow" in gp) {
+        issues.push({
+          path: `blocks.${id}.props.columnsPerRow`,
+          reason: "栅格列数请使用 columns，不再支持 columnsPerRow",
+        });
+      }
+      const cellWidthMode = gp.cellWidthMode;
+      if (
+        cellWidthMode !== undefined &&
+        cellWidthMode !== "auto" &&
+        cellWidthMode !== "fixed"
+      ) {
+        issues.push({
+          path: `blocks.${id}.props.cellWidthMode`,
+          reason: "grid.cellWidthMode 仅允许 auto 或 fixed",
+        });
+      }
+      if (cellWidthMode === "fixed") {
+        const cellWidth =
+          typeof gp.cellWidth === "string" && gp.cellWidth.trim() ? gp.cellWidth.trim() : "";
+        if (!cellWidth) {
+          issues.push({
+            path: `blocks.${id}.props.cellWidth`,
+            reason: "grid.cellWidthMode=fixed 时，必须填写 cellWidth",
+          });
+        }
+      }
+      const cellHeightMode = gp.cellHeightMode;
+      if (
+        cellHeightMode !== undefined &&
+        cellHeightMode !== "content-max" &&
+        cellHeightMode !== "fixed"
+      ) {
+        issues.push({
+          path: `blocks.${id}.props.cellHeightMode`,
+          reason: "grid.cellHeightMode 仅允许 content-max 或 fixed",
+        });
+      }
+      if (cellHeightMode === "fixed") {
+        const cellHeight =
+          typeof gp.cellHeight === "string" && gp.cellHeight.trim() ? gp.cellHeight.trim() : "";
+        if (!cellHeight) {
+          issues.push({
+            path: `blocks.${id}.props.cellHeight`,
+            reason: "grid.cellHeightMode=fixed 时，必须填写 cellHeight",
+          });
+        }
+      }
+      for (const legacyKey of ["rowHeightMode", "rowHeight"] as const) {
+        if (legacyKey in gp) {
+          issues.push({
+            path: `blocks.${id}.props.${legacyKey}`,
+            reason: "已废弃：栅格单元格高度请使用 props.cellHeightMode / props.cellHeight",
+          });
+        }
+      }
+      for (const childId of block.children) {
+        const child = t.blocks[childId];
+        if (!child || child.type !== "layout") continue;
+        if (child.wrapperStyle?.heightMode === "fixed") {
+          /** 容器背景图常用固定裁切高度（原 overlay 画布），与栅格等高策略例外并存 */
+          if (layoutBackgroundImageRenderable(child)) continue;
+          issues.push({
+            path: `blocks.${childId}.wrapperStyle.heightMode`,
+            reason:
+              "该 layout 位于 grid 内，建议改为 hug 以启用栅格统一自适应等高；固定高度仅在明确需要裁切时使用",
+          });
+        }
+      }
+    }
+
+    if (block.type === "progress") {
+      if (block.children.length > 0) {
+        issues.push({
+          path: `blocks.${id}.children`,
+          reason: "indicator.progress 为叶子区块，children 必须为空数组",
+        });
+      }
+      const pp = block.props as Record<string, unknown>;
+      validateBodyWidthMode(
+        `blocks.${id}.props.barWidth`,
+        pp.barWidthMode,
+        pp.barWidth,
+        issues,
+        { label: "progress 条带" }
+      );
+      if (pp.value !== undefined && (typeof pp.value !== "number" || !Number.isFinite(pp.value))) {
+        issues.push({
+          path: `blocks.${id}.props.value`,
+          reason: "progress.props.value 须为有限数值或未设置",
+        });
+      }
+      if (pp.max !== undefined) {
+        if (typeof pp.max !== "number" || !Number.isFinite(pp.max) || pp.max <= 0) {
+          issues.push({
+            path: `blocks.${id}.props.max`,
+            reason: "progress.props.max 须为有限正数或未设置",
+          });
+        }
+      }
+      if (pp.barHeight !== undefined) {
+        if (typeof pp.barHeight !== "string" || !pp.barHeight.trim()) {
+          issues.push({
+            path: `blocks.${id}.props.barHeight`,
+            reason: "progress.props.barHeight 须为非空字符串或未设置（与分割线线条粗细语义一致）",
+          });
+        }
+      }
+      validateBorderRadiusConfig(`blocks.${id}.props.barBorderRadius`, pp.barBorderRadius, issues, {
+        required: false,
+      });
+    }
+
+    if (block.type === "divider") {
+      const dp = block.props as Record<string, unknown>;
+      validateBodyWidthMode(
+        `blocks.${id}.props.lineWidth`,
+        dp.lineWidthMode,
+        dp.lineWidth,
+        issues,
+        { label: "divider 线条" }
+      );
+      validateRequiredString(`blocks.${id}.props.height`, dp.height, issues);
+    }
+
+    if (block.type === "button") {
+      const bp = block.props as Record<string, unknown>;
+      const buttonStyle =
+        bp.buttonStyle && typeof bp.buttonStyle === "object"
+          ? (bp.buttonStyle as Record<string, unknown>)
+          : undefined;
+      const hasButtonBackground =
+        isThemeRef(buttonStyle?.backgroundColor) ||
+        (typeof buttonStyle?.backgroundColor === "string" &&
+          buttonStyle.backgroundColor.trim() !== "");
+      validateBodyWidthMode(
+        `blocks.${id}.props.buttonStyle.width`,
+        buttonStyle?.widthMode,
+        buttonStyle?.width,
+        issues,
+        { allowHug: true, label: "button 按钮本体" }
+      );
+      if (buttonStyle && "padding" in buttonStyle) {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.padding`,
+          reason: "按钮内边距由渲染层统一固定，不再作为 JSON 配置项",
+        });
+      }
+      if (buttonStyle && "fontWeight" in buttonStyle) {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.fontWeight`,
+          reason: "按钮文字粗细请使用 buttonStyle.bold",
+        });
+      }
+      if (buttonStyle && "fontStyle" in buttonStyle) {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.fontStyle`,
+          reason: "按钮文字斜体请使用 buttonStyle.italic",
+        });
+      }
+      if (buttonStyle?.bold !== undefined && typeof buttonStyle.bold !== "boolean") {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.bold`,
+          reason: "按钮文字加粗必须为布尔值（true/false）",
+        });
+      }
+      if (buttonStyle?.italic !== undefined && typeof buttonStyle.italic !== "boolean") {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.italic`,
+          reason: "按钮文字斜体必须为布尔值（true/false）",
+        });
+      }
+      validateBorderConfig(`blocks.${id}.props.buttonStyle.border`, buttonStyle?.border, issues, {
+        required: hasButtonBackground,
+      });
+      validateBorderRadiusConfig(
+        `blocks.${id}.props.buttonStyle.borderRadius`,
+        buttonStyle?.borderRadius,
+        issues,
+        { required: true }
+      );
+      validateRequiredString(
+        `blocks.${id}.props.buttonStyle.fontFamily`,
+        buttonStyle?.fontFamily,
+        issues
+      );
+      validatePersistedSingleFontFamily(
+        `blocks.${id}.props.buttonStyle.fontFamily`,
+        buttonStyle?.fontFamily,
+        issues
+      );
+    }
+
+    if (block.type === "emailRoot") continue;
+    const contentAlign = block.wrapperStyle?.contentAlign;
+    if (
+      contentAlign === undefined ||
+      contentAlign === null ||
+      typeof contentAlign !== "object" ||
+      Array.isArray(contentAlign)
+    ) {
+      issues.push({
+        path: `blocks.${id}.wrapperStyle.contentAlign`,
+        reason: `${block.type} 区块必须显式配置 contentAlign（包含 horizontal / vertical）`,
+      });
+    } else {
+      const ca = contentAlign as Record<string, unknown>;
+      validateContentAlignHorizontalRequired(
+        `blocks.${id}.wrapperStyle.contentAlign.horizontal`,
+        ca.horizontal,
+        issues
+      );
+      validateContentAlignVerticalRequired(
+        `blocks.${id}.wrapperStyle.contentAlign.vertical`,
+        ca.vertical,
+        issues
+      );
+    }
+
+    if (block.type !== "text") continue;
+    if ("lineHeight" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.lineHeight`,
+        reason: "text.lineHeight 已废弃，文本行高由渲染层统一固定，不允许在 JSON 中配置",
+      });
+    }
+    if (block.props && typeof block.props === "object" && "textKind" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.textKind`,
+        reason: "textKind 已移除；请删除该字段，标题样式请用 fontFamily / fontSize 等 token 绑定表达。",
+      });
+    }
+    if (block.props && typeof block.props === "object" && "fontMode" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.fontMode`,
+        reason: "fontMode 已废弃（含 inherit）；请在 props.fontFamily 上显式绑定 fonts.heading / fonts.body 等 token",
+      });
+    }
+    validateRequiredString(`blocks.${id}.props.fontFamily`, block.props?.fontFamily, issues);
+    validatePersistedSingleFontFamily(`blocks.${id}.props.fontFamily`, block.props?.fontFamily, issues);
+    if (block.props && typeof block.props === "object" && "content" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.content`,
+        reason: "text.props.content 已废弃，请仅使用 props.textBody；可运行 npm run migrate:remove-text-props-content:write",
+      });
+    }
+    const tb = (block.props as { textBody?: unknown }).textBody;
+    const hasTextBody =
+      tb !== undefined &&
+      tb !== null &&
+      typeof tb === "object" &&
+      (tb as { version?: number }).version === 1;
+    if (!hasTextBody) {
+      issues.push({
+        path: `blocks.${id}.props.textBody`,
+        reason: "text 区块必须使用结构化正文（props.textBody.version = 1）",
+      });
+    } else {
+      validateTextBodyStructure(`blocks.${id}.props.textBody`, tb, issues);
+    }
+    if (block.bindings?.["props.content"]) {
+      issues.push({
+        path: `blocks.${id}.bindings.props.content`,
+        reason: "禁止在 props.content 上绑定变量，请改绑到 props.textBody 或其 run 路径",
+      });
+    }
+    if ("fontWeight" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.fontWeight`,
+        reason: "text.fontWeight 已废弃，请使用布尔字段 bold",
+      });
+    }
+    if ("fontStyle" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.fontStyle`,
+        reason: "text.fontStyle 已废弃，请使用布尔字段 italic",
+      });
+    }
+    if ("textDecoration" in block.props) {
+      issues.push({
+        path: `blocks.${id}.props.textDecoration`,
+        reason: "text.textDecoration 已废弃，请使用枚举字段 decoration",
+      });
+    }
+    if (typeof block.props?.bold !== "boolean") {
+      issues.push({
+        path: `blocks.${id}.props.bold`,
+        reason: "text.bold 必须为布尔值（true/false）",
+      });
+    }
+    if (typeof block.props?.italic !== "boolean") {
+      issues.push({
+        path: `blocks.${id}.props.italic`,
+        reason: "text.italic 必须为布尔值（true/false）",
+      });
+    }
+    const decoration = block.props?.decoration;
+    if (
+      decoration !== "none" &&
+      decoration !== "underline" &&
+      decoration !== "line-through" &&
+      decoration !== "overline"
+    ) {
+      issues.push({
+        path: `blocks.${id}.props.decoration`,
+        reason:
+          "text.decoration 仅允许 none / underline / line-through / overline",
+      });
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * 来源胶囊体系核心约束（Phase 0.4）：
+ * - mode=theme    → fieldKind 必须为 style
+ * - mode=variable → fieldKind 必须为 content
+ * - mode=interpolate → fieldKind 必须为 content
+ * - structural 字段不允许出现任何 binding（仅字面量）
+ */
+function validateBindingFieldKind(
+  blockType: string,
+  blockId: string,
+  bindPath: string,
+  spec: { mode?: string; fieldKind?: string },
+  issues: ValidationIssue[]
+): void {
+  const path = `blocks.${blockId}.bindings.${bindPath}`;
+  const declared = spec.fieldKind;
+  const inferred = classifyField(blockType, bindPath);
+  if (declared && declared !== inferred) {
+    issues.push({
+      path: `${path}.fieldKind`,
+      reason: `字段分类不一致：声明「${declared}」但实际推断为「${inferred}」`,
+    });
+  }
+  const effective = inferred;
+  if (spec.mode === "theme" && effective !== "style") {
+    issues.push({
+      path,
+      reason: `主题绑定仅允许出现在样式（style）字段；当前字段被分类为「${effective}」`,
+    });
+  }
+  if ((spec.mode === "variable" || spec.mode === "interpolate") && effective !== "content") {
+    issues.push({
+      path,
+      reason: `变量/内插绑定仅允许出现在内容（content）字段；当前字段被分类为「${effective}」`,
+    });
+  }
+  if (effective === "structural" && spec.mode && spec.mode !== "literal") {
+    issues.push({
+      path,
+      reason: `结构性（structural）字段不允许任何来源绑定，仅能使用字面量`,
+    });
+  }
+}
+
+/**
+ * 守卫：字段值若包含 $themeRef，必须在 block.bindings 同一 path 上登记 mode: "theme"。
+ * 用于 Phase 0.2 双写过渡期的兜底，保证 UI 胶囊与字段值不漂移。
+ */
+function validateThemeRefBindingConsistency(t: EmailTemplate): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  for (const [blockId, block] of Object.entries(t.blocks)) {
+    walkValue(
+      `blocks.${blockId}.props`,
+      "props",
+      "",
+      block.props as Record<string, unknown> | undefined,
+      block,
+      issues
+    );
+    walkValue(
+      `blocks.${blockId}.wrapperStyle`,
+      "wrapperStyle",
+      "",
+      block.wrapperStyle as Record<string, unknown> | undefined,
+      block,
+      issues
+    );
+  }
+  return issues;
+}
+
+function walkValue(
+  jsonPath: string,
+  rootKey: "props" | "wrapperStyle",
+  parentBindPath: string,
+  value: unknown,
+  block: EmailBlock,
+  issues: ValidationIssue[]
+): void {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    value.forEach((child, idx) => {
+      walkValue(`${jsonPath}[${idx}]`, rootKey, parentBindPath, child, block, issues);
+    });
+    return;
+  }
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    const subPath = parentBindPath ? `${parentBindPath}.${key}` : key;
+    const childPath = `${jsonPath}.${key}`;
+    const fullBindPath = `${rootKey}.${subPath}`;
+    if (isThemeRef(child)) {
+      const spec = block.bindings?.[fullBindPath];
+      if (!spec || spec.mode !== "theme") {
+        issues.push({
+          path: childPath,
+          reason: `字段值含 $themeRef 但 block.bindings.${fullBindPath} 未登记 mode:"theme"（来源胶囊体系约束）`,
+        });
+      }
+      continue;
+    }
+    if (child && typeof child === "object") {
+      walkValue(childPath, rootKey, subPath, child, block, issues);
+    }
+  }
+}
+
+function collectDescendantBlockIds(t: EmailTemplate, rootIds: string[]): Set<string> {
+  const ids = new Set<string>();
+  const visit = (blockId: string) => {
+    if (ids.has(blockId)) return;
+    const block = t.blocks[blockId];
+    if (!block) return;
+    ids.add(blockId);
+    for (const childId of block.children) visit(childId);
+  };
+  rootIds.forEach(visit);
+  return ids;
+}
+
+export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const slotIdToType = new Map<string, string>();
+  for (const [blockId, block] of Object.entries(t.blocks)) {
+    if (block.repeat?.mode === "collection") {
+      const path = `blocks.${blockId}.repeat`;
+      if (!isRepeatHostBlock(block)) {
+        issues.push({
+          path,
+          reason: "列表重复只能绑定在 layout 或 grid 容器上，不能绑定在邮件根节点",
+        });
+      }
+      const repeatIssues = validateExternalVariableBindingSpec(path, {
+        slotId: block.repeat.slotId,
+        mode: "variable",
+        valueType: "collection",
+        allowExternal: true,
+        itemFields: block.repeat.itemFields,
+        minItems: block.repeat.minItems,
+        maxItems: block.repeat.maxItems,
+        label: block.repeat.label,
+        description: block.repeat.description,
+      });
+      for (const ri of repeatIssues) issues.push(ri);
+      if (block.repeat.prototypeChildIds.length === 0) {
+        issues.push({ path: `${path}.prototypeChildIds`, reason: "列表重复区域必须至少选择一个原型子区块" });
+      }
+      for (const childId of block.repeat.prototypeChildIds) {
+        if (!block.children.includes(childId)) {
+          issues.push({
+            path: `${path}.prototypeChildIds`,
+            reason: `原型子区块「${childId}」必须是当前容器的直接子节点`,
+          });
+        }
+      }
+      for (const childId of block.repeat.fallbackChildIds) {
+        if (!t.blocks[childId]) {
+          issues.push({
+            path: `${path}.fallbackChildIds`,
+            reason: `静态回退子区块「${childId}」不存在`,
+          });
+        }
+      }
+      if (
+        block.repeat.itemPath !== undefined &&
+        (typeof block.repeat.itemPath !== "string" ||
+          !block.repeat.itemPath.trim() ||
+          block.repeat.itemPath.includes(".."))
+      ) {
+        issues.push({
+          path: `${path}.itemPath`,
+          reason: "itemPath 必须为非空点路径，且不能包含连续点",
+        });
+      }
+      if (
+        block.repeat.itemPath?.trim() &&
+        !isItemPathWithinCollectionListLevelMax(block.repeat.itemFields, block.repeat.itemPath)
+      ) {
+        issues.push({
+          path: `${path}.itemPath`,
+          reason: COLLECTION_ITEM_FIELDS_NESTING_ERROR,
+        });
+      }
+      if (block.repeat.anchorItemIndex !== undefined) {
+        const index = block.repeat.anchorItemIndex;
+        if (!Number.isInteger(index) || index < 0) {
+          issues.push({
+            path: `${path}.anchorItemIndex`,
+            reason: "anchorItemIndex 必须为非负整数",
+          });
+        }
+        if (!block.repeat.itemPath?.trim()) {
+          issues.push({
+            path: `${path}.anchorItemIndex`,
+            reason: "anchorItemIndex 仅在与 itemPath 联用时允许",
+          });
+        }
+      }
+      const repeatPrototypeTreeIds = collectDescendantBlockIds(t, block.repeat.prototypeChildIds);
+      for (const mapping of block.repeat.fieldMappings ?? []) {
+        const mappingPath = `${path}.fieldMappings.${mapping.id || mapping.targetBindPath}`;
+        const sourceField = findCollectionFieldByPath(block.repeat.itemFields, mapping.sourcePath);
+        if (!sourceField) {
+          issues.push({
+            path: `${mappingPath}.sourcePath`,
+            reason: `映射来源字段「${mapping.sourcePath}」必须来自当前 collection 的 itemFields`,
+          });
+        } else if (sourceField.valueType === "collection") {
+          issues.push({
+            path: `${mappingPath}.sourcePath`,
+            reason: "列表字段映射不能直接绑定子列表字段，请改为在子级循环容器中绑定",
+          });
+        }
+        const targetBlock = t.blocks[mapping.targetBlockId];
+        if (!targetBlock) {
+          issues.push({
+            path: `${mappingPath}.targetBlockId`,
+            reason: `映射目标区块「${mapping.targetBlockId}」不存在`,
+          });
+          continue;
+        }
+        if (!repeatPrototypeTreeIds.has(mapping.targetBlockId)) {
+          issues.push({
+            path: `${mappingPath}.targetBlockId`,
+            reason: "映射目标字段必须位于当前重复原型子树内部",
+          });
+        }
+        if (classifyField(targetBlock.type, mapping.targetBindPath) !== "content") {
+          issues.push({
+            path: `${mappingPath}.targetBindPath`,
+            reason: "列表字段映射只能绑定业务内容字段，不能绑定样式或结构字段",
+          });
+        }
+      }
+      const prevType = slotIdToType.get(block.repeat.slotId);
+      if (prevType && prevType !== "collection") {
+        issues.push({
+          path: `${path}.slotId`,
+          reason: `slotId「${block.repeat.slotId}」在多处绑定中 valueType 不一致（${prevType} vs collection）`,
+        });
+      } else if (!prevType) {
+        slotIdToType.set(block.repeat.slotId, "collection");
+      }
+    }
+    if (block.visibility) {
+      const path = `blocks.${blockId}.visibility`;
+      if (block.type === "emailRoot") {
+        issues.push({
+          path,
+          reason: "邮件根节点不支持 visibility，请把显示条件配置在业务区块或容器上",
+        });
+      }
+      const visibilityIssues = validateVisibilityRule(path, block.visibility);
+      for (const vi of visibilityIssues) issues.push(vi);
+      const slotId = block.visibility.slotId;
+      const valueType = block.visibility.valueType;
+      if (slotId && valueType !== undefined) {
+        const prevType = slotIdToType.get(slotId);
+        if (prevType && prevType !== valueType) {
+          issues.push({
+            path: `${path}.valueType`,
+            reason: `slotId「${slotId}」在多处绑定中 valueType 不一致（${prevType} vs ${valueType}）`,
+          });
+        } else if (!prevType) {
+          slotIdToType.set(slotId, valueType);
+        }
+      }
+    }
+    if (!block.bindings) continue;
+    for (const [bindPath, spec] of Object.entries(block.bindings)) {
+      const path = `blocks.${blockId}.bindings.${bindPath}`;
+      // 字段分类与 mode 的一致性（来源胶囊体系约束）
+      validateBindingFieldKind(block.type, blockId, bindPath, spec, issues);
+
+      if (spec.mode === "theme") {
+        if (!spec.tokenPath || typeof spec.tokenPath !== "string" || !spec.tokenPath.trim()) {
+          issues.push({ path: `${path}.tokenPath`, reason: "theme 绑定必须声明 tokenPath" });
+        }
+        continue;
+      }
+
+      if (spec.mode === "interpolate") {
+        const bindingIssues = validateExternalInterpolateBindingSpec(path, spec);
+        for (const bi of bindingIssues) {
+          issues.push(bi);
+        }
+        const [root, ...rest] = bindPath.split(".");
+        const target =
+          root === "props"
+            ? getAtPath(block.props as Record<string, unknown>, rest.join("."))
+            : root === "wrapperStyle"
+              ? getAtPath((block.wrapperStyle ?? {}) as Record<string, unknown>, rest.join("."))
+              : undefined;
+        if (typeof target !== "string") {
+          issues.push({
+            path,
+            reason: "interpolate 绑定只能作用在字符串字段上",
+          });
+        } else {
+          const declaredIds = new Set((spec.interpolationSlots ?? []).map((slot) => slot.slotId));
+          const templateIds = extractInterpolationSlotIds(target);
+          for (const slotId of templateIds) {
+            if (!declaredIds.has(slotId)) {
+              issues.push({
+                path,
+                reason: `模板字符串包含 {{ ${slotId} }}，但 interpolationSlots 未声明该 slot`,
+              });
+            }
+          }
+          for (const slotId of declaredIds) {
+            if (!templateIds.includes(slotId)) {
+              issues.push({
+                path,
+                reason: `interpolationSlots 声明了「${slotId}」，但模板字符串中未出现 {{ ${slotId} }}`,
+              });
+            }
+          }
+        }
+        for (const slot of spec.interpolationSlots ?? []) {
+          const valueType = slot.valueType as string | undefined;
+          if (!slot.slotId || !valueType) continue;
+          const prevType = slotIdToType.get(slot.slotId);
+          if (prevType && prevType !== valueType) {
+            issues.push({
+              path: `${path}.interpolationSlots`,
+              reason: `slotId「${slot.slotId}」在多处绑定中 valueType 不一致（${prevType} vs ${valueType}）`,
+            });
+          } else if (!prevType) {
+            slotIdToType.set(slot.slotId, valueType);
+          }
+        }
+        continue;
+      }
+
+      if (spec.mode !== "variable" || spec.allowExternal !== true) continue;
+      const bindingIssues = validateExternalVariableBindingSpec(path, spec);
+      for (const bi of bindingIssues) {
+        issues.push(bi);
+      }
+      if (spec.valueType) {
+        const effectiveSlotValueType = resolveEffectiveBindingSlotValueType(spec, {
+          template: t,
+          blockId,
+        });
+        const compat = validateVariableBindingFieldCompatibility(
+          block,
+          bindPath,
+          effectiveSlotValueType
+        );
+        if (compat) {
+          issues.push({ path: `${path}.${compat.pathSuffix}`, reason: compat.reason });
+        }
+      }
+      const slotId = spec.slotId;
+      const valueType = spec.valueType;
+      if (!slotId || valueType === undefined) continue;
+      const prevType = slotIdToType.get(slotId);
+      if (prevType && prevType !== valueType) {
+        issues.push({
+          path: `${path}.valueType`,
+          reason: `slotId「${slotId}」在多处绑定中 valueType 不一致（${prevType} vs ${valueType}）`,
+        });
+      } else if (!prevType) {
+        slotIdToType.set(slotId, valueType);
+      }
+
+      if (
+        valueType === "collection" &&
+        collectionBindingUsesItemIndex(spec.slotPath) &&
+        !resolveRepeatContextForBlock(t, blockId)
+      ) {
+        issues.push({
+          path: `${path}.slotPath`,
+          level: "warning",
+          reason:
+            "collection 列表项字段（带数字下标的 slotPath）只能写在列表重复行模板内；请在「列表」Tab 绑定列表重复，勿在静态多行上逐字段绑下标",
+        });
+      }
+    }
+  }
+  issues.push(...collectionSlotMissingItemFields(t));
+  issues.push(...validateThemeRefBindingConsistency(t));
+  return issues;
+}
+
+export function validateTemplate(t: EmailTemplate): ValidationIssue[] {
+  const issues = validateTemplateStructure(t);
+  issues.push(...validateTemplateBindings(t));
+  issues.push(...validateTemplateBlockContracts(t));
+  issues.push(...validateRenderDefaultsForbiddenFields(t));
+  return issues;
+}
+
+export { validatePayloadAgainstTemplateContract as validatePayloadAgainstTemplate };
+export { validatePayloadAgainstTemplateUnionContract as validatePayloadAgainstTemplateUnion };
+
+export function assertEmailKeySafe(emailKey: string): string | null {
+  if (!/^[a-zA-Z0-9._-]+$/.test(emailKey)) {
+    return "emailKey 仅允许字母、数字、._-";
+  }
+  if (emailKey.includes("..") || emailKey.includes("/") || emailKey.includes("\\")) {
+    return "非法路径";
+  }
+  return null;
+}

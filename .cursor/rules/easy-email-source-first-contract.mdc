@@ -1,0 +1,89 @@
+---
+description: 源头驱动契约式变更：先改真源、再改派生与消费层（Easy-Email 映射，详见 docs/ 三篇方法论）
+alwaysApply: true
+---
+
+# 源头驱动契约式变更（Easy-Email）
+
+## 与本仓库其他 rule 的分工
+
+- **`easy-email-design-reuse`**：代码怎么写（分层、复用、先找后写）。
+- **本 rule**：改动**按什么路径走完**（先真源 → 派生 → 消费层 → 验证），避免只修报错点。
+- **领域细节**（按图还原、block 语义、落盘 API）：读对应 **`.cursor/skills/`**，不在此重复字段表。
+
+理念与检查清单详文：`docs/源头驱动的契约式开发.md`、`docs/变更先改源头执行规范.md`、`docs/AI Coding 硬约束落地清单.md`。
+
+## 五条核心（执行时默认遵守）
+
+1. **任何变更先定位源头**：同一业务事实只在一处定义；未改源头前，不先改下游消费层。
+2. **派生优于双写**：类型、校验、生成物、映射尽量从契约/模板派生，禁止在多处手写等价结构。
+3. **按固定路径展开**：源头 → 派生产物 → 消费层实现 → 自动化验证（见下节顺序）。
+4. **不完整修改应尽早失败**：优先 `npm run validate:all` 与类型检查，而非「能编译/能打开页面」即停。
+5. **只消当前报错不算完成**：须对照影响面清单，补齐同源消费者与边缘路径。
+
+## Easy-Email：本次改动的「源头」对照
+
+动手前用一句话回答：**这次改动的真源是什么？** 按下表选主源头（可多选，但须先改主源头）：
+
+| 变更类型 | 优先真源（先改这里） | 常见派生 / 消费层 |
+|----------|----------------------|-------------------|
+| block 字段白名单、类型能力 | `src/block-contract/`（`registry.ts`、`by-type/*.ts`） | `src/lib/validate.ts`、Inspector、渲染 |
+| 模板结构、bindings、`$themeRef` | legacy：`data/emails/<id>/template.json`；多版式：`layouts/<layoutVariantId>/template.json` + `layout-manifest.json` | 同版式目录 `configSchema.json` / `tokenPresets.json`、`EmailPreview`、导出 |
+| 场景版式清单、路径解析 | `src/layout-variant-contract/` + `src/lib/emailLayoutVariant.ts` | `server/emailLayoutContext.ts`、`src/api/client.ts`（`?layout=`）、`run-validate-all.mjs` |
+| 用户可配置项、target 路径 | `configSchema.json` + `src/lib/validateConfigSchema.ts` | Inspector 配置面板 |
+| 样式档位、标准 token 键 | `tokenPresets.json` + `src/token-preset-contract/` | template 中 `$themeRef` / `bindings.tokenPath` |
+| 变量槽目录、取值、collection 列 | `payload.json`（`slots` + `values`）+ `blocks.*.repeat`；契约 `src/payload-contract/` | `template.bindings`（仅 slotId/路径，无 defaultValue）、`mergeTemplatePayload`、校验；见 `docs/邮件变量与绑定真源.md` |
+| 禁止持久化、渲染默认语义 | `src/render-defaults-contract/` | 渲染层；**勿**把默认写进 template |
+| visibility 表达式合法性 | `src/visibility-contract/` | configSchema / template 中的 visibility |
+| 共享 TS 类型、合并逻辑 | `src/types/`、`src/lib/`（与 React 解耦） | `src/components/`、`server/`（**server 不写双份校验核心**） |
+| HTTP 路径、落盘 IO | `server/index.ts` + `easy-email-storage-api` 技能 | `src/api/` 客户端 |
+| 全仓库 JSON 形态迭代 | 迁移脚本 `package.json` 中 `migrate:*` / `normalize:*` | 全量 `data/emails/**`、校验与测试 |
+
+概念索引与口语路由：技能 **`easy-email-concepts`**。
+
+## 标准执行顺序（默认 8 步，可合并说明）
+
+1. **确认意图**：改结构 / 规则 / 契约 / 文案？影响哪层业务事实？
+2. **识别源头**：记录「本次真源是 X」，禁止跳过直接改页面或 patch handler。
+3. **列影响面**：至少扫——契约目录、校验、`data/emails/**`、前端渲染/Inspector、`server/`、迁移脚本、相关测试与 Golden。
+4. **先改源头**：契约 / template / schema / migration 先于消费层提交。
+5. **更新派生**：类型、校验器、生成物、registry；源头已变则**不得**保留过期派生。
+6. **补齐消费层**：按影响面逐项改 UI、API、脚本；不只修主路径。
+7. **跑验证**：交付前 **`npm run validate:all`**；涉及契约/迁移时补对应测试或 `migrate:*` 后全量校验。
+8. **发布前（高风险）**：历史数据兼容、breaking API、异步/三方边界——见 `docs/变更先改源头执行规范.md` §8。
+
+## 禁止（AI 与人工均适用）
+
+- 未动 `block-contract` / 契约目录，先在多个组件里散落补字段或校验。
+- 未动 `template.json`，先改预览样式或 Inspector 特例绕过结构。
+- 在 `server/` 或页面重复实现本应在 `src/lib` + 契约层的合并/校验逻辑。
+- 源头已改，跳过 `validate:all` 或保留未更新的生成/类型结果。
+- 因一处报错消失即结束，未检查同类消费者与 `data/emails/**` 其它模板（若属全量迁移）。
+
+## 完成标准（缺一不可）
+
+- 已识别并修改真源；影响面已显式排查。
+- 派生与消费层与真源一致；无平行双写的新增字段/状态。
+- 已运行与变更匹配的验证（至少 **`npm run validate:all`**）。
+- 改动预览/画布/Inspector 或 `data/emails/**` 时，按 **`easy-email-frontend-verify-reminder`** 做浏览器验收。
+
+以下**不算完成**：仅编译通过、仅当前文件无报错、仅主路径能打开预览。
+
+## 本仓库 P0 硬约束（对照《硬约束落地清单》）
+
+- **单一真源**：字段与禁止项以 `src/*-contract/`、`validate.ts` 为准，技能与 docs 不维护第二份键表。
+- **类型与校验**：结构变更须触发类型/校验失败或修复，禁止 `any` 糊弄契约层。
+- **全量迁移**：template 形态迭代须统一覆盖 `data/emails/**`，禁止多 schema 并存（见技能 **`easy-email-json-unified-migration`**）。
+- **CI 级自检**：提交前 `npm run validate:all`；改 rules/skills 后 `npm run sync:claude` + `npm run sync:claude:check`。
+
+中大型改动或立项级治理：对照 `docs/AI Coding 硬约束落地清单.md` 的 P1/P2（契约测试、迁移测试、发布门禁等）逐项勾选。
+
+## 场景快查
+
+| 场景 | 顺序要点 | 技能 |
+|------|----------|------|
+| 按设计图还原邮件 | tokenPresets → template → configSchema → payload → validate → 浏览器 | `email-template-restore-guide`、`email-template-restore-check` |
+| 仅改业务文案/链接 | `payload.json`（槽在 template.bindings） | `easy-email-payload-contract` |
+| block 类型/字段新增、配置母版 | `block-contract` → `validate.ts` → 模板/Inspector/渲染 | `email-config-motherboard` |
+| 落盘/API | 先契约与 `server/`，再 `src/api/` | `easy-email-storage-api` |
+| 场景版式（含单版式 `default`） | `layout-manifest.json` + `layouts/<id>/` 三件套；全量迁移 `npm run migrate:layout-variants:write` | 顶栏版式切换（多版式时）、`useEmailDiskPersist` 多版式 payload 预检 |

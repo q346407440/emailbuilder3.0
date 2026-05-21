@@ -1,0 +1,1921 @@
+{
+  "schemaVersion": "3.0.0",
+  "emailId": "member_congrats",
+  "templateId": "member_congrats",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "rootBlockId": "mc-root",
+  "blockMeta": {
+    "mc-mod-logo": {
+      "blockType": "layout.container",
+      "name": "模块 · 店铺 Logo"
+    },
+    "mc-logo-row": {
+      "blockType": "layout.container",
+      "name": "Logo 居中行"
+    },
+    "mc-logo-img": {
+      "blockType": "content.image",
+      "name": "店铺 Logo"
+    },
+    "mc-mod-hero": {
+      "blockType": "layout.container",
+      "name": "模块 · 恭喜主视觉"
+    },
+    "mc-hero-img": {
+      "blockType": "content.image",
+      "name": "恭喜头图"
+    },
+    "mc-hero-dear": {
+      "blockType": "content.text",
+      "name": "恭喜称呼"
+    },
+    "mc-hero-title": {
+      "blockType": "content.text",
+      "name": "恭喜大标题"
+    },
+    "mc-hero-sub": {
+      "blockType": "content.text",
+      "name": "恭喜副标题"
+    },
+    "mc-mod-greeting": {
+      "blockType": "layout.container",
+      "name": "模块 · 问候语"
+    },
+    "mc-greeting-main": {
+      "blockType": "content.text",
+      "name": "升级问候主文"
+    },
+    "mc-greeting-sub": {
+      "blockType": "content.text",
+      "name": "权益引导语"
+    },
+    "mc-benefits-title": {
+      "blockType": "content.text",
+      "name": "权益区标题"
+    },
+    "mc-benefit-row": {
+      "blockType": "layout.container",
+      "name": "权益行 1"
+    },
+    "mc-benefit-icon-wrap": {
+      "blockType": "layout.container",
+      "name": "权益图标底 1"
+    },
+    "mc-benefit-icon": {
+      "blockType": "content.icon",
+      "name": "权益图标 1"
+    },
+    "mc-benefit-text-col": {
+      "blockType": "layout.container",
+      "name": "权益文案列 1"
+    },
+    "mc-benefit-title": {
+      "blockType": "content.text",
+      "name": "权益标题 1"
+    },
+    "mc-benefit-sub": {
+      "blockType": "content.text",
+      "name": "权益说明 1"
+    },
+    "mc-mod-benefits": {
+      "blockType": "layout.container",
+      "name": "模块 · 会员权益"
+    },
+    "mc-mod-account": {
+      "blockType": "layout.container",
+      "name": "模块 · 账户说明"
+    },
+    "mc-account-para-1": {
+      "blockType": "content.text",
+      "name": "账户说明 1"
+    },
+    "mc-account-para-2": {
+      "blockType": "content.text",
+      "name": "账户说明 2"
+    },
+    "mc-account-para-3": {
+      "blockType": "content.text",
+      "name": "联系说明"
+    },
+    "mc-root": {
+      "blockType": "layout.container",
+      "name": "画布根节点"
+    },
+    "mc-benefits-list": {
+      "blockType": "layout.container",
+      "name": "权益列表（重复）"
+    }
+  },
+  "blocks": {
+    "mc-mod-logo": {
+      "id": "mc-mod-logo",
+      "type": "layout",
+      "parentId": "mc-root",
+      "children": [
+        "mc-logo-row"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": "#FFFFFF",
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-logo-row": {
+      "id": "mc-logo-row",
+      "type": "layout",
+      "parentId": "mc-mod-logo",
+      "children": [
+        "mc-logo-img"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "mc-logo-img": {
+      "id": "mc-logo-img",
+      "type": "image",
+      "parentId": "mc-logo-row",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "widthMode": "fixed",
+        "width": "140px",
+        "heightMode": "fixed",
+        "height": "48px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundImage": {
+          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+          "alt": "Store logo",
+          "link": "",
+          "fit": "contain",
+          "position": "center",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {},
+      "bindings": {
+        "wrapperStyle.backgroundImage.src": {
+          "slotId": "storeLogoSrc",
+          "mode": "variable",
+          "valueType": "image",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺 Logo 地址",
+          "description": "邮件顶部居中展示的店铺标识图。"
+        },
+        "wrapperStyle.backgroundImage.alt": {
+          "slotId": "storeLogoAlt",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺 Logo 替代文字"
+        }
+      }
+    },
+    "mc-mod-hero": {
+      "id": "mc-mod-hero",
+      "type": "layout",
+      "parentId": "mc-root",
+      "children": [
+        "mc-hero-img",
+        "mc-hero-dear",
+        "mc-hero-title",
+        "mc-hero-sub"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-hero-img": {
+      "id": "mc-hero-img",
+      "type": "image",
+      "parentId": "mc-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "fixed",
+        "height": "200px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.panel"
+          }
+        },
+        "backgroundImage": {
+          "src": "https://images.pexels.com/photos/2647990/pexels-photo-2647990.jpeg?auto=compress&cs=tinysrgb&w=800",
+          "alt": "Congratulations",
+          "link": "",
+          "fit": "cover",
+          "position": "center",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": {
+              "$themeRef": "tokens.radius.panel"
+            }
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {},
+      "bindings": {
+        "wrapperStyle.backgroundImage.src": {
+          "slotId": "heroCongratsImageSrc",
+          "mode": "variable",
+          "valueType": "image",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "恭喜头图地址",
+          "description": "恭喜/升级主视觉横幅图，建议宽 600px 比例。"
+        },
+        "wrapperStyle.backgroundImage.alt": {
+          "slotId": "heroCongratsImageAlt",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "恭喜头图替代文字"
+        },
+        "wrapperStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-hero-dear": {
+      "id": "mc-hero-dear",
+      "type": "text",
+      "parentId": "mc-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Dear member",
+                  "italic": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.h1"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": true,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroDearText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "恭喜称呼"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.h1",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.h1",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-hero-title": {
+      "id": "mc-hero-title",
+      "type": "text",
+      "parentId": "mc-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Congratulations",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.display"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroTitleText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "恭喜大标题"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.display",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.display",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-hero-sub": {
+      "id": "mc-hero-sub",
+      "type": "text",
+      "parentId": "mc-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "we provide you with more member services and discounts"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroSubtitle",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "恭喜副标题"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-mod-greeting": {
+      "id": "mc-mod-greeting",
+      "type": "layout",
+      "parentId": "mc-root",
+      "children": [
+        "mc-greeting-main",
+        "mc-greeting-sub"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-greeting-main": {
+      "id": "mc-greeting-main",
+      "type": "text",
+      "parentId": "mc-mod-greeting",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Hi Member Name You are now a level member!"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "greetingMainText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "升级问候主文"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-greeting-sub": {
+      "id": "mc-greeting-sub",
+      "type": "text",
+      "parentId": "mc-mod-greeting",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "You can enjoy the following membership benefits"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "greetingSubText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "权益引导语"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-benefits-title": {
+      "id": "mc-benefits-title",
+      "type": "text",
+      "parentId": "mc-mod-benefits",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Your benefits:",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.h1"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.h1",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.h1",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-benefit-row": {
+      "id": "mc-benefit-row",
+      "type": "layout",
+      "parentId": "mc-benefits-list",
+      "children": [
+        "mc-benefit-icon-wrap",
+        "mc-benefit-text-col"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-benefit-icon-wrap": {
+      "id": "mc-benefit-icon-wrap",
+      "type": "layout",
+      "parentId": "mc-benefit-row",
+      "children": [
+        "mc-benefit-icon"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "center"
+        },
+        "widthMode": "fixed",
+        "width": "48px",
+        "heightMode": "fixed",
+        "height": "48px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.cta"
+          }
+        },
+        "backgroundColor": "#1F2937",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {
+        "wrapperStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-benefit-icon": {
+      "id": "mc-benefit-icon",
+      "type": "icon",
+      "parentId": "mc-benefit-icon-wrap",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": "#F5B301",
+        "size": "22px",
+        "link": "",
+        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
+      },
+      "bindings": {
+        "props.src": {
+          "slotId": "memberBenefits",
+          "mode": "variable",
+          "valueType": "collection",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.iconSrc"
+        }
+      }
+    },
+    "mc-benefit-text-col": {
+      "id": "mc-benefit-text-col",
+      "type": "layout",
+      "parentId": "mc-benefit-row",
+      "children": [
+        "mc-benefit-title",
+        "mc-benefit-sub"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "fill",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "vertical": "center",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "4px"
+      },
+      "bindings": {}
+    },
+    "mc-benefit-title": {
+      "id": "mc-benefit-title",
+      "type": "text",
+      "parentId": "mc-benefit-text-col",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Get points"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "memberBenefits",
+          "mode": "variable",
+          "valueType": "collection",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.title"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-benefit-sub": {
+      "id": "mc-benefit-sub",
+      "type": "text",
+      "parentId": "mc-benefit-text-col",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Reward 888 points"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "memberBenefits",
+          "mode": "variable",
+          "valueType": "collection",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.subtitle"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-mod-benefits": {
+      "id": "mc-mod-benefits",
+      "type": "layout",
+      "parentId": "mc-root",
+      "children": [
+        "mc-benefits-title",
+        "mc-benefits-list"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-mod-account": {
+      "id": "mc-mod-account",
+      "type": "layout",
+      "parentId": "mc-root",
+      "children": [
+        "mc-account-para-1",
+        "mc-account-para-2",
+        "mc-account-para-3"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-account-para-1": {
+      "id": "mc-account-para-1",
+      "type": "text",
+      "parentId": "mc-mod-account",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
+                },
+                {
+                  "text": "Create an account",
+                  "link": "https://example.com/register",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "createAccountUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "注册账户链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-account-para-2": {
+      "id": "mc-account-para-2",
+      "type": "text",
+      "parentId": "mc-mod-account",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "If you agree to join the membership during Checkout, we have created an account for you. "
+                },
+                {
+                  "text": "Reset password",
+                  "link": "https://example.com/reset-password",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "resetPasswordUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "重置密码链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-account-para-3": {
+      "id": "mc-account-para-3",
+      "type": "text",
+      "parentId": "mc-mod-account",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+                },
+                {
+                  "text": "zyzshop1",
+                  "link": "https://example.com/store",
+                  "decoration": "underline"
+                },
+                {
+                  "text": " Team at "
+                },
+                {
+                  "text": "lintingting516@gmail.com",
+                  "link": "mailto:lintingting516@gmail.com",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.text": {
+          "slotId": "storeName",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺名称"
+        },
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "storeUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺链接"
+        },
+        "props.textBody.paragraphs.0.runs.3.text": {
+          "slotId": "supportEmail",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "客服邮箱"
+        },
+        "props.textBody.paragraphs.0.runs.3.link": {
+          "slotId": "supportEmailMailto",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "客服邮箱 mailto 链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-root": {
+      "id": "mc-root",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "mc-mod-logo",
+        "mc-mod-hero",
+        "mc-mod-greeting",
+        "mc-mod-benefits",
+        "mc-mod-account"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {
+        "props.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "mc-benefits-list": {
+      "id": "mc-benefits-list",
+      "type": "layout",
+      "parentId": "mc-mod-benefits",
+      "children": [
+        "mc-benefit-row"
+      ],
+      "repeat": {
+        "mode": "collection",
+        "slotId": "memberBenefits",
+        "prototypeChildIds": [
+          "mc-benefit-row"
+        ],
+        "fallbackChildIds": [
+          "mc-benefit-row"
+        ],
+        "itemFields": [
+          {
+            "key": "title",
+            "label": "权益标题",
+            "valueType": "string",
+            "required": true
+          },
+          {
+            "key": "subtitle",
+            "label": "权益说明",
+            "valueType": "string",
+            "required": true
+          },
+          {
+            "key": "iconSrc",
+            "label": "图标地址",
+            "valueType": "image",
+            "required": true
+          }
+        ],
+        "minItems": 5,
+        "maxItems": 5,
+        "label": "会员权益列表",
+        "description": "驱动权益区图标、标题与说明文案，固定 5 项。"
+      },
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    }
+  }
+}

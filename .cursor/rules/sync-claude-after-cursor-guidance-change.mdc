@@ -1,0 +1,18 @@
+---
+description: 修改 Cursor rules 或 skills 后同步 Claude 镜像
+globs: .cursor/rules/**/*.mdc,.cursor/skills/**/SKILL.md
+alwaysApply: false
+---
+
+# 同步 Claude 规则与技能
+
+当本次改动涉及 `.cursor/rules/` 或 `.cursor/skills/` 时，收尾前执行：
+
+```bash
+npm run sync:claude
+npm run sync:claude:check
+```
+
+例外：只修改当前规则文件 `.cursor/rules/sync-claude-after-cursor-guidance-change.mdc` 时，不需要触发同步。
+
+同步以 Cursor 侧为蓝本，会覆盖 `.claude/skills/*.md` 并重新生成 `CLAUDE.md`。若同步后出现变更，应把这些 Claude 镜像文件与本次 Cursor 源文件一起纳入同一轮改动。

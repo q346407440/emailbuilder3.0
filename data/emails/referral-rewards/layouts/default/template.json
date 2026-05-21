@@ -1,0 +1,2279 @@
+{
+  "schemaVersion": "3.0.0",
+  "emailId": "referral_rewards",
+  "templateId": "referral_rewards",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "rootBlockId": "rf-root",
+  "blockMeta": {
+    "rf-mod-logo": {
+      "blockType": "layout.container",
+      "name": "模块 · 店铺 Logo"
+    },
+    "rf-logo-row": {
+      "blockType": "layout.container",
+      "name": "Logo 行"
+    },
+    "rf-logo-img": {
+      "blockType": "content.image",
+      "name": "店铺 Logo"
+    },
+    "rf-mod-hero": {
+      "blockType": "layout.container",
+      "name": "模块 · 推荐主标题"
+    },
+    "rf-hero-title": {
+      "blockType": "content.text",
+      "name": "推荐主标题"
+    },
+    "rf-hero-sub": {
+      "blockType": "content.text",
+      "name": "推荐副标题"
+    },
+    "rf-mod-rewards": {
+      "blockType": "layout.container",
+      "name": "模块 · 奖励摘要卡"
+    },
+    "rf-you-get-label": {
+      "blockType": "content.text",
+      "name": "YOU GET 标签"
+    },
+    "rf-they-get-label": {
+      "blockType": "content.text",
+      "name": "THEY GET 标签"
+    },
+    "rf-you-points": {
+      "blockType": "layout.container",
+      "name": "推荐人积分"
+    },
+    "rf-you-points-icon": {
+      "blockType": "content.icon",
+      "name": "推荐人积分 图标"
+    },
+    "rf-you-points-label": {
+      "blockType": "content.text",
+      "name": "推荐人积分 标签"
+    },
+    "rf-you-points-value": {
+      "blockType": "content.text",
+      "name": "推荐人积分 数值"
+    },
+    "rf-you-coupon": {
+      "blockType": "layout.container",
+      "name": "推荐人优惠券"
+    },
+    "rf-you-coupon-icon": {
+      "blockType": "content.icon",
+      "name": "推荐人优惠券 图标"
+    },
+    "rf-you-coupon-label": {
+      "blockType": "content.text",
+      "name": "推荐人优惠券 标签"
+    },
+    "rf-you-coupon-value": {
+      "blockType": "content.text",
+      "name": "推荐人优惠券 数值"
+    },
+    "rf-you-get-grid": {
+      "blockType": "layout.grid",
+      "name": "YOU GET 栅格"
+    },
+    "rf-rewards-divider": {
+      "blockType": "separator.divider",
+      "name": "奖励卡分隔线"
+    },
+    "rf-they-get-row": {
+      "blockType": "layout.container",
+      "name": "THEY GET 行"
+    },
+    "rf-they-gift-icon": {
+      "blockType": "content.icon",
+      "name": "好友奖励图标"
+    },
+    "rf-they-gift-value": {
+      "blockType": "content.text",
+      "name": "好友奖励说明"
+    },
+    "rf-mod-link": {
+      "blockType": "layout.container",
+      "name": "模块 · 推荐链接"
+    },
+    "rf-share-label": {
+      "blockType": "content.text",
+      "name": "分享链接标签"
+    },
+    "rf-link-row": {
+      "blockType": "layout.container",
+      "name": "链接与复制行"
+    },
+    "rf-referral-url": {
+      "blockType": "content.text",
+      "name": "推荐链接"
+    },
+    "rf-copy-btn": {
+      "blockType": "action.button",
+      "name": "复制按钮"
+    },
+    "rf-mod-footer": {
+      "blockType": "layout.container",
+      "name": "模块 · 页脚说明"
+    },
+    "rf-account-para-1": {
+      "blockType": "content.text",
+      "name": "账户说明 1"
+    },
+    "rf-account-para-2": {
+      "blockType": "content.text",
+      "name": "账户说明 2"
+    },
+    "rf-footer-divider": {
+      "blockType": "separator.divider",
+      "name": "页脚分隔线"
+    },
+    "rf-contact-para": {
+      "blockType": "content.text",
+      "name": "联系说明"
+    },
+    "rf-root": {
+      "blockType": "layout.container",
+      "name": "画布根节点"
+    }
+  },
+  "blocks": {
+    "rf-mod-logo": {
+      "id": "rf-mod-logo",
+      "type": "layout",
+      "parentId": "rf-root",
+      "children": [
+        "rf-logo-row"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": "#FFFFFF",
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-logo-row": {
+      "id": "rf-logo-row",
+      "type": "layout",
+      "parentId": "rf-mod-logo",
+      "children": [
+        "rf-logo-img"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "rf-logo-img": {
+      "id": "rf-logo-img",
+      "type": "image",
+      "parentId": "rf-logo-row",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "center"
+        },
+        "widthMode": "fixed",
+        "width": "160px",
+        "heightMode": "fixed",
+        "height": "40px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundImage": {
+          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+          "alt": "Store logo",
+          "link": "",
+          "fit": "contain",
+          "position": "left",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {},
+      "bindings": {
+        "wrapperStyle.backgroundImage.src": {
+          "slotId": "storeLogoSrc",
+          "mode": "variable",
+          "valueType": "image",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺 Logo 地址"
+        },
+        "wrapperStyle.backgroundImage.alt": {
+          "slotId": "storeLogoAlt",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺 Logo 替代文字"
+        }
+      }
+    },
+    "rf-mod-hero": {
+      "id": "rf-mod-hero",
+      "type": "layout",
+      "parentId": "rf-root",
+      "children": [
+        "rf-hero-title",
+        "rf-hero-sub"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-hero-title": {
+      "id": "rf-hero-title",
+      "type": "text",
+      "parentId": "rf-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Share your link earn rewards.",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.display"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroTitleText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "推荐主标题"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.display",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.display",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-hero-sub": {
+      "id": "rf-hero-sub",
+      "type": "text",
+      "parentId": "rf-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Invite friends to discover products you love. You'll both get amazing rewards!"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroSubtitle",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "推荐副标题"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-mod-rewards": {
+      "id": "rf-mod-rewards",
+      "type": "layout",
+      "parentId": "rf-root",
+      "children": [
+        "rf-you-get-label",
+        "rf-you-get-grid",
+        "rf-rewards-divider",
+        "rf-they-get-label",
+        "rf-they-get-row"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.panel"
+          }
+        },
+        "backgroundColor": "#FFF8E7",
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-you-get-label": {
+      "id": "rf-you-get-label",
+      "type": "text",
+      "parentId": "rf-mod-rewards",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "YOU GET"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": "#9A7B4F",
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "youGetLabel",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "YOU GET 标签"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-they-get-label": {
+      "id": "rf-they-get-label",
+      "type": "text",
+      "parentId": "rf-mod-rewards",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "THEY GET"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": "#9A7B4F",
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "theyGetLabel",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "THEY GET 标签"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-you-points": {
+      "id": "rf-you-points",
+      "type": "layout",
+      "parentId": "rf-you-get-grid",
+      "children": [
+        "rf-you-points-icon",
+        "rf-you-points-label",
+        "rf-you-points-value"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "vertical": "start"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "6px"
+      },
+      "bindings": {}
+    },
+    "rf-you-points-icon": {
+      "id": "rf-you-points-icon",
+      "type": "icon",
+      "parentId": "rf-you-points",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center",
+          "vertical": "start"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": "#6B4E2E",
+        "size": "28px",
+        "link": "",
+        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/coins.svg"
+      },
+      "bindings": {}
+    },
+    "rf-you-points-label": {
+      "id": "rf-you-points-label",
+      "type": "text",
+      "parentId": "rf-you-points",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "POINTS EARNED"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": "#9A7B4F",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-you-points-value": {
+      "id": "rf-you-points-value",
+      "type": "text",
+      "parentId": "rf-you-points",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "100 Points",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "referrerPointsReward",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "推荐人积分数值"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-you-coupon": {
+      "id": "rf-you-coupon",
+      "type": "layout",
+      "parentId": "rf-you-get-grid",
+      "children": [
+        "rf-you-coupon-icon",
+        "rf-you-coupon-label",
+        "rf-you-coupon-value"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "vertical": "start"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "6px"
+      },
+      "bindings": {}
+    },
+    "rf-you-coupon-icon": {
+      "id": "rf-you-coupon-icon",
+      "type": "icon",
+      "parentId": "rf-you-coupon",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center",
+          "vertical": "start"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": "#6B4E2E",
+        "size": "28px",
+        "link": "",
+        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/tag.svg"
+      },
+      "bindings": {}
+    },
+    "rf-you-coupon-label": {
+      "id": "rf-you-coupon-label",
+      "type": "text",
+      "parentId": "rf-you-coupon",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "COUPON"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": "#9A7B4F",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-you-coupon-value": {
+      "id": "rf-you-coupon-value",
+      "type": "text",
+      "parentId": "rf-you-coupon",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "$10 Off",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "referrerCouponReward",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "推荐人优惠券数值"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-you-get-grid": {
+      "id": "rf-you-get-grid",
+      "type": "grid",
+      "parentId": "rf-mod-rewards",
+      "children": [
+        "rf-you-points",
+        "rf-you-coupon"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "columns": 2,
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        },
+        "cellWidthMode": "auto",
+        "cellHeightMode": "content-max"
+      },
+      "bindings": {
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-rewards-divider": {
+      "id": "rf-rewards-divider",
+      "type": "divider",
+      "parentId": "rf-mod-rewards",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": "#D4C4A8",
+        "height": "1px",
+        "lineWidthMode": "fill"
+      },
+      "bindings": {}
+    },
+    "rf-they-get-row": {
+      "id": "rf-they-get-row",
+      "type": "layout",
+      "parentId": "rf-mod-rewards",
+      "children": [
+        "rf-they-gift-icon",
+        "rf-they-gift-value"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "12px"
+      },
+      "bindings": {}
+    },
+    "rf-they-gift-icon": {
+      "id": "rf-they-gift-icon",
+      "type": "icon",
+      "parentId": "rf-they-get-row",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "center"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": "#6B4E2E",
+        "size": "28px",
+        "link": "",
+        "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/gift.svg"
+      },
+      "bindings": {}
+    },
+    "rf-they-gift-value": {
+      "id": "rf-they-gift-value",
+      "type": "text",
+      "parentId": "rf-they-get-row",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "vertical": "start"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "$10 off COUPON",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "friendCouponReward",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "好友优惠券奖励"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-mod-link": {
+      "id": "rf-mod-link",
+      "type": "layout",
+      "parentId": "rf-root",
+      "children": [
+        "rf-share-label",
+        "rf-link-row"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.panel"
+          }
+        },
+        "backgroundColor": "#1F2937",
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-share-label": {
+      "id": "rf-share-label",
+      "type": "text",
+      "parentId": "rf-mod-link",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "share link"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": "#C9A227",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "shareLinkLabel",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "分享链接标签"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-link-row": {
+      "id": "rf-link-row",
+      "type": "layout",
+      "parentId": "rf-mod-link",
+      "children": [
+        "rf-referral-url",
+        "rf-copy-btn"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "12px"
+      },
+      "bindings": {}
+    },
+    "rf-referral-url": {
+      "id": "rf-referral-url",
+      "type": "text",
+      "parentId": "rf-link-row",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "vertical": "start"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "suvia-seven.com/referral?ref=emma-v..."
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": "#F9FAFB",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "referralLinkDisplay",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "推荐链接展示"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-copy-btn": {
+      "id": "rf-copy-btn",
+      "type": "button",
+      "parentId": "rf-link-row",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "placement": {
+          "horizontal": "end",
+          "vertical": "center"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "text": "Copy",
+        "link": "https://suvia-seven.com/referral?ref=emma-v",
+        "buttonStyle": {
+          "backgroundColor": "#F5E6C8",
+          "textColor": "#1F2937",
+          "fontFamily": {
+            "$themeRef": "fonts.body"
+          },
+          "fontSize": {
+            "$themeRef": "tokens.typography.caption"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": {
+              "$themeRef": "tokens.radius.cta"
+            }
+          },
+          "bold": true,
+          "italic": false,
+          "widthMode": "hug"
+        }
+      },
+      "bindings": {
+        "props.text": {
+          "slotId": "copyButtonText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "复制按钮文案"
+        },
+        "props.link": {
+          "slotId": "referralLinkUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "推荐链接地址"
+        },
+        "props.buttonStyle.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-mod-footer": {
+      "id": "rf-mod-footer",
+      "type": "layout",
+      "parentId": "rf-root",
+      "children": [
+        "rf-account-para-1",
+        "rf-account-para-2",
+        "rf-footer-divider",
+        "rf-contact-para"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": "#FFFBF5",
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-account-para-1": {
+      "id": "rf-account-para-1",
+      "type": "text",
+      "parentId": "rf-mod-footer",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
+                },
+                {
+                  "text": "Create an account",
+                  "link": "https://example.com/register",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "createAccountUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "注册账户链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-account-para-2": {
+      "id": "rf-account-para-2",
+      "type": "text",
+      "parentId": "rf-mod-footer",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "If you agree to join the membership during Checkout, we have created an account for you. "
+                },
+                {
+                  "text": "Reset password",
+                  "link": "https://example.com/reset-password",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "resetPasswordUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "重置密码链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-footer-divider": {
+      "id": "rf-footer-divider",
+      "type": "divider",
+      "parentId": "rf-mod-footer",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "height": "1px",
+        "lineWidthMode": "fill"
+      },
+      "bindings": {
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-contact-para": {
+      "id": "rf-contact-para",
+      "type": "text",
+      "parentId": "rf-mod-footer",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+                },
+                {
+                  "text": "zyzshop1",
+                  "link": "https://example.com/store",
+                  "decoration": "underline"
+                },
+                {
+                  "text": " Team at "
+                },
+                {
+                  "text": "lintingting516@gmail.com",
+                  "link": "mailto:lintingting516@gmail.com",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.text": {
+          "slotId": "storeName",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺名称"
+        },
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "storeUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺链接"
+        },
+        "props.textBody.paragraphs.0.runs.3.text": {
+          "slotId": "supportEmail",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "客服邮箱"
+        },
+        "props.textBody.paragraphs.0.runs.3.link": {
+          "slotId": "supportEmailMailto",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "客服邮箱 mailto 链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "rf-root": {
+      "id": "rf-root",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "rf-mod-logo",
+        "rf-mod-hero",
+        "rf-mod-rewards",
+        "rf-mod-link",
+        "rf-mod-footer"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {
+        "props.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        }
+      }
+    }
+  }
+}

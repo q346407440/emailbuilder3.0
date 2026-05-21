@@ -1,0 +1,41 @@
+import type { BlockTypeContract } from "../types";
+import { BLOCK_SHELL_KEYS, WRAPPER_CONTAINER_PREFIXES } from "../shared";
+
+export const actionButtonContract: BlockTypeContract = {
+  blockType: "action.button",
+  runtimeType: "button",
+  label: "按钮",
+  description: "文案与链接为内容；buttonStyle 控制按钮胶囊本体样式（不含 padding），外层容器由 wrapperStyle 控制。",
+  shellKeys: BLOCK_SHELL_KEYS,
+  allowedPrefixes: [
+    ...WRAPPER_CONTAINER_PREFIXES,
+    "props.text",
+    "props.link",
+    "props.buttonStyle",
+    "props.buttonStyle.widthMode",
+    "props.buttonStyle.width",
+    "props.buttonStyle.backgroundColor",
+    "props.buttonStyle.textColor",
+    "props.buttonStyle.fontFamily",
+    "props.buttonStyle.fontSize",
+    "props.buttonStyle.border",
+    "props.buttonStyle.borderRadius",
+    "props.buttonStyle.bold",
+    "props.buttonStyle.italic",
+  ],
+  bindingKinds: {
+    "props.text": "content",
+    "props.link": "content",
+    "props.buttonStyle.widthMode": "structural",
+    "props.buttonStyle.width": "style",
+    "props.buttonStyle.backgroundColor": "style",
+    "props.buttonStyle.textColor": "style",
+    "props.buttonStyle.fontFamily": "style",
+    "props.buttonStyle.fontSize": "style",
+    "props.buttonStyle.border": "style",
+    "props.buttonStyle.borderRadius": "style",
+    "props.buttonStyle.bold": "style",
+    "props.buttonStyle.italic": "style",
+    "wrapperStyle.contentAlign": "structural",
+  },
+};

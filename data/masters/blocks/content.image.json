@@ -1,0 +1,179 @@
+{
+  "masterId": "content.image",
+  "name": "图片",
+  "version": "1.0.0",
+  "description": "图片资源在 wrapperStyle.backgroundImage，叠放子内容的方向与间距沿用 layout 语义。",
+  "runtimeType": "image",
+  "blockType": "content.image",
+  "sampleBlockId": "__sample_image__",
+  "catalogRootBlockId": "__catalog_root__",
+  "blocks": {
+    "__catalog_root__": {
+      "id": "__catalog_root__",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "__sample_image__"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#FFFFFF",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "__sample_image__": {
+      "id": "__sample_image__",
+      "type": "image",
+      "parentId": "__catalog_root__",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundImage": {
+          "src": "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
+          "alt": "图片",
+          "link": "",
+          "fit": "cover",
+          "position": "center",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": {
+              "$themeRef": "tokens.radius.panel"
+            }
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    }
+  },
+  "blockMeta": {
+    "__catalog_root__": {
+      "blockType": "layout.container",
+      "name": "预览根"
+    },
+    "__sample_image__": {
+      "blockType": "content.image",
+      "name": "图片"
+    }
+  },
+  "configSchema": {
+    "schemaVersion": "1.0.0",
+    "scopes": [
+      {
+        "scopeId": "template",
+        "kind": "template",
+        "label": "整封邮件",
+        "fields": [
+          {
+            "key": "templateWidth",
+            "label": "邮件宽度",
+            "control": "text",
+            "target": {
+              "kind": "templatePath",
+              "path": "blocks.__catalog_root__.props.width"
+            }
+          }
+        ]
+      },
+      {
+        "scopeId": "block:__sample_image__",
+        "kind": "block",
+        "label": "图片",
+        "blockIds": [
+          "__sample_image__"
+        ],
+        "fields": [
+          {
+            "key": "props_gap_token",
+            "label": "props.gap 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "gap",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_image__",
+              "path": "props.gap"
+            }
+          },
+          {
+            "key": "wrapperStyle_backgroundImage_borderRadius_radius_token",
+            "label": "wrapperStyle.backgroundImage.borderRadius.radius 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "panel",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_image__",
+              "path": "wrapperStyle.backgroundImage.borderRadius.radius"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

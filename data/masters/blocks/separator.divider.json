@@ -1,0 +1,222 @@
+{
+  "masterId": "separator.divider",
+  "name": "分割线",
+  "version": "1.0.0",
+  "description": "水平分割线，颜色、粗细与线条本体宽度为样式字段。",
+  "runtimeType": "divider",
+  "blockType": "separator.divider",
+  "sampleBlockId": "__sample_divider__",
+  "catalogRootBlockId": "__catalog_root__",
+  "blocks": {
+    "__catalog_root__": {
+      "id": "__catalog_root__",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "__sample_divider__"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#FFFFFF",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "__sample_divider__": {
+      "id": "__sample_divider__",
+      "type": "divider",
+      "parentId": "__catalog_root__",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "placement": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        }
+      },
+      "props": {
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "lineWidthMode": "fill",
+        "height": "2px"
+      },
+      "bindings": {
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        }
+      }
+    }
+  },
+  "blockMeta": {
+    "__catalog_root__": {
+      "blockType": "layout.container",
+      "name": "预览根"
+    },
+    "__sample_divider__": {
+      "blockType": "separator.divider",
+      "name": "分割线"
+    }
+  },
+  "configSchema": {
+    "schemaVersion": "1.0.0",
+    "scopes": [
+      {
+        "scopeId": "template",
+        "kind": "template",
+        "label": "整封邮件",
+        "fields": [
+          {
+            "key": "templateWidth",
+            "label": "邮件宽度",
+            "control": "text",
+            "target": {
+              "kind": "templatePath",
+              "path": "blocks.__catalog_root__.props.width"
+            }
+          }
+        ]
+      },
+      {
+        "scopeId": "block:__sample_divider__",
+        "kind": "block",
+        "label": "分割线",
+        "blockIds": [
+          "__sample_divider__"
+        ],
+        "fields": [
+          {
+            "key": "props_color_token",
+            "label": "props.color 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "secondary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_divider__",
+              "path": "props.color"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_top_token",
+            "label": "wrapperStyle.padding.top 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "section",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_divider__",
+              "path": "wrapperStyle.padding.top"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_right_token",
+            "label": "wrapperStyle.padding.right 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "pageInline",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_divider__",
+              "path": "wrapperStyle.padding.right"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_bottom_token",
+            "label": "wrapperStyle.padding.bottom 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "section",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_divider__",
+              "path": "wrapperStyle.padding.bottom"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_left_token",
+            "label": "wrapperStyle.padding.left 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "pageInline",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "__sample_divider__",
+              "path": "wrapperStyle.padding.left"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

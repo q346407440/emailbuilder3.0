@@ -1,0 +1,1682 @@
+{
+  "schemaVersion": "3.0.0",
+  "emailId": "member_points_expiry",
+  "templateId": "member_points_expiry",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "rootBlockId": "pe-root",
+  "blockMeta": {
+    "pe-mod-logo": {
+      "blockType": "layout.container",
+      "name": "模块 · 店铺 Logo"
+    },
+    "pe-logo-row": {
+      "blockType": "layout.container",
+      "name": "Logo 居中行"
+    },
+    "pe-logo-img": {
+      "blockType": "content.image",
+      "name": "店铺 Logo"
+    },
+    "pe-mod-hero": {
+      "blockType": "layout.container",
+      "name": "模块 · 积分过期主视觉"
+    },
+    "pe-hero-img": {
+      "blockType": "content.image",
+      "name": "过期提醒头图"
+    },
+    "pe-hero-sub": {
+      "blockType": "content.text",
+      "name": "过期提醒副标题"
+    },
+    "pe-hero-title": {
+      "blockType": "content.text",
+      "name": "过期大标题"
+    },
+    "pe-mod-greeting": {
+      "blockType": "layout.container",
+      "name": "模块 · 问候与过期说明"
+    },
+    "pe-greeting-hi": {
+      "blockType": "content.text",
+      "name": "问候称呼"
+    },
+    "pe-greeting-expiry": {
+      "blockType": "content.text",
+      "name": "过期时间说明"
+    },
+    "pe-mod-points": {
+      "blockType": "layout.container",
+      "name": "模块 · 积分余额"
+    },
+    "pe-points-box": {
+      "blockType": "layout.container",
+      "name": "积分余额高亮盒"
+    },
+    "pe-points-value": {
+      "blockType": "content.text",
+      "name": "积分余额"
+    },
+    "pe-mod-account": {
+      "blockType": "layout.container",
+      "name": "模块 · 账户说明"
+    },
+    "pe-account-para-1": {
+      "blockType": "content.text",
+      "name": "账户说明 1"
+    },
+    "pe-account-para-2": {
+      "blockType": "content.text",
+      "name": "账户说明 2"
+    },
+    "pe-mod-divider": {
+      "blockType": "layout.container",
+      "name": "模块 · 分隔线"
+    },
+    "pe-divider-line": {
+      "blockType": "separator.divider",
+      "name": "分隔线"
+    },
+    "pe-mod-footer": {
+      "blockType": "layout.container",
+      "name": "模块 · 页脚联系"
+    },
+    "pe-footer-contact": {
+      "blockType": "content.text",
+      "name": "联系说明"
+    },
+    "pe-root": {
+      "blockType": "layout.container",
+      "name": "画布根节点"
+    }
+  },
+  "blocks": {
+    "pe-mod-logo": {
+      "id": "pe-mod-logo",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-logo-row"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": "#FFFFFF",
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-logo-row": {
+      "id": "pe-logo-row",
+      "type": "layout",
+      "parentId": "pe-mod-logo",
+      "children": [
+        "pe-logo-img"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "pe-logo-img": {
+      "id": "pe-logo-img",
+      "type": "image",
+      "parentId": "pe-logo-row",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center",
+          "vertical": "center"
+        },
+        "widthMode": "fixed",
+        "width": "140px",
+        "heightMode": "fixed",
+        "height": "48px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundImage": {
+          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+          "alt": "Store logo",
+          "link": "",
+          "fit": "contain",
+          "position": "center",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {},
+      "bindings": {
+        "wrapperStyle.backgroundImage.src": {
+          "slotId": "storeLogoSrc",
+          "mode": "variable",
+          "valueType": "image",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺 Logo 地址"
+        },
+        "wrapperStyle.backgroundImage.alt": {
+          "slotId": "storeLogoAlt",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺 Logo 替代文字"
+        }
+      }
+    },
+    "pe-mod-hero": {
+      "id": "pe-mod-hero",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-hero-img",
+        "pe-hero-sub",
+        "pe-hero-title"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-hero-img": {
+      "id": "pe-hero-img",
+      "type": "image",
+      "parentId": "pe-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "fixed",
+        "height": "180px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.panel"
+          }
+        },
+        "backgroundImage": {
+          "src": "https://images.pexels.com/photos/1181533/pexels-photo-1181533.jpeg?auto=compress&cs=tinysrgb&w=800",
+          "alt": "Points expiration",
+          "link": "",
+          "fit": "cover",
+          "position": "center",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": {
+              "$themeRef": "tokens.radius.panel"
+            }
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {},
+      "bindings": {
+        "wrapperStyle.backgroundImage.src": {
+          "slotId": "heroExpiryImageSrc",
+          "mode": "variable",
+          "valueType": "image",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "积分过期头图"
+        },
+        "wrapperStyle.backgroundImage.alt": {
+          "slotId": "heroExpiryImageAlt",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "过期头图替代文字"
+        },
+        "wrapperStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-hero-sub": {
+      "id": "pe-hero-sub",
+      "type": "text",
+      "parentId": "pe-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Points Expiration Reminder"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": "#8B2942",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroSubtitle",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "过期提醒副标题"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-hero-title": {
+      "id": "pe-hero-title",
+      "type": "text",
+      "parentId": "pe-mod-hero",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Expired",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.display"
+        },
+        "color": "#C0392B",
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "heroTitleText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "过期大标题"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.display",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.display",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-mod-greeting": {
+      "id": "pe-mod-greeting",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-greeting-hi",
+        "pe-greeting-expiry"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-greeting-hi": {
+      "id": "pe-greeting-hi",
+      "type": "text",
+      "parentId": "pe-mod-greeting",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Hi Member Name"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "greetingHiText",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "问候称呼"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-greeting-expiry": {
+      "id": "pe-greeting-expiry",
+      "type": "text",
+      "parentId": "pe-mod-greeting",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Your points will expire on "
+                },
+                {
+                  "text": "2026-01-01 00:00:00",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.text": {
+          "slotId": "pointsExpiryDate",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "积分过期时间"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-mod-points": {
+      "id": "pe-mod-points",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-points-box"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-points-box": {
+      "id": "pe-points-box",
+      "type": "layout",
+      "parentId": "pe-mod-points",
+      "children": [
+        "pe-points-value"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": {
+            "$themeRef": "tokens.radius.panel"
+          }
+        },
+        "backgroundColor": "#EEF4FF",
+        "padding": {
+          "mode": "separate",
+          "top": "16px",
+          "right": "24px",
+          "bottom": "16px",
+          "left": "24px"
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {
+        "wrapperStyle.borderRadius.radius": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-points-value": {
+      "id": "pe-points-value",
+      "type": "text",
+      "parentId": "pe-points-box",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "points: "
+                },
+                {
+                  "text": "888",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.heading"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.h1"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.text": {
+          "slotId": "pointsBalance",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "积分余额"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.heading",
+          "mode": "theme",
+          "tokenPath": "fonts.heading",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.h1",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.h1",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-mod-account": {
+      "id": "pe-mod-account",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-account-para-1",
+        "pe-account-para-2"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-account-para-1": {
+      "id": "pe-account-para-1",
+      "type": "text",
+      "parentId": "pe-mod-account",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
+                },
+                {
+                  "text": "Create an account",
+                  "link": "https://example.com/register",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "createAccountUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "注册账户链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-account-para-2": {
+      "id": "pe-account-para-2",
+      "type": "text",
+      "parentId": "pe-mod-account",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "If you agree to join the membership during Checkout, we have created an account for you. "
+                },
+                {
+                  "text": "Reset password",
+                  "link": "https://example.com/reset-password",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "resetPasswordUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "重置密码链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-mod-divider": {
+      "id": "pe-mod-divider",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-divider-line"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": "8px",
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": "8px",
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-divider-line": {
+      "id": "pe-divider-line",
+      "type": "divider",
+      "parentId": "pe-mod-divider",
+      "children": [],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "height": "1px",
+        "lineWidthMode": "fill"
+      },
+      "bindings": {
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-mod-footer": {
+      "id": "pe-mod-footer",
+      "type": "layout",
+      "parentId": "pe-root",
+      "children": [
+        "pe-footer-contact"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-footer-contact": {
+      "id": "pe-footer-contact",
+      "type": "text",
+      "parentId": "pe-mod-footer",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+                },
+                {
+                  "text": "zyzshop1",
+                  "link": "https://example.com/store",
+                  "decoration": "underline"
+                },
+                {
+                  "text": " Team at "
+                },
+                {
+                  "text": "lintingting516@gmail.com",
+                  "link": "mailto:lintingting516@gmail.com",
+                  "decoration": "underline"
+                }
+              ]
+            }
+          ]
+        },
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.caption"
+        },
+        "color": {
+          "$themeRef": "colors.secondary"
+        },
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.1.text": {
+          "slotId": "storeName",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺名称"
+        },
+        "props.textBody.paragraphs.0.runs.1.link": {
+          "slotId": "storeUrl",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "店铺链接"
+        },
+        "props.textBody.paragraphs.0.runs.3.text": {
+          "slotId": "supportEmail",
+          "mode": "variable",
+          "valueType": "string",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "客服邮箱"
+        },
+        "props.textBody.paragraphs.0.runs.3.link": {
+          "slotId": "supportEmailMailto",
+          "mode": "variable",
+          "valueType": "url",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "客服邮箱 mailto 链接"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.caption",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.caption",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.secondary",
+          "mode": "theme",
+          "tokenPath": "colors.secondary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "pe-root": {
+      "id": "pe-root",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "pe-mod-logo",
+        "pe-mod-hero",
+        "pe-mod-greeting",
+        "pe-mod-points",
+        "pe-mod-account",
+        "pe-mod-divider",
+        "pe-mod-footer"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {
+        "props.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        }
+      }
+    }
+  }
+}

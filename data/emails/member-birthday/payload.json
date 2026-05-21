@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "1.0.0",
+  "slots": {
+    "storeLogoSrc": {
+      "label": "店铺 Logo 地址",
+      "valueType": "image"
+    },
+    "storeLogoAlt": {
+      "label": "店铺 Logo 替代文字",
+      "valueType": "string"
+    },
+    "heroBirthdayImageSrc": {
+      "label": "生日主视觉头图",
+      "valueType": "image"
+    },
+    "heroBirthdayImageAlt": {
+      "label": "生日头图替代文字",
+      "valueType": "string"
+    },
+    "heroDearText": {
+      "label": "生日称呼",
+      "valueType": "string"
+    },
+    "heroTitleText": {
+      "label": "生日大标题",
+      "valueType": "string"
+    },
+    "heroSubtitle": {
+      "label": "生日副标题",
+      "valueType": "string"
+    },
+    "greetingText": {
+      "label": "问候正文",
+      "valueType": "string"
+    },
+    "rewardPoints": {
+      "label": "奖励积分数",
+      "valueType": "string"
+    },
+    "memberBenefitsUrl": {
+      "label": "会员权益链接",
+      "valueType": "url"
+    },
+    "birthdayCoupons": {
+      "label": "生日优惠券列表",
+      "valueType": "collection",
+      "description": "驱动优惠券面额、标题与说明，固定 4 项。",
+      "itemFields": [
+        {
+          "key": "offer",
+          "label": "面额文案",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "title",
+          "label": "优惠标题",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "desc",
+          "label": "使用说明",
+          "valueType": "string",
+          "required": true
+        }
+      ],
+      "minItems": 4,
+      "maxItems": 4,
+      "dataSource": {
+        "type": "custom"
+      }
+    },
+    "ctaButtonText": {
+      "label": "主按钮文案",
+      "valueType": "string"
+    },
+    "ctaButtonUrl": {
+      "label": "主按钮链接",
+      "valueType": "url"
+    },
+    "createAccountUrl": {
+      "label": "注册账户链接",
+      "valueType": "url"
+    },
+    "resetPasswordUrl": {
+      "label": "重置密码链接",
+      "valueType": "url"
+    },
+    "storeName": {
+      "label": "店铺名称",
+      "valueType": "string"
+    },
+    "storeUrl": {
+      "label": "店铺链接",
+      "valueType": "url"
+    },
+    "supportEmail": {
+      "label": "客服邮箱",
+      "valueType": "string"
+    },
+    "supportEmailMailto": {
+      "label": "客服邮箱 mailto 链接",
+      "valueType": "url"
+    }
+  },
+  "values": {
+    "storeLogoSrc": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+    "storeLogoAlt": "Store logo",
+    "heroBirthdayImageSrc": "https://images.pexels.com/photos/3609494/pexels-photo-3609494.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "heroBirthdayImageAlt": "Happy Birthday",
+    "heroDearText": "Dear member",
+    "heroTitleText": "Happy Birthday",
+    "heroSubtitle": "we provide you with more member services and discounts",
+    "greetingText": "Hi Member Name, wishing you a wonderful birthday. Here's something special to make your day even better.",
+    "rewardPoints": "888",
+    "memberBenefitsUrl": "https://example.com/benefits",
+    "birthdayCoupons": [
+      {
+        "offer": "10% OFF",
+        "title": "Order enjoys 10% off",
+        "desc": "Available when the order amount exceeds $300"
+      },
+      {
+        "offer": "10% OFF",
+        "title": "Product enjoys a 10% discount",
+        "desc": "Available when the order amount exceeds $10"
+      },
+      {
+        "offer": "FREE SHIPPING",
+        "title": "Order over $300 for free shipping",
+        "desc": "Available when the order amount exceeds $300"
+      },
+      {
+        "offer": "FREE PRODUCT",
+        "title": "Buy 1 Get 1 Free",
+        "desc": "No threshold"
+      }
+    ],
+    "ctaButtonText": "Shop Now",
+    "ctaButtonUrl": "https://example.com/shop",
+    "createAccountUrl": "https://example.com/register",
+    "resetPasswordUrl": "https://example.com/reset-password",
+    "storeName": "zyzshop1",
+    "storeUrl": "https://example.com/store",
+    "supportEmail": "lintingting516@gmail.com",
+    "supportEmailMailto": "mailto:lintingting516@gmail.com"
+  }
+}

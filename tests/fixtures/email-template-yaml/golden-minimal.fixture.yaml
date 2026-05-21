@@ -1,0 +1,72 @@
+# Golden 最小输入 YAML：覆盖 emailRoot → layout → text / button 主路径
+# 修改生成器后若快照有意变更：npm run template-yaml:golden:write
+schemaVersion: "1.0.0"
+meta:
+  emailId: yaml_golden_minimal
+  templateId: yaml_golden_minimal
+  templateVersion: 1
+  locale: zh-CN
+root:
+  kind: emailRoot
+  id: bgm-root
+  name: 画布根节点
+  props:
+    backgroundColor: "#ffffff"
+  children:
+    - kind: layout
+      id: bgm-page
+      name: 主内容区
+      props:
+        direction: vertical
+        gap: "16px"
+      wrapperStyle:
+        backgroundColor: "#ffffff"
+        padding:
+          mode: separate
+          top: "24px"
+          right: "24px"
+          bottom: "24px"
+          left: "24px"
+      children:
+        - kind: text
+          id: bgm-h1
+          name: 标题
+          props:
+            textBody:
+              version: 1
+              paragraphs:
+                - runs:
+                    - text: "YAML Golden"
+            fontSize: "22px"
+            color: "#111111"
+            bold: true
+            italic: false
+            decoration: none
+        - kind: text
+          id: bgm-body
+          name: 正文
+          props:
+            textBody:
+              version: 1
+              paragraphs:
+                - runs:
+                    - text: "由 YAML 展开器生成。"
+            fontSize: "14px"
+            color: "#444444"
+            bold: false
+            italic: false
+            decoration: none
+        - kind: button
+          id: bgm-btn
+          name: 主按钮
+          props:
+            text: 查看
+            link: "https://example.com"
+            buttonStyle:
+              backgroundColor: "#111111"
+              textColor: "#ffffff"
+              borderRadius:
+                mode: unified
+                radius: "0"
+              bold: true
+              italic: false

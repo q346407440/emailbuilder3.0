@@ -1,0 +1,347 @@
+import type { BindingSpec, EmailBlock, EmailTemplate } from "../types/email";
+import { isThemeRef } from "../types/themeRef";
+import { normalizeThemeFontFamilyInput } from "./emailFontFamily";
+import { classifyField } from "./blockFieldClassification";
+import { getAtPath, setAtPath } from "./paths";
+import {
+  getBindingUiMeta,
+  getThemeRestoreBinding,
+  getThemeRestoreBindings,
+  getThemeRestoreJson,
+  patchBindingUiMeta,
+  pathKeyFor,
+} from "./bindingUiMeta";
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return Boolean(v) && typeof v === "object" && !Array.isArray(v);
+}
+
+/** 深度检测子树中是否出现 $themeRef */
+export function containsThemeRefDeep(value: unknown): boolean {
+  if (isThemeRef(value)) return true;
+  if (Array.isArray(value)) return value.some(containsThemeRefDeep);
+  if (isPlainObject(value)) return Object.values(value).some(containsThemeRefDeep);
+  return false;
+}
+
+/** 仅从模板字面量读取 bindPath 对应值（不走 payload 覆盖） */
+export function readTemplateFieldOnly(block: EmailBlock, bindPath: string): unknown {
+  const [root, ...rest] = bindPath.split(".");
+  const sub = rest.join(".");
+  if (root === "props") return getAtPath(block.props as Record<string, unknown>, sub);
+  if (root === "wrapperStyle") {
+    return getAtPath((block.wrapperStyle ?? {}) as Record<string, unknown>, sub);
+  }
+  return undefined;
+}
+
+export function setTemplateFieldOnly(template: EmailTemplate, blockId: string, bindPath: string, value: unknown): EmailTemplate {
+  const t = structuredClone(template);
+  const b = t.blocks[blockId];
+  if (!b) return t;
+  const [root, ...rest] = bindPath.split(".");
+  const sub = rest.join(".");
+  if (root === "props") {
+    if (sub) setAtPath(b.props as Record<string, unknown>, sub, value);
+    else Object.assign(b.props, value as object);
+  } else if (root === "wrapperStyle") {
+    if (!b.wrapperStyle) b.wrapperStyle = {};
+    if (sub) setAtPath(b.wrapperStyle as Record<string, unknown>, sub, value);
+    else Object.assign(b.wrapperStyle, value as object);
+  }
+  return t;
+}
+
+function readMergedField(merged: EmailTemplate, blockId: string, bindPath: string): unknown {
+  const b = merged.blocks[blockId];
+  if (!b) return undefined;
+  return readTemplateFieldOnly(b, bindPath);
+}
+
+function isSameOrChildBindPath(candidate: string, bindPath: string): boolean {
+  return candidate === bindPath || candidate.startsWith(`${bindPath}.`);
+}
+
+function readBindingSpecTree(block: EmailBlock, bindPath: string): Record<string, BindingSpec> {
+  const bindings = block.bindings ?? {};
+  const out: Record<string, BindingSpec> = {};
+  for (const [path, spec] of Object.entries(bindings)) {
+    if (isSameOrChildBindPath(path, bindPath)) out[path] = spec;
+  }
+  return out;
+}
+
+function setBlockBinding(
+  template: EmailTemplate,
+  blockId: string,
+  bindPath: string,
+  spec: BindingSpec | undefined
+): EmailTemplate {
+  const t = structuredClone(template);
+  const b = t.blocks[blockId];
+  if (!b) return t;
+  if (!b.bindings && spec) b.bindings = {};
+  if (spec) {
+    (b.bindings as Record<string, BindingSpec>)[bindPath] = spec;
+  } else if (b.bindings) {
+    delete b.bindings[bindPath];
+    if (Object.keys(b.bindings).length === 0) delete b.bindings;
+  }
+  return t;
+}
+
+function removeBlockBindingTree(template: EmailTemplate, blockId: string, bindPath: string): EmailTemplate {
+  const t = structuredClone(template);
+  const b = t.blocks[blockId];
+  if (!b?.bindings) return t;
+  for (const path of Object.keys(b.bindings)) {
+    if (isSameOrChildBindPath(path, bindPath)) delete b.bindings[path];
+  }
+  if (Object.keys(b.bindings).length === 0) delete b.bindings;
+  return t;
+}
+
+function restoreBlockBindingTree(
+  template: EmailTemplate,
+  blockId: string,
+  bindings: Record<string, BindingSpec>
+): EmailTemplate {
+  const t = structuredClone(template);
+  const b = t.blocks[blockId];
+  if (!b) return t;
+  if (!b.bindings) b.bindings = {};
+  for (const [path, spec] of Object.entries(bindings)) {
+    b.bindings[path] = spec;
+  }
+  return t;
+}
+
+/**
+ * 解除跟随主题：
+ * 1) 将 path 烘焙为 merged 中的字面量。
+ * 2) 把原始字段子树 JSON 记入 `themeRestoreJson`。
+ * 3) 把原 BindingSpec 记入 `themeRestoreBindingJson`，并从 block.bindings 移除该 binding，
+ *    避免 UI 层胶囊读到「mode: theme」与字段值已是字面量不一致。
+ */
+function fieldFollowsThemeBinding(block: EmailBlock, bindPath: string): boolean {
+  const spec = block.bindings?.[bindPath];
+  return Boolean(spec && spec.mode === "theme");
+}
+
+const FONT_THEME_DETACH_BIND_PATHS = new Set([
+  "props.fontFamily",
+  "props.buttonStyle.fontFamily",
+]);
+
+/** 解除主题跟随时：字体字段烘焙为 template 可落盘的单一主字体，不写 CSS 字体栈。 */
+function coerceThemeDetachBakedValue(bindPath: string, value: unknown): unknown {
+  if (!FONT_THEME_DETACH_BIND_PATHS.has(bindPath)) return value;
+  if (typeof value !== "string") return value;
+  return normalizeThemeFontFamilyInput(value) ?? value;
+}
+
+/** 解除跟随时写入 themeRestoreJson 的字段快照（优先保留模板内 $themeRef 子树） */
+function themeDetachValueSnapshot(block: EmailBlock, bindPath: string, raw: unknown): string {
+  if (containsThemeRefDeep(raw)) {
+    return JSON.stringify(raw === undefined ? null : raw);
+  }
+  const tokenPath = block.bindings?.[bindPath]?.tokenPath;
+  if (tokenPath) {
+    return JSON.stringify({ $themeRef: tokenPath });
+  }
+  return JSON.stringify(raw === undefined ? null : raw);
+}
+
+export function detachThemeFieldBranch(
+  template: EmailTemplate,
+  merged: EmailTemplate,
+  blockId: string,
+  bindPath: string
+): EmailTemplate {
+  const block = template.blocks[blockId];
+  if (!block) return template;
+  const raw = readTemplateFieldOnly(block, bindPath);
+  if (!containsThemeRefDeep(raw) && !fieldFollowsThemeBinding(block, bindPath)) return template;
+  const pk = pathKeyFor(blockId, bindPath);
+  const valueSnapshot = themeDetachValueSnapshot(block, bindPath, raw);
+  const bindingTree = readBindingSpecTree(block, bindPath);
+  const bindingSnapshot =
+    Object.keys(bindingTree).length > 0 ? JSON.stringify(bindingTree) : undefined;
+  const mergedVal = readMergedField(merged, blockId, bindPath);
+  const toWrite = coerceThemeDetachBakedValue(bindPath, mergedVal === undefined ? raw : mergedVal);
+  let next = setTemplateFieldOnly(template, blockId, bindPath, toWrite);
+  if (bindingSnapshot) {
+    next = removeBlockBindingTree(next, blockId, bindPath);
+  }
+  next = patchBindingUiMeta(next, (prev) => ({
+    ...prev,
+    themeRestoreJson: { ...prev.themeRestoreJson, [pk]: valueSnapshot },
+    themeRestoreBindingJson: bindingSnapshot
+      ? { ...prev.themeRestoreBindingJson, [pk]: bindingSnapshot }
+      : prev.themeRestoreBindingJson,
+  }));
+  return next;
+}
+
+/**
+ * 恢复跟随主题：写回字段值与 BindingSpec，并清空两份 restore 快照。
+ */
+export function restoreThemeFieldBranch(template: EmailTemplate, blockId: string, bindPath: string): EmailTemplate {
+  const pk = pathKeyFor(blockId, bindPath);
+  const json = getThemeRestoreJson(template, pk);
+  if (json === undefined) return template;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json) as unknown;
+  } catch {
+    return template;
+  }
+  let next = setTemplateFieldOnly(template, blockId, bindPath, parsed);
+  const restoredBindings = getThemeRestoreBindings(next, pk, bindPath);
+  if (restoredBindings) {
+    next = restoreBlockBindingTree(next, blockId, restoredBindings);
+  } else {
+    const restoredBinding = getThemeRestoreBinding(next, pk);
+    if (restoredBinding) {
+      next = setBlockBinding(next, blockId, bindPath, restoredBinding);
+    }
+  }
+  next = patchBindingUiMeta(next, (prev) => {
+    const tr = { ...prev.themeRestoreJson };
+    delete tr[pk];
+    const trb = { ...prev.themeRestoreBindingJson };
+    delete trb[pk];
+    return {
+      ...prev,
+      themeRestoreJson: Object.keys(tr).length ? tr : undefined,
+      themeRestoreBindingJson: Object.keys(trb).length ? trb : undefined,
+    };
+  });
+  return next;
+}
+
+export function isThemeDetached(template: EmailTemplate, blockId: string, bindPath: string): boolean {
+  const pk = pathKeyFor(blockId, bindPath);
+  return Boolean(getBindingUiMeta(template).themeRestoreJson?.[pk]);
+}
+
+export function hasThemeRefInTemplateField(template: EmailTemplate, blockId: string, bindPath: string): boolean {
+  const b = template.blocks[blockId];
+  if (!b) return false;
+  // 优先读 bindings 元信息（来源胶囊体系）：mode === "theme" 即视为跟随主题。
+  // 兜底回退到字段值的 $themeRef 判断，保持对未 decorate 模板的兼容。
+  const spec = b.bindings?.[bindPath];
+  if (spec && spec.mode === "theme") return true;
+  return containsThemeRefDeep(readTemplateFieldOnly(b, bindPath));
+}
+
+/** 读取字段当前或解除跟随前快照中的令牌路径（用于胶囊菜单高亮）。 */
+export function readThemeTokenPathForField(
+  template: EmailTemplate,
+  blockId: string,
+  bindPath: string
+): string | undefined {
+  const b = template.blocks[blockId];
+  if (!b) return undefined;
+  const fromBinding = b.bindings?.[bindPath]?.tokenPath;
+  if (fromBinding) return fromBinding.trim() || undefined;
+  const raw = readTemplateFieldOnly(b, bindPath);
+  if (isThemeRef(raw)) return raw.$themeRef.trim() || undefined;
+
+  if (containsThemeRefDeep(raw)) {
+    const walk = (v: unknown): string | undefined => {
+      if (isThemeRef(v)) return v.$themeRef.trim() || undefined;
+      if (Array.isArray(v)) {
+        for (const item of v) {
+          const hit = walk(item);
+          if (hit) return hit;
+        }
+      }
+      if (isPlainObject(v)) {
+        for (const item of Object.values(v)) {
+          const hit = walk(item);
+          if (hit) return hit;
+        }
+      }
+      return undefined;
+    };
+    const fromRaw = walk(raw);
+    if (fromRaw) return fromRaw;
+  }
+
+  const prefix = `${bindPath}.`;
+  const childTokenPaths = new Set<string>();
+  for (const [path, spec] of Object.entries(b.bindings ?? {})) {
+    if (path !== bindPath && !path.startsWith(prefix)) continue;
+    if (spec.mode !== "theme" || !spec.tokenPath?.trim()) continue;
+    childTokenPaths.add(spec.tokenPath.trim());
+  }
+  if (childTokenPaths.size >= 1) return [...childTokenPaths][0];
+
+  const pk = pathKeyFor(blockId, bindPath);
+  const restoreJson = getThemeRestoreJson(template, pk);
+  if (!restoreJson) return undefined;
+  try {
+    const parsed = JSON.parse(restoreJson) as unknown;
+    if (isThemeRef(parsed)) return parsed.$themeRef.trim() || undefined;
+    if (containsThemeRefDeep(parsed)) {
+      const walk = (v: unknown): string | undefined => {
+        if (isThemeRef(v)) return v.$themeRef.trim() || undefined;
+        if (Array.isArray(v)) {
+          for (const item of v) {
+            const hit = walk(item);
+            if (hit) return hit;
+          }
+        }
+        if (isPlainObject(v)) {
+          for (const item of Object.values(v)) {
+            const hit = walk(item);
+            if (hit) return hit;
+          }
+        }
+        return undefined;
+      };
+      return walk(parsed);
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+/** 将样式字段绑定到指定标准令牌（写入 $themeRef + bindings.mode=theme）。 */
+export function applyThemeTokenBinding(
+  template: EmailTemplate,
+  blockId: string,
+  bindPath: string,
+  tokenPath: string
+): EmailTemplate {
+  const block = template.blocks[blockId];
+  if (!block) return template;
+  const normalized = tokenPath.trim();
+  if (!normalized) return template;
+
+  let next = setTemplateFieldOnly(template, blockId, bindPath, { $themeRef: normalized });
+  next = setBlockBinding(next, blockId, bindPath, {
+    slotId: normalized,
+    mode: "theme",
+    tokenPath: normalized,
+    fieldKind: classifyField(block.type, bindPath),
+  });
+
+  const pk = pathKeyFor(blockId, bindPath);
+  if (getThemeRestoreJson(next, pk) !== undefined) {
+    next = patchBindingUiMeta(next, (prev) => {
+      const tr = { ...prev.themeRestoreJson };
+      delete tr[pk];
+      const trb = { ...prev.themeRestoreBindingJson };
+      delete trb[pk];
+      return {
+        ...prev,
+        themeRestoreJson: Object.keys(tr).length ? tr : undefined,
+        themeRestoreBindingJson: Object.keys(trb).length ? trb : undefined,
+      };
+    });
+  }
+  return next;
+}

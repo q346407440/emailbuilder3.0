@@ -1,0 +1,1126 @@
+{
+  "masterId": "section-hero",
+  "name": "模块 · 主推商品",
+  "version": "1.0.0",
+  "description": "灰底主推区：主图、款名与 CTA 按钮。",
+  "rootBlockId": "oca-mod-hero",
+  "catalogRootBlockId": "__catalog_root__",
+  "blocks": {
+    "oca-mod-hero": {
+      "id": "oca-mod-hero",
+      "type": "layout",
+      "parentId": "__catalog_root__",
+      "children": [
+        "oca-hero-inner"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "oca-hero-inner": {
+      "id": "oca-hero-inner",
+      "type": "layout",
+      "parentId": "oca-mod-hero",
+      "children": [
+        "oca-hero-img",
+        "oca-hero-name",
+        "oca-hero-btn"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "corners",
+          "topLeft": {
+            "$themeRef": "tokens.radius.panel"
+          },
+          "topRight": {
+            "$themeRef": "tokens.radius.panel"
+          },
+          "bottomRight": {
+            "$themeRef": "tokens.radius.panel"
+          },
+          "bottomLeft": {
+            "$themeRef": "tokens.radius.panel"
+          }
+        },
+        "backgroundColor": {
+          "$themeRef": "colors.surface"
+        },
+        "padding": {
+          "mode": "separate",
+          "top": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "right": {
+            "$themeRef": "tokens.spacing.pageInline"
+          },
+          "bottom": {
+            "$themeRef": "tokens.spacing.section"
+          },
+          "left": {
+            "$themeRef": "tokens.spacing.pageInline"
+          }
+        },
+        "contentAlign": {
+          "vertical": "top",
+          "horizontal": "left"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": {
+          "$themeRef": "tokens.spacing.gap"
+        }
+      },
+      "bindings": {
+        "wrapperStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.top": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.bottom": {
+          "slotId": "tokens.spacing.section",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.section",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.left": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.padding.right": {
+          "slotId": "tokens.spacing.pageInline",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.pageInline",
+          "fieldKind": "style"
+        },
+        "props.gap": {
+          "slotId": "tokens.spacing.gap",
+          "mode": "theme",
+          "tokenPath": "tokens.spacing.gap",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.borderRadius.topLeft": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.borderRadius.topRight": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.borderRadius.bottomRight": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        },
+        "wrapperStyle.borderRadius.bottomLeft": {
+          "slotId": "tokens.radius.panel",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.panel",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "oca-hero-img": {
+      "id": "oca-hero-img",
+      "type": "image",
+      "parentId": "oca-hero-inner",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "widthMode": "fill",
+        "heightMode": "fixed",
+        "height": "280px",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundImage": {
+          "src": "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
+          "alt": "Running shoe product",
+          "link": "",
+          "fit": "cover",
+          "position": "center",
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          }
+        },
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        }
+      },
+      "props": {},
+      "bindings": {
+        "wrapperStyle.backgroundImage.src": {
+          "slotId": "featuredProduct",
+          "mode": "variable",
+          "valueType": "collection",
+          "defaultValue": [
+            {
+              "imageSrc": "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
+              "imageAlt": "Cloud",
+              "name": "Cloud",
+              "href": "https://example.com/"
+            }
+          ],
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.imageSrc",
+          "label": "主推商品列表",
+          "description": "用于驱动主推灰底容器的商品图、名称与跳转链接（固定 1 项）。",
+          "itemFields": [
+            {
+              "key": "imageSrc",
+              "label": "图片地址",
+              "valueType": "image",
+              "required": true
+            },
+            {
+              "key": "imageAlt",
+              "label": "图片 alt",
+              "valueType": "string",
+              "placeholder": "可为空"
+            },
+            {
+              "key": "name",
+              "label": "商品名称",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "href",
+              "label": "商品链接",
+              "valueType": "url",
+              "required": true
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "wrapperStyle.backgroundImage.alt": {
+          "slotId": "featuredProduct",
+          "mode": "variable",
+          "valueType": "collection",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.imageAlt"
+        }
+      }
+    },
+    "oca-hero-name": {
+      "id": "oca-hero-name",
+      "type": "text",
+      "parentId": "oca-hero-inner",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "version": 1,
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "Cloud"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": {
+          "$themeRef": "tokens.typography.body"
+        },
+        "color": {
+          "$themeRef": "colors.primary"
+        },
+        "bold": true,
+        "italic": false,
+        "decoration": "none",
+        "fontFamily": {
+          "$themeRef": "fonts.body"
+        }
+      },
+      "bindings": {
+        "props.textBody.paragraphs.0.runs.0.text": {
+          "slotId": "featuredProduct",
+          "mode": "variable",
+          "valueType": "collection",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.name"
+        },
+        "props.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        },
+        "props.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "oca-hero-btn": {
+      "id": "oca-hero-btn",
+      "type": "button",
+      "parentId": "oca-hero-inner",
+      "children": [],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "start",
+          "vertical": "start"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        }
+      },
+      "props": {
+        "text": "Shop now",
+        "link": "https://example.com/",
+        "buttonStyle": {
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "textColor": {
+            "$themeRef": "colors.primary"
+          },
+          "fontSize": {
+            "$themeRef": "tokens.typography.body"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "1px",
+            "style": "solid",
+            "color": {
+              "$themeRef": "colors.primary"
+            }
+          },
+          "borderRadius": {
+            "mode": "corners",
+            "topLeft": {
+              "$themeRef": "tokens.radius.cta"
+            },
+            "topRight": {
+              "$themeRef": "tokens.radius.cta"
+            },
+            "bottomRight": {
+              "$themeRef": "tokens.radius.cta"
+            },
+            "bottomLeft": {
+              "$themeRef": "tokens.radius.cta"
+            }
+          },
+          "bold": false,
+          "italic": false,
+          "fontFamily": {
+            "$themeRef": "fonts.body"
+          },
+          "widthMode": "hug"
+        }
+      },
+      "bindings": {
+        "props.text": {
+          "slotId": "featuredProductCtaText",
+          "mode": "variable",
+          "valueType": "string",
+          "defaultValue": "Shop now",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "label": "主推按钮文案",
+          "description": "主推商品卡片按钮文案。"
+        },
+        "props.link": {
+          "slotId": "featuredProduct",
+          "mode": "variable",
+          "valueType": "collection",
+          "allowExternal": true,
+          "fieldKind": "content",
+          "slotPath": "0.href"
+        },
+        "props.buttonStyle.borderRadius.topLeft": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.borderRadius.topRight": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.borderRadius.bottomRight": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.borderRadius.bottomLeft": {
+          "slotId": "tokens.radius.cta",
+          "mode": "theme",
+          "tokenPath": "tokens.radius.cta",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.fontSize": {
+          "slotId": "tokens.typography.body",
+          "mode": "theme",
+          "tokenPath": "tokens.typography.body",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.backgroundColor": {
+          "slotId": "colors.surface",
+          "mode": "theme",
+          "tokenPath": "colors.surface",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.textColor": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.border.color": {
+          "slotId": "colors.primary",
+          "mode": "theme",
+          "tokenPath": "colors.primary",
+          "fieldKind": "style"
+        },
+        "props.buttonStyle.fontFamily": {
+          "slotId": "fonts.body",
+          "mode": "theme",
+          "tokenPath": "fonts.body",
+          "fieldKind": "style"
+        }
+      }
+    },
+    "__catalog_root__": {
+      "id": "__catalog_root__",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "oca-mod-hero"
+      ],
+      "wrapperStyle": {
+        "placement": {
+          "horizontal": "center"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#FFFFFF",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    }
+  },
+  "blockMeta": {
+    "oca-mod-hero": {
+      "blockType": "layout.container",
+      "name": "模块 · 主推商品"
+    },
+    "oca-hero-inner": {
+      "blockType": "layout.container",
+      "name": "主推灰底容器"
+    },
+    "oca-hero-img": {
+      "blockType": "content.image",
+      "name": "主推鞋图"
+    },
+    "oca-hero-name": {
+      "blockType": "content.text",
+      "name": "主推款名"
+    },
+    "oca-hero-btn": {
+      "blockType": "action.button",
+      "name": "主推按钮"
+    },
+    "__catalog_root__": {
+      "blockType": "layout.container",
+      "name": "预览根"
+    }
+  },
+  "configSchema": {
+    "schemaVersion": "1.0.0",
+    "scopes": [
+      {
+        "scopeId": "template",
+        "kind": "template",
+        "label": "整封邮件",
+        "fields": [
+          {
+            "key": "templateWidth",
+            "label": "邮件宽度",
+            "control": "text",
+            "target": {
+              "kind": "templatePath",
+              "path": "blocks.__catalog_root__.props.width"
+            }
+          }
+        ]
+      },
+      {
+        "scopeId": "section:section-hero",
+        "kind": "section",
+        "label": "模块 · 主推商品",
+        "blockIds": [
+          "oca-mod-hero"
+        ],
+        "fields": [
+          {
+            "key": "wrapperStyle_backgroundColor_token",
+            "label": "wrapperStyle.backgroundColor 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "surface",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-mod-hero",
+              "path": "wrapperStyle.backgroundColor"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_top_token",
+            "label": "wrapperStyle.padding.top 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "section",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-mod-hero",
+              "path": "wrapperStyle.padding.top"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_bottom_token",
+            "label": "wrapperStyle.padding.bottom 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "section",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-mod-hero",
+              "path": "wrapperStyle.padding.bottom"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_left_token",
+            "label": "wrapperStyle.padding.left 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "pageInline",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-mod-hero",
+              "path": "wrapperStyle.padding.left"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_right_token",
+            "label": "wrapperStyle.padding.right 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "pageInline",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-mod-hero",
+              "path": "wrapperStyle.padding.right"
+            }
+          },
+          {
+            "key": "props_gap_token",
+            "label": "props.gap 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "gap",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-mod-hero",
+              "path": "props.gap"
+            }
+          }
+        ],
+        "description": "灰底主推区：主图、款名与 CTA 按钮。",
+        "masterRef": {
+          "kind": "section",
+          "id": "section-hero",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "scopeId": "block:oca-hero-inner",
+        "kind": "block",
+        "label": "主推灰底容器",
+        "blockIds": [
+          "oca-hero-inner"
+        ],
+        "fields": [
+          {
+            "key": "wrapperStyle_backgroundColor_token",
+            "label": "wrapperStyle.backgroundColor 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "surface",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.backgroundColor"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_top_token",
+            "label": "wrapperStyle.padding.top 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "section",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.padding.top"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_bottom_token",
+            "label": "wrapperStyle.padding.bottom 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "section",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.padding.bottom"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_left_token",
+            "label": "wrapperStyle.padding.left 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "pageInline",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.padding.left"
+            }
+          },
+          {
+            "key": "wrapperStyle_padding_right_token",
+            "label": "wrapperStyle.padding.right 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "pageInline",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.padding.right"
+            }
+          },
+          {
+            "key": "props_gap_token",
+            "label": "props.gap 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "spacing",
+            "defaultScale": "gap",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "props.gap"
+            }
+          },
+          {
+            "key": "wrapperStyle_borderRadius_topLeft_token",
+            "label": "wrapperStyle.borderRadius.topLeft 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "panel",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.borderRadius.topLeft"
+            }
+          },
+          {
+            "key": "wrapperStyle_borderRadius_topRight_token",
+            "label": "wrapperStyle.borderRadius.topRight 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "panel",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.borderRadius.topRight"
+            }
+          },
+          {
+            "key": "wrapperStyle_borderRadius_bottomRight_token",
+            "label": "wrapperStyle.borderRadius.bottomRight 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "panel",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.borderRadius.bottomRight"
+            }
+          },
+          {
+            "key": "wrapperStyle_borderRadius_bottomLeft_token",
+            "label": "wrapperStyle.borderRadius.bottomLeft 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "panel",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-inner",
+              "path": "wrapperStyle.borderRadius.bottomLeft"
+            }
+          }
+        ],
+        "masterRef": {
+          "kind": "block",
+          "id": "oca-hero-inner"
+        }
+      },
+      {
+        "scopeId": "block:oca-hero-img",
+        "kind": "block",
+        "label": "主推鞋图",
+        "blockIds": [
+          "oca-hero-img"
+        ],
+        "fields": [
+          {
+            "key": "wrapperStyle_backgroundImage_src",
+            "label": "主推商品列表",
+            "description": "用于驱动主推灰底容器的商品图、名称与跳转链接（固定 1 项）。",
+            "control": "text",
+            "target": {
+              "kind": "payload",
+              "slotId": "featuredProduct"
+            }
+          },
+          {
+            "key": "wrapperStyle_backgroundImage_alt",
+            "label": "featuredProduct",
+            "control": "text",
+            "target": {
+              "kind": "payload",
+              "slotId": "featuredProduct"
+            }
+          }
+        ],
+        "masterRef": {
+          "kind": "block",
+          "id": "oca-hero-img"
+        }
+      },
+      {
+        "scopeId": "block:oca-hero-name",
+        "kind": "block",
+        "label": "主推款名",
+        "blockIds": [
+          "oca-hero-name"
+        ],
+        "fields": [
+          {
+            "key": "props_textBody_paragraphs_0_runs_0_text",
+            "label": "featuredProduct",
+            "control": "text",
+            "target": {
+              "kind": "payload",
+              "slotId": "featuredProduct"
+            }
+          },
+          {
+            "key": "props_fontFamily_token",
+            "label": "props.fontFamily 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "fonts",
+            "defaultScale": "body",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-name",
+              "path": "props.fontFamily"
+            }
+          },
+          {
+            "key": "props_fontSize_token",
+            "label": "props.fontSize 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "typography",
+            "defaultScale": "body",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-name",
+              "path": "props.fontSize"
+            }
+          },
+          {
+            "key": "props_color_token",
+            "label": "props.color 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "primary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-name",
+              "path": "props.color"
+            }
+          }
+        ],
+        "masterRef": {
+          "kind": "block",
+          "id": "oca-hero-name"
+        }
+      },
+      {
+        "scopeId": "block:oca-hero-btn",
+        "kind": "block",
+        "label": "主推按钮",
+        "blockIds": [
+          "oca-hero-btn"
+        ],
+        "fields": [
+          {
+            "key": "props_text",
+            "label": "主推按钮文案",
+            "description": "主推商品卡片按钮文案。",
+            "control": "text",
+            "target": {
+              "kind": "payload",
+              "slotId": "featuredProductCtaText"
+            }
+          },
+          {
+            "key": "props_link",
+            "label": "featuredProduct",
+            "control": "text",
+            "target": {
+              "kind": "payload",
+              "slotId": "featuredProduct"
+            }
+          },
+          {
+            "key": "props_buttonStyle_borderRadius_topLeft_token",
+            "label": "props.buttonStyle.borderRadius.topLeft 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "cta",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.borderRadius.topLeft"
+            }
+          },
+          {
+            "key": "props_buttonStyle_borderRadius_topRight_token",
+            "label": "props.buttonStyle.borderRadius.topRight 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "cta",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.borderRadius.topRight"
+            }
+          },
+          {
+            "key": "props_buttonStyle_borderRadius_bottomRight_token",
+            "label": "props.buttonStyle.borderRadius.bottomRight 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "cta",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.borderRadius.bottomRight"
+            }
+          },
+          {
+            "key": "props_buttonStyle_borderRadius_bottomLeft_token",
+            "label": "props.buttonStyle.borderRadius.bottomLeft 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "radius",
+            "defaultScale": "cta",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.borderRadius.bottomLeft"
+            }
+          },
+          {
+            "key": "props_buttonStyle_fontSize_token",
+            "label": "props.buttonStyle.fontSize 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "typography",
+            "defaultScale": "body",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.fontSize"
+            }
+          },
+          {
+            "key": "props_buttonStyle_backgroundColor_token",
+            "label": "props.buttonStyle.backgroundColor 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "surface",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.backgroundColor"
+            }
+          },
+          {
+            "key": "props_buttonStyle_textColor_token",
+            "label": "props.buttonStyle.textColor 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "primary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.textColor"
+            }
+          },
+          {
+            "key": "props_buttonStyle_border_color_token",
+            "label": "props.buttonStyle.border.color 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "colors",
+            "defaultScale": "primary",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.border.color"
+            }
+          },
+          {
+            "key": "props_buttonStyle_fontFamily_token",
+            "label": "props.buttonStyle.fontFamily 样式档位",
+            "control": "tokenScale",
+            "tokenFamily": "fonts",
+            "defaultScale": "body",
+            "allowCustom": true,
+            "target": {
+              "kind": "blockPath",
+              "blockId": "oca-hero-btn",
+              "path": "props.buttonStyle.fontFamily"
+            }
+          }
+        ],
+        "masterRef": {
+          "kind": "block",
+          "id": "oca-hero-btn"
+        }
+      }
+    ]
+  }
+}

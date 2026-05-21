@@ -1,0 +1,232 @@
+{
+  "schemaVersion": "1.0.0",
+  "slots": {
+    "storeLogoSrc": {
+      "label": "店铺 Logo 地址",
+      "valueType": "image"
+    },
+    "storeLogoAlt": {
+      "label": "店铺 Logo 替代文字",
+      "valueType": "string"
+    },
+    "heroVipImageSrc": {
+      "label": "VIP 主视觉头图",
+      "valueType": "image"
+    },
+    "heroVipImageAlt": {
+      "label": "VIP 头图替代文字",
+      "valueType": "string"
+    },
+    "heroTitleText": {
+      "label": "VIP 大标题",
+      "valueType": "string"
+    },
+    "heroSubtitle": {
+      "label": "VIP 副标题",
+      "valueType": "string"
+    },
+    "memberName": {
+      "label": "会员姓名",
+      "valueType": "string",
+      "description": "插入问候语中的会员姓名。"
+    },
+    "introBodyText1": {
+      "label": "会员服务更新说明",
+      "valueType": "string"
+    },
+    "termsOfUseUrl": {
+      "label": "使用条款链接",
+      "valueType": "url"
+    },
+    "privacyPolicyUrl": {
+      "label": "隐私政策链接",
+      "valueType": "url"
+    },
+    "vipLevelBadge": {
+      "label": "等级徽章",
+      "valueType": "string"
+    },
+    "vipLevelTitle": {
+      "label": "VIP 等级标题",
+      "valueType": "string"
+    },
+    "progressText": {
+      "label": "升级进度说明",
+      "valueType": "string"
+    },
+    "progressValue": {
+      "label": "升级进度值",
+      "valueType": "number"
+    },
+    "progressMax": {
+      "label": "进度满槽值",
+      "valueType": "number"
+    },
+    "currentMemberBenefits": {
+      "label": "当前会员权益列表",
+      "valueType": "collection",
+      "description": "VIP 卡内当前权益栅格，固定 5 项。",
+      "itemFields": [
+        {
+          "key": "title",
+          "label": "权益标题",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "subtitle",
+          "label": "权益说明",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "iconSrc",
+          "label": "图标地址",
+          "valueType": "image",
+          "required": true
+        }
+      ],
+      "minItems": 5,
+      "maxItems": 5,
+      "dataSource": {
+        "type": "custom"
+      }
+    },
+    "activateIntroText": {
+      "label": "激活引导语",
+      "valueType": "string"
+    },
+    "activationBenefits": {
+      "label": "激活后可享权益",
+      "valueType": "collection",
+      "description": "激活区权益栅格，固定 2 项。",
+      "itemFields": [
+        {
+          "key": "title",
+          "label": "权益标题",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "subtitle",
+          "label": "权益说明",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "iconSrc",
+          "label": "图标地址",
+          "valueType": "image",
+          "required": true
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "dataSource": {
+        "type": "custom"
+      }
+    },
+    "ctaButtonText": {
+      "label": "激活按钮文案",
+      "valueType": "string"
+    },
+    "ctaButtonUrl": {
+      "label": "激活按钮链接",
+      "valueType": "url"
+    },
+    "disclaimerText": {
+      "label": "权益免责声明",
+      "valueType": "string"
+    },
+    "createAccountUrl": {
+      "label": "注册账户链接",
+      "valueType": "url"
+    },
+    "resetPasswordUrl": {
+      "label": "重置密码链接",
+      "valueType": "url"
+    },
+    "storeName": {
+      "label": "店铺名称",
+      "valueType": "string"
+    },
+    "storeUrl": {
+      "label": "店铺链接",
+      "valueType": "url"
+    },
+    "supportEmail": {
+      "label": "客服邮箱",
+      "valueType": "string"
+    },
+    "supportEmailMailto": {
+      "label": "客服邮箱 mailto 链接",
+      "valueType": "url"
+    }
+  },
+  "values": {
+    "storeLogoSrc": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+    "storeLogoAlt": "Store logo",
+    "heroVipImageSrc": "https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "heroVipImageAlt": "VIP membership",
+    "heroTitleText": "VIP",
+    "heroSubtitle": "Exclusive membership",
+    "memberName": "Member Name",
+    "introBodyText1": "We're thrilled to share that zyzshop1 Membership Services have been updated to bring more ease, clarity, and member-only features.",
+    "termsOfUseUrl": "https://example.com/terms",
+    "privacyPolicyUrl": "https://example.com/privacy",
+    "vipLevelBadge": "V1",
+    "vipLevelTitle": "VIP 1",
+    "progressText": "Spent $1000.00 more to reach VIP next level",
+    "progressValue": 20,
+    "progressMax": 100,
+    "currentMemberBenefits": [
+      {
+        "title": "Get points",
+        "subtitle": "Reward 888 points",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
+      },
+      {
+        "title": "Product discount",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/tag.svg"
+      },
+      {
+        "title": "Order discounts",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/shopping-bag.svg"
+      },
+      {
+        "title": "Buy 1 get 1",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/gift.svg"
+      },
+      {
+        "title": "Free shipping",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/truck-delivery.svg"
+      }
+    ],
+    "activateIntroText": "Activate your membership now to receive the following benefits:",
+    "activationBenefits": [
+      {
+        "title": "Get points",
+        "subtitle": "Reward 888 points",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
+      },
+      {
+        "title": "15% off",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/discount.svg"
+      }
+    ],
+    "ctaButtonText": "👉 I Agree and Activate My Benefits",
+    "ctaButtonUrl": "https://example.com/activate-membership",
+    "disclaimerText": "*Actual membership benefits are as issued at the time of your activation.",
+    "createAccountUrl": "https://example.com/register",
+    "resetPasswordUrl": "https://example.com/reset-password",
+    "storeName": "zyzshop1",
+    "storeUrl": "https://example.com/store",
+    "supportEmail": "lintingting516@gmail.com",
+    "supportEmailMailto": "mailto:lintingting516@gmail.com"
+  }
+}

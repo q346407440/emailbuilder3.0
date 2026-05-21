@@ -1,0 +1,191 @@
+{
+  "schemaVersion": "1.0.0",
+  "scopes": [
+    {
+      "scopeId": "template",
+      "kind": "template",
+      "label": "整封邮件",
+      "fields": [
+        {
+          "key": "templateWidth",
+          "label": "邮件宽度",
+          "control": "text",
+          "target": {
+            "kind": "templatePath",
+            "path": "blocks.mw-root.props.width"
+          }
+        },
+        {
+          "key": "rootPaddingInlineLeft",
+          "label": "左右页边距（根·左）",
+          "description": "对应 emailRoot.props.padding.left，与右共同使用 tokens.spacing.pageInline。",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "pageInline",
+          "allowCustom": true,
+          "target": {
+            "kind": "templatePath",
+            "path": "blocks.mw-root.props.padding.left"
+          }
+        },
+        {
+          "key": "rootPaddingInlineRight",
+          "label": "左右页边距（根·右）",
+          "description": "对应 emailRoot.props.padding.right，与左共同使用 tokens.spacing.pageInline。",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "pageInline",
+          "allowCustom": true,
+          "target": {
+            "kind": "templatePath",
+            "path": "blocks.mw-root.props.padding.right"
+          }
+        },
+        {
+          "key": "rootPaddingTop",
+          "label": "画布上内边距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "section",
+          "allowCustom": true,
+          "target": {
+            "kind": "templatePath",
+            "path": "blocks.mw-root.props.padding.top"
+          }
+        },
+        {
+          "key": "rootPaddingBottom",
+          "label": "画布下内边距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "section",
+          "allowCustom": true,
+          "target": {
+            "kind": "templatePath",
+            "path": "blocks.mw-root.props.padding.bottom"
+          }
+        }
+      ]
+    },
+    {
+      "scopeId": "section:brand",
+      "kind": "section",
+      "label": "顶栏 · 品牌",
+      "blockIds": [
+        "mw-brand",
+        "mw-brand-row",
+        "mw-member-tag"
+      ],
+      "fields": []
+    },
+    {
+      "scopeId": "section:intro",
+      "kind": "section",
+      "label": "问候卡片",
+      "blockIds": [
+        "mw-intro"
+      ],
+      "fields": [
+        {
+          "key": "introPaddingTop",
+          "label": "问候卡上内边距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "section",
+          "allowCustom": true,
+          "target": {
+            "kind": "blockPath",
+            "blockId": "mw-intro",
+            "path": "wrapperStyle.padding.top"
+          }
+        },
+        {
+          "key": "introPaddingBottom",
+          "label": "问候卡下内边距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "section",
+          "allowCustom": true,
+          "target": {
+            "kind": "blockPath",
+            "blockId": "mw-intro",
+            "path": "wrapperStyle.padding.bottom"
+          }
+        }
+      ]
+    },
+    {
+      "scopeId": "section:benefits",
+      "kind": "section",
+      "label": "权益区",
+      "blockIds": [
+        "mw-benefits",
+        "mw-benefits-grid"
+      ],
+      "fields": [
+        {
+          "key": "benefitsPaddingTop",
+          "label": "权益卡上内边距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "section",
+          "allowCustom": true,
+          "target": {
+            "kind": "blockPath",
+            "blockId": "mw-benefits",
+            "path": "wrapperStyle.padding.top"
+          }
+        },
+        {
+          "key": "benefitsInnerGap",
+          "label": "标题与网格间距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "gap",
+          "allowCustom": true,
+          "target": {
+            "kind": "blockPath",
+            "blockId": "mw-benefits",
+            "path": "props.gap"
+          }
+        },
+        {
+          "key": "benefitsGridGap",
+          "label": "权益网格列间距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "gap",
+          "allowCustom": true,
+          "target": {
+            "kind": "blockPath",
+            "blockId": "mw-benefits-grid",
+            "path": "props.gap"
+          }
+        }
+      ]
+    },
+    {
+      "scopeId": "section:account",
+      "kind": "section",
+      "label": "账户说明",
+      "blockIds": [
+        "mw-account"
+      ],
+      "fields": [
+        {
+          "key": "accountPaddingTop",
+          "label": "账户区上内边距",
+          "control": "tokenScale",
+          "tokenFamily": "spacing",
+          "defaultScale": "section",
+          "allowCustom": true,
+          "target": {
+            "kind": "blockPath",
+            "blockId": "mw-account",
+            "path": "wrapperStyle.padding.top"
+          }
+        }
+      ]
+    }
+  ]
+}

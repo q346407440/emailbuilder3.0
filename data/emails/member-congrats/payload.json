@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "1.0.0",
+  "slots": {
+    "storeLogoSrc": {
+      "label": "店铺 Logo 地址",
+      "valueType": "image",
+      "description": "邮件顶部居中展示的店铺标识图。"
+    },
+    "storeLogoAlt": {
+      "label": "店铺 Logo 替代文字",
+      "valueType": "string"
+    },
+    "heroCongratsImageSrc": {
+      "label": "恭喜头图地址",
+      "valueType": "image",
+      "description": "恭喜/升级主视觉横幅图，建议宽 600px 比例。"
+    },
+    "heroCongratsImageAlt": {
+      "label": "恭喜头图替代文字",
+      "valueType": "string"
+    },
+    "heroDearText": {
+      "label": "恭喜称呼",
+      "valueType": "string"
+    },
+    "heroTitleText": {
+      "label": "恭喜大标题",
+      "valueType": "string"
+    },
+    "heroSubtitle": {
+      "label": "恭喜副标题",
+      "valueType": "string"
+    },
+    "greetingMainText": {
+      "label": "升级问候主文",
+      "valueType": "string"
+    },
+    "greetingSubText": {
+      "label": "权益引导语",
+      "valueType": "string"
+    },
+    "memberBenefits": {
+      "label": "会员权益列表",
+      "valueType": "collection",
+      "description": "驱动权益区图标、标题与说明文案，固定 5 项。",
+      "itemFields": [
+        {
+          "key": "title",
+          "label": "权益标题",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "subtitle",
+          "label": "权益说明",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "iconSrc",
+          "label": "图标地址",
+          "valueType": "image",
+          "required": true
+        }
+      ],
+      "minItems": 5,
+      "maxItems": 5,
+      "dataSource": {
+        "type": "custom"
+      }
+    },
+    "createAccountUrl": {
+      "label": "注册账户链接",
+      "valueType": "url"
+    },
+    "resetPasswordUrl": {
+      "label": "重置密码链接",
+      "valueType": "url"
+    },
+    "storeName": {
+      "label": "店铺名称",
+      "valueType": "string"
+    },
+    "storeUrl": {
+      "label": "店铺链接",
+      "valueType": "url"
+    },
+    "supportEmail": {
+      "label": "客服邮箱",
+      "valueType": "string"
+    },
+    "supportEmailMailto": {
+      "label": "客服邮箱 mailto 链接",
+      "valueType": "url"
+    }
+  },
+  "values": {
+    "storeLogoSrc": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+    "storeLogoAlt": "Store logo",
+    "heroCongratsImageSrc": "https://images.pexels.com/photos/2647990/pexels-photo-2647990.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "heroCongratsImageAlt": "Congratulations",
+    "heroDearText": "Dear member",
+    "heroTitleText": "Congratulations",
+    "heroSubtitle": "we provide you with more member services and discounts",
+    "greetingMainText": "Hi Member Name You are now a level member!",
+    "greetingSubText": "You can enjoy the following membership benefits",
+    "memberBenefits": [
+      {
+        "title": "Get points",
+        "subtitle": "Reward 888 points",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
+      },
+      {
+        "title": "Product discount",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/tag.svg"
+      },
+      {
+        "title": "Order discounts",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/shopping-bag.svg"
+      },
+      {
+        "title": "Buy 1 get 1",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/gift.svg"
+      },
+      {
+        "title": "Free shipping",
+        "subtitle": "No threshold",
+        "iconSrc": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/truck-delivery.svg"
+      }
+    ],
+    "createAccountUrl": "https://example.com/register",
+    "resetPasswordUrl": "https://example.com/reset-password",
+    "storeName": "zyzshop1",
+    "storeUrl": "https://example.com/store",
+    "supportEmail": "lintingting516@gmail.com",
+    "supportEmailMailto": "mailto:lintingting516@gmail.com"
+  }
+}
