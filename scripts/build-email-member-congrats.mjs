@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 生成「会员恭喜 / 升级」学习模板到 data/emails/member-congrats/
- * 按配置母版：模块壳 + tokenPresets 标准 14 键 + payload 变量。
+ * 按配置母版：模块壳 + tokenPresets 标准 12 键 + payload 变量。
  */
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -69,8 +71,6 @@ const border0 = () => ({
 
 const radius0 = () => ({ mode: "unified", radius: "0" });
 
-const placement = (h, v) => ({ horizontal: h, vertical: v });
-
 const themeRef = (path) => ({ $themeRef: path });
 
 const themeBinding = (path) => ({
@@ -102,7 +102,7 @@ const modShellBindings = () => ({
 });
 
 const wsBase = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -112,7 +112,6 @@ const wsBase = (extra = {}) => ({
 });
 
 const textBodyRuns = (runs) => ({
-  version: 1,
   paragraphs: [{ runs }],
 });
 
@@ -170,7 +169,7 @@ function build() {
     parentId: modLogo,
     children: [logoImg],
     wrapperStyle: wsBase({
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -183,7 +182,7 @@ function build() {
     parentId: logoRow,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       contentAlign: { horizontal: "center", vertical: "center" },
       widthMode: "fixed",
       width: "140px",
@@ -239,7 +238,7 @@ function build() {
     parentId: modHero,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
       widthMode: "fill",
       heightMode: "fixed",
@@ -297,7 +296,6 @@ function build() {
     props: {
       content: "<p>Dear member</p>",
       textBody: textBodyRuns([{ text: "Dear member", italic: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -314,7 +312,6 @@ function build() {
         fieldKind: "content",
         label: "恭喜称呼",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -329,7 +326,6 @@ function build() {
     props: {
       content: "<p>Congratulations</p>",
       textBody: textBodyRuns([{ text: "Congratulations", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.display"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -346,7 +342,6 @@ function build() {
         fieldKind: "content",
         label: "恭喜大标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.display"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -363,7 +358,6 @@ function build() {
       textBody: textBodyRuns([
         { text: "we provide you with more member services and discounts" },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -380,7 +374,6 @@ function build() {
         fieldKind: "content",
         label: "恭喜副标题",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -401,7 +394,6 @@ function build() {
     props: {
       content: "<p>Hi Member Name You are now a level member!</p>",
       textBody: textBodyRuns([{ text: "Hi Member Name You are now a level member!" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -418,7 +410,6 @@ function build() {
         fieldKind: "content",
         label: "升级问候主文",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -433,7 +424,6 @@ function build() {
     props: {
       content: "<p>You can enjoy the following membership benefits</p>",
       textBody: textBodyRuns([{ text: "You can enjoy the following membership benefits" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -450,7 +440,6 @@ function build() {
         fieldKind: "content",
         label: "权益引导语",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -472,7 +461,6 @@ function build() {
     props: {
       content: "<p>Your benefits:</p>",
       textBody: textBodyRuns([{ text: "Your benefits:", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -480,7 +468,6 @@ function build() {
       decoration: "none",
     },
     bindings: {
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -502,7 +489,7 @@ function build() {
       parentId: modBenefits,
       children: [iconWrapId, textColId],
       wrapperStyle: wsBase({
-        placement: placement("start", "start"),
+        contentAlign: contentAlignFromAxes("start", "start"),
         contentAlign: { horizontal: "left", vertical: "top" },
       }),
       props: { direction: "horizontal", gapMode: "fixed", gap: themeRef("tokens.spacing.gap") },
@@ -517,7 +504,7 @@ function build() {
       parentId: rowId,
       children: [iconId],
       wrapperStyle: {
-        placement: placement("start", "center"),
+        contentAlign: contentAlignFromAxes("start", "center"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "fixed",
         width: "48px",
@@ -543,7 +530,7 @@ function build() {
       parentId: iconWrapId,
       children: [],
       wrapperStyle: {
-        placement: placement("center", "center"),
+        contentAlign: contentAlignFromAxes("center", "center"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "hug",
         heightMode: "hug",
@@ -593,7 +580,7 @@ function build() {
       children: [titleId, subId],
       wrapperStyle: wsBase({
         widthMode: "fill",
-        placement: placement("start", "center"),
+        contentAlign: contentAlignFromAxes("start", "center"),
       }),
       props: { direction: "vertical", gapMode: "fixed", gap: "4px" },
       bindings: {},
@@ -610,7 +597,6 @@ function build() {
       props: {
         content: `<p>${item.title}</p>`,
         textBody: textBodyRuns([{ text: item.title }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -626,7 +612,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.title`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -643,7 +628,6 @@ function build() {
       props: {
         content: `<p>${item.subtitle}</p>`,
         textBody: textBodyRuns([{ text: item.subtitle }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: themeRef("colors.secondary"),
         bold: false,
@@ -659,7 +643,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.subtitle`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
         "props.color": themeBinding("colors.secondary"),
       },
@@ -690,7 +673,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns1),
       textBody: textBodyRuns(accountRuns1),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -707,7 +689,6 @@ function build() {
         fieldKind: "content",
         label: "注册账户链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -728,7 +709,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns2),
       textBody: textBodyRuns(accountRuns2),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -745,7 +725,6 @@ function build() {
         fieldKind: "content",
         label: "重置密码链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -772,7 +751,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns3),
       textBody: textBodyRuns(accountRuns3),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -816,7 +794,6 @@ function build() {
         fieldKind: "content",
         label: "客服邮箱 mailto 链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -828,7 +805,7 @@ function build() {
     parentId: null,
     children: modIds,
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -900,11 +877,6 @@ function writeTokenPresets() {
             secondary: "#6B7280",
             surface: "#FFFFFF",
           },
-          fonts: {
-            heading: "Georgia",
-            body:
-              "'Segoe UI'",
-          },
           spacing: {
             section: "24px",
             gap: "14px",
@@ -933,13 +905,8 @@ function writeMeta() {
     description:
       "店铺 Logo、恭喜主视觉、升级问候、五项会员权益与账户说明；样式经 tokenPresets 统一管理。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: {
-      type: "screenshot",
-      url: "",
-    },
     defaultStylePresetSelection: "local",
   };
 }

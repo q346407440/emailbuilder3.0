@@ -13,7 +13,7 @@ import type { FieldKind } from "../types/email";
  * - 按钮 text / link → content；按钮 buttonStyle.* → style
  * - 图标 src → content；icon.size → style
  * - 背景色 backgroundColor → style；背景图 backgroundImage.src / alt / link → content；backgroundImage.borderRadius / border / fit / position → style；backgroundContentAlign → structural
- * - 文本里嵌强调色：禁止 inline style，content 字段不得包含 `<span style="...">`（由 validate 守卫）
+ * - 文本段内变色/变字号：使用 `textBody.paragraphs[].runs[].color|fontSize` 字面量字段（不可绑 theme/variable）；禁止手写 HTML `<span style="...">`
  *
  * 实现：每条规则是「字段路径前缀 → 分类」；匹配按前缀长度倒序，最长前缀优先。
  * 字段路径是否允许出现：先由 `src/block-contract/` 白名单约束，再由此处约束 bindings 的 mode/fieldKind。
@@ -38,7 +38,6 @@ const COMMON_RULES: ClassificationRule[] = [
   { prefix: "wrapperStyle.width", kind: "style" },
   { prefix: "wrapperStyle.height", kind: "style" },
   // 排版对齐 → structural（不应走 theme，也不应走 payload）
-  { prefix: "wrapperStyle.placement", kind: "structural" },
   { prefix: "wrapperStyle.contentAlign", kind: "structural" },
   // 容器背景图：URL / alt / link 是业务内容，圆角描边 fit 是样式
   { prefix: "wrapperStyle.backgroundImage.src", kind: "content" },
@@ -74,8 +73,6 @@ const RULES_BY_TYPE: Record<string, ClassificationRule[]> = {
     { prefix: "props.textBody", kind: "content" },
     { prefix: "props.text", kind: "content" },
     { prefix: "props.html", kind: "content" },
-    // 字体相关 → 样式
-    { prefix: "props.fontFamily", kind: "style" },
     { prefix: "props.fontSize", kind: "style" },
     { prefix: "props.color", kind: "style" },
     { prefix: "props.bold", kind: "style" },
@@ -89,7 +86,6 @@ const RULES_BY_TYPE: Record<string, ClassificationRule[]> = {
     { prefix: "props.buttonStyle.width", kind: "style" },
     { prefix: "props.buttonStyle.backgroundColor", kind: "style" },
     { prefix: "props.buttonStyle.textColor", kind: "style" },
-    { prefix: "props.buttonStyle.fontFamily", kind: "style" },
     { prefix: "props.buttonStyle.fontSize", kind: "style" },
     { prefix: "props.buttonStyle.borderRadius", kind: "style" },
     { prefix: "props.buttonStyle.border", kind: "style" },
@@ -147,7 +143,14 @@ function pickLongestPrefix(rules: ClassificationRule[], bindPath: string): Field
  * - block 专属规则优先于通用规则；命中任一即返回。
  * - 都未命中时回退 `structural`，避免误把未知字段当作可绑定（更保守）。
  */
+/** textBody run 上的 color/fontSize：仅字面量落盘，禁止 theme/variable 绑定 */
+const TEXT_BODY_RUN_LITERAL_STYLE_RE =
+  /^props\.textBody\.paragraphs\.\d+\.runs\.\d+\.(color|fontSize)$/;
+
 export function classifyField(blockType: string, bindPath: string): FieldKind {
+  if (blockType === "text" && TEXT_BODY_RUN_LITERAL_STYLE_RE.test(bindPath)) {
+    return "structural";
+  }
   const typeRules = RULES_BY_TYPE[blockType] ?? [];
   const typed = pickLongestPrefix(typeRules, bindPath);
   if (typed !== null) return typed;

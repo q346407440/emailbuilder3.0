@@ -2,7 +2,7 @@ import type { BindingSpec } from "../types/email";
 import type { PayloadContractIssue, SlotValueType } from "../payload-contract/types";
 import { isSlotValueType } from "../payload-contract/value-types";
 import { validateExternalVariableBindingSpec } from "../payload-contract/validate";
-import { getVisibilityOperatorSpec } from "./operators";
+import { getVisibilityOperatorSpec, isVisibilityConditionValueType } from "./operators";
 import type { VisibilityRule } from "./types";
 
 function issue(path: string, reason: string): PayloadContractIssue {
@@ -85,6 +85,15 @@ export function validateVisibilityRule(path: string, visibility: unknown): Paylo
     issues.push({
       path: `${path}.valueType`,
       reason: "visibility 必须声明合法 valueType",
+    });
+    return issues;
+  }
+
+  if (!isVisibilityConditionValueType(rule.valueType)) {
+    issues.push({
+      path: `${path}.valueType`,
+      reason:
+        "显隐条件变量不支持颜色型槽；请选用文本、链接、图片、数值、布尔或列表型业务变量",
     });
     return issues;
   }

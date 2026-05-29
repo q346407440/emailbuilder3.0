@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import type { WrapperContentAlign } from "../types/email";
+import { normalizeWrapperContentAlign } from "./wrapperContentAlign";
 
 /** 邮件画布与导出共用的 presentation table 基础样式（与 `<table role="presentation">` 搭配）。 */
 export const emailPresentationTableStyle: CSSProperties = {
@@ -8,25 +10,43 @@ export const emailPresentationTableStyle: CSSProperties = {
   tableLayout: "fixed",
 };
 
+/**
+ * 横排 layout 外层 presentation 表是否须占满父槽宽度。
+ * `widthMode: hug` 时内层行表仍为 inline-table 收缩；仅外层壳满宽后，
+ * outer `<td align>` 才能使 `wrapperStyle.contentAlign.horizontal` 定位行组。
+ */
+export function layoutHorizontalOuterPresentationShellFillWidth(params: {
+  directionIsRow: boolean;
+  gapModeAuto: boolean;
+  hasFillWidthChild: boolean;
+  childCount: number;
+}): boolean {
+  if (!params.directionIsRow || params.childCount < 1) return false;
+  return params.gapModeAuto || params.hasFillWidthChild;
+}
+
 export function layoutPreviewOuterTableUsesFullWidth(params: {
   widthMode: unknown;
   directionIsRow: boolean;
   gapModeAuto: boolean;
+  hasFillWidthChild: boolean;
   childCount: number;
 }): boolean {
   const w = params.widthMode;
   const wm: "hug" | "fill" | "fixed" =
     w === "hug" || w === "fill" || w === "fixed" ? w : "fill";
   if (wm === "fill" || wm === "fixed") return true;
-  return params.directionIsRow && params.gapModeAuto && params.childCount > 0;
+  if (layoutHorizontalOuterPresentationShellFillWidth(params)) return true;
+  return false;
 }
 
 /**
  * 表格槽位内块级 `width:auto` 仍会被 `<td>` 撑满行宽；`widthMode: hug` 需 `fit-content` 才能随内容收缩。
  * `layout` / `grid` 在预览层另有专用逻辑，叶子块（button、text 等）在 BlockView 合并本样式。
  */
+/** hug 宽叶子块：宽度收缩由槽位 `<td width="1">`（HTML 属性，非 CSS 1%）承担，外层勿用 `fit-content`。 */
 export function wrapperHugWidthShrinkWrapCss(widthMode: unknown): CSSProperties {
-  if (widthMode === "hug") return { width: "fit-content", maxWidth: "100%" };
+  if (widthMode === "hug") return { maxWidth: "100%" };
   return {};
 }
 
@@ -54,6 +74,32 @@ export function tableValignFromContentVertical(v: unknown): TableCellVerticalAli
   if (v === "bottom") return "bottom";
   if (v === "center") return "middle";
   return "top";
+}
+
+/**
+ * layout / 底图叠放栈：子块在父级槽位内的水平对齐。
+ * 仅读父级 `contentAlign.horizontal`；子块 contentAlign 只作用于其自身壳内内容。
+ */
+export function layoutStackCrossAlignForChild(
+  _parentDirection: "vertical" | "horizontal",
+  parentContentAlign: WrapperContentAlign | undefined,
+  _childContentAlign?: WrapperContentAlign | undefined
+): "left" | "center" | "right" {
+  const parent = normalizeWrapperContentAlign(parentContentAlign);
+  return tableAlignFromContentHorizontal(parent.horizontal);
+}
+
+/**
+ * layout / 底图叠放栈：子块在父级槽位内的竖直对齐。
+ * 仅读父级 `contentAlign.vertical`；子块 contentAlign 只作用于其自身壳内内容。
+ */
+export function layoutStackMainValignForChild(
+  _parentDirection: "vertical" | "horizontal",
+  parentContentAlign: WrapperContentAlign | undefined,
+  _childContentAlign?: WrapperContentAlign | undefined
+): TableCellVerticalAlign {
+  const parent = normalizeWrapperContentAlign(parentContentAlign);
+  return tableValignFromContentVertical(parent.vertical);
 }
 
 export function layoutPreviewOuterBoxFillsParentHeight(heightMode: unknown): boolean {
@@ -103,7 +149,8 @@ function normalizeLayoutHeightMode(heightMode: unknown): "hug" | "fill" | "fixed
   return "hug";
 }
 
-function layoutParentHasExplicitHeight(
+/** 外壳 heightMode 为 fill，或 fixed 且带有效 height 字面量。layout / grid 定高撑满判定共用。 */
+export function wrapperShellHasExplicitHeight(
   wrapperStyle: { heightMode?: unknown; height?: unknown } | undefined
 ): boolean {
   if (!wrapperStyle) return false;
@@ -114,6 +161,12 @@ function layoutParentHasExplicitHeight(
     return Boolean(h && h !== "auto");
   }
   return false;
+}
+
+function layoutParentHasExplicitHeight(
+  wrapperStyle: { heightMode?: unknown; height?: unknown } | undefined
+): boolean {
+  return wrapperShellHasExplicitHeight(wrapperStyle);
 }
 
 /**
@@ -133,12 +186,15 @@ export function layoutColumnInnerShouldFillParentHeight(params: {
   return false;
 }
 
-/** 纵列存在 fill 高子块且父级有定高时，内层用 flex 均分主轴高度（避免多行 `<tr height:100%>` 坍缩）。 */
+/**
+ * @deprecated 纵列 fill 高子块改由 `verticalStackRowHeightStyle` + presentation 栈表均分，不再使用 Flex。
+ */
 export function layoutColumnShouldUseFillFlex(params: {
   wrapperStyle: { heightMode?: unknown; height?: unknown } | undefined;
   hasFillHeightChild: boolean;
 }): boolean {
-  return params.hasFillHeightChild && layoutParentHasExplicitHeight(params.wrapperStyle);
+  void params;
+  return false;
 }
 
 /** 主轴固定间距：auto 模式只分配剩余空间，不渲染旧的 props.gap 像素值。 */
@@ -160,7 +216,7 @@ export function layoutRowParentAllowsFillChildExpansion(parentWidthMode: unknown
   return wm === "fill" || wm === "fixed";
 }
 
-/** 横排内层行表是否应收成满宽（gap auto 等分，或父 fill/fixed 且存在 fill 子块）。 */
+/** 横排内层行表是否应收成满宽（gap auto 须满宽以分配缝隙列，或父 fill/fixed 且存在 fill 子块）。 */
 export function layoutRowInnerShouldUseFullWidth(params: {
   parentWidthMode: unknown;
   gapModeAuto: boolean;
@@ -173,14 +229,35 @@ export function layoutRowInnerShouldUseFullWidth(params: {
 }
 
 /**
- * fill 子块横排行：用相邻 `<td>` 的 padding 表达 fixed gap，避免三列表格把 fill 列收成内容宽。
+ * 横排满宽行是否用 `table-layout: fixed`。
+ * - hug 与 fill 混排：须 `auto`，否则 `width="1"` hug 列钉死在 1px。
+ * - gap auto 且无 fill 子：须 `auto`，否则 `layoutRowAutoGapSpacerTdStyle` 的百分比缝列在 fixed 下占满表宽、子级被压成 1px。
+ */
+export function layoutRowInnerShouldUseFixedTableLayout(params: {
+  parentWidthMode: unknown;
+  gapModeAuto: boolean;
+  childCount: number;
+  hasFillWidthChild: boolean;
+  hasHugWidthChild: boolean;
+}): boolean {
+  if (!layoutRowInnerShouldUseFullWidth(params)) return false;
+  if (params.hasFillWidthChild && params.hasHugWidthChild) return false;
+  if (params.gapModeAuto && !params.hasFillWidthChild) return false;
+  return true;
+}
+
+/**
+ * 横排行是否跳过独立间隔/缝隙列。
+ * - fixed gap：始终用独立 `<td>` 表达间距（hugA 宽 + gap + 下一子宽，加性分配；勿把 gap 折进 hug 列 padding）。
+ * - gap auto 且同行有 fill：不插缝隙列，主轴剩余由 fill 吃掉（`props.gap` 像素值亦不渲染）。
  */
 export function layoutRowOmitsSpacerGapCells(params: {
   gapModeAuto: boolean;
   hasFillWidthChild: boolean;
   gapPx: number;
 }): boolean {
-  return params.hasFillWidthChild && !params.gapModeAuto && params.gapPx > 0;
+  void params.gapPx;
+  return params.hasFillWidthChild && params.gapModeAuto;
 }
 
 /** 横排内层 presentation 表样式（与 EmailPreview 横排行一致）。 */
@@ -189,77 +266,120 @@ export function layoutRowInnerTablePresentationStyle(params: {
   gapModeAuto: boolean;
   childCount: number;
   hasFillWidthChild: boolean;
+  hasHugWidthChild?: boolean;
   fillRowInnerHeight?: boolean;
 }): CSSProperties {
   const useFullWidth = layoutRowInnerShouldUseFullWidth(params);
+  if (!useFullWidth) {
+    return {
+      borderCollapse: "collapse",
+      borderSpacing: 0,
+      tableLayout: "auto",
+      /** 经典邮件收缩写法：先占 1px 再随内容撑开，避免在满宽 `<td>` 内被拉满 */
+      width: "1px",
+      maxWidth: "100%",
+      display: "inline-table",
+      ...(params.fillRowInnerHeight ? { height: "100%" } : {}),
+    };
+  }
+  const useFixedTableLayout = layoutRowInnerShouldUseFixedTableLayout({
+    ...params,
+    hasHugWidthChild: params.hasHugWidthChild ?? false,
+  });
+  if (useFixedTableLayout) {
+    return {
+      ...emailPresentationTableStyle,
+      tableLayout: "fixed",
+      width: "100%",
+      maxWidth: "100%",
+      ...(params.fillRowInnerHeight ? { height: "100%" } : {}),
+    };
+  }
   return {
-    ...emailPresentationTableStyle,
-    tableLayout: useFullWidth ? "fixed" : "auto",
-    width: useFullWidth ? "100%" : "auto",
+    borderCollapse: "collapse",
+    borderSpacing: 0,
+    tableLayout: "auto",
+    width: "100%",
     maxWidth: "100%",
     ...(params.fillRowInnerHeight ? { height: "100%" } : {}),
   };
 }
 
 /**
- * 横排内层 `<td>` 列宽：gap auto 等分；满宽 fill 行内 fill 列 100%、hug 列 1% + nowrap（经典邮件表分栏）。
+ * 横排 gap auto：缝隙列均分剩余空间（非子级均分）。`gapSlotCount` = 子块数 − 1。
+ * 百分比缝列仅在 `table-layout: auto` 满宽行内按「扣除 hug 占位后的剩余宽」分配；fixed 表下勿用。
+ */
+export function layoutRowAutoGapSpacerTdStyle(gapSlotCount: number): CSSProperties {
+  if (gapSlotCount < 1) return {};
+  if (gapSlotCount === 1) return { width: "100%" };
+  return { width: `${(100 / gapSlotCount).toFixed(4)}%` };
+}
+
+/**
+ * 横排内层 `<td>` 列宽：满宽行内 hug 列用 `nowrap` + 调用方补 HTML `width="1"`；fill 列 100% 吃剩余宽。
+ * gap auto 的缝隙由 `layoutRowAutoGapSpacerTdStyle` 单独列承担，不在此均分子级。
  */
 export function layoutRowChildTdWidthStyle(
   childWidthMode: unknown,
   childFixedWidth: unknown,
   params: {
     innerTableFullWidth: boolean;
+    innerTableUsesFixedLayout?: boolean;
     gapModeAuto: boolean;
     childCount: number;
     rowHasFillWidthChild?: boolean;
+    rowHasHugWidthChild?: boolean;
   }
 ): CSSProperties {
-  if (params.gapModeAuto && params.childCount > 0) {
-    return { width: `${(100 / params.childCount).toFixed(4)}%` };
-  }
-  if (!params.innerTableFullWidth) return {};
+  void params.gapModeAuto;
+  void params.childCount;
+  void params.rowHasFillWidthChild;
+  void params.rowHasHugWidthChild;
   const wm = normalizeLayoutWidthMode(childWidthMode);
+  if (!params.innerTableFullWidth) {
+    /** 内层表已 inline-table 收缩时，列宽随内容；勿用 1%（会在被撑满的表宽上均分列） */
+    if (wm === "hug") return { whiteSpace: "nowrap" };
+    return {};
+  }
   if (wm === "hug") {
-    return params.rowHasFillWidthChild
-      ? { whiteSpace: "nowrap" }
-      : { width: "1%", whiteSpace: "nowrap" };
+    /** 勿用 CSS `width:1%`（会按表宽算成几像素）；列宽由 `emailPresentationHugTdWidthAttr` → `<td width="1">` */
+    return { whiteSpace: "nowrap" };
   }
   if (wm === "fixed") {
     const w = typeof childFixedWidth === "string" ? childFixedWidth.trim() : "";
     if (w) return { width: w, whiteSpace: "nowrap" };
-    return { width: "1%", whiteSpace: "nowrap" };
+    return { whiteSpace: "nowrap" };
   }
-  return {};
+  /** 满宽 + auto 表：fill 列勿写 100%（会抢整表宽）；由 hug/gap 先占位后吃剩余 */
+  if (params.innerTableUsesFixedLayout === false) {
+    return { minWidth: 0 };
+  }
+  return { width: "100%" };
 }
 
-/** 底图叠放层外层 `<td>`：按 layout 排列方向取主轴 contentAlign（与普适纵/横排 layout 一致）。 */
+/**
+ * 横排内层 `<td width>` 属性：满宽行内 hug 列补经典邮件 `width="1"`，
+ * 让同行存在 fill 列时，hug 列先按内容收缩，再把剩余宽度留给 fill。
+ */
+export function layoutRowChildTdWidthAttr(
+  childWidthMode: unknown,
+  params: { innerTableFullWidth: boolean }
+): string | undefined {
+  if (!params.innerTableFullWidth) return undefined;
+  return normalizeLayoutWidthMode(childWidthMode) === "hug" ? "1" : undefined;
+}
+
+/** 底图叠放层外层 `<td>`：使用容器 contentAlign 水平 + 竖直两轴。 */
 export function overlayCellAlignFromLayoutContentAlign(
-  directionIsRow: boolean,
+  _directionIsRow: boolean,
   contentAlign: { horizontal?: unknown; vertical?: unknown } | undefined
 ): { align: "left" | "center" | "right"; valign: TableCellVerticalAlign } {
-  if (directionIsRow) {
-    return {
-      align: tableAlignFromContentHorizontal(contentAlign?.horizontal),
-      valign: "top",
-    };
-  }
   return {
-    align: "left",
+    align: tableAlignFromContentHorizontal(contentAlign?.horizontal),
     valign: tableValignFromContentVertical(contentAlign?.vertical),
   };
 }
 
-/** 横向行槽位：子块 `placement.vertical` → `<td verticalAlign>`。 */
-export function tableRowCellVerticalAlignFromPlacementAxis(
-  placementVertical: "start" | "center" | "end" | undefined
-): TableCellVerticalAlign | undefined {
-  if (placementVertical === "end") return "bottom";
-  if (placementVertical === "center") return "middle";
-  if (placementVertical === "start") return "top";
-  return undefined;
-}
-
-/** 横向行槽位：父级 `contentAlign.vertical` 回退 → `<td verticalAlign>`。 */
 export function tableRowCellVerticalAlignFromFlexAlignItems(
   alignItems: CSSProperties["alignItems"] | undefined
 ): TableCellVerticalAlign {
@@ -268,11 +388,10 @@ export function tableRowCellVerticalAlignFromFlexAlignItems(
   return "top";
 }
 
-/** 横排行 flex 分支：子块 placement.vertical 优先；fill 高子块铺满同一行高度。 */
 export function layoutRowFlexChildWrapperStyle(params: {
   childWidthMode: unknown;
   childHeightMode: unknown;
-  placementVertical: "start" | "center" | "end" | undefined;
+  contentAlignVertical?: "start" | "center" | "end" | undefined;
   fallbackAlignItems: CSSProperties["alignItems"] | undefined;
 }): CSSProperties {
   const wm = normalizeLayoutWidthMode(params.childWidthMode);
@@ -280,11 +399,11 @@ export function layoutRowFlexChildWrapperStyle(params: {
   const alignSelf =
     hm === "fill"
       ? "stretch"
-      : params.placementVertical === "end"
+      : params.contentAlignVertical === "end"
         ? "flex-end"
-        : params.placementVertical === "center"
+        : params.contentAlignVertical === "center"
           ? "center"
-          : params.placementVertical === "start"
+          : params.contentAlignVertical === "start"
             ? "flex-start"
             : params.fallbackAlignItems;
   return {

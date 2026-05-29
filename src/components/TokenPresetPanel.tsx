@@ -1,4 +1,7 @@
+import { useState } from "react";
 import type { TokenPresets } from "../types/tokenPreset";
+import { GlobalTokenPresetCreateModal } from "./GlobalTokenPresetCreateModal";
+import { SidebarNavRow } from "./ui/SidebarNavRow";
 
 type Props = {
   tokenPresets: TokenPresets | null;
@@ -7,6 +10,7 @@ type Props = {
   activeListKey: "local" | string;
   onSelectLocal: () => void;
   onSelectGlobal: (presetId: string) => void;
+  onCreateGlobal: (displayLabel: string) => Promise<void>;
 };
 
 export function TokenPresetPanel({
@@ -15,54 +19,88 @@ export function TokenPresetPanel({
   activeListKey,
   onSelectLocal,
   onSelectGlobal,
+  onCreateGlobal,
 }: Props) {
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  const handleCreate = async (displayLabel: string) => {
+    setCreating(true);
+    try {
+      await onCreateGlobal(displayLabel);
+      setCreateModalOpen(false);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const localLabel = tokenPresets?.presets[tokenPresets.activePresetId]?.label ?? "本邮件预设";
+  const localMeta = tokenPresets?.activePresetId ?? "未配置";
+
+  const presetCount = 1 + globalTokenPresets.length;
+
   return (
-    <aside className="theme-panel theme-sidebar">
-      <header className="theme-panel__header">
-        <h2 className="side-panel__title">样式预设</h2>
-      </header>
-      <div className="theme-panel__body theme-panel__side-nav">
-        <div className="theme-panel__group">
-          <h3 className="theme-panel__group-title">本邮件</h3>
-          <ul className="theme-panel__option-list">
-            <li>
+    <>
+      <aside className="block-tree token-preset-panel" aria-label="样式预设">
+        <div className="block-tree__title token-preset-panel__title">
+          <span>样式预设</span>
+          <span className="token-preset-panel__title-count" aria-label={`共 ${presetCount} 套`}>
+            {presetCount} 套
+          </span>
+        </div>
+        <div className="block-tree__scroll token-preset-panel__scroll">
+          <div className="theme-panel__group">
+            <h3 className="theme-panel__group-title">本邮件</h3>
+            <ul className="theme-panel__option-list sidebar-nav-list">
+              <SidebarNavRow
+                active={activeListKey === "local"}
+                title={localLabel}
+                meta={localMeta}
+                onSelect={onSelectLocal}
+              />
+            </ul>
+          </div>
+          <div className="theme-panel__group">
+            <div className="theme-panel__group-head">
+              <h3 className="theme-panel__group-title">公共预设</h3>
               <button
                 type="button"
-                className={`theme-panel__option${activeListKey === "local" ? " theme-panel__option--active" : ""}`}
-                onClick={onSelectLocal}
+                className="resource-text-action"
+                disabled={creating}
+                onClick={() => setCreateModalOpen(true)}
               >
-                <span className="theme-panel__option-title">
-                  {tokenPresets?.presets[tokenPresets.activePresetId]?.label ?? "本邮件预设"}
-                </span>
-                <span className="theme-panel__option-meta">{tokenPresets?.activePresetId ?? "未配置"}</span>
+                新建
               </button>
-            </li>
-          </ul>
+            </div>
+            {globalTokenPresets.length ? (
+              <ul className="theme-panel__option-list sidebar-nav-list">
+                {globalTokenPresets.map((item) => {
+                  const label =
+                    item.tokenPresets.presets[item.tokenPresets.activePresetId]?.label ?? item.presetId;
+                  const isActive = activeListKey === item.presetId;
+                  return (
+                    <SidebarNavRow
+                      key={item.presetId}
+                      active={isActive}
+                      title={label}
+                      meta={item.presetId}
+                      onSelect={() => onSelectGlobal(item.presetId)}
+                    />
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="inspector__muted theme-panel__group-empty">暂无</p>
+            )}
+          </div>
         </div>
-        <div className="theme-panel__group">
-          <h3 className="theme-panel__group-title">公共预设</h3>
-          {globalTokenPresets.length ? (
-            <ul className="theme-panel__option-list">
-              {globalTokenPresets.map((item) => (
-                <li key={item.presetId}>
-                  <button
-                    type="button"
-                    className={`theme-panel__option${activeListKey === item.presetId ? " theme-panel__option--active" : ""}`}
-                    onClick={() => onSelectGlobal(item.presetId)}
-                  >
-                    <span className="theme-panel__option-title">
-                      {item.tokenPresets.presets[item.tokenPresets.activePresetId]?.label ?? item.presetId}
-                    </span>
-                    <span className="theme-panel__option-meta">{item.presetId}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="inspector__muted theme-panel__group-empty">暂无</p>
-          )}
-        </div>
-      </div>
-    </aside>
+      </aside>
+      <GlobalTokenPresetCreateModal
+        visible={createModalOpen}
+        creating={creating}
+        onCancel={() => setCreateModalOpen(false)}
+        onCreate={handleCreate}
+      />
+    </>
   );
 }

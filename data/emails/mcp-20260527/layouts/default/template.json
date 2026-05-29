@@ -1,0 +1,444 @@
+{
+  "schemaVersion": "3.0.0",
+  "emailId": "mcp-20260527",
+  "templateId": "mcp-20260527",
+  "templateVersion": 1,
+  "locale": "zh-CN",
+  "rootBlockId": "mcp-20260527-root",
+  "blockMeta": {
+    "mcp-20260527-root": {
+      "blockType": "layout.container",
+      "name": "画布根"
+    },
+    "mcp-20260527-main": {
+      "blockType": "layout.container",
+      "name": "问题卡片区"
+    },
+    "mcp-20260527-heading": {
+      "blockType": "content.text",
+      "name": "标题"
+    },
+    "mcp-20260527-card-1": {
+      "blockType": "layout.container",
+      "name": "问题卡片1"
+    },
+    "mcp-20260527-card-1-title": {
+      "blockType": "layout.container",
+      "name": "问题标题行1"
+    },
+    "mcp-20260527-card-1-title-icon": {
+      "blockType": "content.text",
+      "name": "问题标题前缀图标1"
+    },
+    "mcp-20260527-card-1-title-text": {
+      "blockType": "content.text",
+      "name": "问题标题文本1"
+    },
+    "mcp-20260527-card-1-desc": {
+      "blockType": "layout.container",
+      "name": "问题说明行1"
+    },
+    "mcp-20260527-card-1-desc-icon": {
+      "blockType": "content.text",
+      "name": "问题说明前缀图标1"
+    },
+    "mcp-20260527-card-1-desc-text": {
+      "blockType": "content.text",
+      "name": "问题说明文本1"
+    }
+  },
+  "blocks": {
+    "mcp-20260527-root": {
+      "id": "mcp-20260527-root",
+      "type": "emailRoot",
+      "parentId": null,
+      "children": [
+        "mcp-20260527-main"
+      ],
+      "wrapperStyle": {
+        "widthMode": "fill",
+        "heightMode": "hug"
+      },
+      "props": {
+        "backgroundColor": "#f2f2f2",
+        "width": "600px",
+        "padding": {
+          "mode": "unified",
+          "unified": "0"
+        },
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "gapMode": "fixed",
+        "gap": "0"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-main": {
+      "id": "mcp-20260527-main",
+      "type": "layout",
+      "parentId": "mcp-20260527-root",
+      "children": [
+        "mcp-20260527-heading",
+        "mcp-20260527-card-1"
+      ],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        },
+        "backgroundColor": "rgba(255, 253, 251, 1)",
+        "padding": {
+          "mode": "separate",
+          "top": "24px",
+          "right": "20px",
+          "bottom": "24px",
+          "left": "20px"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "18px"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-heading": {
+      "id": "mcp-20260527-heading",
+      "type": "text",
+      "parentId": "mcp-20260527-main",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "center",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "👇 当前存在的关键问题"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": "42px",
+        "color": "#111827",
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1": {
+      "id": "mcp-20260527-card-1",
+      "type": "layout",
+      "parentId": "mcp-20260527-main",
+      "children": [
+        "mcp-20260527-card-1-title",
+        "mcp-20260527-card-1-desc"
+      ],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "1px",
+          "style": "solid",
+          "color": "#e6d8b5"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "16px"
+        },
+        "backgroundColor": "rgba(255, 255, 255, 1)",
+        "padding": {
+          "mode": "separate",
+          "top": "18px",
+          "right": "24px",
+          "bottom": "18px",
+          "left": "24px"
+        }
+      },
+      "props": {
+        "direction": "vertical",
+        "gapMode": "fixed",
+        "gap": "10px"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1-title": {
+      "id": "mcp-20260527-card-1-title",
+      "type": "layout",
+      "parentId": "mcp-20260527-card-1",
+      "children": [
+        "mcp-20260527-card-1-title-icon",
+        "mcp-20260527-card-1-title-text"
+      ],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "8px"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1-desc": {
+      "id": "mcp-20260527-card-1-desc",
+      "type": "layout",
+      "parentId": "mcp-20260527-card-1",
+      "children": [
+        "mcp-20260527-card-1-desc-icon",
+        "mcp-20260527-card-1-desc-text"
+      ],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "direction": "horizontal",
+        "gapMode": "fixed",
+        "gap": "8px"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1-title-icon": {
+      "id": "mcp-20260527-card-1-title-icon",
+      "type": "text",
+      "parentId": "mcp-20260527-card-1-title",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "✖"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": "26px",
+        "color": "#ff1f1f",
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1-title-text": {
+      "id": "mcp-20260527-card-1-title-text",
+      "type": "text",
+      "parentId": "mcp-20260527-card-1-title",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "积分使用门槛高"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": "26px",
+        "color": "#0f172a",
+        "bold": true,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1-desc-icon": {
+      "id": "mcp-20260527-card-1-desc-icon",
+      "type": "text",
+      "parentId": "mcp-20260527-card-1-desc",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "hug",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "→"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": "20px",
+        "color": "#6b7280",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {}
+    },
+    "mcp-20260527-card-1-desc-text": {
+      "id": "mcp-20260527-card-1-desc-text",
+      "type": "text",
+      "parentId": "mcp-20260527-card-1-desc",
+      "children": [],
+      "wrapperStyle": {
+        "contentAlign": {
+          "horizontal": "left",
+          "vertical": "top"
+        },
+        "widthMode": "fill",
+        "heightMode": "hug",
+        "border": {
+          "mode": "unified",
+          "width": "0",
+          "style": "solid",
+          "color": "rgba(0,0,0,0)"
+        },
+        "borderRadius": {
+          "mode": "unified",
+          "radius": "0"
+        }
+      },
+      "props": {
+        "textBody": {
+          "paragraphs": [
+            {
+              "runs": [
+                {
+                  "text": "积分抵扣金额门槛过高，用户不愿使用，转化下降"
+                }
+              ]
+            }
+          ]
+        },
+        "fontSize": "20px",
+        "color": "#6b7280",
+        "bold": false,
+        "italic": false,
+        "decoration": "none"
+      },
+      "bindings": {}
+    }
+  }
+}

@@ -39,7 +39,6 @@ function buildButtonTemplate(wrapperStyle: Record<string, unknown>): EmailTempla
           buttonStyle: {
             backgroundColor: "#111",
             textColor: "#fff",
-            fontFamily: "Arial, sans-serif",
             fontSize: "14px",
             border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
             borderRadius: { mode: "unified", radius: "4px" },
@@ -54,26 +53,24 @@ function buildButtonTemplate(wrapperStyle: Record<string, unknown>): EmailTempla
 }
 
 describe("normalizeButtonContentAlign", () => {
-  it("fill + placement.center 迁移为 contentAlign.center 且 placement.start", () => {
+  it("缺失 horizontal 时补齐 left", () => {
     const block = buildButtonTemplate({
       widthMode: "fill",
       heightMode: "hug",
-      placement: { horizontal: "center", vertical: "start" },
-    }).blocks.btn;
-    assert.equal(normalizeButtonContentAlign(block), true);
-    assert.equal(block.wrapperStyle?.contentAlign?.horizontal, "center");
-    assert.equal(block.wrapperStyle?.placement?.horizontal, "start");
-  });
-
-  it("hug 按钮仅补齐 contentAlign.left", () => {
-    const block = buildButtonTemplate({
-      widthMode: "hug",
-      heightMode: "hug",
-      placement: { horizontal: "end", vertical: "center" },
+      contentAlign: { vertical: "top" },
     }).blocks.btn;
     assert.equal(normalizeButtonContentAlign(block), true);
     assert.equal(block.wrapperStyle?.contentAlign?.horizontal, "left");
-    assert.equal(block.wrapperStyle?.placement?.horizontal, "end");
+  });
+
+  it("已有合法 horizontal 时不改动", () => {
+    const block = buildButtonTemplate({
+      widthMode: "hug",
+      heightMode: "hug",
+      contentAlign: { horizontal: "center", vertical: "top" },
+    }).blocks.btn;
+    assert.equal(normalizeButtonContentAlign(block), false);
+    assert.equal(block.wrapperStyle?.contentAlign?.horizontal, "center");
   });
 });
 
@@ -82,7 +79,6 @@ describe("validateTemplate · button contentAlign", () => {
     const tpl = buildButtonTemplate({
       widthMode: "fill",
       heightMode: "hug",
-      placement: { horizontal: "start", vertical: "start" },
     });
     const issues = validateTemplate(tpl);
     assert.ok(issues.some((i) => i.path === "blocks.btn.wrapperStyle.contentAlign"));
@@ -92,7 +88,6 @@ describe("validateTemplate · button contentAlign", () => {
     const tpl = buildButtonTemplate({
       widthMode: "fill",
       heightMode: "hug",
-      placement: { horizontal: "start", vertical: "start" },
       contentAlign: { horizontal: "center", vertical: "top" },
     });
     const issues = validateTemplate(tpl);

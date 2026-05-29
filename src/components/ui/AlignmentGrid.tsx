@@ -17,7 +17,7 @@ export type AlignmentGridProps<THorizontal extends string, TVertical extends str
   hint?: string;
   disabled?: boolean;
   headerExtra?: ReactNode;
-  /** 为 true 时仅渲染矩阵，不包 Field（供 RelativePlacementControl 等外层已包 Field 的场景） */
+  /** 为 true 时仅渲染矩阵，不包 Field（供 ContentAlignAxisControl 等外层已包 Field 的场景） */
   bare?: boolean;
 };
 

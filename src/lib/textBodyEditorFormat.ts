@@ -1,7 +1,7 @@
 import type { BindingSpec, EmailBlock } from "../types/email";
 import type { TextBodyDefaults } from "./textBodyFormat";
 import { parseHtmlToTextBody, renderTextRunHtml } from "./textBodyFormat";
-import type { TextBodyV1, TextRun } from "../types/email";
+import type { TextBody, TextRun } from "../types/email";
 
 const TEXT_RUN_TEXT_BIND_RE = /^props\.textBody\.paragraphs\.(\d+)\.runs\.(\d+)\.text$/;
 const TEXT_RUN_LINK_BIND_RE = /^props\.textBody\.paragraphs\.(\d+)\.runs\.(\d+)\.link$/;
@@ -32,7 +32,7 @@ function parseRunIndexFromBindPath(bindPath: string, re: RegExp): { pi: number; 
   return { pi: Number(m[1]), ri: Number(m[2]) };
 }
 
-function readRun(body: TextBodyV1, pi: number, ri: number): TextRun | null {
+function readRun(body: TextBody, pi: number, ri: number): TextRun | null {
   const run = body.paragraphs[pi]?.runs?.[ri];
   if (!run || typeof run.text !== "string") return null;
   return run;
@@ -40,7 +40,7 @@ function readRun(body: TextBodyV1, pi: number, ri: number): TextRun | null {
 
 /** 收集 textBody 上 mode=variable 的 run 级绑定，供编辑器胶囊渲染 */
 export function collectTextBodyVariableRuns(
-  body: TextBodyV1,
+  body: TextBody,
   bindings: EmailBlock["bindings"] | undefined,
   resolveDisplay: (bindPath: string) => string
 ): TextBodyVariableRunMeta[] {
@@ -112,7 +112,7 @@ function renderVariablePill(meta: TextBodyVariableRunMeta): string {
 
 /** 编辑器专用 HTML：variable 绑定的 run 渲染为不可编辑胶囊 */
 export function renderTextBodyToEditorHtml(
-  body: TextBodyV1,
+  body: TextBody,
   defaults: TextBodyDefaults,
   variableRuns: TextBodyVariableRunMeta[]
 ): string {
@@ -140,10 +140,10 @@ export function renderTextBodyToEditorHtml(
 }
 
 function mergePreservedVariableRuns(
-  parsed: TextBodyV1,
-  sourceBody: TextBodyV1,
+  parsed: TextBody,
+  sourceBody: TextBody,
   variableRuns: TextBodyVariableRunMeta[]
-): TextBodyV1 {
+): TextBody {
   if (!variableRuns.length) return parsed;
 
   const paragraphs = parsed.paragraphs.map((para, pi) => {
@@ -155,7 +155,7 @@ function mergePreservedVariableRuns(
     return { runs };
   });
 
-  return { version: 1, paragraphs };
+  return { paragraphs };
 }
 
 /**
@@ -164,9 +164,9 @@ function mergePreservedVariableRuns(
 export function parseEditorHtmlToTextBody(
   html: string,
   defaults: TextBodyDefaults,
-  sourceBody: TextBodyV1,
+  sourceBody: TextBody,
   variableRuns: TextBodyVariableRunMeta[]
-): TextBodyV1 {
+): TextBody {
   const parsed = parseHtmlToTextBody(html, defaults);
   if (!variableRuns.length) return parsed;
   return mergePreservedVariableRuns(parsed, sourceBody, variableRuns);

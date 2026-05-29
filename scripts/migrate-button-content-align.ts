@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 /**
  * 为全部 template 中的 button 补齐 contentAlign.horizontal，
- * 并将 fill 宽按钮上误写在 placement 的胶囊对齐意图迁移到 contentAlign。
+ * 并将 fill 宽按钮上误写在 contentAlign 的胶囊对齐意图迁移到 contentAlign。
  *
  * 用法：npx tsx scripts/migrate-button-content-align.ts [--write]
  */

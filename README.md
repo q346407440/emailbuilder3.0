@@ -18,7 +18,7 @@
 
 完整技能表见 [CLAUDE.md](./CLAUDE.md)。`docs/project-plan.md` 仅为历史备忘，**不是**契约。
 
-**结构批量迁移**：`npm run migrate:text-body -- --write`、`npm run migrate:placement -- --write` 等见 `package.json`；交付前 **`npm run validate:all`**。
+**结构批量迁移**：`npm run migrate:text-body -- --write`、`npm run validate:all（非法 wrapperStyle 字段）`、`npm run migrate:content-align-hug-neutral:write` 等见 `package.json`；交付前 **`npm run validate:all`**。
 
 ---
 
@@ -26,8 +26,14 @@
 
 | 场景 | 命令 | 说明 |
 |------|------|------|
-| **日常改前端（推荐）** | `npm run dev` | Vite 热更新；需要 API 时用 `npm run dev:all`。 |
+| **日常改前端（推荐）** | `npm run dev` | Vite 热更新；需要 API 时用 `npm run dev:all` 或 `./start.sh`。 |
 | **验收构建产物** | `npm run build` 后 `npm run preview` | 读 **`dist/`**，改源码后须重新 build。 |
+
+### SMTP 测试发信（画布预览 → 邮箱）
+
+1. 复制 `.env.example` 为 `.env`，填入 `EMAIL_SMTP_*`（测试邮箱的 SMTP 主机、账号、授权码）。
+2. `./start.sh` 或 `npm run dev:all` 启动后，在编辑器侧栏 **邮件元信息** 中填写测试收件人，点击 **发送测试邮件**。
+3. 邮件 HTML 来自当前画布 `.email-preview-scope` 的渲染结果；发件人固定为 `.env` 中的 `EMAIL_SMTP_FROM`，与 meta 里「发件人」表单项无关。
 
 ---
 

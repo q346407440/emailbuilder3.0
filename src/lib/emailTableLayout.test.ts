@@ -6,28 +6,52 @@ import {
   layoutPreviewInnerShellStretchesHeight,
   layoutPreviewOuterBoxFillsParentHeight,
   layoutPreviewOuterTableUsesFullHeight,
+  layoutHorizontalOuterPresentationShellFillWidth,
   layoutPreviewOuterTableUsesFullWidth,
   layoutRenderedFixedGapPx,
+  layoutRowAutoGapSpacerTdStyle,
+  layoutRowChildTdWidthAttr,
   layoutRowChildTdWidthStyle,
   layoutRowFlexChildWrapperStyle,
   layoutRowInnerShouldFillParentHeight,
+  layoutRowInnerShouldUseFixedTableLayout,
   layoutRowInnerShouldUseFullWidth,
   layoutRowInnerTablePresentationStyle,
   layoutRowOmitsSpacerGapCells,
   layoutRowParentAllowsFillChildExpansion,
+  layoutStackCrossAlignForChild,
+  layoutStackMainValignForChild,
   overlayCellAlignFromLayoutContentAlign,
   tableRowCellVerticalAlignFromFlexAlignItems,
-  tableRowCellVerticalAlignFromPlacementAxis,
   tableValignFromContentVertical,
   wrapperHugWidthShrinkWrapCss,
 } from "./emailTableLayout";
 
-test("hug 横向 fixed gap → 外层表不强制全宽", () => {
+test("layoutStack：子块槽位对齐仅读父级 contentAlign", () => {
+  const parent = { horizontal: "right", vertical: "bottom" } as const;
+  const child = { horizontal: "center", vertical: "center" } as const;
+  assert.equal(layoutStackCrossAlignForChild("vertical", parent, child), "right");
+  assert.equal(layoutStackMainValignForChild("vertical", parent, child), "bottom");
+  assert.equal(layoutStackCrossAlignForChild("horizontal", parent, child), "right");
+  assert.equal(layoutStackMainValignForChild("horizontal", parent, child), "bottom");
+});
+
+test("hug 横向 fixed gap 且无 fill 子块 → 外层表可随内容收缩", () => {
+  assert.equal(
+    layoutHorizontalOuterPresentationShellFillWidth({
+      directionIsRow: true,
+      gapModeAuto: false,
+      hasFillWidthChild: false,
+      childCount: 4,
+    }),
+    false
+  );
   assert.equal(
     layoutPreviewOuterTableUsesFullWidth({
       widthMode: "hug",
       directionIsRow: true,
       gapModeAuto: false,
+      hasFillWidthChild: false,
       childCount: 4,
     }),
     false
@@ -40,6 +64,7 @@ test("hug 横向 gap auto → 外层表需全宽（等分列）", () => {
       widthMode: "hug",
       directionIsRow: true,
       gapModeAuto: true,
+      hasFillWidthChild: false,
       childCount: 3,
     }),
     true
@@ -52,6 +77,7 @@ test("hug 纵向 → 外层表不强制全宽", () => {
       widthMode: "hug",
       directionIsRow: false,
       gapModeAuto: false,
+      hasFillWidthChild: false,
       childCount: 2,
     }),
     false
@@ -64,6 +90,7 @@ test("fill / fixed → 外层表全宽", () => {
       widthMode: "fill",
       directionIsRow: false,
       gapModeAuto: false,
+      hasFillWidthChild: false,
       childCount: 1,
     }),
     true
@@ -73,17 +100,14 @@ test("fill / fixed → 外层表全宽", () => {
       widthMode: "fixed",
       directionIsRow: false,
       gapModeAuto: false,
+      hasFillWidthChild: false,
       childCount: 1,
     }),
     true
   );
 });
 
-test("tableRowCellVerticalAlignFromPlacementAxis 映射 start/center/end", () => {
-  assert.equal(tableRowCellVerticalAlignFromPlacementAxis("start"), "top");
-  assert.equal(tableRowCellVerticalAlignFromPlacementAxis("center"), "middle");
-  assert.equal(tableRowCellVerticalAlignFromPlacementAxis("end"), "bottom");
-  assert.equal(tableRowCellVerticalAlignFromPlacementAxis(undefined), undefined);
+test("tableRowCellVerticalAlignFromFlexAlignItems 映射 flex 对齐", () => {
   assert.equal(tableRowCellVerticalAlignFromFlexAlignItems("flex-end"), "bottom");
   assert.equal(tableRowCellVerticalAlignFromFlexAlignItems("center"), "middle");
   assert.equal(tableRowCellVerticalAlignFromFlexAlignItems("flex-start"), "top");
@@ -166,18 +190,11 @@ test("layoutColumnInnerShouldFillParentHeight：fill 高子块或 gap auto 时�
   );
 });
 
-test("layoutColumnShouldUseFillFlex：定高父级且存在 fill 高子块时用 flex 纵列", () => {
+test("layoutColumnShouldUseFillFlex：已废弃，恒为 false（纵列改 presentation table）", () => {
   assert.equal(
     layoutColumnShouldUseFillFlex({
       wrapperStyle: { heightMode: "fixed", height: "300px" },
       hasFillHeightChild: true,
-    }),
-    true
-  );
-  assert.equal(
-    layoutColumnShouldUseFillFlex({
-      wrapperStyle: { heightMode: "fixed", height: "120px" },
-      hasFillHeightChild: false,
     }),
     false
   );
@@ -195,9 +212,8 @@ test("fill 纵向 → 内层表需全高", () => {
   );
 });
 
-test("wrapperHugWidthShrinkWrapCss：hug 用 fit-content，其余为空", () => {
+test("wrapperHugWidthShrinkWrapCss：hug 仅 maxWidth，宽度收缩在 presentation td", () => {
   assert.deepEqual(wrapperHugWidthShrinkWrapCss("hug"), {
-    width: "fit-content",
     maxWidth: "100%",
   });
   assert.deepEqual(wrapperHugWidthShrinkWrapCss("fill"), {});
@@ -240,24 +256,119 @@ test("layoutRowInnerShouldUseFullWidth：gap auto 或父 fill 且含 fill 子块
   );
 });
 
-test("layoutRowInnerTablePresentationStyle：含 fill 子块时内层表满宽 fixed", () => {
+test("layoutRowInnerShouldUseFixedTableLayout：仅 fill/fixed 子级用 fixed；hug+fill 混排用 auto", () => {
+  const base = {
+    parentWidthMode: "fill" as const,
+    gapModeAuto: false,
+    childCount: 3,
+  };
+  assert.equal(
+    layoutRowInnerShouldUseFixedTableLayout({
+      ...base,
+      hasFillWidthChild: true,
+      hasHugWidthChild: false,
+    }),
+    true
+  );
+  assert.equal(
+    layoutRowInnerShouldUseFixedTableLayout({
+      ...base,
+      hasFillWidthChild: true,
+      hasHugWidthChild: true,
+    }),
+    false
+  );
+  assert.equal(
+    layoutRowInnerShouldUseFixedTableLayout({
+      ...base,
+      hasFillWidthChild: false,
+      hasHugWidthChild: true,
+    }),
+    false
+  );
+  assert.equal(
+    layoutRowInnerShouldUseFixedTableLayout({
+      parentWidthMode: "fill",
+      gapModeAuto: true,
+      childCount: 3,
+      hasFillWidthChild: false,
+      hasHugWidthChild: true,
+    }),
+    false
+  );
+  assert.equal(
+    layoutRowInnerShouldUseFixedTableLayout({
+      parentWidthMode: "fill",
+      gapModeAuto: true,
+      childCount: 2,
+      hasFillWidthChild: true,
+      hasHugWidthChild: true,
+    }),
+    false
+  );
+});
+
+test("layoutRowInnerTablePresentationStyle：仅 fill 子块时内层表满宽 fixed", () => {
   const style = layoutRowInnerTablePresentationStyle({
     parentWidthMode: "fill",
     gapModeAuto: false,
     childCount: 2,
     hasFillWidthChild: true,
+    hasHugWidthChild: false,
   });
   assert.equal(style.width, "100%");
   assert.equal(style.tableLayout, "fixed");
 });
 
-test("layoutRowOmitsSpacerGapCells：fill 行 fixed gap 用 padding 代替间隔列", () => {
+test("layoutRowInnerTablePresentationStyle：hug+fill 混排时满宽 auto（hug 列可随内容撑开）", () => {
+  const style = layoutRowInnerTablePresentationStyle({
+    parentWidthMode: "fill",
+    gapModeAuto: false,
+    childCount: 3,
+    hasFillWidthChild: true,
+    hasHugWidthChild: true,
+  });
+  assert.equal(style.width, "100%");
+  assert.equal(style.tableLayout, "auto");
+  assert.equal(style.display, undefined);
+});
+
+test("layoutRowInnerTablePresentationStyle：全 hug 子块时内层表 inline-table 收缩", () => {
+  const style = layoutRowInnerTablePresentationStyle({
+    parentWidthMode: "fill",
+    gapModeAuto: false,
+    childCount: 3,
+    hasFillWidthChild: false,
+  });
+  assert.equal(style.width, "1px");
+  assert.equal(style.tableLayout, "auto");
+  assert.equal(style.display, "inline-table");
+});
+
+test("layoutRowInnerTablePresentationStyle：gap auto + 全 hug 时满宽 auto（缝列百分比 + 子级 width=1）", () => {
+  const style = layoutRowInnerTablePresentationStyle({
+    parentWidthMode: "fill",
+    gapModeAuto: true,
+    childCount: 3,
+    hasFillWidthChild: false,
+    hasHugWidthChild: true,
+  });
+  assert.equal(style.width, "100%");
+  assert.equal(style.tableLayout, "auto");
+  assert.equal(style.display, undefined);
+});
+
+test("layoutRowOmitsSpacerGapCells：仅 gap auto + fill 时跳过缝隙列", () => {
   assert.equal(
     layoutRowOmitsSpacerGapCells({ gapModeAuto: false, hasFillWidthChild: true, gapPx: 8 }),
-    true
+    false
   );
   assert.equal(
     layoutRowOmitsSpacerGapCells({ gapModeAuto: true, hasFillWidthChild: true, gapPx: 8 }),
+    true
+  );
+  assert.equal(
+    layoutRowOmitsSpacerGapCells({ gapModeAuto: false, hasFillWidthChild: false, gapPx: 8 }),
     false
   );
 });
@@ -267,7 +378,12 @@ test("layoutRenderedFixedGapPx：auto 模式不渲染旧 fixed gap", () => {
   assert.equal(layoutRenderedFixedGapPx({ gapModeAuto: true, gapPx: 10 }), 0);
 });
 
-test("layoutRowChildTdWidthStyle：满宽行内 fill 100%、hug 1% nowrap", () => {
+test("layoutRowAutoGapSpacerTdStyle：缝隙列均分剩余宽", () => {
+  assert.deepEqual(layoutRowAutoGapSpacerTdStyle(1), { width: "100%" });
+  assert.deepEqual(layoutRowAutoGapSpacerTdStyle(2), { width: "50.0000%" });
+});
+
+test("layoutRowChildTdWidthStyle：满宽行内 hug 仅 nowrap（列宽由 td width=\"1\"），fill 吃剩余宽", () => {
   assert.deepEqual(
     layoutRowChildTdWidthStyle("hug", undefined, {
       innerTableFullWidth: true,
@@ -284,16 +400,37 @@ test("layoutRowChildTdWidthStyle：满宽行内 fill 100%、hug 1% nowrap", () =
       childCount: 3,
       rowHasFillWidthChild: false,
     }),
-    { width: "1%", whiteSpace: "nowrap" }
+    { whiteSpace: "nowrap" }
   );
   assert.deepEqual(
     layoutRowChildTdWidthStyle("fill", undefined, {
       innerTableFullWidth: true,
+      innerTableUsesFixedLayout: true,
       gapModeAuto: false,
       childCount: 2,
       rowHasFillWidthChild: true,
     }),
-    {}
+    { width: "100%" }
+  );
+  assert.deepEqual(
+    layoutRowChildTdWidthStyle("fill", undefined, {
+      innerTableFullWidth: true,
+      innerTableUsesFixedLayout: false,
+      gapModeAuto: false,
+      childCount: 3,
+      rowHasFillWidthChild: true,
+      rowHasHugWidthChild: true,
+    }),
+    { minWidth: 0 }
+  );
+  assert.deepEqual(
+    layoutRowChildTdWidthStyle("hug", undefined, {
+      innerTableFullWidth: true,
+      gapModeAuto: true,
+      childCount: 2,
+      rowHasFillWidthChild: true,
+    }),
+    { whiteSpace: "nowrap" }
   );
   assert.deepEqual(
     layoutRowChildTdWidthStyle("fixed", "120px", {
@@ -303,14 +440,29 @@ test("layoutRowChildTdWidthStyle：满宽行内 fill 100%、hug 1% nowrap", () =
     }),
     { width: "120px", whiteSpace: "nowrap" }
   );
+  assert.deepEqual(
+    layoutRowChildTdWidthStyle("hug", undefined, {
+      innerTableFullWidth: false,
+      gapModeAuto: false,
+      childCount: 3,
+    }),
+    { whiteSpace: "nowrap" }
+  );
 });
 
-test("layoutRowFlexChildWrapperStyle：横排行 fill 高子块铺满行高，普通子块读 placement.vertical", () => {
+test("layoutRowChildTdWidthAttr：满宽行内 hug 列补 td width=\"1\"，其余模式不写 attr", () => {
+  assert.equal(layoutRowChildTdWidthAttr("hug", { innerTableFullWidth: true }), "1");
+  assert.equal(layoutRowChildTdWidthAttr("fill", { innerTableFullWidth: true }), undefined);
+  assert.equal(layoutRowChildTdWidthAttr("fixed", { innerTableFullWidth: true }), undefined);
+  assert.equal(layoutRowChildTdWidthAttr("hug", { innerTableFullWidth: false }), undefined);
+});
+
+test("layoutRowFlexChildWrapperStyle：横排行 fill 高子块铺满行高，普通子块读竖直对齐参数", () => {
   assert.deepEqual(
     layoutRowFlexChildWrapperStyle({
       childWidthMode: "fill",
       childHeightMode: "fill",
-      placementVertical: "center",
+      contentAlignVertical: "center",
       fallbackAlignItems: "flex-start",
     }),
     {
@@ -325,7 +477,7 @@ test("layoutRowFlexChildWrapperStyle：横排行 fill 高子块铺满行高，�
     layoutRowFlexChildWrapperStyle({
       childWidthMode: "hug",
       childHeightMode: "hug",
-      placementVertical: "center",
+      contentAlignVertical: "center",
       fallbackAlignItems: "flex-start",
     }).alignSelf,
     "center"

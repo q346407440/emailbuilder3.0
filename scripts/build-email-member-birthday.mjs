@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 生成「会员生日」学习模板到 data/emails/member-birthday/
- * 配置母版：模块壳 + tokenPresets 标准 14 键 + payload 变量。
+ * 配置母版：模块壳 + tokenPresets 标准 12 键 + payload 变量。
  */
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -56,8 +58,6 @@ const border0 = () => ({
 
 const radius0 = () => ({ mode: "unified", radius: "0" });
 
-const placement = (h, v) => ({ horizontal: h, vertical: v });
-
 const themeRef = (path) => ({ $themeRef: path });
 
 const themeBinding = (path) => ({
@@ -89,7 +89,7 @@ const modShellBindings = () => ({
 });
 
 const wsBase = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -99,7 +99,6 @@ const wsBase = (extra = {}) => ({
 });
 
 const textBodyRuns = (runs) => ({
-  version: 1,
   paragraphs: [{ runs }],
 });
 
@@ -124,7 +123,6 @@ const textBlock = (id, parentId, name, runs, opts) => ({
   props: {
     content: snapshotFromRuns(runs),
     textBody: textBodyRuns(runs),
-    fontFamily: opts.fontFamily ?? themeRef("fonts.body"),
     fontSize: opts.fontSize ?? themeRef("tokens.typography.body"),
     color: opts.color ?? themeRef("colors.primary"),
     bold: opts.bold ?? false,
@@ -178,7 +176,7 @@ function build() {
     parentId: modLogo,
     children: [logoImg],
     wrapperStyle: wsBase({
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -191,7 +189,7 @@ function build() {
     parentId: logoRow,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       contentAlign: { horizontal: "center", vertical: "center" },
       widthMode: "fixed",
       width: "140px",
@@ -246,7 +244,7 @@ function build() {
     parentId: modHero,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
       widthMode: "fill",
       heightMode: "fixed",
@@ -302,7 +300,6 @@ function build() {
       [{ text: "Dear member", italic: true }],
       {
         align: "center",
-        fontFamily: themeRef("fonts.heading"),
         fontSize: themeRef("tokens.typography.h1"),
         italic: true,
         bindings: {
@@ -315,7 +312,6 @@ function build() {
             fieldKind: "content",
             label: "生日称呼",
           },
-          "props.fontFamily": themeBinding("fonts.heading"),
           "props.fontSize": themeBinding("tokens.typography.h1"),
           "props.color": themeBinding("colors.primary"),
         },
@@ -328,7 +324,6 @@ function build() {
   reg(heroTitle, "content.text", "生日大标题", {
     ...textBlock(heroTitle, modHero, "生日大标题", [{ text: "Happy Birthday", bold: true }], {
       align: "center",
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.display"),
       bold: true,
         bindings: {
@@ -341,7 +336,6 @@ function build() {
             fieldKind: "content",
             label: "生日大标题",
           },
-          "props.fontFamily": themeBinding("fonts.heading"),
           "props.fontSize": themeBinding("tokens.typography.display"),
           "props.color": themeBinding("colors.primary"),
         },
@@ -374,7 +368,6 @@ function build() {
             fieldKind: "content",
             label: "生日副标题",
           },
-          "props.fontFamily": themeBinding("fonts.body"),
           "props.fontSize": themeBinding("tokens.typography.caption"),
           "props.color": themeBinding("colors.secondary"),
         },
@@ -415,7 +408,6 @@ function build() {
             fieldKind: "content",
             label: "问候正文",
           },
-          "props.fontFamily": themeBinding("fonts.body"),
           "props.fontSize": themeBinding("tokens.typography.body"),
           "props.color": themeBinding("colors.primary"),
         },
@@ -443,7 +435,7 @@ function build() {
         bottom: "16px",
         left: "20px",
       },
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     }),
     props: { direction: "vertical", gapMode: "fixed", gap: "0" },
@@ -465,7 +457,6 @@ function build() {
     props: {
       content: "<p>Reward points: <strong>888</strong></p>",
       textBody: textBodyRuns(pointsRuns),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -482,7 +473,6 @@ function build() {
         fieldKind: "content",
         label: "奖励积分数",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -502,7 +492,6 @@ function build() {
     props: {
       content: snapshotFromRuns(pointsNoteRuns),
       textBody: textBodyRuns(pointsNoteRuns),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -519,7 +508,6 @@ function build() {
         fieldKind: "content",
         label: "会员权益链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -579,12 +567,11 @@ function build() {
         ...wsBase({ contentAlign: { horizontal: "center", vertical: "center" } }),
         widthMode: "fixed",
         width: "38%",
-        placement: placement("start", "center"),
+        contentAlign: contentAlignFromAxes("start", "center"),
       },
       props: {
         content: `<p>${item.offer}</p>`,
         textBody: textBodyRuns([{ text: item.offer, bold: true }]),
-        fontFamily: themeRef("fonts.heading"),
         fontSize: themeRef("tokens.typography.h1"),
         color: "#9A6B3F",
         bold: true,
@@ -614,7 +601,6 @@ function build() {
               }
             : {}),
         },
-        "props.fontFamily": themeBinding("fonts.heading"),
         "props.fontSize": themeBinding("tokens.typography.h1"),
       },
     });
@@ -625,7 +611,7 @@ function build() {
       parentId: cardId,
       children: [titleId, descId],
       wrapperStyle: {
-        ...wsBase({ widthMode: "fill", placement: placement("start", "center") }),
+        ...wsBase({ widthMode: "fill", contentAlign: contentAlignFromAxes("start", "center") }),
         border: {
           mode: "custom",
           style: "dashed",
@@ -656,7 +642,6 @@ function build() {
       props: {
         content: `<p>${item.title}</p>`,
         textBody: textBodyRuns([{ text: item.title, bold: true }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -672,7 +657,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.title`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -687,7 +671,6 @@ function build() {
       props: {
         content: `<p>${item.desc}</p>`,
         textBody: textBodyRuns([{ text: item.desc }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: themeRef("colors.secondary"),
         bold: false,
@@ -703,7 +686,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.desc`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
         "props.color": themeBinding("colors.secondary"),
       },
@@ -725,7 +707,7 @@ function build() {
     wrapperStyle: {
       ...wsBase({
         contentAlign: { horizontal: "center", vertical: "top" },
-        placement: placement("center", "start"),
+        contentAlign: contentAlignFromAxes("center", "start"),
       }),
     },
     props: {
@@ -735,7 +717,6 @@ function build() {
         widthMode: "hug",
         backgroundColor: "#C62828",
         textColor: "#FFFFFF",
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         border: border0(),
         borderRadius: {
@@ -765,7 +746,6 @@ function build() {
         fieldKind: "content",
         label: "主按钮链接",
       },
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.body"),
       "props.buttonStyle.borderRadius.radius": themeBinding("tokens.radius.cta"),
     },
@@ -793,7 +773,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns1),
       textBody: textBodyRuns(accountRuns1),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -810,7 +789,6 @@ function build() {
         fieldKind: "content",
         label: "注册账户链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -831,7 +809,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns2),
       textBody: textBodyRuns(accountRuns2),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -848,7 +825,6 @@ function build() {
         fieldKind: "content",
         label: "重置密码链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -875,7 +851,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns3),
       textBody: textBodyRuns(accountRuns3),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -919,7 +894,6 @@ function build() {
         fieldKind: "content",
         label: "客服邮箱 mailto 链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -931,7 +905,7 @@ function build() {
     parentId: null,
     children: modIds,
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -1002,11 +976,6 @@ function writeTokenPresets() {
             secondary: "#6B7280",
             surface: "#FFFFFF",
           },
-          fonts: {
-            heading: "Georgia",
-            body:
-              "'Segoe UI'",
-          },
           spacing: {
             section: "24px",
             gap: "12px",
@@ -1035,10 +1004,8 @@ function writeMeta() {
     description:
       "店铺 Logo、生日主视觉、问候与积分、四张优惠券、Shop Now 与账户说明；样式经 tokenPresets 统一管理。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: { type: "screenshot", url: "" },
     defaultStylePresetSelection: "local",
   };
 }

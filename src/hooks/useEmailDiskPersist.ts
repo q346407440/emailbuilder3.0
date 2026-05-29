@@ -53,12 +53,21 @@ export function useEmailDiskPersist({
     baselineJsonRef.current = null;
   }
 
+  type PersistOptions = {
+    /** 仅写入 payload.json（新建变量入库；template 不变） */
+    payloadOnly?: boolean;
+    /** 覆盖当前 template 快照（用于 setState 后立刻落盘） */
+    template?: EmailTemplate;
+    /** 覆盖当前内存快照（用于 setState 后立刻落盘） */
+    payload?: EmailPayload;
+  };
+
   const runPersist = useCallback(
-    async (): Promise<boolean> => {
+    async (options?: PersistOptions): Promise<boolean> => {
       const task = async (): Promise<boolean> => {
         const key = emailKeyRef.current;
-        const t = templateRef.current;
-        const p = payloadRef.current;
+        const t = options?.template ?? templateRef.current;
+        const p = options?.payload ?? payloadRef.current;
         if (!key || !t || !p) return false;
 
         const snap = JSON.stringify({ template: t, payload: p });
@@ -90,7 +99,9 @@ export function useEmailDiskPersist({
         }
 
         try {
-          await api.putTemplate(key, t, layoutVariantIdRef.current);
+          if (!options?.payloadOnly) {
+            await api.putTemplate(key, t, layoutVariantIdRef.current);
+          }
           await api.putPayload(key, p);
           baselineJsonRef.current = snap;
           await Promise.resolve(onSuccessRef.current?.("manual"));
@@ -121,5 +132,21 @@ export function useEmailDiskPersist({
     return runPersist();
   }, [runPersist]);
 
-  return { flushPersist };
+  /** 新建变量后立即写入 payload.json（与邮件场景绑定，多版式共用） */
+  const persistPayloadSlotCatalog = useCallback(
+    async (nextPayload: EmailPayload): Promise<boolean> => {
+      return runPersist({ payloadOnly: true, payload: nextPayload });
+    },
+    [runPersist]
+  );
+
+  /** 删除变量等会同时变更 template + payload 的场景，立即双写入库 */
+  const persistTemplatePayloadCatalog = useCallback(
+    async (nextTemplate: EmailTemplate, nextPayload: EmailPayload): Promise<boolean> => {
+      return runPersist({ template: nextTemplate, payload: nextPayload });
+    },
+    [runPersist]
+  );
+
+  return { flushPersist, persistPayloadSlotCatalog, persistTemplatePayloadCatalog };
 }

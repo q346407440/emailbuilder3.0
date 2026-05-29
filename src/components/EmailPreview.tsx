@@ -19,40 +19,37 @@ import { IMAGE_BACKGROUND_FALLBACK_COLOR } from "../lib/imageBackgroundFallback"
 import { EMAIL_ROOT_FIXED_WIDTH, EMAIL_CANVAS_WORKSPACE_BACKGROUND } from "../render-defaults-contract/values";
 import { BUTTON_INNER_PADDING } from "../lib/buttonInnerPadding";
 import { IconGlyph } from "./IconGlyph";
-import { DEFAULT_EMAIL_FONT_FAMILY, resolveRenderFontFamily } from "../font-family-contract";
+import { EMAIL_CANVAS_TEXT_FONT_FAMILY } from "../render-defaults-contract/values";
 import {
   emailPresentationTableStyle,
   layoutColumnInnerShouldFillParentHeight,
-  layoutColumnShouldUseFillFlex,
   layoutPreviewOuterTableUsesFullWidth,
   layoutPreviewOuterBoxFillsParentHeight,
   layoutPreviewInnerShellStretchesHeight,
-  layoutRenderedFixedGapPx,
+  layoutRowChildTdWidthAttr,
   layoutRowChildTdWidthStyle,
-  layoutRowFlexChildWrapperStyle,
   layoutRowInnerShouldFillParentHeight,
+  layoutRowInnerShouldUseFixedTableLayout,
   layoutRowInnerShouldUseFullWidth,
   layoutRowInnerTablePresentationStyle,
   layoutRowOmitsSpacerGapCells,
-  overlayCellAlignFromLayoutContentAlign,
+  layoutRenderedFixedGapPx,
+  layoutStackCrossAlignForChild,
+  layoutStackMainValignForChild,
   parseGapPx,
   tableAlignFromContentHorizontal,
   tableValignFromContentVertical,
-  tableRowCellVerticalAlignFromFlexAlignItems,
-  tableRowCellVerticalAlignFromPlacementAxis,
   wrapperHugWidthShrinkWrapCss,
 } from "../lib/emailTableLayout";
 import {
-  buildPlacementResolveInputFromWrapper,
-  effectivePlacementAxes,
-} from "../lib/resolvePlacement";
-import { resolvePlacementToCss } from "../lib/resolvePlacementCss";
-import { placementParentKindForBlock } from "../lib/placementParentContext";
+  gridMatrixSlotContentAlignCss,
+  layoutPreviewHugOuterShellBoxStyle,
+} from "../lib/emailPresentationLayout";
+import { normalizeWrapperContentAlign } from "../lib/wrapperContentAlign";
 import { sourceBlockIdFromRepeatClone } from "../lib/repeatRegion";
 import {
   FIXED_TEXT_LINE_HEIGHT,
   projectLayoutContentAlign,
-  projectLayoutInnerStackContentAlign,
 } from "../render-defaults-contract/values";
 import {
   borderRadiusToCss,
@@ -61,14 +58,29 @@ import {
   wrapperStyleToCss,
 } from "../lib/wrapperStyleToCss";
 import { renderTextBodyToHtml } from "../lib/textBodyFormat";
-import { imageObjectPositionCssForFit } from "../lib/imageObjectPosition";
 import { normalizeCssLengthPx } from "../lib/wrapperBackgroundImage";
 import {
+  renderWrapperBackgroundImageCanvasShell,
+} from "../lib/wrapperBackgroundImageCanvas";
+import { resolveWrapperBackgroundImageCanvasLayout } from "../lib/wrapperBackgroundImageCanvasLayout";
+import {
+  computeGridRowHeightsWithFillStretch,
+  gridDataRowUsesFillStretch,
+  gridMatrixHasFillStretchRow,
   gridRowHeightsStable,
   measureGridRowContentMaxHeights,
   stabilizeGridRowHeights,
 } from "../lib/gridContentMaxHeight";
-import { normalizeWrapperContentAlign } from "../lib/wrapperContentAlign";
+import { deliveryExportBoxModeDataAttrs } from "../render-defaults-contract/deliveryExport";
+import { emailPresentationHugSlotAntiStrutStyle } from "../lib/emailPresentationLayout";
+import {
+  emailPresentationTableProps,
+  emailPresentationTdBase,
+  renderPresentationLeafShell,
+  renderProgressBarTable,
+  flatMapHorizontalLayoutRowCells,
+  renderVerticalStackInnerTable,
+} from "../lib/emailPresentationPrimitives";
 
 type Props = {
   template: EmailTemplate;
@@ -116,116 +128,31 @@ function componentBodyWidthCss(opts: {
   return { display: "inline-block", maxWidth: "100%" };
 }
 
-function layoutContentAlignToFlex(
-  direction: "row" | "column",
-  contentAlign: { horizontal?: unknown; vertical?: unknown } | undefined
-): Pick<CSSProperties, "justifyContent" | "alignItems"> {
-  const horizontal = contentAlign?.horizontal;
-  const vertical = contentAlign?.vertical;
-
-  const horizontalMainAxis =
-    horizontal === "left" ? "flex-start" : horizontal === "right" ? "flex-end" : "center";
-  const verticalMainAxis =
-    vertical === "top" ? "flex-start" : vertical === "bottom" ? "flex-end" : "center";
-  const horizontalCrossAxis =
-    horizontal === "left"
-      ? "flex-start"
-      : horizontal === "right"
-        ? "flex-end"
-        : horizontal === "center"
-          ? "center"
-          : "stretch";
-  const verticalCrossAxis =
-    vertical === "top"
-      ? "flex-start"
-      : vertical === "bottom"
-        ? "flex-end"
-        : vertical === "center"
-          ? "center"
-          : "stretch";
-
-  if (direction === "row") {
-    return {
-      justifyContent: horizontalMainAxis,
-      alignItems: verticalCrossAxis,
-    };
-  }
-  return {
-    justifyContent: verticalMainAxis,
-    alignItems: horizontalCrossAxis,
-  };
-}
-
-function contentAlignVerticalFlexCss(
-  contentAlign: WrapperContentAlign | undefined
-): Pick<CSSProperties, "display" | "flexDirection" | "justifyContent"> {
-  const { vertical } = normalizeWrapperContentAlign(contentAlign);
-  return {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent:
-      vertical === "bottom" ? "flex-end" : vertical === "center" ? "center" : "flex-start",
-  };
-}
-
-function contentAlignFlexCss(
-  contentAlign: WrapperContentAlign | undefined
-): Pick<CSSProperties, "display" | "flexDirection" | "justifyContent" | "alignItems"> {
-  const { horizontal, vertical } = normalizeWrapperContentAlign(contentAlign);
-  return {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent:
-      vertical === "bottom" ? "flex-end" : vertical === "center" ? "center" : "flex-start",
-    alignItems:
-      horizontal === "right" ? "flex-end" : horizontal === "center" ? "center" : "flex-start",
-  };
-}
-
-const emailTablePresentationProps = {
-  role: "presentation" as const,
-  cellPadding: 0,
-  cellSpacing: 0,
-  border: 0,
-};
+/** 与 {@link emailPresentationTableProps} 同义，保留本地别名减少 diff 噪声 */
+const emailTablePresentationProps = emailPresentationTableProps;
 
 function tdBase(): CSSProperties {
-  return { padding: 0, border: "none", boxSizing: "border-box" };
+  return emailPresentationTdBase();
 }
 
-/** 横向行内单个子槽位：优先子块 `placement.vertical`，否则父级 contentAlign 交叉轴。 */
-function crossVerticalAlignForTableRowChild(
-  template: EmailTemplate,
-  childId: string,
-  parentFallback: CSSProperties["alignItems"] | undefined
-): "top" | "middle" | "bottom" {
-  const child = template.blocks[childId];
-  if (child) {
-    const axes = effectivePlacementAxes(
-      buildPlacementResolveInputFromWrapper(child.wrapperStyle as WrapperStyle, "tableRowCell")
-    );
-    const fromPlacement = tableRowCellVerticalAlignFromPlacementAxis(axes.vertical);
-    if (fromPlacement) return fromPlacement;
-  }
-  return tableRowCellVerticalAlignFromFlexAlignItems(parentFallback);
+function slotAlignFromWrapperContentAlign(
+  contentAlign: WrapperContentAlign | undefined
+): { align: "left" | "center" | "right"; valign: ReturnType<typeof tableValignFromContentVertical> } {
+  const ca = normalizeWrapperContentAlign(contentAlign);
+  return {
+    align: tableAlignFromContentHorizontal(ca.horizontal),
+    valign: tableValignFromContentVertical(ca.vertical),
+  };
 }
 
-/** 纵向堆叠交叉轴（水平）← flex alignItems */
-function crossHorizontalAlignAttrFromFlexAlignItems(
-  alignItems: CSSProperties["alignItems"] | undefined
-): "left" | "center" | "right" {
-  if (alignItems === "flex-end") return "right";
-  if (alignItems === "center") return "center";
-  return "left";
-}
-
-/** 纵向堆叠主轴（竖直）← flex justifyContent */
-function stackValignFromFlexJustify(
-  justify: CSSProperties["justifyContent"] | undefined
-): "top" | "middle" | "bottom" {
-  if (justify === "flex-end") return "bottom";
-  if (justify === "center" || justify === "space-around" || justify === "space-evenly") return "middle";
-  return "top";
+function layoutChildSlotAlign(
+  parentDirection: "vertical" | "horizontal",
+  parentContentAlign: WrapperContentAlign | undefined
+): { align: "left" | "center" | "right"; valign: ReturnType<typeof tableValignFromContentVertical> } {
+  return {
+    align: layoutStackCrossAlignForChild(parentDirection, parentContentAlign),
+    valign: layoutStackMainValignForChild(parentDirection, parentContentAlign),
+  };
 }
 
 function columnHasFillHeightChild(template: EmailTemplate, childIds: string[]): boolean {
@@ -250,9 +177,15 @@ function resolveColumnInnerFillParentHeight(
   });
 }
 
-/** 画布滚动定位锚点（与左侧 `data-block-tree-row` 成对） */
-function canvasPreviewBlockDataProps(blockId: string): { "data-email-preview-block": string } {
-  return { "data-email-preview-block": sourceBlockIdFromRepeatClone(blockId) };
+/** 画布滚动定位锚点（与左侧 `data-block-tree-row` 成对）+ 发信导出盒模式标记 */
+function canvasPreviewBlockDataProps(
+  blockId: string,
+  wrapperStyle?: WrapperStyle | null
+): Record<string, string> {
+  return {
+    ...deliveryExportBoxModeDataAttrs(wrapperStyle),
+    "data-email-preview-block": sourceBlockIdFromRepeatClone(blockId),
+  };
 }
 
 /** 画布选中 emailRoot 时为内层内容区容器加框（宽度取 props.width，缺省同 EMAIL_ROOT_FIXED_WIDTH）；子 block 按 id 匹配 */
@@ -268,43 +201,6 @@ function selectionClassName(
   return selected ? "email-preview-selected" : undefined;
 }
 
-type PreviewPlacementParent = ReturnType<typeof placementParentKindForBlock>;
-
-/** 纵向栈单个子槽位：优先子块 `placement.vertical`（主轴），否则父级 contentAlign 主轴。 */
-function stackMainAxisValignForTableStackChild(
-  template: EmailTemplate,
-  childId: string,
-  parentFallback: CSSProperties["justifyContent"] | undefined
-): "top" | "middle" | "bottom" {
-  const child = template.blocks[childId];
-  if (child) {
-    const axes = effectivePlacementAxes(
-      buildPlacementResolveInputFromWrapper(child.wrapperStyle as WrapperStyle, "tableStackCell")
-    );
-    const fromPlacement = tableRowCellVerticalAlignFromPlacementAxis(axes.vertical);
-    if (fromPlacement) return fromPlacement;
-  }
-  return stackValignFromFlexJustify(parentFallback);
-}
-
-/** 纵向栈单个子槽位：优先子块 `placement.horizontal`（交叉轴），否则父级 contentAlign 交叉轴。 */
-function stackCrossAxisAlignForTableStackChild(
-  template: EmailTemplate,
-  childId: string,
-  parentFallback: CSSProperties["alignItems"] | undefined
-): "left" | "center" | "right" {
-  const child = template.blocks[childId];
-  if (child) {
-    const axes = effectivePlacementAxes(
-      buildPlacementResolveInputFromWrapper(child.wrapperStyle as WrapperStyle, "tableStackCell")
-    );
-    if (axes.horizontal === "end") return "right";
-    if (axes.horizontal === "center") return "center";
-    if (axes.horizontal === "start") return "left";
-  }
-  return crossHorizontalAlignAttrFromFlexAlignItems(parentFallback);
-}
-
 /** 横排 layout / 底图叠放：内层行表是否满宽及子槽位列宽（fill 子块吃剩余宽）。 */
 function horizontalRowInnerTableLayout(
   template: EmailTemplate,
@@ -316,6 +212,7 @@ function horizontalRowInnerTableLayout(
 ): {
   innerTableStyle: CSSProperties;
   childTdWidthStyle: (childId: string) => CSSProperties;
+  childTdWidthAttr: (childId: string) => string | undefined;
   omitSpacerGapCells: boolean;
 } {
   const childCount = childIds.length;
@@ -323,17 +220,21 @@ function horizontalRowInnerTableLayout(
     const child = template.blocks[cid];
     return (child?.wrapperStyle?.widthMode ?? "fill") === "fill";
   });
-  const innerTableFullWidth = layoutRowInnerShouldUseFullWidth({
-    parentWidthMode: parentWrapperStyle?.widthMode,
-    gapModeAuto: gapAuto,
-    childCount,
-    hasFillWidthChild,
+  const hasHugWidthChild = childIds.some((cid) => {
+    const child = template.blocks[cid];
+    return (child?.wrapperStyle?.widthMode ?? "fill") === "hug";
   });
-  const innerTableStyle = layoutRowInnerTablePresentationStyle({
+  const rowLayoutWidthParams = {
     parentWidthMode: parentWrapperStyle?.widthMode,
     gapModeAuto: gapAuto,
     childCount,
     hasFillWidthChild,
+    hasHugWidthChild,
+  };
+  const innerTableFullWidth = layoutRowInnerShouldUseFullWidth(rowLayoutWidthParams);
+  const innerTableUsesFixedLayout = layoutRowInnerShouldUseFixedTableLayout(rowLayoutWidthParams);
+  const innerTableStyle = layoutRowInnerTablePresentationStyle({
+    ...rowLayoutWidthParams,
     fillRowInnerHeight,
   });
   const omitSpacerGapCells = layoutRowOmitsSpacerGapCells({
@@ -345,129 +246,18 @@ function horizontalRowInnerTableLayout(
     const child = template.blocks[childId];
     return layoutRowChildTdWidthStyle(child?.wrapperStyle?.widthMode, child?.wrapperStyle?.width, {
       innerTableFullWidth,
+      innerTableUsesFixedLayout,
       gapModeAuto: gapAuto,
       childCount,
       rowHasFillWidthChild: hasFillWidthChild,
+      rowHasHugWidthChild: hasHugWidthChild,
     });
   };
-  return { innerTableStyle, childTdWidthStyle, omitSpacerGapCells };
-}
-
-/** 纵列 fill 高子块交叉轴对齐：子 placement.horizontal → flex alignItems。 */
-function columnCrossAxisAlignFromChildPlacement(
-  template: EmailTemplate,
-  childId: string,
-  parentFallback: CSSProperties["alignItems"] | undefined
-): CSSProperties["alignItems"] {
-  const child = template.blocks[childId];
-  if (child) {
-    const axes = effectivePlacementAxes(
-      buildPlacementResolveInputFromWrapper(child.wrapperStyle as WrapperStyle, "tableStackCell")
-    );
-    if (axes.horizontal === "end") return "flex-end";
-    if (axes.horizontal === "center") return "center";
-    if (axes.horizontal === "start") return "flex-start";
-  }
-  return parentFallback ?? "flex-start";
-}
-
-/** fill 子块纵列：flex 均分主轴高（fill 吃份 + fixed gap + hug/fixed 随内容）。 */
-function renderVerticalColumnFillFlex(
-  template: EmailTemplate,
-  childIds: string[],
-  renderedGapPx: number,
-  axisAlign: { alignItems?: CSSProperties["alignItems"]; justifyContent?: CSSProperties["justifyContent"] },
-  selectedBlockId: string | null,
-  onSelectBlock: (id: string | null) => void
-): ReactElement {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        height: "100%",
-        boxSizing: "border-box",
-        ...(renderedGapPx > 0 ? { gap: renderedGapPx } : {}),
-      }}
-    >
-      {childIds.map((cid) => {
-        const child = template.blocks[cid];
-        const hm = child?.wrapperStyle?.heightMode ?? "hug";
-        return (
-          <div
-            key={cid}
-            style={{
-              flex: hm === "fill" ? "1 1 0%" : "0 0 auto",
-              minHeight: hm === "fill" ? 0 : undefined,
-              display: "flex",
-              alignItems: columnCrossAxisAlignFromChildPlacement(template, cid, axisAlign.alignItems),
-              boxSizing: "border-box",
-            }}
-          >
-            <BlockView
-              id={cid}
-              template={template}
-              selectedBlockId={selectedBlockId}
-              onSelectBlock={onSelectBlock}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/** fill 子块横排行：flex 分栏（fill 吃剩余 + fixed gap + hug/fixed 随内容）。 */
-function renderHorizontalRowFillFlex(
-  template: EmailTemplate,
-  childIds: string[],
-  renderedGapPx: number,
-  alignItems: CSSProperties["alignItems"] | undefined,
-  selectedBlockId: string | null,
-  onSelectBlock: (id: string | null) => void
-): ReactElement {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        width: "100%",
-        alignItems: alignItems ?? "flex-start",
-        boxSizing: "border-box",
-      }}
-    >
-      {childIds.map((cid, idx) => {
-        const child = template.blocks[cid];
-        const axes = child
-          ? effectivePlacementAxes(
-              buildPlacementResolveInputFromWrapper(child.wrapperStyle as WrapperStyle, "tableRowCell")
-            )
-          : { horizontal: undefined, vertical: undefined };
-        return (
-          <div
-            key={cid}
-            style={{
-              ...layoutRowFlexChildWrapperStyle({
-                childWidthMode: child?.wrapperStyle?.widthMode,
-                childHeightMode: child?.wrapperStyle?.heightMode,
-                placementVertical: axes.vertical,
-                fallbackAlignItems: alignItems,
-              }),
-              marginRight: idx < childIds.length - 1 && renderedGapPx > 0 ? renderedGapPx : undefined,
-            }}
-          >
-            <BlockView
-              id={cid}
-              template={template}
-              selectedBlockId={selectedBlockId}
-              onSelectBlock={onSelectBlock}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
+  const childTdWidthAttr = (childId: string): string | undefined => {
+    const child = template.blocks[childId];
+    return layoutRowChildTdWidthAttr(child?.wrapperStyle?.widthMode, { innerTableFullWidth });
+  };
+  return { innerTableStyle, childTdWidthStyle, childTdWidthAttr, omitSpacerGapCells };
 }
 
 /** 底图叠放层内子区块：与 layout 纵向/横向 + gap 语义对齐 */
@@ -484,15 +274,13 @@ function renderBackgroundImageOverlayChildren(opts: {
   const gapMode = normalizeLayoutGapMode(layoutProps?.gapMode);
   const gapFixed = (layoutProps?.gap as string) ?? "8px";
   const gapAuto = gapMode === "auto";
-  const gapPx = parseGapPx(gapFixed);
-  const renderedFixedGapPx = layoutRenderedFixedGapPx({ gapModeAuto: gapAuto, gapPx });
+  const gapPx = layoutRenderedFixedGapPx({ gapModeAuto: gapAuto, gapPx: parseGapPx(gapFixed) });
   const direction = layoutFlexDirection(layoutProps?.direction ?? "vertical");
-  const innerStackAlign = projectLayoutInnerStackContentAlign(layoutProps?.direction);
   const isRow = direction === "row";
-  const rowStackAlign = isRow
-    ? projectLayoutContentAlign(layoutProps?.direction, contentAlign as WrapperContentAlign | undefined)
-    : innerStackAlign;
-  const axisAlign = layoutContentAlignToFlex(direction, rowStackAlign);
+  const rowStackAlign = projectLayoutContentAlign(
+    layoutProps?.direction,
+    contentAlign as WrapperContentAlign | undefined
+  );
   const fillColumnInnerHeight = resolveColumnInnerFillParentHeight(
     template,
     wrapperStyle,
@@ -500,13 +288,9 @@ function renderBackgroundImageOverlayChildren(opts: {
     gapAuto
   );
   const fillRowInnerHeight = layoutRowInnerShouldFillParentHeight(wrapperStyle, childIds.length);
-  const columnFillFlex = layoutColumnShouldUseFillFlex({
-    wrapperStyle,
-    hasFillHeightChild: columnHasFillHeightChild(template, childIds),
-  });
 
   if (isRow) {
-    const { innerTableStyle, childTdWidthStyle, omitSpacerGapCells } = horizontalRowInnerTableLayout(
+    const { innerTableStyle, childTdWidthStyle, childTdWidthAttr, omitSpacerGapCells } = horizontalRowInnerTableLayout(
       template,
       childIds,
       wrapperStyle,
@@ -514,16 +298,6 @@ function renderBackgroundImageOverlayChildren(opts: {
       gapPx,
       fillRowInnerHeight
     );
-    if (omitSpacerGapCells) {
-      return renderHorizontalRowFillFlex(
-        template,
-        childIds,
-        renderedFixedGapPx,
-        axisAlign.alignItems,
-        selectedBlockId,
-        onSelectBlock
-      );
-    }
     return (
       <table
         {...emailTablePresentationProps}
@@ -531,53 +305,24 @@ function renderBackgroundImageOverlayChildren(opts: {
       >
         <tbody style={fillRowInnerHeight ? { height: "100%" } : undefined}>
           <tr style={fillRowInnerHeight ? { height: "100%" } : undefined}>
-            {childIds.flatMap((cid, idx) => {
-              const cells: ReactElement[] = [];
-              if (idx > 0 && !gapAuto && gapPx > 0 && !omitSpacerGapCells) {
-                cells.push(
-                  <td
-                    key={`bg-gap-${cid}`}
-                    style={{
-                      ...tdBase(),
-                      width: gapPx,
-                      minWidth: gapPx,
-                      lineHeight: 0,
-                      fontSize: 0,
-                    }}
-                    aria-hidden
-                  >
-                    <div style={{ width: gapPx, height: 1 }} />
-                  </td>
-                );
-              }
-              const rowChildValign = crossVerticalAlignForTableRowChild(
-                template,
-                cid,
-                axisAlign.alignItems
-              );
-              cells.push(
-                <td
-                  key={cid}
-                  valign={rowChildValign}
-                  style={{
-                    ...tdBase(),
-                    verticalAlign: rowChildValign,
-                    ...childTdWidthStyle(cid),
-                    ...(omitSpacerGapCells && idx < childIds.length - 1 && gapPx > 0
-                      ? { paddingRight: gapPx }
-                      : {}),
-                    ...(fillRowInnerHeight ? { height: "100%" } : {}),
-                  }}
-                >
-                  <BlockView
-                    id={cid}
-                    template={template}
-                    selectedBlockId={selectedBlockId}
-                    onSelectBlock={onSelectBlock}
-                  />
-                </td>
-              );
-              return cells;
+            {flatMapHorizontalLayoutRowCells({
+              template,
+              childIds,
+              gapAuto,
+              gapPx,
+              omitSpacerGapCells,
+              childTdWidthStyle,
+              childTdWidthAttr,
+              fillRowInnerHeight,
+              slotAlign: layoutChildSlotAlign("horizontal", rowStackAlign),
+              renderChild: (cid) => (
+                <BlockView
+                  id={cid}
+                  template={template}
+                  selectedBlockId={selectedBlockId}
+                  onSelectBlock={onSelectBlock}
+                />
+              ),
             })}
           </tr>
         </tbody>
@@ -585,72 +330,29 @@ function renderBackgroundImageOverlayChildren(opts: {
     );
   }
 
-  if (columnFillFlex) {
-    return renderVerticalColumnFillFlex(
-      template,
-      childIds,
-      renderedFixedGapPx,
-      axisAlign,
-      selectedBlockId,
-      onSelectBlock
-    );
-  }
-
-  return (
-    <table
-      {...emailTablePresentationProps}
-      style={{
-        ...emailPresentationTableStyle,
-        width: "100%",
-        tableLayout: "fixed",
-        ...(fillColumnInnerHeight ? { height: "100%" } : {}),
-      }}
-    >
-      <tbody style={fillColumnInnerHeight ? { height: "100%" } : undefined}>
-        {childIds.map((cid, idx) => (
-          <Fragment key={cid}>
-            {idx > 0 && !gapAuto && gapPx > 0 ? (
-              <tr aria-hidden>
-                <td
-                  align={stackCrossAxisAlignForTableStackChild(template, cid, axisAlign.alignItems)}
-                  style={{
-                    ...tdBase(),
-                    lineHeight: 0,
-                    fontSize: 0,
-                    height: gapFixed,
-                  }}
-                >
-                  <div style={{ height: gapFixed, width: "1px" }} />
-                </td>
-              </tr>
-            ) : null}
-            <tr style={fillColumnInnerHeight ? { height: "100%" } : undefined}>
-              <td
-                align={stackCrossAxisAlignForTableStackChild(template, cid, axisAlign.alignItems)}
-                valign={stackMainAxisValignForTableStackChild(template, cid, axisAlign.justifyContent)}
-                style={{
-                  ...tdBase(),
-                  verticalAlign: stackMainAxisValignForTableStackChild(
-                    template,
-                    cid,
-                    axisAlign.justifyContent
-                  ),
-                  ...(fillColumnInnerHeight ? { height: "100%" } : {}),
-                }}
-              >
-                <BlockView
-                  id={cid}
-                  template={template}
-                  selectedBlockId={selectedBlockId}
-                  onSelectBlock={onSelectBlock}
-                />
-              </td>
-            </tr>
-          </Fragment>
-        ))}
-      </tbody>
-    </table>
-  );
+  return renderVerticalStackInnerTable({
+    template,
+    childIds,
+    gapAuto,
+    gapFixed,
+    gapPx,
+    stretchColumn: fillColumnInnerHeight,
+    tableWidthFull: true,
+    stackCrossAlign: () =>
+      layoutStackCrossAlignForChild("vertical", rowStackAlign),
+    stackMainValign: () =>
+      layoutStackMainValignForChild("vertical", rowStackAlign),
+    parentCrossFallback: undefined,
+    parentMainFallback: undefined,
+    renderChild: (cid) => (
+      <BlockView
+        id={cid}
+        template={template}
+        selectedBlockId={selectedBlockId}
+        onSelectBlock={onSelectBlock}
+      />
+    ),
+  });
 }
 
 /** layout 容器底图与 image 块共用：底图 `<img>` + 叠放子项表格 */
@@ -662,11 +364,11 @@ function renderWrapperBackgroundImagePreview(opts: {
   template: EmailTemplate;
   selectedBlockId: string | null;
   onSelectBlock: (id: string | null) => void;
-  placementParent: PreviewPlacementParent;
   overlayPadding?: unknown;
   selectTargetId?: string | null;
   selectionKind?: "node" | "email-root-inner";
   outerStyle?: CSSProperties;
+  enableHugIntrinsicHeight?: boolean;
 }): ReactElement | null {
   const {
     blockId,
@@ -676,40 +378,26 @@ function renderWrapperBackgroundImagePreview(opts: {
     template,
     selectedBlockId,
     onSelectBlock,
-    placementParent,
     overlayPadding,
     selectionKind = "node",
     outerStyle,
+    enableHugIntrinsicHeight,
   } = opts;
   const selectTargetId: string | null =
     opts.selectTargetId === null ? null : opts.selectTargetId ?? blockId;
-  const bgImg = wrapperStyle?.backgroundImage;
-  if (!bgImg || typeof bgImg.src !== "string" || !bgImg.src.trim()) return null;
-
-  const background = bgImg;
-  const wrapperBackgroundColor =
-    typeof wrapperStyle?.backgroundColor === "string" && wrapperStyle.backgroundColor.trim()
-      ? wrapperStyle.backgroundColor
-      : IMAGE_BACKGROUND_FALLBACK_COLOR;
-  const overlayBorderCss = borderToCss((background as { border?: unknown }).border);
-  const overlayRadiusCss = borderRadiusToCss((background as { borderRadius?: unknown }).borderRadius);
-  const hm = wrapperStyle?.heightMode;
-  const hRaw = typeof wrapperStyle?.height === "string" ? wrapperStyle.height.trim() : "";
-  const fixedCanvasHeight =
-    hm === "fixed" && hRaw && hRaw !== "auto" ? normalizeCssLengthPx(hRaw) ?? hRaw : undefined;
-
-  const wsBase = wrapperStyleToCss(wrapperStyle, { omitPadding: true });
-  const placementLay = resolvePlacementToCss(wrapperStyle, placementParent);
-  const wsOuter = { ...wsBase, ...placementLay };
+  const layout = resolveWrapperBackgroundImageCanvasLayout({
+    wrapperStyle,
+    layoutDirection: layoutProps?.direction === "horizontal" ? "horizontal" : "vertical",
+    overlayPadding,
+    outerStyle,
+    enableHugIntrinsicHeight,
+  });
+  if (!layout) return null;
 
   const wrapperContentAlign = projectLayoutContentAlign(
     layoutProps?.direction,
     wrapperStyle?.contentAlign as WrapperContentAlign | undefined
   );
-  const overlayIsRow = layoutFlexDirection(layoutProps?.direction ?? "vertical") === "row";
-  const { align: overlayHorizontalAlign, valign: overlayVerticalValign } =
-    overlayCellAlignFromLayoutContentAlign(overlayIsRow, wrapperContentAlign);
-  const overlayPaddingCss = paddingToCss(overlayPadding !== undefined ? overlayPadding : wrapperStyle?.padding);
 
   const nodeSel = selectionClassName(selectedBlockId, blockId, selectionKind);
 
@@ -724,98 +412,22 @@ function renderWrapperBackgroundImagePreview(opts: {
       onSelectBlock(targetId);
     };
 
-  const contentNode = (
-    <div
-      style={{
-        width: "100%",
-        position: "relative",
-        boxSizing: "border-box",
-      }}
-    >
-      <img
-        src={background.src}
-        alt={typeof background.alt === "string" ? background.alt : ""}
-        style={{
-          display: "block",
-          width: "100%",
-          height: fixedCanvasHeight ?? "auto",
-          objectFit: background.fit === "contain" ? "contain" : "cover",
-          objectPosition: imageObjectPositionCssForFit(background.position, background.fit),
-          ...overlayRadiusCss,
-          backgroundColor: wrapperBackgroundColor,
-        }}
-      />
-      <table
-        {...emailTablePresentationProps}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          borderCollapse: "collapse",
-          borderSpacing: 0,
-          tableLayout: "fixed",
-        }}
-      >
-        <tbody>
-          <tr>
-            <td
-              align={overlayHorizontalAlign}
-              valign={overlayVerticalValign}
-              style={{
-                ...tdBase(),
-                width: "100%",
-                height: "100%",
-                ...(overlayPaddingCss ? { padding: overlayPaddingCss } : {}),
-              }}
-            >
-              {renderBackgroundImageOverlayChildren({
-                childIds,
-                layoutProps,
-                wrapperStyle,
-                contentAlign: wrapperContentAlign,
-                template,
-                selectedBlockId,
-                onSelectBlock,
-              })}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const backgroundStyle: CSSProperties = {
-    ...wsOuter,
-    boxSizing: "border-box",
-    maxWidth: "100%",
-    backgroundColor: wrapperBackgroundColor,
-    overflow: "hidden",
-    ...overlayBorderCss,
-    ...outerStyle,
-  };
-
-  return (
-    <div
-      className={nodeSel}
-      {...canvasPreviewBlockDataProps(blockId)}
-      onClick={selectBlock(selectTargetId)}
-      style={backgroundStyle}
-    >
-      {typeof background.link === "string" && background.link.trim() ? (
-        <a
-          href={background.link}
-          style={{ display: "block", textDecoration: "none" }}
-          onClick={stopCanvasLinkNavigation}
-          onAuxClick={stopCanvasLinkNavigation}
-        >
-          {contentNode}
-        </a>
-      ) : (
-        contentNode
-      )}
-    </div>
-  );
+  return renderWrapperBackgroundImageCanvasShell({
+    layout,
+    className: nodeSel,
+    dataProps: canvasPreviewBlockDataProps(blockId, wrapperStyle),
+    onClick: selectBlock(selectTargetId),
+    onLinkNavigate: stopCanvasLinkNavigation,
+    children: renderBackgroundImageOverlayChildren({
+      childIds,
+      layoutProps,
+      wrapperStyle,
+      contentAlign: wrapperContentAlign,
+      template,
+      selectedBlockId,
+      onSelectBlock,
+    }),
+  });
 }
 
 type BlockViewProps = {
@@ -828,18 +440,16 @@ type BlockViewProps = {
 function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewProps) {
   const b = template.blocks[id];
   if (!b) return null;
-  const placementParent = placementParentKindForBlock(template, id);
   const gridRef = useRef<HTMLTableElement | null>(null);
   /** content-max：每行内单元格统一高度（非全栅格共用一个最大值，避免行间视觉间距被撑开） */
   const [gridRowMaxHeights, setGridRowMaxHeights] = useState<number[] | null>(null);
   const gridRowHeightsRef = useRef<number[] | null>(null);
   const wsBase = wrapperStyleToCss(b.wrapperStyle);
-  const placementCss = resolvePlacementToCss(b.wrapperStyle, placementParent);
   const leafHugWidthCss =
     b.type !== "emailRoot" && b.type !== "layout" && b.type !== "grid"
       ? wrapperHugWidthShrinkWrapCss(b.wrapperStyle?.widthMode)
       : {};
-  const ws = { ...wsBase, ...placementCss, ...leafHugWidthCss };
+  const ws = { ...wsBase, ...leafHugWidthCss };
   const selectBlock =
     (targetId: string | null): MouseEventHandler<HTMLElement> =>
     (e) => {
@@ -864,6 +474,17 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
     const host = gridRef.current;
     if (!host) return;
 
+    const cols = Number(props.columns ?? 2) || 2;
+    const gridRows: string[][] = [];
+    for (let i = 0; i < b.children.length; i += cols) {
+      gridRows.push(b.children.slice(i, i + cols));
+    }
+    const gapPx = parseGapPx((props.gap as string) ?? "12px");
+    const rowsUseFillStretch = gridRows.map((row) =>
+      gridDataRowUsesFillStretch(template, row, b.wrapperStyle, cellHeightMode)
+    );
+    const matrixFillStretch = rowsUseFillStretch.some(Boolean);
+
     let raf = 0;
     let stablePasses = 0;
     let ro: ResizeObserver | null = null;
@@ -878,7 +499,16 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
           stablePasses = 0;
           return;
         }
-        const stabilized = stabilizeGridRowHeights(raw, gridRowHeightsRef.current);
+        const withFillStretch =
+          matrixFillStretch && host.clientHeight > 0
+            ? computeGridRowHeightsWithFillStretch({
+                hostClientHeight: host.clientHeight,
+                measuredContentHeights: raw,
+                rowsUseFillStretch,
+                verticalGapPx: gapPx,
+              })
+            : raw;
+        const stabilized = stabilizeGridRowHeights(withFillStretch, gridRowHeightsRef.current);
         const unchanged = gridRowHeightsStable(stabilized, gridRowHeightsRef.current ?? []);
         if (unchanged) {
           stablePasses += 1;
@@ -901,11 +531,10 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       cancelAnimationFrame(raf);
       ro?.disconnect();
     };
-  }, [b]);
+  }, [b, template]);
 
   if (b.type === "emailRoot") {
     const props = b.props;
-    const outerBg = EMAIL_CANVAS_WORKSPACE_BACKGROUND;
     const innerBg = (props.backgroundColor as string) ?? "#ffffff";
     const rootW = props.width;
     const width =
@@ -934,7 +563,6 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
           template,
           selectedBlockId,
           onSelectBlock,
-          placementParent,
           overlayPadding: props.padding,
           selectTargetId: null,
           selectionKind: "email-root-inner",
@@ -944,72 +572,72 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
           },
         })
       : null;
+    if (rootChildren) {
+      return rootChildren;
+    }
+
     return (
       <div
+        className={innerSel}
+        {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
         onClick={selectBlock(null)}
         style={{
-          backgroundColor: outerBg,
-          minHeight: "100%",
-          padding: "24px 16px",
+          width,
+          maxWidth: "100%",
+          margin: "0 auto",
+          backgroundColor: innerBg,
+          padding: contentPadding ?? "0",
+          ...rootBorderCss,
+          overflow: "hidden",
           boxSizing: "border-box",
         }}
       >
-        {rootChildren ?? (
-          <div
-            className={innerSel}
-            {...canvasPreviewBlockDataProps(id)}
-            onClick={selectBlock(null)}
-            style={{
-              width,
-              maxWidth: "100%",
-              margin: "0 auto",
-              backgroundColor: innerBg,
-              padding: contentPadding ?? "0",
-              ...rootBorderCss,
-              overflow: "hidden",
-              boxSizing: "border-box",
-            }}
-          >
-            <table
-              {...emailTablePresentationProps}
-              style={{
-                ...emailPresentationTableStyle,
-                tableLayout: "fixed",
-              }}
-            >
-              <tbody>
-                {b.children.map((cid, idx) => (
-                  <Fragment key={cid}>
-                    {idx > 0 && !rootGapAuto && parseGapPx(rootGapFixed) > 0 ? (
-                      <tr aria-hidden>
-                        <td
-                          style={{
-                            ...tdBase(),
-                            lineHeight: 0,
-                            fontSize: 0,
-                            height: rootGapFixed,
-                          }}
-                        >
-                          <div style={{ height: rootGapFixed, width: "1px" }} />
-                        </td>
-                      </tr>
-                    ) : null}
-                    <tr>
-                      <td style={{ ...tdBase(), verticalAlign: "top" }}>
-                        <BlockView
-                          id={cid}
-                          template={template}
-                          selectedBlockId={selectedBlockId}
-                          onSelectBlock={onSelectBlock}
-                        />
-                      </td>
-                    </tr>
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <table
+          {...emailTablePresentationProps}
+          style={{
+            ...emailPresentationTableStyle,
+            tableLayout: "fixed",
+          }}
+        >
+          <tbody>
+            {b.children.map((cid, idx) => (
+              <Fragment key={cid}>
+                {idx > 0 && !rootGapAuto && parseGapPx(rootGapFixed) > 0 ? (
+                  <tr aria-hidden>
+                    <td
+                      style={{
+                        ...tdBase(),
+                        lineHeight: 0,
+                        fontSize: 0,
+                        height: rootGapFixed,
+                      }}
+                    >
+                      <div style={{ height: rootGapFixed, width: "1px" }} />
+                    </td>
+                  </tr>
+                ) : null}
+                <tr>
+                  <td
+                    style={{
+                      ...tdBase(),
+                      verticalAlign: "top",
+                      ...emailPresentationHugSlotAntiStrutStyle(
+                        template.blocks[cid]?.wrapperStyle?.heightMode
+                      ),
+                    }}
+                  >
+                    <BlockView
+                      id={cid}
+                      template={template}
+                      selectedBlockId={selectedBlockId}
+                      onSelectBlock={onSelectBlock}
+                    />
+                  </td>
+                </tr>
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -1026,8 +654,6 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       props.direction,
       b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined
     );
-    const innerStackAlign = projectLayoutInnerStackContentAlign(props.direction);
-
     const bgImg = b.wrapperStyle?.backgroundImage;
     const hasContainerBg =
       bgImg && typeof bgImg.src === "string" && bgImg.src.trim().length > 0;
@@ -1041,25 +667,22 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
         template,
         selectedBlockId,
         onSelectBlock,
-        placementParent,
       });
     }
 
     const isRow = direction === "row";
-    const axisAlign = layoutContentAlignToFlex(
-      direction,
-      isRow ? wrapperContentAlign : innerStackAlign
-    );
-    const justifyContent =
-      gapAuto && b.children.length > 1 ? "space-between" : axisAlign.justifyContent;
-    const gapPx = parseGapPx(gapFixed);
-    const renderedFixedGapPx = layoutRenderedFixedGapPx({ gapModeAuto: gapAuto, gapPx });
+    const layoutSlotAlign = slotAlignFromWrapperContentAlign(wrapperContentAlign);
+    const gapPx = layoutRenderedFixedGapPx({ gapModeAuto: gapAuto, gapPx: parseGapPx(gapFixed) });
+    const hasFillWidthChild = isRow
+      ? b.children.some((cid) => (template.blocks[cid]?.wrapperStyle?.widthMode ?? "fill") === "fill")
+      : false;
     const horizontalOuterAlign = tableAlignFromContentHorizontal(wrapperContentAlign?.horizontal);
     const verticalOuterValign = tableValignFromContentVertical(wrapperContentAlign?.vertical);
     const layoutOuterShellTableFullWidth = layoutPreviewOuterTableUsesFullWidth({
       widthMode: b.wrapperStyle?.widthMode,
       directionIsRow: isRow,
       gapModeAuto: gapAuto,
+      hasFillWidthChild,
       childCount: b.children.length,
     });
     const layoutOuterDivFillParentHeight = layoutPreviewOuterBoxFillsParentHeight(
@@ -1071,14 +694,10 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       gapModeAuto: gapAuto,
       childCount: b.children.length,
     });
-    const rawLayoutWm = b.wrapperStyle?.widthMode;
-    const layoutWidthModeNorm: "hug" | "fill" | "fixed" =
-      rawLayoutWm === "hug" || rawLayoutWm === "fill" || rawLayoutWm === "fixed" ? rawLayoutWm : "fill";
-    /** 栈格/单列内 `width:auto` 的块级仍会被 `td` 撑满行宽；hug 的 layout 收缩为内容宽，`placement` / 外层 `contentAlign` 语义才能与数据一致 */
-    const layoutHugBoxShrinkWrap: CSSProperties =
-      layoutWidthModeNorm === "hug" && !layoutOuterShellTableFullWidth
-        ? { width: "fit-content", maxWidth: "100%" }
-        : {};
+    const layoutOuterBoxCss = layoutPreviewHugOuterShellBoxStyle(ws, {
+      widthMode: b.wrapperStyle?.widthMode,
+      outerShellTableFullWidth: layoutOuterShellTableFullWidth,
+    });
     const fillColumnInnerHeight = resolveColumnInnerFillParentHeight(
       template,
       b.wrapperStyle,
@@ -1086,13 +705,9 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       gapAuto
     );
     const fillRowInnerHeight = layoutRowInnerShouldFillParentHeight(b.wrapperStyle, b.children.length);
-    const columnFillFlex = layoutColumnShouldUseFillFlex({
-      wrapperStyle: b.wrapperStyle,
-      hasFillHeightChild: columnHasFillHeightChild(template, b.children),
-    });
 
     if (isRow) {
-      const { innerTableStyle, childTdWidthStyle, omitSpacerGapCells } = horizontalRowInnerTableLayout(
+      const { innerTableStyle, childTdWidthStyle, childTdWidthAttr, omitSpacerGapCells } = horizontalRowInnerTableLayout(
         template,
         b.children,
         b.wrapperStyle,
@@ -1100,83 +715,44 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
         gapPx,
         fillRowInnerHeight
       );
-      const innerTable = omitSpacerGapCells
-        ? renderHorizontalRowFillFlex(
-            template,
-            b.children,
-            renderedFixedGapPx,
-            axisAlign.alignItems,
-            selectedBlockId,
-            onSelectBlock
-          )
-        : (
+      const innerTable = (
         <table
           {...emailTablePresentationProps}
           style={innerTableStyle}
         >
           <tbody style={fillRowInnerHeight ? { height: "100%" } : undefined}>
             <tr style={fillRowInnerHeight ? { height: "100%" } : undefined}>
-              {b.children.flatMap((cid, idx) => {
-                const cells: ReactElement[] = [];
-                if (idx > 0 && !gapAuto && gapPx > 0 && !omitSpacerGapCells) {
-                  cells.push(
-                    <td
-                      key={`sp-${cid}`}
-                      style={{
-                        ...tdBase(),
-                        width: gapPx,
-                        minWidth: gapPx,
-                        lineHeight: 0,
-                        fontSize: 0,
-                      }}
-                      aria-hidden
-                    >
-                      <div style={{ width: gapPx, height: 1 }} />
-                    </td>
-                  );
-                }
-                const rowChildValign = crossVerticalAlignForTableRowChild(
-                  template,
-                  cid,
-                  axisAlign.alignItems
-                );
-                cells.push(
-                  <td
-                    key={cid}
-                    valign={rowChildValign}
-                    style={{
-                      ...tdBase(),
-                      verticalAlign: rowChildValign,
-                      ...childTdWidthStyle(cid),
-                      ...(omitSpacerGapCells && idx < b.children.length - 1 && gapPx > 0
-                        ? { paddingRight: gapPx }
-                        : {}),
-                      ...(fillRowInnerHeight ? { height: "100%" } : {}),
-                    }}
-                  >
-                    <BlockView
-                      id={cid}
-                      template={template}
-                      selectedBlockId={selectedBlockId}
-                      onSelectBlock={onSelectBlock}
-                    />
-                  </td>
-                );
-                return cells;
+              {flatMapHorizontalLayoutRowCells({
+                template,
+                childIds: b.children,
+                gapAuto,
+                gapPx,
+                omitSpacerGapCells,
+                childTdWidthStyle,
+                childTdWidthAttr,
+                fillRowInnerHeight,
+                slotAlign: layoutChildSlotAlign("horizontal", wrapperContentAlign),
+                renderChild: (cid) => (
+                  <BlockView
+                    id={cid}
+                    template={template}
+                    selectedBlockId={selectedBlockId}
+                    onSelectBlock={onSelectBlock}
+                  />
+                ),
               })}
             </tr>
           </tbody>
         </table>
-        );
+      );
 
       return (
         <div
           className={nodeSel}
-          {...canvasPreviewBlockDataProps(id)}
+          {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
           onClick={selectBlock(id)}
           style={{
-            ...ws,
-            ...layoutHugBoxShrinkWrap,
+            ...layoutOuterBoxCss,
             overflow: "hidden",
             boxSizing: "border-box",
           }}
@@ -1210,79 +786,37 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       );
     }
 
-    const innerColumnTable = columnFillFlex
-      ? renderVerticalColumnFillFlex(
-          template,
-          b.children,
-          renderedFixedGapPx,
-          axisAlign,
-          selectedBlockId,
-          onSelectBlock
-        )
-      : (
-      <table
-        {...emailTablePresentationProps}
-        style={{
-          ...emailPresentationTableStyle,
-          width: layoutOuterShellTableFullWidth ? "100%" : "auto",
-          tableLayout: layoutOuterShellTableFullWidth ? "fixed" : "auto",
-          ...(fillColumnInnerHeight ? { height: "100%" } : {}),
-        }}
-      >
-        <tbody style={fillColumnInnerHeight ? { height: "100%" } : undefined}>
-          {b.children.map((cid, idx) => (
-            <Fragment key={cid}>
-              {idx > 0 && !gapAuto && parseGapPx(gapFixed) > 0 ? (
-                <tr aria-hidden>
-                  <td
-                    align={crossHorizontalAlignAttrFromFlexAlignItems(axisAlign.alignItems)}
-                    style={{
-                      ...tdBase(),
-                      lineHeight: 0,
-                      fontSize: 0,
-                      height: gapFixed,
-                    }}
-                  >
-                    <div style={{ height: gapFixed, width: "1px" }} />
-                  </td>
-                </tr>
-              ) : null}
-              <tr style={fillColumnInnerHeight ? { height: "100%" } : undefined}>
-                <td
-                  align={stackCrossAxisAlignForTableStackChild(template, cid, axisAlign.alignItems)}
-                  valign={stackMainAxisValignForTableStackChild(template, cid, justifyContent)}
-                  style={{
-                    ...tdBase(),
-                    verticalAlign: stackMainAxisValignForTableStackChild(
-                      template,
-                      cid,
-                      justifyContent
-                    ),
-                    ...(fillColumnInnerHeight ? { height: "100%" } : {}),
-                  }}
-                >
-                  <BlockView
-                    id={cid}
-                    template={template}
-                    selectedBlockId={selectedBlockId}
-                    onSelectBlock={onSelectBlock}
-                  />
-                </td>
-              </tr>
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
-      );
+    const innerColumnTable = renderVerticalStackInnerTable({
+      template,
+      childIds: b.children,
+      gapAuto,
+      gapFixed,
+      gapPx,
+      stretchColumn: fillColumnInnerHeight,
+      tableWidthFull: layoutOuterShellTableFullWidth,
+      stackCrossAlign: () =>
+        layoutStackCrossAlignForChild("vertical", wrapperContentAlign),
+      stackMainValign: () =>
+        layoutStackMainValignForChild("vertical", wrapperContentAlign),
+      parentCrossFallback: undefined,
+      parentMainFallback: undefined,
+      renderChild: (cid) => (
+        <BlockView
+          id={cid}
+          template={template}
+          selectedBlockId={selectedBlockId}
+          onSelectBlock={onSelectBlock}
+        />
+      ),
+    });
 
     return (
       <div
         className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
+        {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
         onClick={selectBlock(id)}
         style={{
-          ...ws,
-          ...layoutHugBoxShrinkWrap,
+          ...layoutOuterBoxCss,
           overflow: "hidden",
           boxSizing: "border-box",
           ...(layoutOuterDivFillParentHeight ? { height: "100%" } : {}),
@@ -1302,6 +836,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
           <tbody style={layoutInnerShellStretchHeight ? { height: "100%" } : undefined}>
             <tr style={layoutInnerShellStretchHeight ? { height: "100%" } : undefined}>
               <td
+                align={horizontalOuterAlign}
                 valign={verticalOuterValign}
                 style={{
                   ...tdBase(),
@@ -1320,7 +855,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
   if (b.type === "text") {
     const props = b.props;
     const tb = props.textBody;
-    const useBody = tb?.version === 1 && Array.isArray(tb.paragraphs);
+    const useBody = tb && typeof tb === "object" && Array.isArray(tb.paragraphs);
     const html = renderTextBodyToHtml(tb, {
       bold: props.bold === true,
       italic: props.italic === true,
@@ -1331,31 +866,35 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
         props.decoration === "none"
           ? props.decoration
           : "none",
+      color: typeof props.color === "string" ? props.color : undefined,
+      fontSize: typeof props.fontSize === "string" ? props.fontSize : undefined,
     });
-    const rawFontFamily = typeof props.fontFamily === "string" ? props.fontFamily : "";
-    const fontFamily = rawFontFamily.trim()
-      ? resolveRenderFontFamily(rawFontFamily)
-      : DEFAULT_EMAIL_FONT_FAMILY;
+    const fontFamily = EMAIL_CANVAS_TEXT_FONT_FAMILY;
     const fontSize = props.fontSize as string | undefined;
     const color = props.color as string | undefined;
     const bold = props.bold === true;
     const italic = props.italic === true;
     const decoration = props.decoration as CSSProperties["textDecoration"];
-    const outerStyle: CSSProperties = {
+    const outerBoxCss: CSSProperties = {
       ...ws,
-      ...contentAlignVerticalFlexCss(b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined),
       fontFamily,
       fontSize,
       lineHeight: FIXED_TEXT_LINE_HEIGHT,
       color,
-      boxSizing: "border-box",
     };
     if (!useBody) {
-      outerStyle.fontWeight = bold ? "700" : "400";
+      outerBoxCss.fontWeight = bold ? "700" : "400";
     }
+    const textTypography: CSSProperties = {
+      fontFamily,
+      ...(fontSize ? { fontSize } : {}),
+      lineHeight: FIXED_TEXT_LINE_HEIGHT,
+      ...(color ? { color } : {}),
+    };
     const innerStyle: CSSProperties = useBody
-      ? {}
+      ? textTypography
       : {
+          ...textTypography,
           fontStyle: italic ? "italic" : "normal",
           textDecoration:
             decoration === "underline" ||
@@ -1378,15 +917,21 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       }
       selectBlock(id)(e);
     };
-    return (
-      <div className={nodeSel} {...canvasPreviewBlockDataProps(id)} onClick={onTextClick} style={outerStyle}>
+    return renderPresentationLeafShell({
+      className: nodeSel,
+      dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+      onClick: onTextClick,
+      wrapperStyle: b.wrapperStyle,
+      outerBoxCss,
+      contentAlign: b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined,
+      children: (
         <div
           className="email-text-content"
           style={innerStyle}
           dangerouslySetInnerHTML={{ __html: html }}
         />
-      </div>
-    );
+      ),
+    });
   }
 
   if (b.type === "image") {
@@ -1398,13 +943,13 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       template,
       selectedBlockId,
       onSelectBlock,
-      placementParent,
+      enableHugIntrinsicHeight: true,
     });
     if (bgPreview) return bgPreview;
     return (
       <div
         className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
+        {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
         onClick={selectBlock(id)}
         style={{ ...ws, boxSizing: "border-box", color: "#999", fontSize: "12px" }}
       >
@@ -1425,26 +970,21 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
     const borderCss = borderToCss(bs?.border);
     const fw = bs?.bold === false ? 400 : 600;
     const fontStyle = bs?.italic === true ? "italic" : "normal";
-    const buttonFontFamily = resolveRenderFontFamily(
-      typeof bs?.fontFamily === "string" && bs.fontFamily.trim() ? bs.fontFamily : DEFAULT_EMAIL_FONT_FAMILY
-    );
+    const buttonFontFamily = EMAIL_CANVAS_TEXT_FONT_FAMILY;
     const buttonFontSize = normalizeCssSize(bs?.fontSize) ?? "15px";
     const buttonBodyWidthCss = componentBodyWidthCss({
       mode: bs?.widthMode,
       width: bs?.width,
       defaultMode: "hug",
     });
-    return (
-      <div
-        className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
-        onClick={selectBlock(id)}
-        style={{
-          ...ws,
-          ...contentAlignFlexCss(b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined),
-          boxSizing: "border-box",
-        }}
-      >
+    return renderPresentationLeafShell({
+      className: nodeSel,
+      dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+      onClick: selectBlock(id),
+      wrapperStyle: b.wrapperStyle,
+      outerBoxCss: ws,
+      contentAlign: b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined,
+      children: (
         <a
           href={link}
           style={{
@@ -1467,8 +1007,8 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
         >
           {text}
         </a>
-      </div>
-    );
+      ),
+    });
   }
 
   if (b.type === "divider") {
@@ -1480,20 +1020,17 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       width: props.lineWidth,
       defaultMode: "fill",
     });
-    return (
-      <div
-        className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
-        onClick={selectBlock(id)}
-        style={{
-          ...ws,
-          ...contentAlignFlexCss(b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined),
-          boxSizing: "border-box",
-        }}
-      >
+    return renderPresentationLeafShell({
+      className: nodeSel,
+      dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+      onClick: selectBlock(id),
+      wrapperStyle: b.wrapperStyle,
+      outerBoxCss: ws,
+      contentAlign: b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined,
+      children: (
         <hr style={{ ...lineWidthCss, border: "none", borderTop: `${height} solid ${color}`, margin: 0 }} />
-      </div>
-    );
+      ),
+    });
   }
 
   if (b.type === "progress") {
@@ -1518,46 +1055,22 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       width: props.barWidth,
       defaultMode: "fill",
     });
-    return (
-      <div
-        className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
-        onClick={selectBlock(id)}
-        style={{
-          ...ws,
-          ...contentAlignFlexCss(b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined),
-          boxSizing: "border-box",
-        }}
-      >
-        <div
-          style={{
-            ...barWidthCss,
-            display: "flex",
-            height: barH,
-            ...barRadiusCss,
-            overflow: "hidden",
-            boxSizing: "border-box",
-          }}
-        >
-          <div
-            style={{
-              width: `${pct}%`,
-              flexShrink: 0,
-              height: "100%",
-              backgroundColor: fill,
-            }}
-          />
-          <div
-            style={{
-              flex: 1,
-              minWidth: 0,
-              height: "100%",
-              backgroundColor: track,
-            }}
-          />
-        </div>
-      </div>
-    );
+    return renderPresentationLeafShell({
+      className: nodeSel,
+      dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+      onClick: selectBlock(id),
+      wrapperStyle: b.wrapperStyle,
+      outerBoxCss: ws,
+      contentAlign: b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined,
+      children: renderProgressBarTable({
+        barWidthCss,
+        barHeight: barH,
+        fillColor: fill,
+        trackColor: track,
+        percent: pct,
+        radiusCss: barRadiusCss,
+      }),
+    });
   }
 
   if (b.type === "grid") {
@@ -1580,28 +1093,30 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       rows.push(ch.slice(i, i + cols));
     }
 
-    return (
-      <div
-        className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
-        onClick={selectBlock(id)}
+    const rowsUseFillStretch = rows.map((row) =>
+      gridDataRowUsesFillStretch(template, row, b.wrapperStyle, cellHeightMode)
+    );
+    const matrixFillStretch = gridMatrixHasFillStretchRow(
+      template,
+      rows,
+      b.wrapperStyle,
+      cellHeightMode
+    );
+
+    const gridSlotContentAlign = b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined;
+
+    const gridTable = (
+      <table
+        ref={gridRef}
+        {...emailTablePresentationProps}
         style={{
-          ...ws,
-          ...contentAlignFlexCss(b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined),
+          ...emailPresentationTableStyle,
+          ...(cellFixedWidth ? { width: "auto", maxWidth: "100%" } : {}),
+          ...(matrixFillStretch ? { height: "100%" } : {}),
           overflow: "hidden",
           boxSizing: "border-box",
         }}
       >
-        <table
-          ref={gridRef}
-          {...emailTablePresentationProps}
-          style={{
-            ...emailPresentationTableStyle,
-            ...(cellFixedWidth ? { width: "fit-content", maxWidth: "100%" } : {}),
-            overflow: "hidden",
-            boxSizing: "border-box",
-          }}
-        >
         <tbody>
           {rows.map((row, ri) => (
             <Fragment key={`grid-row-group-${ri}`}>
@@ -1624,7 +1139,14 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
                   </td>
                 </tr>
               ) : null}
-              <tr key={`grid-row-${ri}`}>
+              <tr
+                key={`grid-row-${ri}`}
+                style={
+                  rowsUseFillStretch[ri] && matrixFillStretch && !gridRowMaxHeights?.[ri]
+                    ? { height: "100%" }
+                    : undefined
+                }
+              >
               {Array.from({ length: cols }, (_, ci) => {
                 const rowUniformHeight =
                   cellHeightMode === "content-max" &&
@@ -1632,7 +1154,9 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
                   gridRowMaxHeights[ri]! > 0
                     ? `${gridRowMaxHeights[ri]}px`
                     : undefined;
+                const rowFillStretch = rowsUseFillStretch[ri] && matrixFillStretch;
                 const cid = row[ci];
+                const slotContentAlign = gridSlotContentAlign;
                 return (
                   <Fragment key={`grid-cell-wrap-${ri}-${ci}`}>
                     {ci > 0 && gapPx > 0 ? (
@@ -1654,9 +1178,13 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
                         className="email-preview-grid-slot"
                         style={{
                           ...tdBase(),
-                          verticalAlign: "top",
+                          ...gridMatrixSlotContentAlignCss(slotContentAlign),
+                          ...emailPresentationHugSlotAntiStrutStyle(
+                            template.blocks[cid]?.wrapperStyle?.heightMode
+                          ),
                           ...(cellFixedWidth ? { width: cellFixedWidth } : colWidthPct ? { width: colWidthPct } : {}),
                           ...(rowUniformHeight ? { height: rowUniformHeight, minHeight: rowUniformHeight } : {}),
+                          ...(rowFillStretch && !rowUniformHeight ? { height: "100%" } : {}),
                           ...(gridTrackRowHeight && !rowUniformHeight
                             ? { height: gridTrackRowHeight }
                             : {}),
@@ -1690,8 +1218,33 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
           ))}
         </tbody>
       </table>
-      </div>
     );
+
+    const gridBgLayout = resolveWrapperBackgroundImageCanvasLayout({
+      wrapperStyle: b.wrapperStyle,
+      layoutDirection: undefined,
+    });
+
+    if (gridBgLayout) {
+      return renderWrapperBackgroundImageCanvasShell({
+        layout: gridBgLayout,
+        className: nodeSel,
+        dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+        onClick: selectBlock(id),
+        onLinkNavigate: stopCanvasLinkNavigation,
+        children: gridTable,
+      });
+    }
+
+    return renderPresentationLeafShell({
+      className: nodeSel,
+      dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+      onClick: selectBlock(id),
+      wrapperStyle: b.wrapperStyle,
+      outerBoxCss: { ...ws, overflow: "hidden" },
+      contentAlign: b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined,
+      children: gridTable,
+    });
   }
 
   if (b.type === "icon") {
@@ -1705,31 +1258,26 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
     ) : (
       <span style={{ fontSize: size }}>◇</span>
     );
-    return (
-      <div
-        className={nodeSel}
-        {...canvasPreviewBlockDataProps(id)}
-        onClick={selectBlock(id)}
-        style={{
-          ...ws,
-          ...contentAlignFlexCss(b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined),
-          boxSizing: "border-box",
-        }}
-      >
-        {link ? (
-          <a
-            href={link}
-            style={{ display: "inline-block", lineHeight: 0, textDecoration: "none" }}
-            onClick={stopCanvasLinkNavigation}
-            onAuxClick={stopCanvasLinkNavigation}
-          >
-            {iconNode}
-          </a>
-        ) : (
-          iconNode
-        )}
-      </div>
-    );
+    return renderPresentationLeafShell({
+      className: nodeSel,
+      dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
+      onClick: selectBlock(id),
+      wrapperStyle: b.wrapperStyle,
+      outerBoxCss: ws,
+      contentAlign: b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined,
+      children: link ? (
+        <a
+          href={link}
+          style={{ display: "inline-block", lineHeight: 0, textDecoration: "none" }}
+          onClick={stopCanvasLinkNavigation}
+          onAuxClick={stopCanvasLinkNavigation}
+        >
+          {iconNode}
+        </a>
+      ) : (
+        iconNode
+      ),
+    });
   }
 
   return null;
@@ -1741,13 +1289,23 @@ export function EmailPreview({ template, selectedBlockId, onSelectBlock }: Props
   const root = template.blocks[rootBlockId];
   if (!root) return <div>缺少根节点</div>;
   return (
-    <div className="email-preview-scope">
-      <BlockView
-        id={rootBlockId}
-        template={template}
-        selectedBlockId={selectedBlockId}
-        onSelectBlock={onSelectBlock}
-      />
+    <div
+      className="email-preview-canvas-workspace"
+      style={{
+        backgroundColor: EMAIL_CANVAS_WORKSPACE_BACKGROUND,
+        minHeight: "100%",
+        padding: "24px 16px",
+        boxSizing: "border-box",
+      }}
+    >
+      <div className="email-preview-scope">
+        <BlockView
+          id={rootBlockId}
+          template={template}
+          selectedBlockId={selectedBlockId}
+          onSelectBlock={onSelectBlock}
+        />
+      </div>
     </div>
   );
 }

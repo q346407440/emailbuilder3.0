@@ -9,7 +9,7 @@ import {
 } from "./textBodyContentMode";
 import { normalizeTextBody, textBodyToPlainString } from "./textBodyFormat";
 import { applyVariableBinding } from "./variableBindingEdit";
-import type { TextBodyV1 } from "../types/email";
+import type { TextBody } from "../types/email";
 import { inferScalarPayloadValueType, registerPayloadSlot } from "./payloadSlotRegister";
 import { detachInlineVariableBinding, detachVariableSlot } from "./variableBindingEdit";
 
@@ -28,7 +28,7 @@ function deleteBinding(block: EmailBlock, bindPath: string): void {
   if (Object.keys(block.bindings).length === 0) delete block.bindings;
 }
 
-function setRunText(body: TextBodyV1, bindPath: string, text: string): TextBodyV1 {
+function setRunText(body: TextBody, bindPath: string, text: string): TextBody {
   const m = bindPath.match(TEXT_RUN_TEXT_BIND_RE);
   if (!m) return body;
   const pi = Number(m[1]);
@@ -216,7 +216,7 @@ const INTERPOLATION_PLACEHOLDER_RE = (slotId: string) =>
     "g"
   );
 
-function findRunWithSlotPlaceholder(body: TextBodyV1, slotId: string): {
+function findRunWithSlotPlaceholder(body: TextBody, slotId: string): {
   paragraphIndex: number;
   runIndex: number;
 } | null {
@@ -258,8 +258,7 @@ export function applyTextBodyWholeVariableFromSlot(
   const plain = body ? textBodyToPlainString(body) : args.defaultValue;
   const seed = plain.trim() || args.defaultValue;
 
-  const nextBody: TextBodyV1 = {
-    version: 1,
+  const nextBody: TextBody = {
     paragraphs: [{ runs: [{ text: seed }] }],
   };
   let t = setTemplateFieldOnly(baked.template, blockId, "props.textBody", nextBody);
@@ -292,7 +291,7 @@ export function applyInlineVariableFromTextBodySelection(
     slotId: string;
     label: string;
     defaultValue: string;
-    nextTextBody: TextBodyV1;
+    nextTextBody: TextBody;
     mode: "create" | "bind";
     valueType?: string;
   }

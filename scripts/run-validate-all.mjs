@@ -6,7 +6,8 @@
  *  3. 对同目录 payload.json 跑 validatePayloadAgainstTemplate（版式场景对每个版式 template 校验）
  *  4. 校验 tokenPresets.json
  *  5. 校验 data/token-presets/*.json（公共样式预设）
- *  6. 跑 template-yaml:golden（防止 YAML 夹具展开输出与 expected 漂移）
+ *  6. 校验 data/scene-collection-presets/<scene>/*.json（场景内置列表变量）
+ *  7. 跑 template-yaml:golden（防止 YAML 夹具展开输出与 expected 漂移）
  *
  * 任一步失败则非零退出。
  *
@@ -28,6 +29,7 @@ import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateTemplate, validatePayloadAgainstTemplate } from "../src/lib/validate.ts";
+import { validateEmailMeta } from "../src/meta-contract/validate.ts";
 import { validateTokenPresets } from "../src/token-preset-contract/validate.ts";
 import {
   allLayoutTemplatePaths,
@@ -71,8 +73,8 @@ function printHelp() {
 等价于:
   npm run validate:all -- --email member-welcome --skip-unit --skip-yaml --skip-public-presets
 
-改 font-family-contract / validate.ts 时补跑单测:
-  node --test --import tsx src/font-family-contract/*.test.ts src/token-preset-contract/*.test.ts
+改 token-preset-contract / validate.ts 时补跑单测:
+  node --test --import tsx src/token-preset-contract/*.test.ts
 
 提交前仍须: npm run validate:all
 `);
@@ -121,6 +123,20 @@ function validateTemplateBundle(tplPath, tokenPath, label) {
   return { ok: false, template: tpl };
 }
 
+function validateMetaFile(metaPath) {
+  const meta = JSON.parse(readFileSync(metaPath, "utf8"));
+  const issues = validateEmailMeta(meta);
+  if (issues.length === 0) {
+    process.stdout.write(`[ok]   ${metaPath}\n`);
+    return true;
+  }
+  process.stdout.write(`[fail] ${metaPath}\n`);
+  for (const issue of issues) {
+    process.stdout.write(`        ${issue.path}: ${issue.reason}\n`);
+  }
+  return false;
+}
+
 function validatePayloadForTemplates(payloadPath, templates, labelPrefix) {
   const payload = JSON.parse(readFileSync(payloadPath, "utf8"));
   let failed = false;
@@ -154,6 +170,10 @@ function validateAllTemplates(emailKey) {
   }
   let failed = 0;
   for (const dir of dirs) {
+    const metaPath = join(dir, "meta.json");
+    if (statSync(metaPath, { throwIfNoEntry: false })?.isFile()) {
+      if (!validateMetaFile(metaPath)) failed += 1;
+    }
     const manifestPath = join(dir, "layout-manifest.json");
     const payloadPath = join(dir, "payload.json");
     let manifest = null;
@@ -270,6 +290,8 @@ validateAllTemplates(cli.email);
 if (!cli.skipPublicPresets) {
   validatePublicTokenPresets();
 }
+process.stdout.write("\n=== validate data/scene-collection-presets/**/*.json ===\n");
+runStep("scene-collection-presets", ["npm", "exec", "--", "tsx", "scripts/validate-scene-collection-presets.mjs"]);
 if (!cli.skipYaml) {
   runStep("npm run template-yaml:golden", ["npm", "run", "template-yaml:golden"]);
 }

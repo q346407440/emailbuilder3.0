@@ -1,0 +1,30 @@
+{
+  "presetId": "loyalty-internal-unfinished-config",
+  "slotId": "loyaltyUnfinishedConfigItems",
+  "label": "未完成配置",
+  "description": "待开启配置卡片：标题 + 待开启标签 + 说明",
+  "minItems": 3,
+  "maxItems": 3,
+  "itemFields": [
+    { "key": "title", "label": "配置项名称", "valueType": "string", "required": true },
+    { "key": "statusTag", "label": "状态标签", "valueType": "string", "required": true },
+    { "key": "description", "label": "说明", "valueType": "string", "required": true }
+  ],
+  "seedValues": [
+    {
+      "title": "积分抵扣金额",
+      "statusTag": "待开启",
+      "description": "让顾客可用积分抵现，提升支付意愿与复购率"
+    },
+    {
+      "title": "未注册用户订单优惠",
+      "statusTag": "待开启",
+      "description": "新客无需注册即可入会享优惠，降低首单转化门槛"
+    },
+    {
+      "title": "入会/支付奖励积分",
+      "statusTag": "待开启",
+      "description": "注册或下单即得积分，持续激励消费与复购"
+    }
+  ]
+}

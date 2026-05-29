@@ -94,7 +94,7 @@ function main() {
   const changedFiles = [];
 
   for (const dir of readdirSync(EMAILS_DIR)) {
-    if (dir === "placement-playground") continue;
+    if (dir === "align-playground") continue;
     const file = join(EMAILS_DIR, dir, "template.json");
     if (!existsSync(file)) continue;
     const template = JSON.parse(readFileSync(file, "utf8"));

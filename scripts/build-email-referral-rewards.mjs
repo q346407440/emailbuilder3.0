@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 生成「推荐有奖」学习模板到 data/emails/referral-rewards/
  */
@@ -34,8 +36,6 @@ const border0 = () => ({
 
 const radius0 = () => ({ mode: "unified", radius: "0" });
 
-const placement = (h, v) => ({ horizontal: h, vertical: v });
-
 const themeRef = (path) => ({ $themeRef: path });
 
 const themeBinding = (path) => ({
@@ -67,7 +67,7 @@ const modShellBindings = () => ({
 });
 
 const wsBase = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -77,7 +77,6 @@ const wsBase = (extra = {}) => ({
 });
 
 const textBodyRuns = (runs) => ({
-  version: 1,
   paragraphs: [{ runs }],
 });
 
@@ -146,7 +145,7 @@ function build() {
       parentId: cellId,
       children: [],
       wrapperStyle: {
-        placement: placement("center", "start"),
+        contentAlign: contentAlignFromAxes("center", "start"),
         widthMode: "hug",
         heightMode: "hug",
         border: border0(),
@@ -165,7 +164,6 @@ function build() {
       props: {
         content: `<p>${label}</p>`,
         textBody: textBodyRuns([{ text: label }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: "#9A7B4F",
         bold: false,
@@ -173,7 +171,6 @@ function build() {
         decoration: "none",
       },
       bindings: {
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
       },
     });
@@ -187,7 +184,6 @@ function build() {
       props: {
         content: `<p>${valueDefault}</p>`,
         textBody: textBodyRuns([{ text: valueDefault, bold: true }]),
-        fontFamily: themeRef("fonts.heading"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -204,7 +200,6 @@ function build() {
           fieldKind: "content",
           label: `${labelText}数值`,
         },
-        "props.fontFamily": themeBinding("fonts.heading"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -223,7 +218,7 @@ function build() {
     parentId: modLogo,
     children: [logoImg],
     wrapperStyle: wsBase({
-      placement: placement("start", "start"),
+      contentAlign: contentAlignFromAxes("start", "start"),
       contentAlign: { horizontal: "left", vertical: "top" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -236,7 +231,7 @@ function build() {
     parentId: logoRow,
     children: [],
     wrapperStyle: {
-      placement: placement("start", "center"),
+      contentAlign: contentAlignFromAxes("start", "center"),
       widthMode: "fixed",
       width: "160px",
       heightMode: "fixed",
@@ -291,7 +286,6 @@ function build() {
     props: {
       content: "<p>Share your link earn rewards.</p>",
       textBody: textBodyRuns([{ text: "Share your link earn rewards.", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.display"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -308,7 +302,6 @@ function build() {
         fieldKind: "content",
         label: "推荐主标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.display"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -328,7 +321,6 @@ function build() {
           text: "Invite friends to discover products you love. You'll both get amazing rewards!",
         },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -346,7 +338,6 @@ function build() {
         fieldKind: "content",
         label: "推荐副标题",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -385,7 +376,6 @@ function build() {
       props: {
         content: `<p>${defaultText}</p>`,
         textBody: textBodyRuns([{ text: defaultText }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: "#9A7B4F",
         bold: true,
@@ -402,7 +392,6 @@ function build() {
           fieldKind: "content",
           label: name,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
       },
     });
@@ -452,7 +441,7 @@ function build() {
     wrapperStyle: {
       widthMode: "fill",
       heightMode: "hug",
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       border: border0(),
       borderRadius: radius0(),
     },
@@ -466,7 +455,7 @@ function build() {
     parentId: modRewards,
     children: [theyGiftIcon, theyGiftValue],
     wrapperStyle: wsBase({
-      placement: placement("start", "center"),
+      contentAlign: contentAlignFromAxes("start", "center"),
       contentAlign: { horizontal: "left", vertical: "center" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "12px" },
@@ -479,7 +468,7 @@ function build() {
     parentId: theyGetRow,
     children: [],
     wrapperStyle: {
-      placement: placement("start", "center"),
+      contentAlign: contentAlignFromAxes("start", "center"),
       widthMode: "hug",
       heightMode: "hug",
       border: border0(),
@@ -501,7 +490,6 @@ function build() {
     props: {
       content: "<p>$10 off COUPON</p>",
       textBody: textBodyRuns([{ text: "$10 off COUPON", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -518,7 +506,6 @@ function build() {
         fieldKind: "content",
         label: "好友优惠券奖励",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -551,7 +538,6 @@ function build() {
     props: {
       content: "<p>share link</p>",
       textBody: textBodyRuns([{ text: "share link" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#C9A227",
       bold: false,
@@ -568,7 +554,6 @@ function build() {
         fieldKind: "content",
         label: "分享链接标签",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -578,7 +563,7 @@ function build() {
     type: "layout",
     parentId: modLink,
     children: [referralUrlText, copyBtn],
-    wrapperStyle: wsBase({ placement: placement("start", "center") }),
+    wrapperStyle: wsBase({ contentAlign: contentAlignFromAxes("start", "center") }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "12px" },
     bindings: {},
   });
@@ -595,7 +580,6 @@ function build() {
     props: {
       content: "<p>suvia-seven.com/referral?ref=emma-v...</p>",
       textBody: textBodyRuns([{ text: "suvia-seven.com/referral?ref=emma-v..." }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#F9FAFB",
       bold: false,
@@ -612,7 +596,6 @@ function build() {
         fieldKind: "content",
         label: "推荐链接展示",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -625,7 +608,7 @@ function build() {
     wrapperStyle: {
       widthMode: "hug",
       heightMode: "hug",
-      placement: placement("end", "center"),
+      contentAlign: contentAlignFromAxes("end", "center"),
       contentAlign: { horizontal: "center", vertical: "center" },
       border: border0(),
       borderRadius: radius0(),
@@ -637,7 +620,6 @@ function build() {
         widthMode: "hug",
         backgroundColor: "#F5E6C8",
         textColor: "#1F2937",
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         border: border0(),
         borderRadius: { mode: "unified", radius: themeRef("tokens.radius.cta") },
@@ -664,7 +646,6 @@ function build() {
         fieldKind: "content",
         label: "推荐链接地址",
       },
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.caption"),
       "props.buttonStyle.borderRadius.radius": themeBinding("tokens.radius.cta"),
     },
@@ -699,7 +680,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns1),
       textBody: textBodyRuns(accountRuns1),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -716,7 +696,6 @@ function build() {
         fieldKind: "content",
         label: "注册账户链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -737,7 +716,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns2),
       textBody: textBodyRuns(accountRuns2),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -754,7 +732,6 @@ function build() {
         fieldKind: "content",
         label: "重置密码链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -768,7 +745,7 @@ function build() {
     wrapperStyle: {
       widthMode: "fill",
       heightMode: "hug",
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       border: border0(),
       borderRadius: radius0(),
     },
@@ -797,7 +774,6 @@ function build() {
     props: {
       content: snapshotFromRuns(contactRuns),
       textBody: textBodyRuns(contactRuns),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -841,7 +817,6 @@ function build() {
         fieldKind: "content",
         label: "客服邮箱 mailto 链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -853,7 +828,7 @@ function build() {
     parentId: null,
     children: modIds,
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -924,12 +899,6 @@ function writeTokenPresets() {
             secondary: "#6B7280",
             surface: "#FFFFFF",
           },
-          fonts: {
-            heading:
-              "'Segoe UI'",
-            body:
-              "'Segoe UI'",
-          },
           spacing: {
             section: "24px",
             gap: "16px",
@@ -958,10 +927,8 @@ function writeMeta() {
     description:
       "店铺 Logo、推荐主标题、奖励摘要卡（YOU GET / THEY GET）、推荐链接与复制、页脚账户与联系；样式经 tokenPresets 统一管理。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: { type: "screenshot", url: "" },
     defaultStylePresetSelection: "local",
   };
 }

@@ -2,6 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import type { LayoutManifest, LayoutVariantEntry } from "../layout-variant-contract/types";
 import { LAYOUT_MANIFEST_SCHEMA_VERSION } from "../layout-variant-contract/types";
+import { isLogicallyDeleted, validateOptionalDeletedAtField } from "./logicalDelete";
+import {
+  listVisibleLayoutVariants,
+  resolveEffectiveLayoutVariantId,
+} from "./layoutVariantLogicalDelete";
 
 export const LAYOUT_MANIFEST_FILE = "layout-manifest.json";
 export const LAYOUTS_DIR = "layouts";
@@ -45,7 +50,10 @@ export function isLayoutManifestShape(raw: unknown): raw is LayoutManifest {
     if (ids.has(entry.id)) return false;
     ids.add(entry.id);
   }
-  return ids.has(m.activeLayoutVariantId);
+  if (!ids.has(m.activeLayoutVariantId)) return false;
+  const active = m.variants.find((v) => v.id === m.activeLayoutVariantId);
+  if (active && isLogicallyDeleted(active)) return false;
+  return listVisibleLayoutVariants(m.variants).length > 0;
 }
 
 export function validateLayoutManifest(manifest: LayoutManifest): Array<{ path: string; reason: string }> {
@@ -54,8 +62,22 @@ export function validateLayoutManifest(manifest: LayoutManifest): Array<{ path: 
     issues.push({ path: "layout-manifest", reason: "layout-manifest.json 形态不合法" });
     return issues;
   }
-  if (manifest.variants.length < 1) {
-    issues.push({ path: "variants", reason: "至少需要一个版式变体" });
+  const visible = listVisibleLayoutVariants(manifest.variants);
+  if (visible.length < 1) {
+    issues.push({ path: "variants", reason: "至少需要一个未逻辑删除的版式变体" });
+  }
+  const active = manifest.variants.find((v) => v.id === manifest.activeLayoutVariantId);
+  if (!active || isLogicallyDeleted(active)) {
+    issues.push({
+      path: "activeLayoutVariantId",
+      reason: "activeLayoutVariantId 须指向未逻辑删除的版式",
+    });
+  }
+  for (const [i, v] of manifest.variants.entries()) {
+    if (v.deletedAt !== undefined && v.deletedAt !== null) {
+      const issue = validateOptionalDeletedAtField(v.deletedAt, `variants[${i}].deletedAt`);
+      if (issue) issues.push(issue);
+    }
   }
   return issues;
 }
@@ -71,14 +93,10 @@ export function resolveLayoutVariantId(
     }
     return { layoutVariantId: null, error: null };
   }
-  const requested = (layoutQuery ?? "").trim();
-  const id = requested || manifest.activeLayoutVariantId;
-  const bad = assertLayoutVariantIdSafe(id);
+  const { layoutVariantId, error } = resolveEffectiveLayoutVariantId(manifest, layoutQuery);
+  const bad = assertLayoutVariantIdSafe(layoutVariantId);
   if (bad) return { layoutVariantId: null, error: bad };
-  if (!manifest.variants.some((v) => v.id === id)) {
-    return { layoutVariantId: null, error: `未知版式变体：${id}` };
-  }
-  return { layoutVariantId: id, error: null };
+  return { layoutVariantId, error };
 }
 
 export function resolveEmailFilePaths(

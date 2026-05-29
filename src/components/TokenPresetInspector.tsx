@@ -1,43 +1,58 @@
+import { useEffect, useState } from "react";
 import type { TokenPresets } from "../types/tokenPreset";
-import { coercePersistedFontFamily, EMAIL_FONT_FAMILY_OPTIONS } from "../font-family-contract";
+import { logicalDeleteConfirmOptions } from "../lib/logicalDeleteConfirm";
 import { tokenPresetFieldLabelZh, tokenPresetFamilyTitleZh, tokenPresetScaleTitleKnown } from "../lib/tokenPresetFieldLabels";
 import { sortTokenPresetFamilies, sortTokenPresetScales } from "../lib/tokenPresetStandardOrder";
 import { tokenPresetFieldUsesShopUnitInput } from "../lib/tokenPresetFieldInput";
 import { ColorField } from "./ui/ColorField";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect, ShopUnitInput } from "./ui/ShopFormControls";
+import { Field } from "./ui/Field";
+import { InspectorPanelSection } from "./ui/InspectorPanelSection";
+import { ShopInput, ShopSelect, ShopUnitInput } from "./ui/ShopFormControls";
+import { useConfirmDialog } from "./ui/ConfirmDialogProvider";
 
 type Props = {
   tokenPresets: TokenPresets | null;
   dirty: boolean;
+  /** 与左侧列表一致：`local` 为邮件内预设；否则为公共预设 presetId */
+  listSelection: "local" | string;
   onChange: (next: TokenPresets) => void;
   onSave: () => void;
-  /** 当前编辑来源说明（如「本邮件」或「公共 · xxx」） */
-  editingSourceHint?: string;
   /** 设为打开本模板时默认选中的侧栏预设（写入 meta.json） */
   onSetAsTemplateDefault?: () => void | Promise<void>;
   /** 当前侧栏选中项已是模板 meta 中的默认 */
   isTemplateDefaultForCurrentSelection?: boolean;
   /** 禁用「设为模板默认预设」 */
   setAsTemplateDefaultDisabled?: boolean;
+  /** 逻辑删除当前选中的公共预设（仅 listSelection 非 local 时展示删除） */
+  onDeleteGlobal?: (presetId: string) => void | Promise<void>;
 };
+
+/** 样式预设 Inspector：颜色四列；间距/字号/圆角双列；未知分组单列 */
+function tokenPresetSectionLayout(family: string): "1col" | "2col" | "4col" {
+  if (family === "colors") return "4col";
+  if (family === "spacing" || family === "typography" || family === "radius") return "2col";
+  return "1col";
+}
 
 export function TokenPresetInspector({
   tokenPresets,
   dirty,
+  listSelection,
   onChange,
   onSave,
-  editingSourceHint,
   onSetAsTemplateDefault,
   isTemplateDefaultForCurrentSelection,
   setAsTemplateDefaultDisabled,
+  onDeleteGlobal,
 }: Props) {
+  const { confirm } = useConfirmDialog();
   if (!tokenPresets) {
     return (
-      <aside className="side-inspector side-inspector--token-preset">
-        <div className="side-inspector__headrow">
-          <h2 className="side-panel__title">样式预设</h2>
+      <aside className="inspector inspector--token-preset">
+        <div className="inspector__title-row">
+          <h2 className="inspector__title">样式预设</h2>
         </div>
-        <p className="inspector__muted">当前邮件目录下没有 tokenPresets.json，可先通过迁移脚本生成。</p>
+        <p className="inspector__muted">当前邮件尚未配置样式预设。</p>
       </aside>
     );
   }
@@ -55,37 +70,106 @@ export function TokenPresetInspector({
     onChange(next);
   };
 
+  const patchPresetLabel = (nextLabel: string) => {
+    const next = structuredClone(tokenPresets);
+    const preset = next.presets[activeId];
+    if (!preset) return;
+    preset.label = nextLabel;
+    onChange(next);
+  };
+
+  const isGlobalSelection = listSelection !== "local";
+  const globalPresetId = isGlobalSelection ? listSelection : null;
+  const headTitle = active?.label?.trim() || activeId || "样式预设";
+  const [titleDraft, setTitleDraft] = useState(headTitle);
+
+  useEffect(() => {
+    setTitleDraft(headTitle);
+  }, [headTitle]);
+
+  const handleDeleteGlobal = async () => {
+    if (!globalPresetId || !onDeleteGlobal) return;
+    const ok = await confirm(
+      logicalDeleteConfirmOptions({
+        title: "逻辑删除公共预设",
+        resourcePhrase: `公共预设「${headTitle}」`,
+        fileHint: `data/token-presets/${globalPresetId}.json`,
+      })
+    );
+    if (ok) void onDeleteGlobal(globalPresetId);
+  };
+
+  const commitTitle = () => {
+    const current = headTitle.trim();
+    const next = titleDraft.trim();
+    const normalized = next.length > 0 ? next : activeId;
+    if (!normalized || normalized === current) {
+      setTitleDraft(current);
+      return;
+    }
+    patchPresetLabel(normalized);
+  };
+
   return (
-    <aside className="side-inspector side-inspector--token-preset">
-      <div className="side-inspector__headrow">
-        <div>
-          <h2 className="side-panel__title">样式预设</h2>
-          {editingSourceHint ? (
-            <p className="inspector__muted" style={{ marginTop: 4, marginBottom: 0 }}>
-              {editingSourceHint}
-            </p>
-          ) : null}
-        </div>
-        <div className="side-inspector__headrow-actions" style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "stretch" }}>
-          <ShopPrimaryButton size="small" disabled={!dirty} onClick={onSave}>
-            保存样式预设
-          </ShopPrimaryButton>
-          {onSetAsTemplateDefault ? (
-            <ShopSecondaryButton
-              size="small"
-              htmlType="button"
-              disabled={Boolean(setAsTemplateDefaultDisabled) || Boolean(isTemplateDefaultForCurrentSelection)}
-              onClick={() => void onSetAsTemplateDefault()}
-              title={isTemplateDefaultForCurrentSelection ? "当前选中项已是模板默认" : undefined}
+    <aside className="inspector inspector--token-preset">
+      <header className="token-preset-inspector__header">
+        <div className="side-inspector__headrow token-preset-inspector__headrow">
+          <ShopInput
+            value={titleDraft}
+            className="inspector__title-input"
+            onChange={(event) => setTitleDraft(event.target.value)}
+            onBlur={commitTitle}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                (event.currentTarget as HTMLInputElement).blur();
+              }
+              if (event.key === "Escape") {
+                event.preventDefault();
+                setTitleDraft(headTitle);
+                (event.currentTarget as HTMLInputElement).blur();
+              }
+            }}
+            aria-label="预设名称"
+            placeholder={activeId || "样式预设"}
+          />
+          <div className="token-preset-inspector__head-actions">
+            <button
+              type="button"
+              className="resource-text-action"
+              disabled={!dirty}
+              onClick={onSave}
+              title="保存当前样式预设改动"
             >
-              {isTemplateDefaultForCurrentSelection ? "已是模板默认" : "设为模板默认预设"}
-            </ShopSecondaryButton>
-          ) : null}
+              保存
+            </button>
+            {onSetAsTemplateDefault ? (
+              <button
+                type="button"
+                className="resource-text-action"
+                disabled={Boolean(setAsTemplateDefaultDisabled) || Boolean(isTemplateDefaultForCurrentSelection)}
+                onClick={() => void onSetAsTemplateDefault()}
+                title={isTemplateDefaultForCurrentSelection ? "当前选中项已是模板默认" : "将当前预设设为模板默认"}
+              >
+                {isTemplateDefaultForCurrentSelection ? "已是模板默认" : "设为模板默认"}
+              </button>
+            ) : null}
+            {isGlobalSelection && onDeleteGlobal ? (
+              <button
+                type="button"
+                className="resource-text-action resource-text-action--danger"
+                onClick={() => void handleDeleteGlobal()}
+                title="逻辑删除该公共样式预设文件"
+              >
+                删除
+              </button>
+            ) : null}
+          </div>
         </div>
-      </div>
-      <div className="side-inspector__token-scroll">
+      </header>
+      <div className="inspector__token-scroll">
         {active ? (
-          <div className="side-summary">
+          <>
             {sortTokenPresetFamilies(Object.keys(active.tokens)).map((family) => {
               const scales = active.tokens[family] ?? {};
               const scaleEntries = sortTokenPresetScales(family, Object.keys(scales)).map((scale) => [
@@ -100,76 +184,59 @@ export function TokenPresetInspector({
                   unknownOrdinalByScale.set(sc, unknownCount);
                 }
               }
+              const layout = tokenPresetSectionLayout(family);
+              const sectionClass = `inspector__section token-preset-inspector__section token-preset-inspector__section--${layout}`;
+
               return (
-              <section className="theme-inspector__block" key={family}>
-                <h3 className="theme-inspector__block-title">{tokenPresetFamilyTitleZh(family)}</h3>
-                {scaleEntries.map(([scale, value]) => {
-                  const str = String(value ?? "");
-                  const useUnit = tokenPresetFieldUsesShopUnitInput(family, str);
-                  const uo = unknownOrdinalByScale.get(scale) ?? 1;
-                  const { label, technicalHint } = tokenPresetFieldLabelZh(family, scale, uo);
-                  if (family === "colors") {
-                    return (
-                      <ColorField
-                        key={`${family}.${scale}`}
-                        label={label}
-                        value={str}
-                        onChange={(next) => patchToken(family, scale, next)}
-                        {...(technicalHint ? { hint: technicalHint } : {})}
-                      />
-                    );
-                  }
-                  if (family === "fonts") {
-                    const selectValue = coercePersistedFontFamily(str);
-                    return (
-                      <div className="inspector__field" key={`${family}.${scale}`}>
-                        <label className="inspector__label" title={technicalHint}>
-                          {label}
-                        </label>
-                        <ShopSelect
-                          value={selectValue}
-                          onChange={(next) =>
-                            patchToken(family, scale, coercePersistedFontFamily(String(next)))
-                          }
-                        >
-                          {EMAIL_FONT_FAMILY_OPTIONS.map((opt) => (
-                            <ShopSelect.Option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </ShopSelect.Option>
-                          ))}
-                        </ShopSelect>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div className="inspector__field" key={`${family}.${scale}`}>
-                      <label className="inspector__label" title={technicalHint}>
-                        {label}
-                      </label>
-                      {useUnit ? (
-                        <ShopUnitInput
+                <InspectorPanelSection
+                  key={family}
+                  title={tokenPresetFamilyTitleZh(family)}
+                  className="token-preset-inspector__group"
+                  bodyClassName={sectionClass}
+                >
+                  {scaleEntries.map(([scale, value]) => {
+                    const str = String(value ?? "");
+                    const useUnit = tokenPresetFieldUsesShopUnitInput(family, str);
+                    const uo = unknownOrdinalByScale.get(scale) ?? 1;
+                    const { label } = tokenPresetFieldLabelZh(family, scale, uo);
+                    if (family === "colors") {
+                      return (
+                        <ColorField
+                          key={`${family}.${scale}`}
+                          label={label}
                           value={str}
-                          unit="px"
-                          min={0}
-                          step={family === "typography" ? 1 : 0.5}
                           onChange={(next) => patchToken(family, scale, next)}
                         />
-                      ) : (
-                        <ShopInput
-                          type="text"
-                          value={str}
-                          onChange={(event) => patchToken(family, scale, event.target.value)}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </section>
+                      );
+                    }
+                    return (
+                      <Field
+                        key={`${family}.${scale}`}
+                        label={label}
+                      >
+                        {useUnit ? (
+                          <ShopUnitInput
+                            value={str}
+                            unit="px"
+                            min={0}
+                            step={family === "typography" ? 1 : 0.5}
+                            onChange={(next) => patchToken(family, scale, next)}
+                          />
+                        ) : (
+                          <ShopInput
+                            type="text"
+                            value={str}
+                            onChange={(event) => patchToken(family, scale, event.target.value)}
+                          />
+                        )}
+                      </Field>
+                    );
+                  })}
+                </InspectorPanelSection>
               );
             })}
-          </div>
+          </>
         ) : null}
-        <p className="inspector__muted">普通用户优先选择“跟随/大中小”，这里用于维护档位背后的真实值。</p>
       </div>
     </aside>
   );

@@ -83,7 +83,7 @@ function normalizeRootWrapperStyle(value: unknown): WrapperStyle {
     value && typeof value === "object" && !Array.isArray(value)
       ? ({ ...(value as WrapperStyle) } as WrapperStyle)
       : ({} as WrapperStyle);
-  const { selfAlign: _legacySelfAlign, placement: _legacyPlacement, ...base } = raw;
+  const base = raw;
 
   return {
     ...base,
@@ -94,7 +94,6 @@ function normalizeRootWrapperStyle(value: unknown): WrapperStyle {
       base.heightMode === "hug" || base.heightMode === "fill" || base.heightMode === "fixed"
         ? base.heightMode
         : "hug",
-    // 邮件根无表格父级，不持久化 placement（与 placementConfigurability 一致）
   };
 }
 

@@ -14,7 +14,6 @@ export const BLOCK_SHELL_KEYS = [
 
 /** 多数容器 / 内容块共用的 wrapperStyle 前缀 */
 export const WRAPPER_CONTAINER_PREFIXES = [
-  "wrapperStyle.placement",
   "wrapperStyle.contentAlign",
   "wrapperStyle.widthMode",
   "wrapperStyle.heightMode",

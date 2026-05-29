@@ -96,7 +96,7 @@ function miniNestedTemplate(): EmailTemplate {
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "x" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "x" }] }] },
           bold: false,
           italic: false,
           underline: false,
@@ -269,7 +269,7 @@ describe("repeatNestedBinding", () => {
             contentAlign: { horizontal: "left", vertical: "top" },
           },
           props: {
-            textBody: { version: 1, paragraphs: [{ runs: [{ text: "SPU" }] }] },
+            textBody: { paragraphs: [{ runs: [{ text: "SPU" }] }] },
             bold: false,
             italic: false,
             underline: false,
@@ -329,7 +329,7 @@ describe("repeatNestedBinding", () => {
             contentAlign: { horizontal: "left", vertical: "top" },
           },
           props: {
-            textBody: { version: 1, paragraphs: [{ runs: [{ text: "SKU" }] }] },
+            textBody: { paragraphs: [{ runs: [{ text: "SKU" }] }] },
             bold: false,
             italic: false,
             underline: false,
@@ -667,5 +667,57 @@ describe("repeatNestedBinding", () => {
         `映射目标应存在：${mapping.targetBlockId}`
       );
     }
+  });
+
+  it("applyUnifiedRepeatBinding self-repeat：宿主即行模板时保留宿主 repeat", () => {
+    const template = JSON.parse(
+      readFileSync("data/emails/mcp-20260527/layouts/default/template.json", "utf8")
+    ) as EmailTemplate;
+    const payload = JSON.parse(
+      readFileSync("data/emails/mcp-20260527/payload.json", "utf8")
+    ) as EmailPayload;
+    const itemFields = payload.slots!.loyaltyAbnormalConfigItems!.itemFields!;
+
+    const bound = applyUnifiedRepeatBinding(template, {
+      scope: "parentOnly",
+      slotId: "loyaltyAbnormalConfigItems",
+      parentHostId: "mcp-20260527-card-1",
+      parentPrototypeChildIds: ["mcp-20260527-card-1"],
+      parentItemFields: itemFields,
+      parentFieldMappings: [
+        {
+          id: "map-title",
+          sourcePath: "title",
+          targetBlockId: "mcp-20260527-card-1-title-text",
+          targetBindPath: "props.textBody.paragraphs.0.runs.0.text",
+          label: "问题标题",
+          valueType: "string",
+        },
+        {
+          id: "map-desc",
+          sourcePath: "description",
+          targetBlockId: "mcp-20260527-card-1-desc-text",
+          targetBindPath: "props.textBody.paragraphs.0.runs.0.text",
+          label: "问题说明",
+          valueType: "string",
+        },
+      ],
+      parentMinItems: 4,
+      parentMaxItems: 4,
+      parentLabel: "异常配置项",
+      parentDescription: "关键问题卡片",
+      childItemPath: "",
+    }, payload);
+
+    const hostRepeat = bound.blocks["mcp-20260527-card-1"]?.repeat;
+    assert.equal(hostRepeat?.slotId, "loyaltyAbnormalConfigItems");
+    assert.deepEqual(hostRepeat?.prototypeChildIds, ["mcp-20260527-card-1"]);
+    assert.equal(hostRepeat?.fieldMappings?.length, 2);
+
+    const expanded = expandRepeatRegions(bound, payload);
+    const cloneCount = (expanded.blocks["mcp-20260527-main"]?.children ?? []).filter((id) =>
+      id.includes("mcp-20260527-card-1")
+    ).length;
+    assert.equal(cloneCount, 4, "self-repeat 应按 payload 展开 4 张卡片");
   });
 });

@@ -2,13 +2,11 @@ import type { ExpandedTheme } from "../types/theme";
 import type { TokenPresets } from "../types/tokenPreset";
 import { readTokenPresetStorageValue } from "./resolveTokenPreset";
 
-/** 仓库标准 14 键（与 email-token-preset-standard-scope 对齐） */
+/** 仓库标准 12 键（与 email-token-preset-standard-scope 对齐） */
 export const STANDARD_THEME_TOKEN_PATHS = [
   "colors.primary",
   "colors.secondary",
   "colors.surface",
-  "fonts.heading",
-  "fonts.body",
   "tokens.spacing.section",
   "tokens.spacing.gap",
   "tokens.spacing.pageInline",
@@ -22,7 +20,6 @@ export const STANDARD_THEME_TOKEN_PATHS = [
 
 /** surface / primary / secondary：容器背景与文字、图标描边等前景色共用（主背景 surface 在前） */
 const COLOR_SURFACE_PRIMARY_SECONDARY = ["colors.surface", "colors.primary", "colors.secondary"] as const;
-const FONTS = ["fonts.heading", "fonts.body"] as const;
 const TYPOGRAPHY = [
   "tokens.typography.display",
   "tokens.typography.h1",
@@ -53,7 +50,6 @@ export function suggestThemeTokenPaths(_blockType: string, bindPath: string): st
   const parent = pathParent(bindPath);
 
   if (leaf === "fontSize") return [...TYPOGRAPHY];
-  if (leaf === "fontFamily") return [...FONTS];
   if (leaf === "color" || leaf === "textColor") return [...COLOR_SURFACE_PRIMARY_SECONDARY];
   if (leaf === "backgroundColor") {
     return [...COLOR_SURFACE_PRIMARY_SECONDARY];
@@ -91,7 +87,7 @@ export function previewThemeTokenValue(theme: ExpandedTheme | null | undefined, 
   return typeof cursor === "string" && cursor.trim() ? cursor : null;
 }
 
-/** 样式预设胶囊菜单：回显 tokenPresets 落盘值（字体等不经 CSS 栈展开）。 */
+/** 样式预设胶囊菜单：回显 tokenPresets 落盘值。 */
 export function previewThemeTokenStorageValue(
   tokenPresets: TokenPresets | null | undefined,
   tokenPath: string
@@ -100,19 +96,11 @@ export function previewThemeTokenStorageValue(
   return stored ?? null;
 }
 
-/** 字段绑定路径是否为主题字体档位（落盘回显走 storage，不走 ExpandedTheme 展开）。 */
-export function isThemeFontTokenBindPath(bindPath: string): boolean {
-  return bindPath === "props.fontFamily" || bindPath === "props.buttonStyle.fontFamily";
-}
-
 export function previewThemeTokenValueForField(
-  bindPath: string,
+  _bindPath: string,
   tokenPath: string,
   theme: ExpandedTheme | null | undefined,
   tokenPresets: TokenPresets | null | undefined
 ): string | null {
-  if (isThemeFontTokenBindPath(bindPath) || tokenPath.startsWith("fonts.")) {
-    return previewThemeTokenStorageValue(tokenPresets, tokenPath);
-  }
-  return previewThemeTokenValue(theme, tokenPath);
+  return previewThemeTokenStorageValue(tokenPresets, tokenPath) ?? previewThemeTokenValue(theme, tokenPath);
 }

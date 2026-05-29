@@ -1,0 +1,35 @@
+{
+  "presetId": "loyalty-internal-positive-data",
+  "slotId": "loyaltyPositiveGrowthData",
+  "label": "正向数据",
+  "description": "上方 4 个指标卡片（新增订阅邮箱、转化率、客单价、会员客单价）",
+  "minItems": 4,
+  "maxItems": 4,
+  "itemFields": [
+    { "key": "title", "label": "指标名", "valueType": "string", "required": true },
+    { "key": "value", "label": "数值", "valueType": "string", "required": true },
+    { "key": "comparisonText", "label": "对比说明", "valueType": "string" }
+  ],
+  "seedValues": [
+    {
+      "title": "新增订阅邮箱",
+      "value": "10.00",
+      "comparisonText": ""
+    },
+    {
+      "title": "转化率",
+      "value": "+10%",
+      "comparisonText": "试用期间 VS 使用LP前"
+    },
+    {
+      "title": "客单价",
+      "value": "+10%",
+      "comparisonText": "试用期间 VS 使用LP前"
+    },
+    {
+      "title": "会员客单价",
+      "value": "+10%",
+      "comparisonText": "试用期间 VS 使用LP前"
+    }
+  ]
+}

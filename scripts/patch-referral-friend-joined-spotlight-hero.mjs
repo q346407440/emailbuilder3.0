@@ -136,10 +136,8 @@ function makeSkuThumbBlocks(n) {
     },
     props: {
       textBody: {
-        version: 1,
         paragraphs: [{ runs: [{ text: "规格" }] }],
       },
-      fontFamily: { $themeRef: "fonts.body" },
       fontSize: { $themeRef: "tokens.typography.caption" },
       color: { $themeRef: "colors.secondary" },
       bold: false,
@@ -151,7 +149,6 @@ function makeSkuThumbBlocks(n) {
         "pickedSpotlightProduct",
         `0.skuTitle${n}`
       ),
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -282,10 +279,8 @@ template.blocks["rfj-picked-spotlight-sku-label"] = {
   },
   props: {
     textBody: {
-      version: 1,
       paragraphs: [{ runs: [{ text: "可选规格" }] }],
     },
-    fontFamily: { $themeRef: "fonts.body" },
     fontSize: { $themeRef: "tokens.typography.caption" },
     color: { $themeRef: "colors.secondary" },
     bold: false,
@@ -293,7 +288,6 @@ template.blocks["rfj-picked-spotlight-sku-label"] = {
     decoration: "none",
   },
   bindings: {
-    "props.fontFamily": themeBinding("fonts.body"),
     "props.fontSize": themeBinding("tokens.typography.caption"),
     "props.color": themeBinding("colors.secondary"),
   },

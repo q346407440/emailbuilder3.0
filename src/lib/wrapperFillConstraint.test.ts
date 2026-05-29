@@ -6,6 +6,7 @@ import {
   getFillValidationReason,
   getWrapperModeHint,
   isChildFillBlockedByParentHug,
+  normalizeBlockWrapperDimensionModes,
 } from "./wrapperFillConstraint";
 
 function createLayoutParent(opts: {
@@ -40,11 +41,20 @@ describe("isChildFillBlockedByParentHug · 宽度轴", () => {
     assert.equal(isChildFillBlockedByParentHug(parent, "width"), true);
   });
 
-  it("父级纵向 layout 时，不阻止子级 width fill", () => {
+  it("父级纵向 layout 且 widthMode=hug 时，阻止子级 width fill", () => {
     const parent = createLayoutParent({
       direction: "vertical",
       widthMode: "hug",
       heightMode: "fill",
+    });
+    assert.equal(isChildFillBlockedByParentHug(parent, "width"), true);
+  });
+
+  it("父级纵向 layout 且 widthMode=fill 时，不阻止子级 width fill", () => {
+    const parent = createLayoutParent({
+      direction: "vertical",
+      widthMode: "fill",
+      heightMode: "hug",
     });
     assert.equal(isChildFillBlockedByParentHug(parent, "width"), false);
   });
@@ -129,16 +139,76 @@ describe("isChildFillBlockedByParentHug · 高度轴", () => {
   });
 });
 
+describe("normalizeBlockWrapperDimensionModes", () => {
+  it("纵排 hug 宽父下子级 width fill 回落 hug", () => {
+    const parent = createLayoutParent({
+      direction: "vertical",
+      widthMode: "hug",
+      heightMode: "fill",
+    });
+    const template = {
+      blocks: {
+        parent,
+        child: {
+          id: "child",
+          type: "text" as const,
+          parentId: "parent",
+          children: [],
+          wrapperStyle: { widthMode: "fill", heightMode: "hug" },
+          props: {},
+          bindings: {},
+        },
+      },
+    } as unknown as import("../types/email").EmailTemplate;
+    const { wrapperStyle, changed, changes } = normalizeBlockWrapperDimensionModes(
+      template,
+      "child"
+    );
+    assert.equal(changed, true);
+    assert.equal(wrapperStyle?.widthMode, "hug");
+    assert.equal(changes[0]?.axis, "width");
+  });
+
+  it("横排 hug 父下子级 width fill 回落 hug", () => {
+    const parent = createLayoutParent({
+      direction: "horizontal",
+      widthMode: "hug",
+      heightMode: "fill",
+    });
+    const template = {
+      blocks: {
+        parent,
+        child: {
+          id: "child",
+          type: "text" as const,
+          parentId: "parent",
+          children: [],
+          wrapperStyle: { widthMode: "fill", heightMode: "hug" },
+          props: {},
+          bindings: {},
+        },
+      },
+    } as unknown as import("../types/email").EmailTemplate;
+    const { wrapperStyle, changed, changes } = normalizeBlockWrapperDimensionModes(
+      template,
+      "child"
+    );
+    assert.equal(changed, true);
+    assert.equal(wrapperStyle?.widthMode, "hug");
+    assert.equal(changes[0]?.axis, "width");
+  });
+});
+
 describe("wrapperFillConstraint 文案", () => {
   it("宽度轴禁用时返回一致文案", () => {
-    assert.match(getWrapperModeHint("width", true), /同轴循环依赖/);
+    assert.match(getWrapperModeHint("width", true), /循环依赖/);
     assert.equal(getFillOptionTitle("width", true), "父级宽度模式为跟随内容（hug）时不可用");
-    assert.match(getFillValidationReason("width"), /子级不允许使用 fill/);
+    assert.match(getFillValidationReason("width"), /width fill/);
   });
 
   it("高度轴禁用时返回一致文案", () => {
-    assert.match(getWrapperModeHint("height", true), /同轴循环依赖/);
+    assert.match(getWrapperModeHint("height", true), /循环依赖/);
     assert.equal(getFillOptionTitle("height", true), "父级高度模式为跟随内容（hug）时不可用");
-    assert.match(getFillValidationReason("height"), /子级不允许使用 fill/);
+    assert.match(getFillValidationReason("height"), /height fill/);
   });
 });

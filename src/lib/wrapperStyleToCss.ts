@@ -73,6 +73,24 @@ export function borderToCss(raw: unknown): CSSProperties {
   return {};
 }
 
+/** 解析 CSS border 简写或 longhand 的首段宽度（px）；无法解析时视为 0。 */
+function parseCssBorderWidthPx(value: string): number {
+  const first = value.trim().split(/\s+/)[0] ?? "";
+  if (!first || first === "0") return 0;
+  const m = first.match(/^([\d.]+)px$/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+/** borderToCss 产物是否含可见线宽（>0），用于底图 td 描边是否触发表格 separate 等布局派生。 */
+export function borderCssHasVisibleWidth(css: CSSProperties): boolean {
+  const keys = ["border", "borderTop", "borderRight", "borderBottom", "borderLeft"] as const;
+  for (const key of keys) {
+    const raw = css[key];
+    if (typeof raw === "string" && parseCssBorderWidthPx(raw) > 0) return true;
+  }
+  return false;
+}
+
 /** 把圆角对象映射为 CSS。`unified` → `borderRadius`；`corners` → 4 个 longhand。 */
 export function borderRadiusToCss(raw: unknown): CSSProperties {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
@@ -135,7 +153,6 @@ export function wrapperStyleToCss(ws: WS | undefined, options?: WrapperStyleToCs
   if (ca?.horizontal === "center") s.textAlign = "center";
   else if (ca?.horizontal === "left") s.textAlign = "left";
   else if (ca?.horizontal === "right") s.textAlign = "right";
-  /** 相对父级放置（margin 等，见 resolvePlacementToCss）由 resolvePlacementToCss 统一处理 */
   Object.assign(s, borderRadiusToCss(ws.borderRadius));
   Object.assign(s, borderToCss(ws.border));
   return s;

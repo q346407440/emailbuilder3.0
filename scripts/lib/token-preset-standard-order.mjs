@@ -4,7 +4,6 @@
 
 export const TOKEN_PRESET_FAMILY_ORDER = [
   "colors",
-  "fonts",
   "spacing",
   "typography",
   "radius",
@@ -12,7 +11,6 @@ export const TOKEN_PRESET_FAMILY_ORDER = [
 
 export const TOKEN_PRESET_SCALE_ORDER = {
   colors: ["primary", "secondary", "surface"],
-  fonts: ["heading", "body"],
   spacing: ["section", "gap", "pageInline"],
   typography: ["display", "h1", "body", "caption"],
   radius: ["panel", "cta"],

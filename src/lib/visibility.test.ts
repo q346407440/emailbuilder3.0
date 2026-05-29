@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { validatePayloadAgainstTemplate, validateTemplate } from "./validate";
 import { expandRepeatRegions } from "./repeatRegion";
+import { evaluateVisibilityRule } from "../visibility-contract";
 import { applyVisibilityRules } from "./visibility";
 
 function baseTemplate(): EmailTemplate {
@@ -49,7 +50,6 @@ function baseTemplate(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "center", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
           borderRadius: { mode: "unified", radius: "0" },
         },
@@ -63,11 +63,10 @@ function baseTemplate(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "你有积分" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "你有积分" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
@@ -104,7 +103,6 @@ function baseTemplate(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "center", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
           borderRadius: { mode: "unified", radius: "0" },
         },
@@ -118,11 +116,10 @@ function baseTemplate(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "默认商品" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "默认商品" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
@@ -196,11 +193,60 @@ describe("visibility", () => {
     template.blocks.pointsBox.visibility = {
       slotId: "points",
       valueType: "number",
-      operator: "isNotEmpty",
+      operator: "isTrue",
     };
 
     const issues = validateTemplate(template);
     assert.ok(issues.some((item) => item.path === "blocks.pointsBox.visibility.operator"));
+  });
+
+  it("数值为空：未赋值或非法类型时 isEmpty 成立", () => {
+    const rule = { slotId: "points", valueType: "number" as const, operator: "isEmpty" as const };
+    assert.equal(evaluateVisibilityRule(rule, payload({ products: [] })), true);
+    assert.equal(
+      evaluateVisibilityRule(rule, payload({ points: 0, products: [] })),
+      false
+    );
+    assert.equal(
+      evaluateVisibilityRule(
+        rule,
+        payload({ points: "oops" as unknown as number, products: [] })
+      ),
+      true
+    );
+  });
+
+  it("列表非数组或未赋值时数组为空成立", () => {
+    const rule = {
+      slotId: "products",
+      valueType: "collection" as const,
+      operator: "isEmpty" as const,
+    };
+    assert.equal(evaluateVisibilityRule(rule, payload({ points: 0 })), true);
+    assert.equal(
+      evaluateVisibilityRule(rule, payload({ points: 0, products: [] })),
+      true
+    );
+    assert.equal(
+      evaluateVisibilityRule(rule, payload({ points: 0, products: [{ title: "A" }] })),
+      false
+    );
+  });
+
+  it("布尔为空：未赋值视为空，true/false 为不为空", () => {
+    const emptyRule = {
+      slotId: "showPoints",
+      valueType: "boolean" as const,
+      operator: "isEmpty" as const,
+    };
+    const notEmptyRule = { ...emptyRule, operator: "isNotEmpty" as const };
+    const p = (showPoints?: boolean) =>
+      payload({ products: [], ...(showPoints === undefined ? {} : { showPoints }) }, {
+        showPoints: { label: "显示积分", valueType: "boolean" },
+      });
+    assert.equal(evaluateVisibilityRule(emptyRule, p()), true);
+    assert.equal(evaluateVisibilityRule(emptyRule, p(true)), false);
+    assert.equal(evaluateVisibilityRule(notEmptyRule, p(false)), true);
   });
 
   it("payload 允许只被 visibility 消费的布尔派生槽", () => {

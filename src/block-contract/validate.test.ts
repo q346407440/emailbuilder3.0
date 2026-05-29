@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { layoutContainerContract } from "./by-type/layout.container";
+import { layoutGridContract } from "./by-type/layout.grid";
 import { contentTextContract } from "./by-type/content.text";
 import { emailRootContract } from "./by-type/email.root";
 import { resolveBlockContract } from "./registry";
@@ -20,7 +21,6 @@ function minimalTemplate(block: EmailBlock): EmailTemplate {
         parentId: null,
         children: [block.id],
         wrapperStyle: {
-          placement: { horizontal: "center" },
           widthMode: "fill",
           heightMode: "hug",
         },
@@ -60,7 +60,6 @@ describe("block-contract", () => {
       parentId: null,
       children: [],
       wrapperStyle: {
-        placement: { horizontal: "center" },
         widthMode: "fill",
         heightMode: "hug",
         backgroundImage: {
@@ -91,6 +90,41 @@ describe("block-contract", () => {
       blocks: { root },
       blockMeta: { root: { blockType: "layout.container", name: "根" } },
     };
+    assert.deepEqual(validateTemplateBlockContracts(template), []);
+  });
+
+  it("layout.grid 允许 wrapperStyle.backgroundImage", () => {
+    assert.ok(layoutGridContract.allowedPrefixes.some((p) => p.includes("backgroundImage")));
+    const block: EmailBlock = {
+      id: "grid1",
+      type: "grid",
+      parentId: "root",
+      children: [],
+      wrapperStyle: {
+        widthMode: "fill",
+        heightMode: "fixed",
+        height: "200px",
+        padding: { mode: "unified", unified: "8px" },
+        backgroundImage: {
+          src: "https://example.com/grid-bg.jpg",
+          alt: "grid",
+          link: "",
+          fit: "cover",
+          position: "center",
+          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+          borderRadius: { mode: "unified", radius: "0" },
+        },
+      },
+      props: {
+        columns: 2,
+        gap: "12px",
+        cellWidthMode: "auto",
+        cellHeightMode: "content-max",
+      },
+      bindings: {},
+    };
+    const template = minimalTemplate(block);
+    template.blockMeta![block.id] = { blockType: "layout.grid", name: "栅格" };
     assert.deepEqual(validateTemplateBlockContracts(template), []);
   });
 
@@ -196,7 +230,6 @@ describe("block-contract", () => {
       parentId: null,
       children: [],
       wrapperStyle: {
-        placement: { horizontal: "center" },
         widthMode: "fill",
         heightMode: "hug",
       },

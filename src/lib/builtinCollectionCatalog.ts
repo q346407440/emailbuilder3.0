@@ -1,6 +1,7 @@
 import type { BuiltinCollectionCatalogId } from "../payload-contract/collection-data-source";
 import {
   DEFAULT_BUILTIN_COLLECTION_SORT,
+  normalizeBuiltinCollectionSortId,
   type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
 
@@ -65,6 +66,7 @@ export function flattenBuiltinProductRow(product: BuiltinProductMock): Record<st
     originalPrice: featured.originalPrice,
     inventoryQuantity,
     totalSales,
+    conversionRate: totalSales * 0.01,
     maxSkuSalePrice: maxSkuSalePrice(product.skus),
   };
   return row;
@@ -74,87 +76,97 @@ export function flattenBuiltinProductRow(product: BuiltinProductMock): Record<st
 export const BUILTIN_PRODUCTS_MOCK: Record<string, unknown>[] =
   BUILTIN_PRODUCTS_MOCK_RAW.map(flattenBuiltinProductRow);
 
-/** 内置专辑 mock（10 条） */
+/** 内置商品专辑 mock（10 条，对齐 PRD / Shoplazza Collection） */
 export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
+    id: "coll-midnight-neon",
     coverSrc: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "午夜霓虹封面",
-    title: "Midnight Neon",
-    artist: "Luna Wave",
+    title: "午夜霓虹",
     description: "12 首电子氛围曲",
-    href: "https://example.com/albums/midnight-neon",
+    href: "https://example.com/collections/midnight-neon",
+    salesVolume: 1200,
   },
   {
+    id: "coll-coastal-drive",
     coverSrc: "https://images.pexels.com/photos/1670921/pexels-photo-1670921.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "海岸公路封面",
-    title: "Coastal Drive",
-    artist: "Harbor Lines",
+    title: "海岸公路",
     description: "10 首独立流行",
-    href: "https://example.com/albums/coastal-drive",
+    href: "https://example.com/collections/coastal-drive",
+    salesVolume: 980,
   },
   {
+    id: "coll-golden-hour",
     coverSrc: "https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "金色时刻封面",
-    title: "Golden Hour",
-    artist: "Sienna Park",
+    title: "金色时刻",
     description: "8 首民谣",
-    href: "https://example.com/albums/golden-hour",
+    href: "https://example.com/collections/golden-hour",
+    salesVolume: 760,
   },
   {
+    id: "coll-city-echoes",
     coverSrc: "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "城市回声封面",
-    title: "City Echoes",
-    artist: "Metro Pulse",
+    title: "城市回声",
     description: "14 首嘻哈节奏",
-    href: "https://example.com/albums/city-echoes",
+    href: "https://example.com/collections/city-echoes",
+    salesVolume: 1100,
   },
   {
+    id: "coll-quiet-keys",
     coverSrc: "https://images.pexels.com/photos/1670921/pexels-photo-1670921.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "静夜钢琴封面",
-    title: "Quiet Keys",
-    artist: "Noah Stein",
+    title: "静夜钢琴",
     description: "9 首钢琴独奏",
-    href: "https://example.com/albums/quiet-keys",
+    href: "https://example.com/collections/quiet-keys",
+    salesVolume: 540,
   },
   {
+    id: "coll-summer-pulse",
     coverSrc: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "夏日脉冲封面",
-    title: "Summer Pulse",
-    artist: "Coral Tide",
+    title: "夏日脉冲",
     description: "11 首舞曲",
-    href: "https://example.com/albums/summer-pulse",
+    href: "https://example.com/collections/summer-pulse",
+    salesVolume: 890,
   },
   {
+    id: "coll-forest-walk",
     coverSrc: "https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "深林漫步封面",
-    title: "Forest Walk",
-    artist: "Green Atlas",
+    title: "深林漫步",
     description: "7 首环境音乐",
-    href: "https://example.com/albums/forest-walk",
+    href: "https://example.com/collections/forest-walk",
+    salesVolume: 430,
   },
   {
+    id: "coll-tape-memories",
     coverSrc: "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "复古磁带封面",
-    title: "Tape Memories",
-    artist: "Retro Lane",
+    title: "复古磁带",
     description: "13 首复古流行",
-    href: "https://example.com/albums/tape-memories",
+    href: "https://example.com/collections/tape-memories",
+    salesVolume: 670,
   },
   {
+    id: "coll-star-voyage",
     coverSrc: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "星际航行封面",
-    title: "Star Voyage",
-    artist: "Orbit Sound",
+    title: "星际航行",
     description: "10 首太空合成",
-    href: "https://example.com/albums/star-voyage",
+    href: "https://example.com/collections/star-voyage",
+    salesVolume: 820,
   },
   {
+    id: "coll-dawn-overture",
     coverSrc: "https://images.pexels.com/photos/1670921/pexels-photo-1670921.jpeg?auto=compress&cs=tinysrgb&w=400",
     coverAlt: "晨光序曲封面",
-    title: "Dawn Overture",
-    artist: "Aurora Choir",
+    title: "晨光序曲",
     description: "6 首古典跨界",
-    href: "https://example.com/albums/dawn-overture",
+    href: "https://example.com/collections/dawn-overture",
+    salesVolume: 390,
   },
 ];
 
@@ -254,8 +266,20 @@ function rowPriceForSort(row: Record<string, unknown>): number {
   return 0;
 }
 
+function rowSalesVolumeForSort(row: Record<string, unknown>): number {
+  const direct = row.salesVolume ?? row.totalSales;
+  if (typeof direct === "number" && Number.isFinite(direct)) return direct;
+  return 0;
+}
+
+function rowConversionForSort(row: Record<string, unknown>): number {
+  const direct = row.conversionRate;
+  if (typeof direct === "number" && Number.isFinite(direct)) return direct;
+  return 0;
+}
+
 function rowNameForSort(row: Record<string, unknown>): string {
-  for (const key of ["name", "title", "artist"]) {
+  for (const key of ["name", "title"]) {
     const v = row[key];
     if (typeof v === "string" && v.trim()) return v.trim().toLowerCase();
   }
@@ -267,20 +291,29 @@ export function sortBuiltinCatalogRows(
   catalog: BuiltinCollectionCatalogId,
   sort: BuiltinCollectionSortId = DEFAULT_BUILTIN_COLLECTION_SORT
 ): Record<string, unknown>[] {
+  const normalizedSort = normalizeBuiltinCollectionSortId(sort);
   const rows = CATALOG_SOURCE[catalog].map((row) => ({ ...row }));
-  if (sort === "catalogOrder") return rows;
+  if (normalizedSort === "catalogOrder") return rows;
 
   const sorted = [...rows];
-  if (sort === "salesDesc" || sort === "salesAsc") {
+  if (normalizedSort === "salesVolumeDesc") {
+    sorted.sort((a, b) => rowSalesVolumeForSort(b) - rowSalesVolumeForSort(a));
+    return sorted;
+  }
+  if (normalizedSort === "conversionDesc") {
+    sorted.sort((a, b) => rowConversionForSort(b) - rowConversionForSort(a));
+    return sorted;
+  }
+  if (normalizedSort === "priceDesc" || normalizedSort === "priceAsc") {
     sorted.sort((a, b) => {
       const diff = rowPriceForSort(a) - rowPriceForSort(b);
-      return sort === "salesDesc" ? -diff : diff;
+      return normalizedSort === "priceDesc" ? -diff : diff;
     });
     return sorted;
   }
   sorted.sort((a, b) => {
     const diff = rowNameForSort(a).localeCompare(rowNameForSort(b), "zh-CN");
-    return sort === "nameDesc" ? -diff : diff;
+    return normalizedSort === "nameDesc" ? -diff : diff;
   });
   return sorted;
 }
@@ -296,7 +329,43 @@ export function projectBuiltinCatalogItems(
   return projectRowsToItemFields(source, itemFields);
 }
 
-function projectRowsToItemFields(
+/** 对任意 catalog 行数组排序并投影（商品 SKU 扁平行、专辑多选等） */
+export function projectBuiltinCatalogItemsFromRows(
+  rows: Record<string, unknown>[],
+  itemFields: BindingCollectionField[],
+  limit: number,
+  sort: BuiltinCollectionSortId = DEFAULT_BUILTIN_COLLECTION_SORT,
+  catalog: BuiltinCollectionCatalogId = "builtinProducts"
+): Record<string, unknown>[] {
+  const order = new Map(rows.map((r, i) => [String(r.id ?? i), i]));
+  const catalogMatched = sortBuiltinCatalogRows(catalog, sort).filter((r) =>
+    order.has(String(r.id ?? ""))
+  );
+  // SKU 扁平行 id 为 spu::sku，与 catalog 中 SPU 行 id 不一致时，保留勾选顺序而非丢行
+  const sorted =
+    catalogMatched.length > 0
+      ? catalogMatched.concat(
+          rows.filter(
+            (r) =>
+              !catalogMatched.some((c) => String(c.id ?? "") === String(r.id ?? ""))
+          )
+        )
+      : [...rows].sort(
+          (a, b) =>
+            (order.get(String(a.id ?? "")) ?? 0) - (order.get(String(b.id ?? "")) ?? 0)
+        );
+  const unique: Record<string, unknown>[] = [];
+  const seen = new Set<string>();
+  for (const row of sorted) {
+    const key = String(row.id ?? row.handle ?? row.title ?? unique.length);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(row);
+  }
+  return projectRowsToItemFields(unique.slice(0, limit), itemFields);
+}
+
+export function projectRowsToItemFields(
   rows: Record<string, unknown>[],
   itemFields: BindingCollectionField[]
 ): Record<string, unknown>[] {
@@ -390,6 +459,25 @@ export function projectBuiltinCatalogSimilarTo(
   // 锚点命中 catalog 时务必用 filtered；仅当未排除任何行（锚点不在目录）才退回 sorted
   const pool = filtered.length < sorted.length ? filtered : sorted;
   return projectRowsToItemFields(pool.slice(0, limit), itemFields);
+}
+
+/** 搭配品：排除锚点 SPU 后取前 limit 条（SPU 级） */
+export function projectBuiltinCatalogComplement(
+  catalog: BuiltinCollectionCatalogId,
+  itemFields: BindingCollectionField[],
+  limit: number,
+  sort: BuiltinCollectionSortId,
+  anchorRow: Record<string, unknown> | null,
+  matchField: "href" | "name" = "href"
+): Record<string, unknown>[] {
+  return projectBuiltinCatalogSimilarTo(
+    catalog,
+    itemFields,
+    limit,
+    sort,
+    anchorRow,
+    matchField
+  );
 }
 
 function findCatalogRowForAnchor(
@@ -511,5 +599,5 @@ export function builtinProductsCatalogFieldSample(): {
 }
 
 export function builtinCatalogLabel(catalog: BuiltinCollectionCatalogId): string {
-  return catalog === "products" ? "商品列表（内置 mock）" : "专辑列表（内置 mock）";
+  return catalog === "products" ? "商品列表" : "专辑列表";
 }

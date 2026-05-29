@@ -34,7 +34,7 @@ description: >-
 
 ### 第二步：先读「会翻车的点」
 
-- 打开 **`email-template-restore-check`**，扫一遍叠放、placement、根 gap 与圆角、底图 padding 等**反模式**。  
+- 打开 **`email-template-restore-check`**，扫一遍叠放、contentAlign、根 gap 与圆角、底图 padding 等**反模式**。  
 - 打开 **`email-config-motherboard`**，确认 block 类型、白名单字段别写飞。
 
 ### 第三步：写这封邮件的 tokenPresets（出生档）
@@ -78,7 +78,7 @@ description: >-
 
 | 主题 | 路径 |
 |------|------|
-| 标准 14 键与校验 | **`src/token-preset-contract/standard-keys.ts`**、**`validate.ts`** |
+| 标准 12 键与校验 | **`src/token-preset-contract/standard-keys.ts`**、**`validate.ts`** |
 | `$themeRef` 路径 | **`src/token-preset-contract/theme-ref-paths.ts`** |
 | 字段能否绑 theme | **`src/lib/resolveThemeInTemplate.ts`** |
 | block 样式路径白名单 | **`src/block-contract/`** |
@@ -104,7 +104,7 @@ description: >-
    - **模块壳外框节奏**：可见 **模块壳**（白底/描边/圆角/与正文对比的 `colors.surface` 等）的 **上下** → **`tokens.spacing.section`**；**左右** → **`tokens.spacing.gap`**（或等价字面量），保证 **壳内内容与壳边** 有呼吸感。  
    - **壳内子块节奏**：同级子块竖直/栅格间距 → **`layout.props.gap`** / **`grid.props.gap`**，优先绑 **`tokens.spacing.gap`**。  
    具体键名以 **`standard-keys.ts`** 为准。  
-3. **字号进 typography 档**：`display` / `h1` / `body` / `caption`；字体族 **`fonts.heading` / `fonts.body`**。禁止每段手写互不相干 px 却不进预设。
+3. **字号进 typography 档**：`display` / `h1` / `body` / `caption`。禁止每段手写互不相干 px 却不进预设。
 
 ### 容器内留白（与 pageInline 分工）
 
@@ -126,12 +126,12 @@ description: >-
 |------|----------|----------|
 | **外层 / 模块** | 顶栏、卡片、section **整体仍左对齐**（与正文同宽、贴内容区左缘） | 纵向父级、模块壳：**`contentAlign.horizontal: left`**（或默认 **`start`**）；子块 **`widthMode: fill`** 随父宽 |
 | **横排容器内部** | Logo+字标、图标条、并排按钮在 **该行/该壳宽度内** 作为一组 **水平居中** | **`layout` + `direction: horizontal`**：**`widthMode: fill`** + **`contentAlign.horizontal: center`**；子块 **`hug` / fixed**，**不要** 子块全 `fill` 被拉成均分（见 check §5） |
-| **横排内子块竖直互相对齐** | 字标与图标 **竖直中线对齐**，勿顶对齐 | 父为横排、子 **高 hug/fixed**（非 fill 高）→ 子块 **`placement.vertical: center`**（§20 第 6b 行）；勿仅靠父级 `contentAlign.vertical` |
+| **横排内子块竖直互相对齐** | 字标与图标 **竖直中线对齐**，勿顶对齐 | 横排父级 **`contentAlign.vertical: center`**；必要时各子块 **`contentAlign.vertical: center`** 或嵌套纵排 layout |
 | **满宽文本也要「行内居中」** | 如 `MEMBER EXCLUSIVE` 相对 **与品牌行同宽的条带** 居中 | 文本块 **`widthMode: fill`** + **`contentAlign.horizontal: center`**（外层模块仍可左对齐） |
 
-**仅当稿面明确要求「整组在邮件宽度内居中」** 时，才用横排 **`hug` + `placement.horizontal: center`** 或纵向父级 **`contentAlign.horizontal: center`**（与上表「容器内居中」二选一或叠加，先看稿）。
+**仅当稿面明确要求「整组在邮件宽度内居中」** 时，才用纵向父级 **`contentAlign.horizontal: center`** 或外层 **`layout` + `hug` 宽**（与上表「容器内居中」二选一或叠加，先看稿）。
 
-**`member-welcome` 顶栏**：`mw-brand` 整体左对齐；`mw-brand-row` 满宽行内 Logo+字标 **`contentAlign` 居中**；`mw-member-tag` 满宽条带内文案居中。实现：**`easy-email-concepts`**（placement vs contentAlign）、**`resolvePlacementCss.ts`**。
+**`member-welcome` 顶栏**：`mw-brand` 整体左对齐；`mw-brand-row` 满宽行内 Logo+字标 **`contentAlign` 居中**；`mw-member-tag` 满宽条带内文案居中。实现：**`easy-email-concepts`**、**`EmailPreview.tsx`**（table `align`/`valign`）。
 
 反模式与自检：**`email-template-restore-check` §5、§18**。
 
@@ -144,9 +144,9 @@ description: >-
 | **底图父**（如 `mwc-mod-hero`） | 容器内内容摆放 | `contentAlign` | 叠放子块在横幅区域内水平/竖直相对位置（`center` + `bottom` 等） |
 | **叠放子 layout**（如 `mwc-hero-card`） | 宽度模式 | `widthMode` | 稿面满宽白卡 → **`fill`**；仅明确「整块收窄」才 **`hug`** |
 | **叠放子 layout 内文案** | 容器内内容摆放 | 子块 `contentAlign` | **`fill` + `horizontal: center`**（WELCOME / 副标题） |
-| **叠放子 layout** | 容器相对父级摆放 | `placement` | **纵排 + 子 fill 宽：禁止写**（§20 第 5 行）；子 **hug/fixed 宽** 时可配 **`placement.horizontal`**（§20 第 5b 行）；**勿**用 `placement` 顶替父级 `contentAlign` |
+| **叠放子 layout** | 宽度模式 / 壳内摆放 | `widthMode` + `contentAlign` | **禁止非法 wrapperStyle 字段**；纵排 + 子 **fill** 宽时靠父级 **`contentAlign`**；per-child 差异用嵌套 layout |
 
-**默认修复顺序**：① 父 `contentAlign` → ② 子文案 `contentAlign` + `fill` → ③ 仅稿面要求再动 `hug` → ④ 勿误改 `placement` 冒充容器内居中。  
+**默认修复顺序**：① 父 `contentAlign` → ② 子文案 `contentAlign` + `fill` → ③ 仅稿面要求再动 `hug` → ④ 勿用 **`hug` 冒充** 父级容器内居中。  
 样例：**`member-welcome` / `layouts/centered`** 的 `mwc-mod-hero` + `mwc-hero-card`。  
 反模式：**`email-template-restore-check` §20**。
 
@@ -161,7 +161,7 @@ description: >-
 
 | 想查什么 | 读哪个技能 / 目录 |
 |----------|-------------------|
-| 易漏对齐、placement、自检清单 | **`email-template-restore-check`** |
+| 易漏对齐、contentAlign、自检清单 | **`email-template-restore-check`** |
 | 标准 token 键集合与样例 | **`email-token-preset-standard-scope`**、`data/emails/on-cart-abandon-2` |
 | 配置面 / 母版、block 白名单 | **`email-config-motherboard`**、`src/block-contract/` |
 | 远程图、图标 URL 约定 | **`email-remote-asset-urls`** |

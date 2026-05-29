@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 为 data/emails/on-cart-abandon-2/template.json 写入与 tokenPresets 对齐的 $themeRef + bindings。
- * 覆盖：文本块标题/正文体系字体、按钮字体、模块壳 padding/gap、栅格 gap、正文字号/色分档、大标题与极小字、
+ * 覆盖：文本块标题/正文字号与色分档、按钮样式、模块壳 padding/gap、栅格 gap、大标题与极小字、
  * 分类宫格叠字（26px 白字）→ `tokens.typography.h1`；**字色保持字面量 #ffffff**（叠在摄影底上，勿绑 `colors.surface`，深色预设下 surface 会变深导致不可读）。
  * 面板容器/主按钮圆角（`tokens.radius.panel` / `tokens.radius.cta`，四角 mode=corners 均绑同一 token）。
  * 不绑：布局方向、gapMode、紧凑行 8px 等结构或局部密度字段（保持字面量）。
@@ -173,11 +173,6 @@ function main() {
 
   for (const block of Object.values(t.blocks)) {
     if (block.type !== "text" || !block.props) continue;
-    setThemeRef(
-      block,
-      "props.fontFamily",
-      headingTextIds.has(block.id) ? "fonts.heading" : "fonts.body"
-    );
     const fs = block.props.fontSize;
     const col = typeof block.props.color === "string" ? block.props.color.trim() : "";
     if (fs === "26px" && col === "#ffffff") {
@@ -233,7 +228,6 @@ function main() {
     if (block.type !== "button" || !block.props?.buttonStyle) continue;
     const bs = block.props.buttonStyle;
     bs.fontSize = ref("tokens.typography.body");
-    bs.fontFamily = ref("fonts.body");
     bs.backgroundColor = ref("colors.surface");
     bs.textColor = ref("colors.primary");
     bs.border ??= {};
@@ -241,7 +235,6 @@ function main() {
     setBorderRadiusCornersTheme(block, "props.buttonStyle.borderRadius", R_CTA);
     mergeBindings(block, {
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.body"),
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.backgroundColor": themeBinding("colors.surface"),
       "props.buttonStyle.textColor": themeBinding("colors.primary"),
       "props.buttonStyle.border.color": themeBinding("colors.primary"),

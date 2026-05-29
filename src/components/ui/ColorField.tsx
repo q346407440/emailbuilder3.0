@@ -2,7 +2,8 @@ import { forwardRef, useMemo, useRef, type ComponentPropsWithoutRef, type ReactN
 import { ColorPicker } from "@shoplazza/sds";
 import { Field } from "./Field";
 import { ShopSecondaryButton } from "./ShopFormControls";
-import { useAdaptiveOverlayPlacement } from "../../hooks/useAdaptiveOverlayPlacement";
+import { useAdaptiveOverlayEdge } from "../../hooks/useAdaptiveOverlayEdge";
+import { antdOverlayEdge } from "../../lib/antdOverlayEdge";
 import {
   parseCssColorToRgba,
   rgbaForPicker,
@@ -69,9 +70,9 @@ export function ColorField({ label, value, onChange, hint, disabled, headerExtra
 
   const parsedOk = parseCssColorToRgba(value.trim()) !== null;
   const fillCss = parsedOk ? value.trim() : rgbaToCss(rgbaForPicker(value));
-  const { open, placement, overlayClassName, onVisibleChange } = useAdaptiveOverlayPlacement({
+  const { open, overlayEdge, overlayClassName, onVisibleChange } = useAdaptiveOverlayEdge({
     triggerRef: triggerWrapRef,
-    preferredPlacement: "topLeft",
+    preferredEdge: "topLeft",
     estimatedPopupHeight: 292,
     estimatedPopupWidth: 258,
     overlayClassName: "color-field__dropdown-overlay",
@@ -86,7 +87,7 @@ export function ColorField({ label, value, onChange, hint, disabled, headerExtra
           disabledAlpha={false}
           onChange={(c) => onChange(pickerColorToCss(c))}
           dropdownProps={{
-            placement,
+            ...antdOverlayEdge(overlayEdge),
             onVisibleChange,
             overlayClassName,
             /** 不向触发器追加 sds-dropdown-open，避免与按钮样式叠加引起布局抖动 */

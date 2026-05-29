@@ -1,4 +1,9 @@
 import type { EmailPayload, PayloadSlotDefinition } from "../types/email";
+import type { SceneCollectionPreset } from "../payload-contract/scene-collection-presets";
+import {
+  buildPayloadSlotDefFromScenePreset,
+  resolveScenePresetCollectionValues,
+} from "../payload-contract/scene-collection-presets/buildPresetCollection";
 import { isPayloadSlotIdTaken, registerPayloadSlot } from "./payloadSlotRegister";
 import { SLOT_ID_PATTERN } from "../payload-contract/value-types";
 import {
@@ -80,5 +85,28 @@ export function createCollectionPayloadSlot(
 
   return {
     payload: registerPayloadSlot(payload, slotId, def, []),
+  };
+}
+
+/** 从场景内置列表预设登记 collection 槽，并写入预览/mock 行数据 */
+export function createCollectionPayloadSlotFromPreset(
+  payload: EmailPayload,
+  preset: SceneCollectionPreset
+): { payload: EmailPayload; slotId: string } | { error: string } {
+  if (isPayloadSlotIdTaken(payload, preset.slotId)) {
+    return { error: `变量「${preset.label}」（${preset.slotId}）已存在，请勿重复创建。` };
+  }
+
+  const def = buildPayloadSlotDefFromScenePreset(preset);
+  let next = registerPayloadSlot(payload, preset.slotId, def, []);
+  const values = resolveScenePresetCollectionValues(preset, next, preset.slotId);
+  next = {
+    ...next,
+    values: { ...next.values, [preset.slotId]: values },
+  };
+
+  return {
+    slotId: preset.slotId,
+    payload: next,
   };
 }

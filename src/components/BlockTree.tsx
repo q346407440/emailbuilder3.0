@@ -185,7 +185,7 @@ export function BlockTree({
 
     const directTag = repeatTagIndex.byBlockId.get(id) ?? null;
     const groupTag = repeatTreeTagForBlock(repeatTagIndex, template, id);
-    const repeatTag = directTag;
+    const repeatTag = directTag?.role === "repeat-item" ? directTag : null;
     const repeatGroupStripe =
       directTag?.role === "host"
         ? directTag
@@ -216,6 +216,38 @@ export function BlockTree({
   }
 
   const treeRootId = startBlockId ?? template.rootBlockId;
+  const treeSubtreeIds = useMemo(() => {
+    const ids: string[] = [];
+    const seen = new Set<string>();
+    const visit = (blockId: string) => {
+      if (seen.has(blockId)) return;
+      const block = template.blocks[blockId];
+      if (!block) return;
+      seen.add(blockId);
+      ids.push(blockId);
+      block.children.forEach(visit);
+    };
+    visit(treeRootId);
+    return ids;
+  }, [template, treeRootId]);
+
+  const expandAllNodes = () => {
+    setOpen((prev) => {
+      const next = { ...defaultOpen, ...prev };
+      for (const id of treeSubtreeIds) next[id] = true;
+      return next;
+    });
+  };
+
+  const collapseToFirstLevel = () => {
+    setOpen((prev) => {
+      const next = { ...defaultOpen, ...prev };
+      for (const id of treeSubtreeIds) next[id] = false;
+      next[treeRootId] = true;
+      return next;
+    });
+  };
+
   const treeBody = (
     <div ref={scrollRef} className="block-tree__scroll">
       {renderNode(treeRootId, 0)}
@@ -228,7 +260,19 @@ export function BlockTree({
 
   return (
     <aside className="block-tree">
-      {title ? <div className="block-tree__title">{title}</div> : null}
+      {title ? (
+        <div className="block-tree__title">
+          <span className="block-tree__title-text">{title}</span>
+          <div className="block-tree__title-actions" role="group" aria-label="区块树操作">
+            <button type="button" className="resource-text-action block-tree__title-action" onClick={expandAllNodes}>
+              全部展开
+            </button>
+            <button type="button" className="resource-text-action block-tree__title-action" onClick={collapseToFirstLevel}>
+              折叠至首层
+            </button>
+          </div>
+        </div>
+      ) : null}
       {treeBody}
     </aside>
   );

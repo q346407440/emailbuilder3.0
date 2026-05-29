@@ -2,9 +2,18 @@ import type { ValidationIssue } from "./validate";
 import type { EmailTemplate } from "../types/email";
 import type { BlockMaster, MasterKind, SectionMaster } from "../types/master";
 import { decorateThemeAndKindBindings } from "./decorateBindings";
-import { normalizeTemplateBlockDefaults } from "./placementMigration";
+import { normalizeTemplateBlockDefaults } from "./templateBlockDefaults";
 import { validateTemplate } from "./validate";
 import { BLOCK_CATALOG_ENTRIES, buildBlockMasterTemplate, CATALOG_ROOT_ID } from "./blockDefaults";
+
+/** 母版 blocks 与业务 template 共用：回落无效 contentAlign、补齐默认值。 */
+export function normalizeMasterBlocks(master: BlockMaster | SectionMaster): boolean {
+  const template = masterToEmailTemplate(master, { templateId: `master-${master.masterId}` });
+  const before = JSON.stringify(master.blocks);
+  normalizeTemplateBlockDefaults(template);
+  master.blocks = template.blocks;
+  return JSON.stringify(master.blocks) !== before;
+}
 
 export type MasterListItemParsed<T> = {
   masterId: string;
@@ -66,7 +75,9 @@ export function collectMasterValidationIssues(
 export function parseBlockMaster(raw: Record<string, unknown>): BlockMaster | null {
   if (typeof raw.masterId !== "string" || typeof raw.name !== "string") return null;
   if (!raw.blocks || !raw.blockMeta) return null;
-  return raw as unknown as BlockMaster;
+  const master = raw as unknown as BlockMaster;
+  normalizeMasterBlocks(master);
+  return master;
 }
 
 export function parseSectionMaster(raw: Record<string, unknown>): SectionMaster | null {
@@ -74,7 +85,9 @@ export function parseSectionMaster(raw: Record<string, unknown>): SectionMaster 
   if (!raw.blocks || !raw.blockMeta || typeof raw.rootBlockId !== "string") {
     return null;
   }
-  return raw as unknown as SectionMaster;
+  const master = raw as unknown as SectionMaster;
+  normalizeMasterBlocks(master);
+  return master;
 }
 
 export function sectionSubtreeBlockCount(master: SectionMaster): number {

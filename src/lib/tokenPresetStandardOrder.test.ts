@@ -12,7 +12,6 @@ describe("tokenPresetStandardOrder", () => {
     const families = Object.keys(raw.presets.default.tokens);
     assert.deepEqual(sortTokenPresetFamilies(families), [
       "colors",
-      "fonts",
       "spacing",
       "typography",
       "radius",
@@ -44,10 +43,9 @@ describe("tokenPresetStandardOrder", () => {
     const shuffled = {
       radius: { cta: "9999px", panel: "10px" },
       colors: { surface: "#fff", primary: "#111", secondary: "#666" },
-      fonts: { body: "A", heading: "B" },
     };
     const normalized = normalizeTokenPresetTokens(shuffled);
-    assert.deepEqual(Object.keys(normalized), ["colors", "fonts", "radius"]);
+    assert.deepEqual(Object.keys(normalized), ["colors", "radius"]);
     assert.deepEqual(Object.keys(normalized.colors), ["primary", "secondary", "surface"]);
   });
 });

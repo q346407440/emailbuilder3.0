@@ -2,19 +2,19 @@
 /**
  * 按 project-plan「标准 pass」批量修补各邮件 template.json：
  * - 文本 props.color / 按钮 props.buttonStyle.textColor 为 #FFFFFF|#ffffff → $themeRef colors.surface + bindings
- * - 横向纯 icon 子块且 widthMode fill → hug + placement 水平居中
+ * - 横向纯 icon 子块且 widthMode fill → hug + contentAlign 水平居中
  * - block id 或 blockMeta.name 含 Logo 的单子 layout：fill + contentAlign 左 → 水平居中（避免 hug 字标/图贴左）
- * - 字标/叠字：placement 双 center + contentAlign.vertical top + (hug|fill)+hug → contentAlign.vertical center
+ * - 字标/叠字：contentAlign 双轴 center + 原 vertical top + (hug|fill)+hug → contentAlign.vertical center
  *
  * 用法：node scripts/patch-email-templates-standard-pass.mjs
- * 跳过：placement-playground（演练场依赖固定字面量）
+ * 跳过：align-playground（演练场依赖固定字面量）
  */
 
 import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = path.join(process.cwd(), "data/emails");
-const SKIP_DIRS = new Set(["placement-playground"]);
+const SKIP_DIRS = new Set(["align-playground"]);
 
 const SURFACE_BINDING = {
   slotId: "colors.surface",
@@ -71,10 +71,10 @@ function patchBlock(blockId, block, blocks, blockMeta) {
     ) {
       block.wrapperStyle.widthMode = "hug";
       if (!block.wrapperStyle.heightMode) block.wrapperStyle.heightMode = "hug";
-      block.wrapperStyle.placement = block.wrapperStyle.placement ?? {};
-      block.wrapperStyle.placement.horizontal = "center";
-      if (block.wrapperStyle.placement.vertical == null) {
-        block.wrapperStyle.placement.vertical = "start";
+      block.wrapperStyle.contentAlign = block.wrapperStyle.contentAlign ?? {};
+      block.wrapperStyle.contentAlign.horizontal = "center";
+      if (block.wrapperStyle.contentAlign.vertical == null) {
+        block.wrapperStyle.contentAlign.vertical = "top";
       }
       changed = true;
     }
@@ -97,13 +97,11 @@ function patchBlock(blockId, block, blocks, blockMeta) {
     }
   }
 
-  if (block.type === "text" && block.wrapperStyle?.placement) {
-    const p = block.wrapperStyle.placement;
+  if (block.type === "text" && block.wrapperStyle?.contentAlign) {
     const ca = block.wrapperStyle.contentAlign;
     if (
-      p.horizontal === "center" &&
-      p.vertical === "center" &&
-      ca?.vertical === "top" &&
+      ca.horizontal === "center" &&
+      ca.vertical === "top" &&
       block.wrapperStyle.heightMode === "hug" &&
       (block.wrapperStyle.widthMode === "hug" || block.wrapperStyle.widthMode === "fill")
     ) {

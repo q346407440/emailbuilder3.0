@@ -1,13 +1,12 @@
 import type { TokenPresetFamily, TokenPresetStandardKey } from "./types";
 
 /**
- * 样式预设标准 14 键 — 机器真源（与 `email-token-preset-standard-scope` 技能对齐）。
+ * 样式预设标准 12 键 — 机器真源（与 `email-token-preset-standard-scope` 技能对齐）。
  * 样例：`data/emails/on-cart-abandon-2/tokenPresets.json`、`data/token-presets/public-neutral-saas.json`。
  */
 
 export const TOKEN_PRESET_FAMILY_ORDER = [
   "colors",
-  "fonts",
   "spacing",
   "typography",
   "radius",
@@ -15,13 +14,12 @@ export const TOKEN_PRESET_FAMILY_ORDER = [
 
 export const TOKEN_PRESET_SCALE_ORDER: Readonly<Record<TokenPresetFamily, readonly string[]>> = {
   colors: ["primary", "secondary", "surface"],
-  fonts: ["heading", "body"],
   spacing: ["section", "gap", "pageInline"],
   typography: ["display", "h1", "body", "caption"],
   radius: ["panel", "cta"],
 };
 
-/** 14 个标准 family.scale 条目（固定顺序） */
+/** 12 个标准 family.scale 条目（固定顺序） */
 export const TOKEN_PRESET_STANDARD_KEYS: readonly TokenPresetStandardKey[] =
   TOKEN_PRESET_FAMILY_ORDER.flatMap((family) =>
     (TOKEN_PRESET_SCALE_ORDER[family] ?? []).map((scale) => ({ family, scale }))

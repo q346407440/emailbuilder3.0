@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 生成「积分变动」学习模板到 data/emails/member-points-change/
  */
@@ -32,8 +34,6 @@ const border0 = () => ({
 
 const radius0 = () => ({ mode: "unified", radius: "0" });
 
-const placement = (h, v) => ({ horizontal: h, vertical: v });
-
 const themeRef = (path) => ({ $themeRef: path });
 
 const themeBinding = (path) => ({
@@ -65,7 +65,7 @@ const modShellBindings = () => ({
 });
 
 const wsBase = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -75,7 +75,6 @@ const wsBase = (extra = {}) => ({
 });
 
 const textBodyRuns = (runs) => ({
-  version: 1,
   paragraphs: [{ runs }],
 });
 
@@ -133,7 +132,7 @@ function build() {
     parentId: modLogo,
     children: [logoImg],
     wrapperStyle: wsBase({
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -146,7 +145,7 @@ function build() {
     parentId: logoRow,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       contentAlign: { horizontal: "center", vertical: "center" },
       widthMode: "fixed",
       width: "140px",
@@ -200,7 +199,7 @@ function build() {
     parentId: modHero,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
       widthMode: "fill",
       heightMode: "fixed",
@@ -257,7 +256,6 @@ function build() {
     props: {
       content: "<p>POINTS CHANGE</p>",
       textBody: textBodyRuns([{ text: "POINTS CHANGE", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.display"),
       color: "#D35400",
       bold: true,
@@ -274,7 +272,6 @@ function build() {
         fieldKind: "content",
         label: "积分变动大标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.display"),
     },
   });
@@ -288,7 +285,6 @@ function build() {
     props: {
       content: "<p>Your Points Have Changed, Please Check</p>",
       textBody: textBodyRuns([{ text: "Your Points Have Changed, Please Check" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -305,7 +301,6 @@ function build() {
         fieldKind: "content",
         label: "积分变动副标题",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -326,7 +321,6 @@ function build() {
     props: {
       content: "<p>Hi Member Name</p>",
       textBody: textBodyRuns([{ text: "Hi Member Name" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -343,7 +337,6 @@ function build() {
         fieldKind: "content",
         label: "问候称呼",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -358,7 +351,6 @@ function build() {
     props: {
       content: "<p>Your points balance has been updated.</p>",
       textBody: textBodyRuns([{ text: "Your points balance has been updated." }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -375,7 +367,6 @@ function build() {
         fieldKind: "content",
         label: "余额更新说明",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -398,7 +389,6 @@ function build() {
     props: {
       content: "<p>Bonus 888 points for joining the club:</p>",
       textBody: textBodyRuns([{ text: "Bonus 888 points for joining the club:" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -415,7 +405,6 @@ function build() {
         fieldKind: "content",
         label: "积分奖励说明",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -439,7 +428,7 @@ function build() {
         bottom: "14px",
         left: "24px",
       },
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     }),
     props: { direction: "vertical", gapMode: "fixed", gap: "0" },
@@ -460,7 +449,6 @@ function build() {
         { text: "points: " },
         { text: "+888", bold: true },
       ]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -477,7 +465,6 @@ function build() {
         fieldKind: "content",
         label: "积分变动数值",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -492,7 +479,6 @@ function build() {
     props: {
       content: "<p>Expiry Date: 2026-12-31 23:59:59</p>",
       textBody: textBodyRuns([{ text: "Expiry Date: 2026-12-31 23:59:59" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -509,7 +495,6 @@ function build() {
         fieldKind: "content",
         label: "积分过期时间",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -536,7 +521,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns1),
       textBody: textBodyRuns(accountRuns1),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -553,7 +537,6 @@ function build() {
         fieldKind: "content",
         label: "注册账户链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -574,7 +557,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns2),
       textBody: textBodyRuns(accountRuns2),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -591,7 +573,6 @@ function build() {
         fieldKind: "content",
         label: "重置密码链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -625,7 +606,6 @@ function build() {
     props: {
       content: snapshotFromRuns(footerRuns),
       textBody: textBodyRuns(footerRuns),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -669,7 +649,6 @@ function build() {
         fieldKind: "content",
         label: "客服邮箱 mailto 链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -681,7 +660,7 @@ function build() {
     parentId: null,
     children: modIds,
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -749,12 +728,6 @@ function writeTokenPresets() {
             secondary: "#7A6558",
             surface: "#FFFBF5",
           },
-          fonts: {
-            heading:
-              "'Segoe UI'",
-            body:
-              "'Segoe UI'",
-          },
           spacing: {
             section: "24px",
             gap: "12px",
@@ -783,10 +756,8 @@ function writeMeta() {
     description:
       "店铺 Logo、积分变动主视觉、问候、积分明细、账户说明与页脚联系；样式经 tokenPresets 统一管理。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: { type: "screenshot", url: "" },
     defaultStylePresetSelection: "local",
   };
 }

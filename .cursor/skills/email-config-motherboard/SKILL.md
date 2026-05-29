@@ -33,7 +33,7 @@ description: >-
 
 - 配置母版、**template / tokenPresets / payload** 边界  
 - 按设计图/截图落地或重构 **`template.json`**  
-- 讨论 block 类型、placement、底图、grid、textBody、icon 等语义索引  
+- 讨论 block 类型、contentAlign、底图、grid、textBody、icon 等语义索引  
 
 **素材 URL**：**`email-remote-asset-urls`**。  
 **按图还原流程与 token 绑定**：**`email-template-restore-guide`** + **`email-template-restore-check`**。
@@ -83,7 +83,7 @@ description: >-
 
 ## 易错语义（索引，不抄键表）
 
-1. **placement（相对父槽位）** vs **contentAlign（盒内内容）**：口语与 Inspector 对照 **`easy-email-concepts`**；CSS 实现 **`src/lib/resolvePlacementCss.ts`**、`EmailPreview`。  
+1. **contentAlign（容器内内容摆放，双轴）**：口语与 Inspector 对照 **`easy-email-concepts`**；渲染 **`EmailPreview.tsx`** + **`emailPresentation.ts`**（table `align`/`valign`）。仅 **`wrapperStyle.contentAlign`** 双轴。  
 2. **`layout.props.crossAlign`**：**禁止**；由 **`validate.ts`** 报错。  
 3. **横排图标条 / 整组居中**：见 **`email-template-restore-check`** §5、**`easy-email-concepts`**。  
 4. **底图叠放**：`backgroundImage` 有效时 **`padding` 语义**见 **`render-defaults-contract`** **`semantic.backgroundPadding`**。  

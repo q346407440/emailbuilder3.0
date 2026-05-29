@@ -16,8 +16,6 @@ function pickScales(src: Record<string, string>, keys: readonly string[]): Token
 const DEFAULT_COLOR_KEYS = ["brand", "accent", "surface", "surfaceMuted", "text", "textMuted", "border"] as const;
 const DEFAULT_SPACING_BASE_KEYS = ["xs", "sm", "md", "lg", "xl", "section"] as const;
 const DEFAULT_TYPO_KEYS = ["display", "h1", "h2", "body", "caption", "micro"] as const;
-const DEFAULT_FONT_KEYS = ["heading", "body"] as const;
-
 export function createDefaultTokenPresets(): TokenPresets {
   const baseline = BASELINE_EXPANDED_THEME;
   const colors: TokenScaleMap = {
@@ -31,7 +29,6 @@ export function createDefaultTokenPresets(): TokenPresets {
     pageInline: "24px",
   };
   const typography = pickScales(baseline.tokens.typography, DEFAULT_TYPO_KEYS);
-  const fonts = pickScales(baseline.fonts, DEFAULT_FONT_KEYS);
 
   return {
     schemaVersion: "1.0.0",
@@ -43,7 +40,6 @@ export function createDefaultTokenPresets(): TokenPresets {
           "与本仓库邮件 tokenPresets 可编辑键对齐的精简档位；未列出的令牌在预览中由仓库基线主题（`BASELINE_EXPANDED_THEME`）补齐。",
         tokens: {
           colors,
-          fonts,
           spacing,
           typography,
         },

@@ -7,6 +7,7 @@ import {
   updateExternalVariableSlotLabel,
   updateExternalVariableSlotValueType,
 } from "../lib/externalVariableSlotEdit";
+import { isSceneCollectionPresetManagedSlot } from "../lib/sceneCollectionPresetSlot";
 import {
   isStandardScalarValueType,
   type StandardScalarValueType,
@@ -23,6 +24,8 @@ export type PayloadSlotMetaFieldsProps = {
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onSlotIdChange?: (slotId: string) => void;
 };
+
+type MetaFieldVariant = "default" | "production";
 
 export function usePayloadSlotMetaFields({
   slot,
@@ -66,7 +69,9 @@ export function usePayloadSlotMetaFields({
   };
 
   const showValueTypeSelect = isStandardScalarValueType(slot.valueType);
-  const valueTypeDraft: StandardScalarValueType = showValueTypeSelect ? slot.valueType : "string";
+  const valueTypeDraft: StandardScalarValueType = isStandardScalarValueType(slot.valueType)
+    ? slot.valueType
+    : "string";
 
   const handleValueTypeChange = (nextType: StandardScalarValueType) => {
     if (nextType === slot.valueType) return;
@@ -76,6 +81,7 @@ export function usePayloadSlotMetaFields({
   };
 
   return {
+    payload,
     labelDraft,
     setLabelDraft,
     commitLabel,
@@ -93,13 +99,49 @@ export function usePayloadSlotMetaFields({
 
 export type PayloadSlotMetaState = ReturnType<typeof usePayloadSlotMetaFields>;
 
-export function PayloadSlotMetaLabelSection({ meta }: { meta: PayloadSlotMetaState }) {
+/** 顶栏：变量展示名称（与样式预设「预设名称」同级） */
+export function PayloadSlotMetaNameField({ meta }: { meta: PayloadSlotMetaState }) {
   return (
-    <section className="payload-inspector__meta">
+    <Field label="变量名称" className="payload-inspector__label-field">
+      <ShopInput
+        value={meta.labelDraft}
+        placeholder={meta.slot.slotId}
+        onChange={(e) => meta.setLabelDraft(e.target.value)}
+        onBlur={meta.commitLabel}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            meta.commitLabel();
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        aria-label="变量名称"
+      />
+    </Field>
+  );
+}
+
+/** 滚动区：类型与标识 */
+export function PayloadSlotMetaAttributesSection({
+  meta,
+  variant = "default",
+}: {
+  meta: PayloadSlotMetaState;
+  variant?: MetaFieldVariant;
+}) {
+  const showHints = variant !== "production";
+  const slotDef = meta.payload.slots[meta.slot.slotId];
+  const slotIdReadonly = isSceneCollectionPresetManagedSlot(slotDef);
+  return (
+    <section className="inspector__section payload-inspector__attributes">
       {meta.showValueTypeSelect ? (
         <Field
           label="变量类型"
-          hint="写入 payload.slots.valueType；修改后会同步模板中的变量绑定，并按类型调整当前赋值形态。"
+          {...(showHints
+            ? {
+                hint: "修改类型后会同步模板中的变量绑定，并按类型调整当前赋值形态。",
+              }
+            : {})}
         >
           <StandardScalarValueTypeSelect
             value={meta.valueTypeDraft}
@@ -108,37 +150,19 @@ export function PayloadSlotMetaLabelSection({ meta }: { meta: PayloadSlotMetaSta
         </Field>
       ) : null}
       <Field
-        label="变量名称"
-        hint="在左侧列表与 Inspector 中展示；写入 payload.slots（变量目录唯一真源）。"
-      >
-        <ShopInput
-          value={meta.labelDraft}
-          placeholder={meta.slot.slotId}
-          onChange={(e) => meta.setLabelDraft(e.target.value)}
-          onBlur={meta.commitLabel}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              meta.commitLabel();
-              (e.target as HTMLInputElement).blur();
+        label="变量标识"
+        {...(showHints
+          ? {
+              hint: slotIdReadonly
+                ? "内置场景变量的标识不可修改。"
+                : "字母开头，仅含字母、数字与下划线；修改后会同步更新模板绑定与插值占位符。",
             }
-          }}
-        />
-      </Field>
-    </section>
-  );
-}
-
-export function PayloadSlotMetaSlotIdSection({ meta }: { meta: PayloadSlotMetaState }) {
-  return (
-    <section className="payload-inspector__meta payload-inspector__meta--slotid">
-      <Field
-        label="变量标识（slotId）"
-        hint="字母开头，仅含字母、数字、下划线；修改后同步更新模板绑定、插值占位符与 payload 键名。"
+          : {})}
       >
         <ShopInput
           value={meta.slotIdDraft}
           placeholder="storeName"
+          disabled={slotIdReadonly}
           onChange={(e) => {
             meta.setSlotIdDraft(e.target.value);
             meta.setMetaError("");
@@ -158,15 +182,23 @@ export function PayloadSlotMetaSlotIdSection({ meta }: { meta: PayloadSlotMetaSt
   );
 }
 
-/** 标量变量：名称、标识、类型同区块 */
-export function PayloadSlotMetaFields(props: PayloadSlotMetaFieldsProps) {
+/** 标量变量：名称、标识、类型同区块（嵌在配置 Inspector 等场景） */
+export function PayloadSlotMetaFields({
+  variant = "default",
+  ...props
+}: PayloadSlotMetaFieldsProps & { variant?: MetaFieldVariant }) {
   const meta = usePayloadSlotMetaFields(props);
+  const showHints = variant !== "production";
   return (
     <section className="payload-inspector__meta">
       {meta.showValueTypeSelect ? (
         <Field
           label="变量类型"
-          hint="写入 payload.slots.valueType；修改后会同步模板中的变量绑定，并按类型调整当前赋值形态。"
+          {...(showHints
+            ? {
+                hint: "修改类型后会同步模板中的变量绑定，并按类型调整当前赋值形态。",
+              }
+            : {})}
         >
           <StandardScalarValueTypeSelect
             value={meta.valueTypeDraft}
@@ -176,7 +208,11 @@ export function PayloadSlotMetaFields(props: PayloadSlotMetaFieldsProps) {
       ) : null}
       <Field
         label="变量名称"
-        hint="在左侧列表与 Inspector 中展示；写入 payload.slots（变量目录唯一真源）。"
+        {...(showHints
+          ? {
+              hint: "在左侧列表与属性面板中展示的名称。",
+            }
+          : {})}
       >
         <ShopInput
           value={meta.labelDraft}
@@ -193,8 +229,12 @@ export function PayloadSlotMetaFields(props: PayloadSlotMetaFieldsProps) {
         />
       </Field>
       <Field
-        label="变量标识（slotId）"
-        hint="字母开头，仅含字母、数字、下划线；修改后同步更新模板绑定、插值占位符与 payload 键名。"
+        label="变量标识"
+        {...(showHints
+          ? {
+              hint: "字母开头，仅含字母、数字与下划线；修改后会同步更新模板绑定与插值占位符。",
+            }
+          : {})}
       >
         <ShopInput
           value={meta.slotIdDraft}

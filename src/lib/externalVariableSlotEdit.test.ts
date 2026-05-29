@@ -19,8 +19,7 @@ function minimalTemplate(bindings: Record<string, unknown>): EmailTemplate {
         parentId: null,
         children: [],
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "Hi {{ memberName }}!" }] }] },
-          fontFamily: "Arial",
+          textBody: { paragraphs: [{ runs: [{ text: "Hi {{ memberName }}!" }] }] },
           fontSize: "14px",
           color: "#111",
           bold: false,

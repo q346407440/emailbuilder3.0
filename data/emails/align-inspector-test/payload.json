@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "1.0.0",
+  "slots": {
+    "ptSkuList": {
+      "label": "SKU 扁平行（仅规格）",
+      "valueType": "collection",
+      "description": "开发用：内置商品列表 · 按 SKU · 自由勾选；模板仅父级循环，不展示 SPU 商品卡。",
+      "itemFields": [
+        {
+          "key": "imageSrc",
+          "label": "规格图",
+          "valueType": "image",
+          "required": true
+        },
+        {
+          "key": "imageAlt",
+          "label": "图替代文字",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "title",
+          "label": "规格名",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "href",
+          "label": "规格链接",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "salePrice",
+          "label": "售价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "originalPrice",
+          "label": "对比价",
+          "valueType": "string",
+          "required": true
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 5,
+      "dataSource": {
+        "type": "remote",
+        "provider": "builtin",
+        "catalog": "products",
+        "sort": "catalogOrder",
+        "productConfig": {
+          "rowGranularity": "sku",
+          "rangeMode": "freeSelect",
+          "skuSelection": [
+            "gid://shopify/Product/aura-earbuds::gid://shopify/ProductVariant/aura-earbuds-1",
+            "gid://shopify/Product/aura-earbuds::gid://shopify/ProductVariant/aura-earbuds-2",
+            "gid://shopify/Product/aura-earbuds::gid://shopify/ProductVariant/aura-earbuds-3",
+            "gid://shopify/Product/pulse-watch::gid://shopify/ProductVariant/pulse-watch-1",
+            "gid://shopify/Product/pulse-watch::gid://shopify/ProductVariant/pulse-watch-2"
+          ],
+          "selectedSpuIds": [
+            "gid://shopify/Product/aura-earbuds",
+            "gid://shopify/Product/pulse-watch"
+          ]
+        }
+      }
+    }
+  },
+  "values": {
+    "ptSkuList": [
+      {
+        "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Aura 无线耳机 — 曜石黑",
+        "title": "曜石黑",
+        "href": "https://example.com/products/aura-earbuds?variant=1",
+        "salePrice": "$79.00",
+        "originalPrice": "$99.00"
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Aura 无线耳机 — 云雾白",
+        "title": "云雾白",
+        "href": "https://example.com/products/aura-earbuds?variant=2",
+        "salePrice": "$79.00",
+        "originalPrice": "$99.00"
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Aura 无线耳机 — 薄荷绿",
+        "title": "薄荷绿",
+        "href": "https://example.com/products/aura-earbuds?variant=3",
+        "salePrice": "$84.00",
+        "originalPrice": "$99.00"
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Pulse 智能手表 42mm 星空灰",
+        "title": "42mm 星空灰",
+        "href": "https://example.com/products/pulse-watch?variant=1",
+        "salePrice": "$149.00",
+        "originalPrice": "$199.00"
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/437037/pexels-photo-437037.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Pulse 智能手表 42mm 玫瑰金",
+        "title": "42mm 玫瑰金",
+        "href": "https://example.com/products/pulse-watch?variant=2",
+        "salePrice": "$149.00",
+        "originalPrice": "$199.00"
+      }
+    ]
+  }
+}

@@ -247,7 +247,7 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
         children: [],
         wrapperStyle: {},
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "x" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "x" }] }] },
           bold: false,
           italic: false,
           decoration: "none",

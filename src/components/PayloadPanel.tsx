@@ -2,8 +2,11 @@ import { useState } from "react";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { collectPayloadVariableSlots } from "../lib/payloadSlots";
 import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
-import { CreatePayloadSlotModal, type CreatePayloadSlotModalMode } from "./CreatePayloadSlotModal";
-import { ShopSecondaryButton } from "./ui/ShopFormControls";
+import type { CreatePayloadSlotModalMode } from "./CreatePayloadSlotModal";
+import { PayloadSlotSourceModal } from "./PayloadSlotSourceModal";
+import { createCollectionPayloadSlotFromPreset } from "../lib/createPayloadSlot";
+import { getSceneCollectionPreset } from "../api/sceneCollectionPresets";
+import { getPayloadVariableScene, setPayloadVariableScene } from "../lib/payloadVariableScene";
 
 type Props = {
   template: EmailTemplate;
@@ -11,6 +14,8 @@ type Props = {
   selectedSlotId: string | null;
   onSelectSlot: (slotId: string) => void;
   onPayloadChange: (next: EmailPayload) => void;
+  /** 新建变量成功后：写入 payload.json 并与当前邮件场景绑定 */
+  onVariableCreated?: (args: { payload: EmailPayload; slotId: string }) => void | Promise<void>;
   onCollectionSlotCreated?: (slotId: string) => void;
 };
 
@@ -29,7 +34,7 @@ function slotMeta(slot: ReturnType<typeof collectPayloadVariableSlots>[number]):
           : "列表";
     return `${type} · ${count}`;
   }
-  return `${type} · 绑定 ${slot.bindings.length} 处`;
+  return `${type} · ${slot.bindings.length} 处`;
 }
 
 export function PayloadPanel({
@@ -38,63 +43,75 @@ export function PayloadPanel({
   selectedSlotId,
   onSelectSlot,
   onPayloadChange,
+  onVariableCreated,
   onCollectionSlotCreated,
 }: Props) {
-  const [createModalMode, setCreateModalMode] = useState<CreatePayloadSlotModalMode | null>(null);
+  const [sourceModalMode, setSourceModalMode] = useState<CreatePayloadSlotModalMode | null>(null);
 
   const slots = collectPayloadVariableSlots(template, payload);
   const activeSlotId = selectedSlotId ?? slots[0]?.slotId ?? null;
 
-  const handleCreateConfirm = ({ slotId, payload: nextPayload }: { slotId: string; payload: EmailPayload }) => {
-    const wasCollection = createModalMode === "collection";
-    onPayloadChange(nextPayload);
-    onSelectSlot(slotId);
-    setCreateModalMode(null);
-    if (wasCollection) onCollectionSlotCreated?.(slotId);
+  const openCreateFlow = (mode: CreatePayloadSlotModalMode) => {
+    setSourceModalMode(mode);
   };
+
+  async function commitNewVariable(nextPayload: EmailPayload, slotId: string, mode: CreatePayloadSlotModalMode) {
+    if (onVariableCreated) {
+      await onVariableCreated({ payload: nextPayload, slotId });
+    } else {
+      onPayloadChange(nextPayload);
+      onSelectSlot(slotId);
+    }
+    setSourceModalMode(null);
+    if (mode === "collection") {
+      onCollectionSlotCreated?.(slotId);
+    }
+  }
 
   return (
     <>
-      <aside className="theme-panel theme-sidebar payload-panel">
-        <header className="theme-panel__header">
-          <div className="theme-panel__title-row">
-            <h2 className="side-panel__title">变量赋值</h2>
-            <span
-              className="theme-panel__slot-count"
-              aria-label={`共 ${slots.length} 个可外部赋值变量`}
-            >
-              {slots.length} 个
-            </span>
-          </div>
-          <p className="theme-panel__header-hint">变量目录以 payload.slots 为准；绑定位置由当前版式模板决定。</p>
-          <div className="payload-panel__create-actions theme-panel__actions">
-            <ShopSecondaryButton
-              htmlType="button"
-              className="payload-panel__create-btn"
-              onClick={() => setCreateModalMode("scalar")}
-            >
-              创建标准变量
-            </ShopSecondaryButton>
-            <ShopSecondaryButton
-              htmlType="button"
-              className="payload-panel__create-btn"
-              onClick={() => setCreateModalMode("collection")}
-            >
-              创建列表变量
-            </ShopSecondaryButton>
-          </div>
-        </header>
+      <aside className="block-tree payload-panel" aria-label="变量赋值">
+        <div className="block-tree__title payload-panel__title">
+          <span>变量赋值</span>
+          <span className="payload-panel__title-count" aria-label={`共 ${slots.length} 个`}>
+            {slots.length} 个
+          </span>
+        </div>
 
-        <div className="theme-panel__body theme-panel__side-nav">
-          <div className="theme-panel__group">
-            <h3 className="theme-panel__group-title">变量列表</h3>
+        <div className="block-tree__scroll payload-panel__scroll">
+          <div className="payload-panel__section">
+            <div className="theme-panel__group-head">
+              <h3 className="theme-panel__group-title">变量列表</h3>
+              <div className="resource-text-actions" role="group" aria-label="添加变量">
+                <button
+                  type="button"
+                  className="resource-text-action"
+                  onClick={() => openCreateFlow("collection")}
+                >
+                  列表变量
+                </button>
+                <button
+                  type="button"
+                  className="resource-text-action"
+                  onClick={() => openCreateFlow("scalar")}
+                >
+                  标准变量
+                </button>
+              </div>
+            </div>
+
             {slots.length === 0 ? (
-              <p className="theme-panel__group-empty">payload.slots 中暂无变量目录项。</p>
+              <p className="payload-panel__empty">暂无变量，请通过右上角添加。</p>
             ) : (
-              <ul className="theme-panel__option-list">
+              <ul className="theme-panel__option-list sidebar-nav-list">
                 {slots.map((slot) => {
                   const selected = slot.slotId === activeSlotId;
                   const title = slot.label ?? slot.slotId;
+                  const presetManaged = Boolean(
+                    payload.slots[slot.slotId]?.sceneCollectionPresetId?.trim()
+                  );
+                  const metaParts = [slotMeta(slot)];
+                  if (presetManaged) metaParts.unshift("场景内置");
                   return (
                     <li key={slot.slotId}>
                       <button
@@ -105,7 +122,8 @@ export function PayloadPanel({
                         onClick={() => onSelectSlot(slot.slotId)}
                       >
                         <span className="theme-panel__option-title">{title}</span>
-                        <span className="theme-panel__option-meta">{slotMeta(slot)}</span>
+                        <span className="theme-panel__option-meta">{metaParts.join(" · ")}</span>
+                        <span className="payload-panel__slot-key">{slot.slotId}</span>
                       </button>
                     </li>
                   );
@@ -116,13 +134,34 @@ export function PayloadPanel({
         </div>
       </aside>
 
-      {createModalMode ? (
-        <CreatePayloadSlotModal
-          mode={createModalMode}
+      {sourceModalMode ? (
+        <PayloadSlotSourceModal
+          mode={sourceModalMode}
           visible
           payload={payload}
-          onClose={() => setCreateModalMode(null)}
-          onConfirm={handleCreateConfirm}
+          initialScene={getPayloadVariableScene()}
+          onClose={() => setSourceModalMode(null)}
+          onCustomConfirm={({ slotId, payload: nextPayload }) => {
+            if (!sourceModalMode) return;
+            void commitNewVariable(nextPayload, slotId, sourceModalMode);
+          }}
+          onSceneSaved={(scene) => {
+            setPayloadVariableScene(scene);
+          }}
+          onScenePresetConfirm={({ scene, presetId }) => {
+            void getSceneCollectionPreset(scene, presetId)
+              .then((preset) => {
+                const result = createCollectionPayloadSlotFromPreset(payload, preset);
+                if ("error" in result) {
+                  window.alert(result.error);
+                  return;
+                }
+                void commitNewVariable(result.payload, result.slotId, "collection");
+              })
+              .catch((e) => {
+                window.alert(e instanceof Error ? e.message : String(e));
+              });
+          }}
         />
       ) : null}
     </>

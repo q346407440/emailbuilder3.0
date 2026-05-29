@@ -120,10 +120,8 @@ function makeSkuCardBlocks(n) {
     },
     props: {
       textBody: {
-        version: 1,
         paragraphs: [{ runs: [{ text: "规格" }] }],
       },
-      fontFamily: { $themeRef: "fonts.body" },
       fontSize: { $themeRef: "tokens.typography.caption" },
       color: { $themeRef: "colors.primary" },
       bold: false,
@@ -135,7 +133,6 @@ function makeSkuCardBlocks(n) {
         "pickedSpotlightProduct",
         `0.skuTitle${n}`
       ),
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -155,10 +152,8 @@ function makeSkuCardBlocks(n) {
     },
     props: {
       textBody: {
-        version: 1,
         paragraphs: [{ runs: [{ text: "$0.00", bold: true }] }],
       },
-      fontFamily: { $themeRef: "fonts.body" },
       fontSize: { $themeRef: "tokens.typography.caption" },
       color: { $themeRef: "colors.primary" },
       bold: true,
@@ -170,7 +165,6 @@ function makeSkuCardBlocks(n) {
         "pickedSpotlightProduct",
         `0.skuSalePrice${n}`
       ),
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.primary"),
     },

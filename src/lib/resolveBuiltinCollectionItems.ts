@@ -8,11 +8,18 @@ import {
   DEFAULT_BUILTIN_COLLECTION_SORT,
   type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
-import type { BindingCollectionField, EmailPayload, PayloadSlotDefinition } from "../types/email";
 import {
+  normalizeBuiltinAlbumListConfig,
+  normalizeBuiltinProductListConfig,
+} from "../payload-contract/collection-builtin-catalog-config";
+import type { BindingCollectionField, EmailPayload, PayloadSlotDefinition } from "../types/email";
+import { resolveBuiltinAlbumListItems } from "./builtinAlbumListResolve";
+import {
+  projectBuiltinCatalogComplement,
   projectBuiltinCatalogItems,
   projectBuiltinCatalogSimilarTo,
 } from "./builtinCollectionCatalog";
+import { resolveBuiltinProductListItems } from "./builtinProductListResolve";
 import {
   normalizeCollectionItems,
   padOrTrimCollectionValues,
@@ -31,10 +38,12 @@ function toRowArray(value: unknown): Record<string, unknown>[] {
 
 function anchorRowFromPayload(
   payload: EmailPayload,
-  fromSlotId: string
+  fromSlotId: string,
+  anchorItemIndex = 1
 ): Record<string, unknown> | null {
   const rows = toRowArray(payload.values[fromSlotId]);
-  return rows[0] ?? null;
+  const idx = Math.max(0, anchorItemIndex - 1);
+  return rows[idx] ?? null;
 }
 
 function fixedLengthForNestedField(field: Extract<BindingCollectionField, { valueType: "collection" }>) {
@@ -81,13 +90,15 @@ function preserveExplicitNestedCollectionValues(
   );
 }
 
-/** 按 builtin dataSource（catalog + sort + extract）解析列表行；嵌套子列表以 values 中显式数据为准 */
+/** 按 builtin dataSource（catalog + sort + extract + 场景配置）解析列表行 */
 export function resolveBuiltinCollectionItems(opts: {
   catalog: BuiltinCollectionCatalogId;
   itemFields: BindingCollectionField[];
   fixedLength: number;
   sort?: BuiltinCollectionSortId;
   extract?: BuiltinCollectionExtract;
+  productConfig?: ReturnType<typeof normalizeBuiltinProductListConfig>;
+  albumConfig?: ReturnType<typeof normalizeBuiltinAlbumListConfig>;
   payload: EmailPayload;
   slotId: string;
 }): ParseCollectionJsonResult {
@@ -101,15 +112,44 @@ export function resolveBuiltinCollectionItems(opts: {
 
   let projected: Record<string, unknown>[];
 
-  if (extract.kind === "similarTo") {
-    const anchor = anchorRowFromPayload(payload, extract.fromSlotId);
+  if (catalog === "products" && opts.productConfig) {
+    if (extract.kind === "similarTo" || extract.kind === "complement") {
+      const anchorIndex = extract.anchorItemIndex ?? 1;
+      const anchor = anchorRowFromPayload(payload, extract.fromSlotId, anchorIndex);
+      if (!anchor || !Object.keys(anchor).some((k) => String(anchor[k] ?? "").trim())) {
+        return {
+          ok: false,
+          error: `相似品/搭配品须先有锚点槽「${extract.fromSlotId}」第 ${anchorIndex} 条列表数据`,
+        };
+      }
+    }
+    projected = resolveBuiltinProductListItems({
+      config: opts.productConfig,
+      itemFields,
+      limit: fixedLength,
+      sort,
+      extract,
+      payload,
+    });
+  } else if (catalog === "albums" && opts.albumConfig) {
+    projected = resolveBuiltinAlbumListItems({
+      config: opts.albumConfig,
+      itemFields,
+      limit: fixedLength,
+      sort,
+    });
+  } else if (extract.kind === "similarTo" || extract.kind === "complement") {
+    const anchorIndex = extract.anchorItemIndex ?? 1;
+    const anchor = anchorRowFromPayload(payload, extract.fromSlotId, anchorIndex);
     if (!anchor || !Object.keys(anchor).some((k) => String(anchor[k] ?? "").trim())) {
       return {
         ok: false,
-        error: `相似品衍生须先有锚点槽「${extract.fromSlotId}」的列表数据`,
+        error: `相似品/搭配品须先有锚点槽「${extract.fromSlotId}」第 ${anchorIndex} 条列表数据`,
       };
     }
-    projected = projectBuiltinCatalogSimilarTo(
+    const projectFn =
+      extract.kind === "complement" ? projectBuiltinCatalogComplement : projectBuiltinCatalogSimilarTo;
+    projected = projectFn(
       catalog,
       itemFields,
       fixedLength,
@@ -143,7 +183,9 @@ function isBuiltinResolvableSlot(def: PayloadSlotDefinition | undefined): boolea
 function slotAnchorDependencyFromDef(def: PayloadSlotDefinition): string | undefined {
   const ds = def.dataSource;
   if (ds?.type !== "remote" || ds.provider !== "builtin") return undefined;
-  if (ds.extract?.kind === "similarTo") return ds.extract.fromSlotId;
+  if (ds.extract?.kind === "similarTo" || ds.extract?.kind === "complement") {
+    return ds.extract.fromSlotId;
+  }
   return undefined;
 }
 
@@ -177,6 +219,14 @@ export function applyBuiltinCollectionResolves(payload: EmailPayload): EmailPayl
       fixedLength,
       sort: ds.sort,
       extract: ds.extract,
+      productConfig:
+        ds.productConfig !== undefined
+          ? normalizeBuiltinProductListConfig(ds.productConfig)
+          : undefined,
+      albumConfig:
+        ds.albumConfig !== undefined
+          ? normalizeBuiltinAlbumListConfig(ds.albumConfig)
+          : undefined,
       payload: next,
       slotId,
     });
@@ -224,17 +274,20 @@ function topologicalBuiltinSlotOrder(
   return ordered;
 }
 
-/** 列出可作锚点引用的 collection 槽（排除自身） */
+/** 列出可作锚点引用的 collection 槽（排除自身；须为内置商品列表） */
 export function listCollectionSlotIdsForExtract(
   payload: EmailPayload,
   excludeSlotId: string
 ): string[] {
   const slots = payload.slots ?? {};
   return Object.entries(slots)
-    .filter(
-      ([id, def]) =>
-        id !== excludeSlotId && def?.valueType === "collection" && def.itemFields?.length
-    )
+    .filter(([id, def]) => {
+      if (id === excludeSlotId || def?.valueType !== "collection" || !def.itemFields?.length) {
+        return false;
+      }
+      const ds = def.dataSource;
+      return ds?.type === "remote" && ds.provider === "builtin" && ds.catalog === "products";
+    })
     .map(([id]) => id)
     .sort((a, b) => a.localeCompare(b));
 }

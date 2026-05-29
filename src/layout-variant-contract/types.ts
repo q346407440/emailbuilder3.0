@@ -6,6 +6,10 @@ export type LayoutVariantEntry = {
   id: string;
   label: string;
   description?: string;
+  /** 创建时间（ISO）；用于顶栏版式列表按创建倒序展示 */
+  createdAt?: string;
+  /** 逻辑删除时间（ISO）；删除该字段即可恢复在编辑器中的展示 */
+  deletedAt?: string;
 };
 
 export type LayoutManifest = {

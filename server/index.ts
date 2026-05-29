@@ -34,6 +34,34 @@ import {
   resolveEmailLayoutContext,
   type ResolvedLayoutContext,
 } from "./emailLayoutContext";
+import { getSmtpPublicStatus, sendSmtpTestMail } from "./smtpTestMail";
+import {
+  buildNewEmailScaffold,
+  deriveEmailKeyFromDisplayName,
+} from "../src/lib/scaffoldNewEmail";
+import {
+  appendLayoutVariant,
+  deriveLayoutVariantIdFromLabel,
+  updateLayoutVariantLabel,
+} from "../src/lib/layoutVariantOps";
+import {
+  assertLayoutVariantIdSafe,
+  layoutVariantDir,
+} from "../src/lib/emailLayoutVariant";
+import {
+  parseSceneQuery,
+  ensureSceneCollectionPresetsWatcher,
+  findSceneCollectionPresetById,
+  listSceneCollectionPresetSummaries,
+  resolveSceneCollectionPresetRuntimeValues,
+} from "./sceneCollectionPresetsStore";
+import { listSceneScalarPresetSummaries } from "./sceneScalarPresetsStore";
+import { ensureEmailLayoutManifest } from "./ensureLayoutManifest";
+import { enrichLayoutManifestCreatedAt, statCreatedAtIso } from "./enrichLayoutManifest";
+import { createDefaultTokenPresets } from "../src/lib/defaultTokenPresets";
+import { isLogicallyDeleted, logicalDeleteTimestamp } from "../src/lib/logicalDelete";
+import { normalizePersistedEmailMeta } from "../src/meta-contract/normalize";
+import { softDeleteLayoutVariant } from "../src/lib/layoutVariantLogicalDelete";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -218,6 +246,14 @@ async function resolveLayoutForEmail(
   layoutQuery: string | undefined
 ): Promise<LayoutResolveResult> {
   const base = emailBaseDir(DATA_ROOT, emailKey);
+  const meta = await readJson<EmailMeta>(path.join(base, "meta.json"));
+  if (meta && isLogicallyDeleted(meta)) {
+    return {
+      ok: false,
+      message: "该邮件模板已逻辑删除，可在 meta.json 中删除 deletedAt 字段恢复",
+      status: 404,
+    };
+  }
   const resolved = await resolveEmailLayoutContext(readJson, base, layoutQuery);
   if (!resolved.ok) {
     return { ok: false, message: resolved.message, status: resolved.status };
@@ -298,9 +334,8 @@ app.get("/api/v1/emails", async (c) => {
       const templatePath = layoutResolved.templatePath;
       const payloadPath = path.join(base, "payload.json");
       const tokenPresetsPath = layoutResolved.tokenPresetsPath;
-      const meta = await readJson<{ displayName?: string; updatedAt?: string }>(
-        metaPath
-      );
+      const meta = await readJson<EmailMeta>(metaPath);
+      if (meta && isLogicallyDeleted(meta)) return null;
       const template = await readJson<EmailTemplate>(templatePath);
       const [templateMtimeMs, payloadMtimeMs, metaMtimeMs, tokenPresetsMtimeMs] = await Promise.all([
         statMtimeMs(templatePath),
@@ -317,6 +352,14 @@ app.get("/api/v1/emails", async (c) => {
         metaMtimeMs,
         tokenPresetsMtimeMs
       );
+      const metaCreatedAtMs =
+        typeof meta?.createdAt === "string" ? Number(Date.parse(meta.createdAt)) : NaN;
+      const fallbackCreatedAt =
+        (await statCreatedAtIso(metaPath)) ?? (await statCreatedAtIso(base));
+      const createdAt =
+        Number.isFinite(metaCreatedAtMs) && metaCreatedAtMs > 0
+          ? meta!.createdAt
+          : fallbackCreatedAt;
       return {
         emailKey,
         displayName: meta?.displayName ?? emailKey,
@@ -326,11 +369,110 @@ app.get("/api/v1/emails", async (c) => {
         hasTokenPresets: tokenPresetsMtimeMs > 0,
         hasLayoutVariants: Boolean(manifest),
         activeLayoutVariantId: manifest?.activeLayoutVariantId,
+        createdAt,
         updatedAt: effectiveUpdatedAtMs > 0 ? new Date(effectiveUpdatedAtMs).toISOString() : undefined,
       };
     })
   );
-  return c.json({ items });
+  return c.json({ items: items.filter((item): item is NonNullable<typeof item> => item != null) });
+});
+
+app.post("/api/v1/emails", async (c) => {
+  let body: { displayName?: unknown; emailKey?: unknown };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
+  }
+
+  const displayName =
+    typeof body.displayName === "string" ? body.displayName.trim() : "";
+  if (!displayName) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: "displayName 必须为非空字符串" } },
+      400
+    );
+  }
+
+  let existingKeys: string[] = [];
+  try {
+    existingKeys = await fs.readdir(DATA_ROOT, { withFileTypes: true }).then((ents) =>
+      ents.filter((e) => e.isDirectory() && !e.name.startsWith("_")).map((e) => e.name)
+    );
+  } catch {
+    existingKeys = [];
+  }
+
+  const requestedKey =
+    typeof body.emailKey === "string" && body.emailKey.trim() ? body.emailKey.trim() : null;
+  const emailKey =
+    requestedKey ?? deriveEmailKeyFromDisplayName(displayName, existingKeys);
+  const keyBad = assertEmailKeySafe(emailKey);
+  if (keyBad) {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: keyBad } }, 400);
+  }
+  if (existingKeys.includes(emailKey)) {
+    return c.json(
+      { error: { code: "CONFLICT", message: `模板标识「${emailKey}」已存在` } },
+      409
+    );
+  }
+
+  const emailDir = emailBaseDir(DATA_ROOT, emailKey);
+  try {
+    await fs.access(emailDir);
+    return c.json(
+      { error: { code: "CONFLICT", message: `模板目录「${emailKey}」已存在` } },
+      409
+    );
+  } catch (e: unknown) {
+    const code = (e as NodeJS.ErrnoException).code;
+    if (code !== "ENOENT") throw e;
+  }
+
+  const bundle = buildNewEmailScaffold(emailKey, displayName);
+  const templateIssues = blockingValidationIssues(validateTemplate(bundle.template));
+  if (templateIssues.length) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: "新建模板结构校验失败",
+          details: templateIssues,
+        },
+      },
+      422
+    );
+  }
+  const tokenIssue = validateTokenPresetsShape(bundle.tokenPresets);
+  if (tokenIssue) {
+    return c.json({ error: { code: "VALIDATION_FAILED", ...tokenIssue } }, 422);
+  }
+  const payloadIssues = blockingValidationIssues(
+    validatePayloadAgainstTemplate(bundle.template, bundle.payload)
+  );
+  if (payloadIssues.length) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: "新建模板 payload 校验失败",
+          details: payloadIssues,
+        },
+      },
+      422
+    );
+  }
+
+  const layoutDir = path.join(emailDir, "layouts", "default");
+  await atomicWriteJson(layoutManifestPath(emailDir), bundle.layoutManifest);
+  await atomicWriteJson(path.join(layoutDir, "template.json"), bundle.template);
+  await atomicWriteJson(path.join(layoutDir, "tokenPresets.json"), bundle.tokenPresets);
+  await atomicWriteJson(path.join(emailDir, "payload.json"), bundle.payload);
+  await atomicWriteJson(path.join(emailDir, "meta.json"), bundle.meta);
+
+  scheduleEmailsChanged("api_create", emailKey);
+  return c.json({ emailKey, displayName: bundle.meta.displayName }, 201);
 });
 
 app.get("/api/v1/token-presets", async (c) => {
@@ -354,7 +496,9 @@ app.get("/api/v1/token-presets", async (c) => {
       };
     })
   );
-  return c.json({ items: items.filter((item) => item.tokenPresets) });
+  return c.json({
+    items: items.filter((item) => item.tokenPresets && !isLogicallyDeleted(item.tokenPresets)),
+  });
 });
 
 app.get("/api/v1/token-presets/:presetId", async (c) => {
@@ -382,6 +526,26 @@ app.put("/api/v1/token-presets/:presetId", async (c) => {
   if (issue) return c.json({ error: { code: "VALIDATION_FAILED", ...issue } }, 422);
   await atomicWriteJson(path.join(TOKEN_PRESET_ROOT, `${presetId}.json`), body);
   notifyEmailsChanged({ kind: "token_preset_changed", reason: "api_write", presetId });
+  return c.body(null, 204);
+});
+
+app.delete("/api/v1/token-presets/:presetId", async (c) => {
+  const presetId = c.req.param("presetId");
+  const bad = assertResourceIdSafe(presetId, "presetId");
+  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
+  const filePath = path.join(TOKEN_PRESET_ROOT, `${presetId}.json`);
+  const tokenPresets = await readJson<TokenPresets>(filePath);
+  if (!tokenPresets) {
+    return c.json({ error: { code: "NOT_FOUND", message: "全局样式预设不存在" } }, 404);
+  }
+  if (isLogicallyDeleted(tokenPresets)) {
+    return c.json({ error: { code: "CONFLICT", message: "该公共样式预设已逻辑删除" } }, 409);
+  }
+  const body: TokenPresets = { ...tokenPresets, deletedAt: logicalDeleteTimestamp() };
+  const issue = validateTokenPresetsShape(body);
+  if (issue) return c.json({ error: { code: "VALIDATION_FAILED", ...issue } }, 422);
+  await atomicWriteJson(filePath, body);
+  notifyEmailsChanged({ kind: "token_preset_changed", reason: "api_delete", presetId });
   return c.body(null, 204);
 });
 
@@ -539,9 +703,57 @@ app.put("/api/v1/masters/:kind/:masterId", async (c) => {
   return c.body(null, 204);
 });
 
+app.get("/api/v1/scene-collection-presets", (c) => {
+  ensureSceneCollectionPresetsWatcher();
+  const sceneCheck = parseSceneQuery(c.req.query("scene"));
+  if (!sceneCheck.ok) {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: sceneCheck.message } }, 400);
+  }
+  const items = listSceneCollectionPresetSummaries(sceneCheck.scene);
+  return c.json({ scene: sceneCheck.scene, items });
+});
+
+app.get("/api/v1/scene-collection-presets/:presetId", async (c) => {
+  ensureSceneCollectionPresetsWatcher();
+  const sceneCheck = parseSceneQuery(c.req.query("scene"));
+  if (!sceneCheck.ok) {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: sceneCheck.message } }, 400);
+  }
+  const presetId = c.req.param("presetId");
+  const preset = findSceneCollectionPresetById(sceneCheck.scene, presetId);
+  if (!preset) {
+    return c.json({ error: { code: "NOT_FOUND", message: "内置列表变量不存在" } }, 404);
+  }
+  return c.json(preset);
+});
+
+app.get("/api/v1/scene-scalar-presets", (c) => {
+  const sceneCheck = parseSceneQuery(c.req.query("scene"));
+  if (!sceneCheck.ok) {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: sceneCheck.message } }, 400);
+  }
+  const items = listSceneScalarPresetSummaries(sceneCheck.scene);
+  return c.json({ scene: sceneCheck.scene, items });
+});
+
+app.get("/api/v1/scene-collection-presets/:presetId/runtime-values", async (c) => {
+  ensureSceneCollectionPresetsWatcher();
+  const sceneCheck = parseSceneQuery(c.req.query("scene"));
+  if (!sceneCheck.ok) {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: sceneCheck.message } }, 400);
+  }
+  const presetId = c.req.param("presetId");
+  const preset = findSceneCollectionPresetById(sceneCheck.scene, presetId);
+  if (!preset) {
+    return c.json({ error: { code: "NOT_FOUND", message: "内置列表变量不存在" } }, 404);
+  }
+  return c.json(resolveSceneCollectionPresetRuntimeValues(preset));
+});
+
 app.get("/api/v1/emails/events", (c) => {
   ensureEmailsWatcher();
   ensureTokenPresetsWatcher();
+  ensureSceneCollectionPresetsWatcher();
   return streamSSE(c, async (stream) => {
     const writeEvent = (event: string, data: Record<string, string | undefined>) =>
       stream.writeSSE({ event, data: JSON.stringify(data) });
@@ -604,7 +816,7 @@ app.get("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
   if (!manifest) {
     return c.json({ error: { code: "NOT_FOUND", message: "本场景未启用版式变体" } }, 404);
   }
-  return c.json(manifest);
+  return c.json(await enrichLayoutManifestCreatedAt(base, manifest));
 });
 
 app.put("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
@@ -641,6 +853,278 @@ app.put("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
   await atomicWriteJson(layoutManifestPath(base), trial);
   scheduleEmailsChanged("api_write", emailKey);
   return c.body(null, 204);
+});
+
+app.post("/api/v1/emails/:emailKey/layout-variants", async (c) => {
+  const emailKey = c.req.param("emailKey");
+  const bad = assertEmailKeySafe(emailKey);
+  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
+
+  let body: { label?: unknown; layoutVariantId?: unknown; copyFromLayoutVariantId?: unknown };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
+  }
+
+  const label = typeof body.label === "string" ? body.label.trim() : "";
+  if (!label) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: "label 必须为非空字符串" } },
+      400
+    );
+  }
+
+  const base = emailBaseDir(DATA_ROOT, emailKey);
+  let manifest: LayoutManifest;
+  try {
+    manifest = await ensureEmailLayoutManifest(base, emailKey, readJson, atomicWriteJson);
+  } catch (e) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: e instanceof Error ? e.message : "无法启用版式变体",
+        },
+      },
+      400
+    );
+  }
+
+  const existingIds = manifest.variants.map((v) => v.id);
+  const requestedId =
+    typeof body.layoutVariantId === "string" && body.layoutVariantId.trim()
+      ? body.layoutVariantId.trim()
+      : null;
+  const newId =
+    requestedId ?? deriveLayoutVariantIdFromLabel(label, existingIds);
+  const idBad = assertLayoutVariantIdSafe(newId);
+  if (idBad) {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: idBad } }, 400);
+  }
+  if (existingIds.includes(newId)) {
+    return c.json(
+      { error: { code: "CONFLICT", message: `版式标识「${newId}」已存在` } },
+      409
+    );
+  }
+
+  const copyFromRaw =
+    typeof body.copyFromLayoutVariantId === "string"
+      ? body.copyFromLayoutVariantId.trim()
+      : "";
+  const copyFromId =
+    copyFromRaw && manifest.variants.some((v) => v.id === copyFromRaw)
+      ? copyFromRaw
+      : manifest.activeLayoutVariantId;
+
+  const sourceCtx = resolveEmailFilePaths(base, manifest, copyFromId);
+  const sourceTemplate = await readJson<EmailTemplate>(sourceCtx.templatePath);
+  if (!sourceTemplate) {
+    return c.json(
+      { error: { code: "NOT_FOUND", message: `源版式「${copyFromId}」的 template.json 不存在` } },
+      404
+    );
+  }
+  let sourceTokenPresets =
+    (await readJson<TokenPresets>(sourceCtx.tokenPresetsPath)) ?? null;
+  if (!sourceTokenPresets) {
+    sourceTokenPresets = createDefaultTokenPresets();
+  }
+
+  const templateIssues = blockingValidationIssues(validateTemplate(sourceTemplate));
+  if (templateIssues.length) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: "源版式模板校验失败，无法复制",
+          details: templateIssues,
+        },
+      },
+      422
+    );
+  }
+  const tokenIssue = validateTokenPresetsShape(sourceTokenPresets);
+  if (tokenIssue) {
+    return c.json({ error: { code: "VALIDATION_FAILED", ...tokenIssue } }, 422);
+  }
+
+  const destDir = layoutVariantDir(base, newId);
+  try {
+    await fs.access(destDir);
+    return c.json(
+      { error: { code: "CONFLICT", message: `版式目录「${newId}」已存在` } },
+      409
+    );
+  } catch (e: unknown) {
+    const code = (e as NodeJS.ErrnoException).code;
+    if (code !== "ENOENT") throw e;
+  }
+
+  let nextManifest: LayoutManifest;
+  try {
+    nextManifest = appendLayoutVariant(
+      manifest,
+      {
+        id: newId,
+        label,
+        description: `复制自版式「${copyFromId}」`,
+        createdAt: new Date().toISOString(),
+      },
+      { makeActive: true }
+    );
+  } catch (e) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: e instanceof Error ? e.message : "无法追加版式",
+        },
+      },
+      400
+    );
+  }
+
+  const manifestIssues = validateLayoutManifest(nextManifest);
+  if (manifestIssues.length) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      422
+    );
+  }
+
+  await atomicWriteJson(path.join(destDir, "template.json"), sourceTemplate);
+  await atomicWriteJson(path.join(destDir, "tokenPresets.json"), sourceTokenPresets);
+  await atomicWriteJson(layoutManifestPath(base), nextManifest);
+
+  scheduleEmailsChanged("api_write", emailKey);
+  return c.json(
+    {
+      layoutVariantId: newId,
+      label,
+      activeLayoutVariantId: nextManifest.activeLayoutVariantId,
+      manifest: nextManifest,
+    },
+    201
+  );
+});
+
+app.patch("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c) => {
+  const emailKey = c.req.param("emailKey");
+  const layoutVariantId = c.req.param("layoutVariantId");
+  const badKey = assertEmailKeySafe(emailKey);
+  if (badKey) return c.json({ error: { code: "VALIDATION_FAILED", message: badKey } }, 400);
+  const badLayout = assertLayoutVariantIdSafe(layoutVariantId);
+  if (badLayout) return c.json({ error: { code: "VALIDATION_FAILED", message: badLayout } }, 400);
+
+  const base = emailBaseDir(DATA_ROOT, emailKey);
+  const manifest = await readLayoutManifestOptional(readJson, base);
+  if (!manifest) {
+    return c.json({ error: { code: "NOT_FOUND", message: "本场景未启用版式变体" } }, 404);
+  }
+
+  let body: { label?: unknown; description?: unknown };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
+  }
+
+  const label = typeof body.label === "string" ? body.label.trim() : "";
+  if (!label) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: "label 必须为非空字符串" } },
+      400
+    );
+  }
+
+  let nextManifest: LayoutManifest;
+  try {
+    nextManifest = updateLayoutVariantLabel(manifest, layoutVariantId, label);
+  } catch (e) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: e instanceof Error ? e.message : "无法更新版式名称",
+        },
+      },
+      400
+    );
+  }
+
+  if (typeof body.description === "string") {
+    const description = body.description.trim();
+    nextManifest = {
+      ...nextManifest,
+      variants: nextManifest.variants.map((v) =>
+        v.id === layoutVariantId ? { ...v, description: description || undefined } : v
+      ),
+    };
+  }
+
+  const manifestIssues = validateLayoutManifest(nextManifest);
+  if (manifestIssues.length) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      422
+    );
+  }
+
+  await atomicWriteJson(layoutManifestPath(base), nextManifest);
+  scheduleEmailsChanged("api_write", emailKey);
+  return c.json({
+    layoutVariantId,
+    label,
+    manifest: nextManifest,
+  });
+});
+
+app.delete("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c) => {
+  const emailKey = c.req.param("emailKey");
+  const layoutVariantId = c.req.param("layoutVariantId");
+  const badKey = assertEmailKeySafe(emailKey);
+  if (badKey) return c.json({ error: { code: "VALIDATION_FAILED", message: badKey } }, 400);
+  const badLayout = assertLayoutVariantIdSafe(layoutVariantId);
+  if (badLayout) return c.json({ error: { code: "VALIDATION_FAILED", message: badLayout } }, 400);
+
+  const base = emailBaseDir(DATA_ROOT, emailKey);
+  const manifest = await readLayoutManifestOptional(readJson, base);
+  if (!manifest) {
+    return c.json({ error: { code: "NOT_FOUND", message: "本场景未启用版式变体" } }, 404);
+  }
+
+  let nextManifest: LayoutManifest;
+  try {
+    nextManifest = softDeleteLayoutVariant(manifest, layoutVariantId);
+  } catch (e) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: e instanceof Error ? e.message : "无法逻辑删除版式",
+        },
+      },
+      400
+    );
+  }
+
+  const manifestIssues = validateLayoutManifest(nextManifest);
+  if (manifestIssues.length) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      422
+    );
+  }
+
+  await atomicWriteJson(layoutManifestPath(base), nextManifest);
+  scheduleEmailsChanged("api_write", emailKey);
+  return c.json({
+    layoutVariantId,
+    activeLayoutVariantId: nextManifest.activeLayoutVariantId,
+    manifest: nextManifest,
+  });
 });
 
 app.get("/api/v1/emails/:emailKey/template", async (c) => {
@@ -841,7 +1325,7 @@ app.get("/api/v1/emails/:emailKey/meta", async (c) => {
   const metaPath = path.join(DATA_ROOT, emailKey, "meta.json");
   const meta = await readJson<EmailMeta>(metaPath);
   if (!meta) return c.json({ error: { code: "NOT_FOUND", message: "meta.json 不存在" } }, 404);
-  return c.json(meta);
+  return c.json(normalizePersistedEmailMeta(meta as Record<string, unknown>) as EmailMeta);
 });
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -895,10 +1379,36 @@ app.put("/api/v1/emails/:emailKey/meta", async (c) => {
 
   const prevMeta =
     (await readJson<Record<string, unknown>>(path.join(emailDir, "meta.json"))) ?? {};
-  const merged = deepMergeMeta(prevMeta, body);
+  const merged = normalizePersistedEmailMeta(deepMergeMeta(prevMeta, body));
   merged.updatedAt = new Date().toISOString();
   await atomicWriteJson(path.join(emailDir, "meta.json"), merged);
   scheduleEmailsChanged("api_write", emailKey);
+  return c.body(null, 204);
+});
+
+app.delete("/api/v1/emails/:emailKey", async (c) => {
+  const emailKey = c.req.param("emailKey");
+  const bad = assertEmailKeySafe(emailKey);
+  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
+
+  const emailDir = emailBaseDir(DATA_ROOT, emailKey);
+  const manifest = await readLayoutManifestOptional(readJson, emailDir);
+  if (!(await emailHasTemplateFiles(emailDir, manifest))) {
+    return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
+  }
+
+  const metaPath = path.join(emailDir, "meta.json");
+  const prevMeta = (await readJson<Record<string, unknown>>(metaPath)) ?? {};
+  if (isLogicallyDeleted(prevMeta)) {
+    return c.json({ error: { code: "CONFLICT", message: "该邮件模板已逻辑删除" } }, 409);
+  }
+  const merged = {
+    ...prevMeta,
+    deletedAt: logicalDeleteTimestamp(),
+    updatedAt: new Date().toISOString(),
+  };
+  await atomicWriteJson(metaPath, merged);
+  scheduleEmailsChanged("api_delete", emailKey);
   return c.body(null, 204);
 });
 
@@ -920,6 +1430,50 @@ app.get("/api/v1/emails/:emailKey/merged", async (c) => {
     };
   const merged = mergeTemplatePayload(t, p);
   return c.json({ merged });
+});
+
+/** SMTP 测试发信是否已配置（不返回密码）。 */
+app.get("/api/v1/smtp-test/status", (c) => {
+  return c.json(getSmtpPublicStatus());
+});
+
+/**
+ * 发送测试邮件：HTML 由前端从画布预览 DOM 抓取；发件人固定为环境变量 EMAIL_SMTP_*。
+ * body: { to, html, subject?, preheader? }
+ */
+app.post("/api/v1/emails/:emailKey/send-test-email", async (c) => {
+  const emailKey = c.req.param("emailKey");
+  const bad = assertEmailKeySafe(emailKey);
+  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
+
+  let body: { to?: unknown; html?: unknown; subject?: unknown; preheader?: unknown };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: { code: "VALIDATION_FAILED", message: "请求体须为 JSON" } }, 400);
+  }
+
+  const to = typeof body.to === "string" ? body.to : "";
+  const html = typeof body.html === "string" ? body.html : "";
+  const subject =
+    typeof body.subject === "string" && body.subject.trim()
+      ? body.subject.trim()
+      : `【测试】${emailKey}`;
+  const preheader = typeof body.preheader === "string" ? body.preheader : "";
+
+  try {
+    const result = await sendSmtpTestMail({ to, subject, html: html || "" });
+    return c.json({
+      ok: true,
+      to: to.trim(),
+      subject,
+      preheader: preheader.trim() || undefined,
+      messageId: result.messageId,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return c.json({ error: { code: "SMTP_SEND_FAILED", message } }, 502);
+  }
 });
 
 const port = Number(process.env.EMAIL_API_PORT ?? 8787);

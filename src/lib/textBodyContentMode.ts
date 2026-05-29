@@ -1,4 +1,4 @@
-import type { TextBlock, TextBodyV1, TextRun } from "../types/email";
+import type { TextBlock, TextBody, TextRun } from "../types/email";
 
 /** 结构化正文在 Inspector 中的三种内容态 */
 export type TextBodyContentMode = "literal" | "inlineVariable" | "wholeVariable";
@@ -6,7 +6,7 @@ export type TextBodyContentMode = "literal" | "inlineVariable" | "wholeVariable"
 const TEXT_RUN_TEXT_BIND_RE = /^props\.textBody\.paragraphs\.(\d+)\.runs\.(\d+)\.text$/;
 const WHOLE_INTERPOLATE_RE = /^\{\{\s*([a-zA-Z][a-zA-Z0-9_]*)\s*\}\}$/;
 
-function listNonEmptyRuns(body: TextBodyV1): Array<{ paragraphIndex: number; runIndex: number; run: TextRun }> {
+function listNonEmptyRuns(body: TextBody): Array<{ paragraphIndex: number; runIndex: number; run: TextRun }> {
   const out: Array<{ paragraphIndex: number; runIndex: number; run: TextRun }> = [];
   body.paragraphs.forEach((para, paragraphIndex) => {
     (para.runs ?? []).forEach((run, runIndex) => {
@@ -21,7 +21,7 @@ function listNonEmptyRuns(body: TextBodyV1): Array<{ paragraphIndex: number; run
 /** 整段正文由单一变量/interpolate 占位承载时的绑定路径 */
 export function getWholeTextBodyVariableBindPath(
   block: TextBlock,
-  body: TextBodyV1 | null
+  body: TextBody | null
 ): string | null {
   if (block.bindings?.["props.textBody"]?.mode === "variable") return "props.textBody";
   if (!body) return null;
@@ -39,7 +39,7 @@ export function getWholeTextBodyVariableBindPath(
 }
 
 /** 判定正文（结构化）字段当前处于自由 / 文中变量 / 整段变量 */
-export function getTextBodyContentMode(block: TextBlock, body: TextBodyV1 | null): TextBodyContentMode {
+export function getTextBodyContentMode(block: TextBlock, body: TextBody | null): TextBodyContentMode {
   if (getWholeTextBodyVariableBindPath(block, body)) return "wholeVariable";
 
   const hasInline = Object.entries(block.bindings ?? {}).some(([bindPath, spec]) => {
@@ -54,7 +54,7 @@ export function getTextBodyContentMode(block: TextBlock, body: TextBodyV1 | null
 /** 标题旁来源胶囊菜单所依附的代表性绑定路径（整段仅一个胶囊） */
 export function getTextBodyFieldSourceBindPath(
   block: TextBlock,
-  body: TextBodyV1 | null,
+  body: TextBody | null,
   mode: TextBodyContentMode
 ): string {
   if (mode === "wholeVariable") {

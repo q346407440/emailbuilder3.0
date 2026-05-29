@@ -16,10 +16,6 @@
         "oca-header-sub"
       ],
       "wrapperStyle": {
-        "placement": {
-          "horizontal": "start",
-          "vertical": "start"
-        },
         "widthMode": "fill",
         "heightMode": "hug",
         "border": {
@@ -109,10 +105,6 @@
         "oca-header-logo-text"
       ],
       "wrapperStyle": {
-        "placement": {
-          "horizontal": "center",
-          "vertical": "start"
-        },
         "widthMode": "fill",
         "heightMode": "hug",
         "border": {
@@ -140,7 +132,7 @@
           "$themeRef": "colors.surface"
         },
         "contentAlign": {
-          "horizontal": "left",
+          "horizontal": "center",
           "vertical": "top"
         }
       },
@@ -188,12 +180,8 @@
       "parentId": "oca-header-logo-row",
       "children": [],
       "wrapperStyle": {
-        "placement": {
-          "horizontal": "center",
-          "vertical": "center"
-        },
         "contentAlign": {
-          "horizontal": "center",
+          "horizontal": "left",
           "vertical": "top"
         },
         "widthMode": "hug",
@@ -211,7 +199,6 @@
       },
       "props": {
         "textBody": {
-          "version": 1,
           "paragraphs": [
             {
               "runs": [
@@ -230,18 +217,9 @@
         },
         "bold": true,
         "italic": false,
-        "decoration": "none",
-        "fontFamily": {
-          "$themeRef": "fonts.heading"
-        }
+        "decoration": "none"
       },
       "bindings": {
-        "props.fontFamily": {
-          "slotId": "fonts.heading",
-          "mode": "theme",
-          "tokenPath": "fonts.heading",
-          "fieldKind": "style"
-        },
         "props.fontSize": {
           "slotId": "tokens.typography.body",
           "mode": "theme",
@@ -262,10 +240,6 @@
       "parentId": "oca-mod-header",
       "children": [],
       "wrapperStyle": {
-        "placement": {
-          "horizontal": "start",
-          "vertical": "start"
-        },
         "contentAlign": {
           "horizontal": "center",
           "vertical": "top"
@@ -285,7 +259,6 @@
       },
       "props": {
         "textBody": {
-          "version": 1,
           "paragraphs": [
             {
               "runs": [
@@ -304,10 +277,7 @@
         },
         "bold": false,
         "italic": false,
-        "decoration": "none",
-        "fontFamily": {
-          "$themeRef": "fonts.heading"
-        }
+        "decoration": "none"
       },
       "bindings": {
         "props.textBody.paragraphs.0.runs.0.text": {
@@ -319,12 +289,6 @@
           "fieldKind": "content",
           "label": "主标题文案",
           "description": "弃购挽留邮件首屏标题。"
-        },
-        "props.fontFamily": {
-          "slotId": "fonts.heading",
-          "mode": "theme",
-          "tokenPath": "fonts.heading",
-          "fieldKind": "style"
         },
         "props.fontSize": {
           "slotId": "tokens.typography.display",
@@ -346,10 +310,6 @@
       "parentId": "oca-mod-header",
       "children": [],
       "wrapperStyle": {
-        "placement": {
-          "horizontal": "start",
-          "vertical": "start"
-        },
         "contentAlign": {
           "horizontal": "center",
           "vertical": "top"
@@ -369,7 +329,6 @@
       },
       "props": {
         "textBody": {
-          "version": 1,
           "paragraphs": [
             {
               "runs": [
@@ -388,10 +347,7 @@
         },
         "bold": false,
         "italic": false,
-        "decoration": "none",
-        "fontFamily": {
-          "$themeRef": "fonts.body"
-        }
+        "decoration": "none"
       },
       "bindings": {
         "props.textBody.paragraphs.0.runs.0.text": {
@@ -403,12 +359,6 @@
           "fieldKind": "content",
           "label": "副标题文案",
           "description": "弃购挽留邮件首屏副标题。"
-        },
-        "props.fontFamily": {
-          "slotId": "fonts.body",
-          "mode": "theme",
-          "tokenPath": "fonts.body",
-          "fieldKind": "style"
         },
         "props.fontSize": {
           "slotId": "tokens.typography.body",
@@ -432,9 +382,6 @@
         "oca-mod-header"
       ],
       "wrapperStyle": {
-        "placement": {
-          "horizontal": "center"
-        },
         "widthMode": "fill",
         "heightMode": "hug"
       },

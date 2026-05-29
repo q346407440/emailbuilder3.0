@@ -16,7 +16,7 @@ function minimalTemplateWithBinding(): EmailTemplate {
         parentId: null,
         children: [],
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "x" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "x" }] }] },
           color: "#111111",
           bold: false,
           italic: false,
@@ -90,7 +90,6 @@ describe("mergeTemplatePayload 与 detachedVariableSlotIds", () => {
     const template = minimalTemplateWithBinding();
     template.blocks.root.props = {
       textBody: {
-        version: 1,
         paragraphs: [{ runs: [{ text: "Hi {{ memberName }}, welcome." }] }],
       },
       bold: false,

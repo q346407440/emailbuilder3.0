@@ -13,18 +13,13 @@ export type ThemeTypographyRails = {
 };
 
 /**
- * `mergeEmailThemeIntoBaseline` 的可选入参：单测或工具在内存中模拟品牌色、字体、密度与字号轨道覆盖。
+ * `mergeEmailThemeIntoBaseline` 的可选入参：单测或工具在内存中模拟品牌色、密度与字号轨道覆盖。
  * 运行时预览真源为各邮件 `tokenPresets.json`；本类型不对应磁盘主题文件。
  */
 export type EmailTheme = {
   schemaVersion: "2.0.0";
   brand?: string;
   accent?: string;
-  /** 每项仅一种主字体名（可含引号，禁止逗号分隔栈）；完整 fallback 由 `mergeEmailThemeIntoBaseline` 追加。 */
-  fontFamily?: {
-    heading?: string;
-    body?: string;
-  };
   density?: ThemeDensity;
   /** 可选：三组字号（hero/title/body），单位建议写 `NNpx` */
   typography?: ThemeTypographyRails;
@@ -36,10 +31,6 @@ export type EmailTheme = {
  */
 export type ExpandedTheme = {
   schemaVersion: "2.0.0";
-  fonts: {
-    heading: string;
-    body: string;
-  };
   colors: {
     brand: string;
     accent: string;

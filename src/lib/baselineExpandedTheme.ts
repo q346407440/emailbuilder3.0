@@ -1,12 +1,11 @@
 import type { EmailTheme, ExpandedTheme, ThemeDensity, ThemeTypographyRails } from "../types/theme";
-import { DEFAULT_THEME_FONT_SINGLE, storedSingleFontToCssFamily } from "./emailFontFamily";
 
 /**
  * 画布预览用的「中性基线」展开主题：数值与历史 `expandTheme(null)` 一致。
  * 生产路径中，`resolveDesignTokens` 以本对象为底，再合并各邮件 `tokenPresets`；
  * 本模块不读磁盘 `theme.json`，邮件视觉真源为 `tokenPresets.json`。
  *
- * `mergeEmailThemeIntoBaseline` 仅保留给单测或少量工具在内存中模拟覆盖（品牌色、字号轨道等），
+ * `mergeEmailThemeIntoBaseline` 仅保留给单测或少量工具在内存中模拟覆盖（品牌色、字号轨道等）。
  * 应用运行时预览不应依赖传入非空的 `EmailTheme`。
  */
 
@@ -89,21 +88,15 @@ function pickContrastText(bgHex: string): string {
 }
 
 /**
- * 在固定中性基线上应用可选 `EmailTheme` 覆盖（品牌色、字体、密度、字号轨道）。
+ * 在固定中性基线上应用可选 `EmailTheme` 覆盖（品牌色、密度、字号轨道）。
  */
 export function mergeEmailThemeIntoBaseline(theme: EmailTheme | null | undefined): ExpandedTheme {
   const brand = theme?.brand ?? DEFAULT_BRAND;
   const accent = theme?.accent ?? DEFAULT_ACCENT;
-  const headingFont = storedSingleFontToCssFamily(theme?.fontFamily?.heading, DEFAULT_THEME_FONT_SINGLE);
-  const bodyFont = storedSingleFontToCssFamily(theme?.fontFamily?.body, DEFAULT_THEME_FONT_SINGLE);
   const density: ThemeDensity = theme?.density ?? DEFAULT_DENSITY;
 
   return {
     schemaVersion: "2.0.0",
-    fonts: {
-      heading: headingFont,
-      body: bodyFont,
-    },
     colors: {
       brand,
       accent,

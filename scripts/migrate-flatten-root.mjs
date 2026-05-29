@@ -3,7 +3,7 @@
  * 一次性迁移：扁平化邮件根节点。
  *
  * 背景：之前每份模板都在 `emailRoot` 下额外包一层 `*-page` (`layout`) 作为「页面主容器」，
- * 但 `emailRoot` 已经持有 outerBg/innerBg/width/fontFamily/padding/border 等画布字段，
+ * 但 `emailRoot` 已经持有 outerBg/innerBg/width/padding/border 等画布字段，
  * 现已扩展 `direction` / `gapMode` / `gap`，可直接承担主容器职责。本脚本：
  *
  * 1. 读取 data/emails/<email>/template.json

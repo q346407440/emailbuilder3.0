@@ -1,7 +1,7 @@
 ---
 name: easy-email-concepts
 description: >-
-  Easy-Email 当前维护概念（template 结构真源、tokenPresets 样式预设、payload 变量值、render-defaults 渲染默认）与口语↔技术路径对照；含「每个 block 自己的容器 / 宽高模式 / placement 与 contentAlign」等必读公共定义。
+  Easy-Email 当前维护概念（template 结构真源、tokenPresets 样式预设、payload 变量值、render-defaults 渲染默认）与口语↔技术路径对照；含「每个 block 自己的容器 / 宽高模式 / contentAlign 容器内摆放」等必读公共定义。
   当用户讨论「还原邮件该改哪一层」「配置面 vs template」「样式预设 vs 结构」或需要一句话说清维护入口时读取；常与「按图还原邮件」类需求下的 business-components / block-architecture 技能一起出现。
 ---
 
@@ -21,7 +21,7 @@ description: >-
 | 值 / 必填 / 废弃 / 编排校验 | `src/lib/validate.ts` |
 | bindings 路径 → style / content / structural | `src/lib/blockFieldClassification.ts` |
 | 禁止写进 template 的渲染默认、底图 padding 语义 | `src/render-defaults-contract/`（`rules.ts` 为规则目录） |
-| token 标准 14 键、`$themeRef` 路径 | `src/token-preset-contract/`（`standard-keys.ts`、`theme-ref-paths.ts`） |
+| token 标准 12 键、`$themeRef` 路径 | `src/token-preset-contract/`（`standard-keys.ts`、`theme-ref-paths.ts`） |
 | payload 槽枚举与对照校验 | `src/payload-contract/` |
 | 列表重复绑定、物化、重绑、fieldMappings | `src/lib/repeatRegion.ts`、`repeatMaterializedNormalize.ts`、`repeatNestedBinding.ts`（技能 **`easy-email-repeat-binding`**） |
 | visibility 运算符合法性 | `src/visibility-contract/` |
@@ -55,13 +55,13 @@ description: >-
 ## 「自己的容器」（与 Inspector 对齐的最低限度）
 
 1. **外层盒模型**：`wrapperStyle` + 各类型影响尺寸的 `props`；宽高模式 **`widthMode` / `heightMode`**。
-2. **相对父级槽位**：**`wrapperStyle.placement`**（`start` \| `center` \| `end`）↔ 面板「容器相对父级摆放」。实现见 **`src/lib/resolvePlacementCss.ts`**（表格槽位 + `margin`，勿当 flex `align-self`）。
-3. **盒内内容摆放**：**`wrapperStyle.contentAlign`**（除 `emailRoot` 外须显式双轴）↔ 面板 **「容器内内容摆放」**；与 **placement**（**「容器相对父级摆放」**）勿混用。
+2. **容器内内容摆放（唯一对齐字段）**：**`wrapperStyle.contentAlign`**（水平 `left|center|right` + 竖直 `top|center|bottom`；除 `emailRoot` 外须显式双轴）↔ Inspector **「容器内内容摆放」**。渲染为 presentation **`<table>` + `td align`/`valign`**（见 **`emailPresentation.ts`**、**`EmailPreview.tsx`**）。其它 wrapperStyle 对齐字段写入会校验失败。
+3. **per-child 差异对齐**：同一父下子块要对齐方式不同 → **嵌套 `layout`/`grid`** 或分别写子块 **`contentAlign`**（hug 宽/高时不可配轴须为 `left`/`top`）。
 4. **不进 JSON 的默认**：**`src/render-defaults-contract/`**；口语「项目默认」→ 技能 **`easy-email-render-defaults`**。
-5. **容器内相对居中（修复顺序）**：用户说「相对居中 / 行内居中 / 叠在图上的块要居中」时，**先改父容器 `contentAlign`**，再改子块壳内文案的 **`contentAlign`**；**不要**用子块 **`widthMode: hug`** 或 **`placement.center`** 代替父级 **容器内内容摆放**。子块 **`fill`** 时父级水平居中主要管 **叠放位置/对齐栈**；壳内文字居中靠子块 **`fill` + `contentAlign.horizontal: center`**。
-6. **横向 layout 与底图叠放**：横排 → **`fill` + `contentAlign.horizontal: center`**，子 **`hug/fixed`**（§18）；底图父 **`layout`/`image` + `backgroundImage`** → 父 **`contentAlign`** 管叠放子块位置，子 layout 可保持 **`fill`**（§20）。**邮件级整组居中**（稿面明确要求）才用 **`hug` + `placement.horizontal: center`**。勿与子块全 **`fill`** 均分混淆，见 **`email-template-restore-check`** §5、§18、§20；**`email-template-restore-guide`** § 横向 layout / 底图叠放与容器内居中。
+5. **容器内相对居中（修复顺序）**：用户说「相对居中 / 行内居中 / 叠在图上的块要居中」时，**先改父容器 `contentAlign`**，再改子块壳内文案的 **`contentAlign`**；**不要**仅靠子块 **`widthMode: hug`** 代替父级对齐。子块 **`fill`** 时父级水平居中管叠放栈；壳内文字居中靠子块 **`fill` + `contentAlign.horizontal: center`**。
+6. **横向 layout、grid 矩阵格、图片/底图叠放**：父 **`layout`/`grid`/`image`（含 `backgroundImage`）** 的 **`contentAlign` 双轴** 控制子级在容器内的水平+竖直对齐；栅格槽位见 **`gridMatrixSlotContentAlignCss`**。邮件级整组居中：父 **`contentAlign.horizontal: center`** 或 **`hug` 外壳 + 父级居中**，见 **`email-template-restore-check`**。
 7. **容器内边距 `wrapperStyle.padding` / `emailRoot.props.padding`（`SpacingValue`）**：**`mode: "unified"`** 时 **`unified` 只能是单边长度**（如 `"8px"`、`"0"` 或 `$themeRef`），**禁止** CSS 多值简写（如 `"8px 0 0 0"`、`"28px 24px"`）；四边不同必须用 **`mode: "separate"`** + **`top/right/bottom/left`**。校验 **`validate.ts`**；存量清理 **`npm run normalize:spacing-unified:write`**。Inspector「四边统一」= 四边**同值**，不是简写四段。
-8. **相对父级摆放可否配置（代码真源）**：**`src/lib/placementConfigurability.ts`**（`isRelativePlacementAxisConfigurable`；父槽位 **`placementParentContext`**）。**纵排父 + 子 fill 宽** / **横排父 + 子 fill 高** → **整块**禁止 `placement`；**纵排父 + 子宽 hug/fixed** → 可配 **`placement.horizontal`**；**横排父 + 子高 hug/fixed** → 可配 **`placement.vertical`**（如品牌行 Logo 与字标竖直居中）；另一轴仍受子块 fill 约束。校验 **`validate.ts`**（含 server 落盘），迁移 **`npm run normalize:placement:write`**。
+8. **contentAlign 可配性（代码真源）**：**`src/lib/contentAlignConfigurability.ts`**。`widthMode: hug` → 水平轴不可配（须 `left`）；`heightMode: hug` → 竖直轴不可配（须 `top`）。**layout / grid / image 叠放** 在定高/定宽壳上**双轴均可配**。校验 **`validate.ts`** + **`render-defaults-contract/forbiddenWrapperStyleKeys.ts`**；hug 轴回落 **`npm run migrate:content-align-hug-neutral:write`**；协调 **`npm run normalize:wrapper-layout:write`**。
 
 ## 术语路由（用户说一句 → 先改哪）
 

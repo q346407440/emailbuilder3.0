@@ -1,4 +1,5 @@
 import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
+import { resolveRepeatListItemFieldBinding } from "./repeatListItemField";
 import { hasThemeRefInTemplateField, isThemeDetached } from "./themeBindingEdit";
 import { variableBindingSpec } from "./variableBindingEdit";
 
@@ -27,6 +28,9 @@ export function getInspectFieldBindMode(
   blockId: string,
   bindPath: string
 ): InspectFieldBindMode {
+  if (resolveRepeatListItemFieldBinding(template, blockId, bindPath)) {
+    return "variableFollow";
+  }
   const vs = variableBindingSpec(block, bindPath);
   if (vs) {
     if (payload.detachedVariableSlotIds?.includes(vs.slotId)) return "variableDetached";

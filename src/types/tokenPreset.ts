@@ -1,18 +1,11 @@
 export type TokenPresetScaleName = "xs" | "sm" | "md" | "lg" | "xl" | "default" | "pill" | string;
 
-export type TokenFamilyName =
-  | "colors"
-  | "fonts"
-  | "spacing"
-  | "radius"
-  | "typography"
-  | string;
+export type TokenFamilyName = "colors" | "spacing" | "radius" | "typography" | string;
 
 export type TokenScaleMap = Record<TokenPresetScaleName, string>;
 
 export type TokenPresetTokens = {
   colors?: TokenScaleMap;
-  fonts?: TokenScaleMap;
   spacing?: TokenScaleMap;
   radius?: TokenScaleMap;
   typography?: TokenScaleMap;
@@ -43,6 +36,8 @@ export type TokenPresets = {
   activePresetId: string;
   presets: Record<string, TokenPresetDefinition>;
   scopeSelections?: TokenPresetScopeSelections;
+  /** 逻辑删除时间（ISO，公共预设文件根级）；删除该字段即可恢复在编辑器中的展示 */
+  deletedAt?: string;
   /** @deprecated 不再写入磁盘；加载时移除。勿用于新逻辑 */
   appliedGlobalPresetId?: string;
 };

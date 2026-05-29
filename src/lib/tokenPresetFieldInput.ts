@@ -13,7 +13,7 @@ function looksLikeBareCssNumberForPx(raw: string): boolean {
 
 /**
  * 样式预设里某条 token 是否适合用 ShopUnitInput（数值 + px 后缀）。
- * 颜色走 ColorField；fonts 走画布同款单选下拉；其余含 %/rem/calc 等的长度保持文本输入（ShopInput）。
+ * 颜色走 ColorField；其余含 %/rem/calc 等的长度保持文本输入（ShopInput）。
  */
 export function tokenPresetFieldUsesShopUnitInput(family: string, rawValue: string): boolean {
   if (!DIMENSIONAL_TOKEN_FAMILIES.has(family)) return false;

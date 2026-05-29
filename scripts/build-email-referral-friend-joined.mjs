@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 生成「好友加入获奖」学习模板到 data/emails/referral-friend-joined/
  */
@@ -72,8 +74,6 @@ const border0 = () => ({
 
 const radius0 = () => ({ mode: "unified", radius: "0" });
 
-const placement = (h, v) => ({ horizontal: h, vertical: v });
-
 const themeRef = (path) => ({ $themeRef: path });
 
 const themeBinding = (path) => ({
@@ -105,7 +105,7 @@ const modShellBindings = () => ({
 });
 
 const wsBase = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -115,7 +115,6 @@ const wsBase = (extra = {}) => ({
 });
 
 const textBodyRuns = (runs) => ({
-  version: 1,
   paragraphs: [{ runs }],
 });
 
@@ -180,7 +179,7 @@ function build() {
       parentId: baseId,
       children: [],
       wrapperStyle: {
-        placement: placement("center", "start"),
+        contentAlign: contentAlignFromAxes("center", "start"),
         widthMode: "hug",
         heightMode: "hug",
         border: border0(),
@@ -199,7 +198,6 @@ function build() {
       props: {
         content: `<p>${label}</p>`,
         textBody: textBodyRuns([{ text: label }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: "#9A7B4F",
         bold: false,
@@ -207,7 +205,6 @@ function build() {
         decoration: "none",
       },
       bindings: {
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
       },
     });
@@ -221,7 +218,6 @@ function build() {
       props: {
         content: `<p>${valueDefault}</p>`,
         textBody: textBodyRuns([{ text: valueDefault, bold: true }]),
-        fontFamily: themeRef("fonts.heading"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -238,7 +234,6 @@ function build() {
           fieldKind: "content",
           label: `${labelText}数值`,
         },
-        "props.fontFamily": themeBinding("fonts.heading"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -256,7 +251,7 @@ function build() {
     type: "layout",
     parentId: modLogo,
     children: [logoImg],
-    wrapperStyle: wsBase({ placement: placement("start", "start") }),
+    wrapperStyle: wsBase({ contentAlign: contentAlignFromAxes("start", "start") }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
     bindings: {},
   });
@@ -267,7 +262,7 @@ function build() {
     parentId: logoRow,
     children: [],
     wrapperStyle: {
-      placement: placement("start", "center"),
+      contentAlign: contentAlignFromAxes("start", "center"),
       widthMode: "fixed",
       width: "160px",
       heightMode: "fixed",
@@ -322,7 +317,6 @@ function build() {
     props: {
       content: "<p>Your friend joined earn rewards.</p>",
       textBody: textBodyRuns([{ text: "Your friend joined earn rewards.", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.display"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -339,7 +333,6 @@ function build() {
         fieldKind: "content",
         label: "获奖主标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.display"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -359,7 +352,6 @@ function build() {
           text: "Thanks for inviting — your points and coupon are now active in your account.",
         },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -377,7 +369,6 @@ function build() {
         fieldKind: "content",
         label: "获奖副标题",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -415,7 +406,6 @@ function build() {
     props: {
       content: "<p>YOU GET</p>",
       textBody: textBodyRuns([{ text: "YOU GET", bold: true }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#9A7B4F",
       bold: true,
@@ -432,7 +422,6 @@ function build() {
         fieldKind: "content",
         label: "YOU GET 标签",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -501,7 +490,6 @@ function build() {
     props: {
       content: "<p>Coupon Code</p>",
       textBody: textBodyRuns([{ text: "Coupon Code" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -518,7 +506,6 @@ function build() {
         fieldKind: "content",
         label: "优惠码标签",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -529,7 +516,7 @@ function build() {
     type: "layout",
     parentId: codeBox,
     children: [couponCodeText, codeCopyBtn],
-    wrapperStyle: wsBase({ placement: placement("start", "center") }),
+    wrapperStyle: wsBase({ contentAlign: contentAlignFromAxes("start", "center") }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "12px" },
     bindings: {},
   });
@@ -546,7 +533,6 @@ function build() {
     props: {
       content: "<p>REWARD-25</p>",
       textBody: textBodyRuns([{ text: "REWARD-25", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -563,7 +549,6 @@ function build() {
         fieldKind: "content",
         label: "优惠码",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -577,7 +562,7 @@ function build() {
     wrapperStyle: {
       widthMode: "hug",
       heightMode: "hug",
-      placement: placement("end", "center"),
+      contentAlign: contentAlignFromAxes("end", "center"),
       border: border0(),
       borderRadius: radius0(),
     },
@@ -588,7 +573,6 @@ function build() {
         widthMode: "hug",
         backgroundColor: "#111111",
         textColor: "#FFFFFF",
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         border: border0(),
         borderRadius: { mode: "unified", radius: themeRef("tokens.radius.cta") },
@@ -615,7 +599,6 @@ function build() {
         fieldKind: "content",
         label: "优惠码兑换链接",
       },
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.caption"),
       "props.buttonStyle.borderRadius.radius": themeBinding("tokens.radius.cta"),
     },
@@ -639,7 +622,6 @@ function build() {
     props: {
       content: "<p>Picked for you</p>",
       textBody: textBodyRuns([{ text: "Picked for you", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: themeRef("colors.primary"),
       bold: true,
@@ -656,7 +638,6 @@ function build() {
         fieldKind: "content",
         label: "精选区标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -674,7 +655,6 @@ function build() {
       textBody: textBodyRuns([
         { text: "Use the points and code below when you select the items you want." },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -691,7 +671,6 @@ function build() {
         fieldKind: "content",
         label: "精选区说明",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -741,7 +720,7 @@ function build() {
       parentId: cellId,
       children: [badgeId],
       wrapperStyle: {
-        placement: placement("center", "start"),
+        contentAlign: contentAlignFromAxes("center", "start"),
         widthMode: "fill",
         heightMode: "fixed",
         height: "140px",
@@ -808,7 +787,6 @@ function build() {
       props: {
         content: `<p>${item.badge}</p>`,
         textBody: textBodyRuns([{ text: item.badge, bold: true }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: "#FFFFFF",
         bold: true,
@@ -824,7 +802,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.badge`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
       },
     });
@@ -838,7 +815,6 @@ function build() {
       props: {
         content: `<p>${item.name}</p>`,
         textBody: textBodyRuns([{ text: item.name }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: false,
@@ -854,7 +830,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.name`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -879,7 +854,6 @@ function build() {
       props: {
         content: `<p><strong>${item.salePrice}</strong></p>`,
         textBody: textBodyRuns([{ text: item.salePrice, bold: true }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -895,7 +869,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.salePrice`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -910,7 +883,6 @@ function build() {
       props: {
         content: `<p><s>${item.originalPrice}</s></p>`,
         textBody: textBodyRuns([{ text: item.originalPrice, decoration: "line-through" }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.secondary"),
         bold: false,
@@ -926,7 +898,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${i}.originalPrice`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.secondary"),
       },
@@ -959,7 +930,7 @@ function build() {
     children: [],
     wrapperStyle: wsBase({
       contentAlign: { horizontal: "center", vertical: "top" },
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
     }),
     props: {
       text: "SHOP WITH YOUR REWARDS ->",
@@ -968,7 +939,6 @@ function build() {
         widthMode: "hug",
         backgroundColor: "#111111",
         textColor: "#FFFFFF",
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         border: border0(),
         borderRadius: { mode: "unified", radius: themeRef("tokens.radius.cta") },
@@ -995,7 +965,6 @@ function build() {
         fieldKind: "content",
         label: "购物主按钮链接",
       },
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.body"),
       "props.buttonStyle.borderRadius.radius": themeBinding("tokens.radius.cta"),
     },
@@ -1025,7 +994,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns1),
       textBody: textBodyRuns(accountRuns1),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -1042,7 +1010,6 @@ function build() {
         fieldKind: "content",
         label: "注册账户链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -1063,7 +1030,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns2),
       textBody: textBodyRuns(accountRuns2),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: themeRef("colors.primary"),
       bold: false,
@@ -1080,7 +1046,6 @@ function build() {
         fieldKind: "content",
         label: "重置密码链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
       "props.color": themeBinding("colors.primary"),
     },
@@ -1107,7 +1072,6 @@ function build() {
     props: {
       content: snapshotFromRuns(contactRuns),
       textBody: textBodyRuns(contactRuns),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: themeRef("colors.secondary"),
       bold: false,
@@ -1151,7 +1115,6 @@ function build() {
         fieldKind: "content",
         label: "客服邮箱 mailto 链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
       "props.color": themeBinding("colors.secondary"),
     },
@@ -1163,7 +1126,7 @@ function build() {
     parentId: null,
     children: modIds,
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -1237,12 +1200,6 @@ function writeTokenPresets() {
             secondary: "#6B7280",
             surface: "#FFFFFF",
           },
-          fonts: {
-            heading:
-              "'Segoe UI'",
-            body:
-              "'Segoe UI'",
-          },
           spacing: {
             section: "24px",
             gap: "16px",
@@ -1271,10 +1228,8 @@ function writeMeta() {
     description:
       "店铺 Logo、获奖主标题、奖励摘要卡（含优惠码）、精选商品栅格、购物 CTA、页脚账户与联系；样式经 tokenPresets 统一管理。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: { type: "screenshot", url: "" },
     defaultStylePresetSelection: "local",
   };
 }

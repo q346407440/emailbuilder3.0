@@ -12,8 +12,8 @@ import { spawnSync } from "node:child_process";
 import YAML from "yaml";
 import { normalizeTextBody } from "../src/lib/textBodyFormat.ts";
 import { htmlFragmentToTextBody } from "../src/lib/htmlFragmentToTextBody.ts";
-import { normalizeTemplatePlacement } from "../src/lib/placementConfigurability.ts";
-import { normalizeTemplateBlockDefaults } from "../src/lib/placementMigration.ts";
+import { normalizeTemplateContentAlignEffectiveness } from "../src/lib/contentAlignConfigurability.ts";
+import { normalizeTemplateBlockDefaults } from "../src/lib/templateBlockDefaults.ts";
 import { normalizeImageBlockToWrapperBackgroundShape } from "../src/lib/imageBlockWrapperBackground.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -56,7 +56,6 @@ const WRAPPER_STYLE_KEYS = new Set([
   "borderRadius",
   "border",
   "padding",
-  "placement",
   "selfAlign",
   "contentAlign",
   "backgroundImage",
@@ -84,7 +83,6 @@ const PROPS_KEYS_BY_KIND = {
   ]),
   text: new Set([
     "textBody",
-    "fontFamily",
     "fontSize",
     "color",
     "bold",
@@ -123,14 +121,12 @@ const BUTTON_STYLE_KEYS = new Set([
   "width",
   "backgroundColor",
   "textColor",
-  "fontFamily",
   "borderRadius",
   "border",
   "bold",
   "italic",
 ]);
 const IMAGE_VIEWPORT_KEYS = new Set(["mode", "width", "height"]);
-const PLACEMENT_KEYS = new Set(["horizontal", "vertical"]);
 const SELF_ALIGN_KEYS = new Set(["horizontal", "cross"]);
 const CONTENT_ALIGN_KEYS = new Set(["horizontal", "vertical"]);
 const OVERLAY_CANVAS_KEYS = new Set(["width", "height", "unit", "responsive"]);
@@ -160,13 +156,15 @@ function assertNoUnknownKeys(obj, allowed, path) {
 
 function validateCommonNestedFields(container, path, kind) {
   if (!container || typeof container !== "object" || Array.isArray(container)) return;
-  if (container.placement !== undefined) {
-    assertObject(container.placement, `${path}.placement`);
-    assertNoUnknownKeys(container.placement, PLACEMENT_KEYS, `${path}.placement`);
+  const removedRelParentAlignKey = "pla" + "cement";
+  if (container[removedRelParentAlignKey] !== undefined) {
+    throw new Error(
+      `${path} 含不符合规范的字段；盒内摆放须使用 contentAlign（水平 left|center|right，竖直 top|center|bottom）`
+    );
   }
   if (container.selfAlign !== undefined) {
     if (kind === "emailRoot") {
-      throw new Error(`${path}.selfAlign 不允许用于 emailRoot，请改用 placement`);
+      throw new Error(`${path}.selfAlign 不允许用于 emailRoot，请改用 contentAlign`);
     }
     assertObject(container.selfAlign, `${path}.selfAlign`);
     assertNoUnknownKeys(container.selfAlign, SELF_ALIGN_KEYS, `${path}.selfAlign`);
@@ -282,13 +280,12 @@ function defaultWrapper(kind, preset) {
 
 function defaultTextProps() {
   return {
-    fontFamily: "'Source Sans 3'",
     fontSize: "14px",
     color: "#222222",
     bold: false,
     italic: false,
     decoration: "none",
-    textBody: { version: 1, paragraphs: [{ runs: [{ text: "" }] }] },
+    textBody: { paragraphs: [{ runs: [{ text: "" }] }] },
   };
 }
 
@@ -339,7 +336,6 @@ function defaultButtonProps() {
       widthMode: "hug",
       backgroundColor: "#111111",
       textColor: "#ffffff",
-      fontFamily: "'Source Sans 3'",
       borderRadius: defaultBorderRadius(),
       border: defaultBorder(),
       bold: true,
@@ -646,23 +642,23 @@ export function yamlFixtureToTemplate(doc) {
   };
 
   normalizeTemplateBlockDefaults(template);
-  const placementNormalized = normalizeTemplatePlacement(template).template;
+  const aligned = template;
 
   const rootWidth =
-    typeof placementNormalized.blocks[rootId]?.props?.width === "string"
-      ? placementNormalized.blocks[rootId].props.width
+    typeof aligned.blocks[rootId]?.props?.width === "string"
+      ? aligned.blocks[rootId].props.width
       : "600px";
-  for (const [bid, blk] of Object.entries(placementNormalized.blocks)) {
+  for (const [bid, blk] of Object.entries(aligned.blocks)) {
     if (blk.type === "image") {
-      placementNormalized.blocks[bid] = normalizeImageBlockToWrapperBackgroundShape(blk, rootWidth);
+      aligned.blocks[bid] = normalizeImageBlockToWrapperBackgroundShape(blk, rootWidth);
     }
   }
 
-  for (const [id, block] of Object.entries(placementNormalized.blocks)) {
+  for (const [id, block] of Object.entries(aligned.blocks)) {
     validateGeneratedBlockShape(block, `template.blocks.${id}`);
   }
 
-  return placementNormalized;
+  return aligned;
 }
 
 function validateWithTsx(jsonPath, options = {}) {

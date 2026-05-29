@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import {
   collectPayloadVariableSlots,
   type ExternalVariableSlotInfo,
 } from "../lib/payloadSlots";
 import { CollectionDataSourceBindModal } from "./CollectionDataSourceBindModal";
+import { collectionSlotUsesJsonPasteDataSource } from "../lib/sceneCollectionPresetSlot";
 import { CollectionVariablePanel } from "./CollectionVariablePanel";
 import {
   draftToCollectionSnapshot,
@@ -18,7 +18,12 @@ import {
   standardScalarValueTypeLabel,
 } from "../lib/standardScalarSlotTypes";
 import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
-import { PayloadSlotMetaFields } from "./PayloadSlotMetaFields";
+import {
+  PayloadSlotMetaAttributesSection,
+  PayloadSlotMetaFields,
+  usePayloadSlotMetaFields,
+} from "./PayloadSlotMetaFields";
+import { useConfirmDialog } from "./ui/ConfirmDialogProvider";
 import { removeExternalVariableSlot } from "../lib/variableBindingEdit";
 import {
   buildPreviewPayload,
@@ -32,7 +37,7 @@ import {
 } from "../lib/payloadSlotDraft";
 import { Field } from "./ui/Field";
 import { ColorField } from "./ui/ColorField";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopTextArea } from "./ui/ShopFormControls";
+import { ShopInput, ShopSelect, ShopTextArea } from "./ui/ShopFormControls";
 
 type Props = {
   template: EmailTemplate;
@@ -42,6 +47,11 @@ type Props = {
   onCommitSlot?: (slotId: string) => void;
   onPayloadChange: (next: EmailPayload) => void;
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
+  onVariableDeleted?: (next: {
+    template: EmailTemplate;
+    payload: EmailPayload;
+    slotId: string;
+  }) => void | Promise<void>;
   onSlotIdChange?: (slotId: string) => void;
   selectedSlotId?: string | null;
   /** 创建列表变量后自动打开数据源配置弹窗 */
@@ -75,6 +85,8 @@ function slotValueTypeHint(valueType: string): string {
       return "颜色（CSS）";
     case "number":
       return "数值（JSON 数字）";
+    case "boolean":
+      return "真 / 假（二选一）";
     default:
       return valueType;
   }
@@ -93,6 +105,7 @@ function SlotEditor({
   onSlotIdChange,
   dataSourceModalOpen,
   onDataSourceModalOpenChange,
+  layout = "embedded",
 }: {
   slot: ExternalVariableSlotInfo;
   payload: EmailPayload;
@@ -105,7 +118,9 @@ function SlotEditor({
   onSlotIdChange?: (slotId: string) => void;
   dataSourceModalOpen: boolean;
   onDataSourceModalOpenChange: (open: boolean) => void;
+  layout?: "panel" | "embedded";
 }) {
+  const panelLayout = layout === "panel";
   const slotDraft = slotDrafts[slot.slotId];
   const raw = getEffectiveSlotValue(payload, slotDrafts, slot.slotId);
   const detached = payload.detachedVariableSlotIds?.includes(slot.slotId) ?? false;
@@ -130,14 +145,12 @@ function SlotEditor({
       ? `已保存取值：${formatDefaultPreview(slot.defaultValue)}`
       : undefined;
 
-  const hintParts = [bindingHint, savedValueHint].filter(Boolean).join(" · ");
+  const hintParts = panelLayout
+    ? undefined
+    : [bindingHint, savedValueHint].filter(Boolean).join(" · ");
   const scalarEmptyPlaceholder = detached
     ? "留空则沿用模板中的字面量"
     : "留空则不合并外部取值到预览";
-
-  const clearSlot = () => {
-    patchSlotDraft({ value: undefined });
-  };
 
   const setSlotValue = (nextVal: unknown | undefined) => {
     if (nextVal === undefined) {
@@ -151,17 +164,11 @@ function SlotEditor({
     patchSlotDraft({ value: nextVal });
   };
 
-  const assignmentHeaderExtra =
-    raw !== undefined && raw !== null && raw !== "" ? (
-      <ShopSecondaryButton htmlType="button" onClick={clearSlot} title="清除表单中的赋值；保存变量后才会写入 payload.json">
-        清除赋值
-      </ShopSecondaryButton>
-    ) : null;
+  const assignmentHeaderExtra = null;
 
   const detachedBanner = detached ? (
     <p className="inspector__muted payload-inspector__detached-hint">
-      该槽位已在画布上「解除跟随」可变内容：下方赋值不会合并到预览；请切换到「底层 Block」编辑字面量，或使用 Inspector
-      中的「恢复跟随」。
+      当前变量已解除跟随，修改赋值不会影响预览。
     </p>
   ) : null;
 
@@ -224,27 +231,55 @@ function SlotEditor({
       );
     };
 
+    const renderCollectionPanel = (panelSection: "all" | "config" | "preview" = "all") => (
+      <CollectionVariablePanel
+        slot={slot}
+        committedPayload={payload}
+        previewPayload={previewPayload}
+        draft={slotDraft}
+        detached={detached}
+        ensureDraft={ensureDraft}
+        onDraftChange={(next) => onSlotDraftChange?.(slot.slotId, next)}
+        onItemFieldsChange={handleItemFieldsChange}
+        onFixedLengthChange={handleFixedLengthChange}
+        onOpenDataSourceModal={() => {
+          const slotDef = payload.slots[slot.slotId];
+          if (!collectionSlotUsesJsonPasteDataSource(slotDef)) return;
+          ensureDraft();
+          onDataSourceModalOpenChange(true);
+        }}
+        layout={layout}
+        panelSection={panelSection}
+      />
+    );
+
     return (
       <>
-        <PayloadSlotMetaFields {...metaProps} />
+        {panelLayout ? null : <PayloadSlotMetaFields {...metaProps} />}
         {detachedBanner}
-        <CollectionVariablePanel
-          slot={slot}
-          committedPayload={payload}
-          previewPayload={previewPayload}
-          draft={slotDraft}
-          detached={detached}
-          ensureDraft={ensureDraft}
-          onDraftChange={(next) => onSlotDraftChange?.(slot.slotId, next)}
-          onItemFieldsChange={handleItemFieldsChange}
-          onFixedLengthChange={handleFixedLengthChange}
-          onOpenDataSourceModal={() => {
-            ensureDraft();
-            onDataSourceModalOpenChange(true);
-          }}
-        />
+        {panelLayout ? (
+          <>
+            <div className="payload-inspector__group">
+              <h3 className="inspector__subtitle">列表配置</h3>
+              <section className="inspector__section payload-inspector__collection-config">
+                {renderCollectionPanel("config")}
+              </section>
+            </div>
+            <div className="payload-inspector__group">
+              <h3 className="inspector__subtitle">关联预览</h3>
+              <section className="inspector__section payload-inspector__collection-preview">
+                {renderCollectionPanel("preview")}
+              </section>
+            </div>
+          </>
+        ) : (
+          renderCollectionPanel()
+        )}
         <CollectionDataSourceBindModal
-          visible={dataSourceModalOpen}
+          visible={
+            dataSourceModalOpen &&
+            collectionSlotUsesJsonPasteDataSource(payload.slots[slot.slotId])
+          }
           slot={slot}
           committedPayload={payload}
           draft={collectionDraft}
@@ -256,7 +291,17 @@ function SlotEditor({
     );
   }
 
-  const metaSection = <PayloadSlotMetaFields {...metaProps} />;
+  const metaSection = panelLayout ? null : <PayloadSlotMetaFields {...metaProps} />;
+
+  const wrapAssignmentSection = (body: ReactNode) =>
+    panelLayout ? (
+      <div className="payload-inspector__group">
+        <h3 className="inspector__subtitle">赋值</h3>
+        <section className="inspector__section payload-inspector__assignment">{body}</section>
+      </div>
+    ) : (
+      body
+    );
 
   if (slot.valueType === "color") {
     const str =
@@ -269,14 +314,58 @@ function SlotEditor({
       <>
         {metaSection}
         {detachedBanner}
-        <ColorField
-          label={valueLabel}
-          hint={hintParts}
-          headerExtra={assignmentHeaderExtra}
-          value={str}
-          onChange={(next) => setSlotValue(next)}
-          disabled={detached}
-        />
+        {wrapAssignmentSection(
+          <ColorField
+            label={valueLabel}
+            {...(hintParts ? { hint: hintParts } : {})}
+            headerExtra={assignmentHeaderExtra}
+            value={str}
+            onChange={(next) => setSlotValue(next)}
+            disabled={detached}
+          />
+        )}
+      </>
+    );
+  }
+
+  if (slot.valueType === "boolean") {
+    const boolValue =
+      typeof raw === "boolean"
+        ? raw
+        : raw === "true"
+          ? true
+          : raw === "false"
+            ? false
+            : undefined;
+    const selectValue = boolValue === true ? "true" : boolValue === false ? "false" : "";
+    return (
+      <>
+        {metaSection}
+        {detachedBanner}
+        {wrapAssignmentSection(
+          <Field
+            label={valueLabel}
+            {...(hintParts ? { hint: hintParts } : {})}
+            headerExtra={assignmentHeaderExtra}
+          >
+            <ShopSelect
+              value={selectValue}
+              disabled={detached}
+              placeholder="选择真或假"
+              onChange={(next) => {
+                if (next === "" || next === undefined || next === null) {
+                  setSlotValue(undefined);
+                  return;
+                }
+                setSlotValue(next === "true");
+              }}
+            >
+              <ShopSelect.Option value="">未设置</ShopSelect.Option>
+              <ShopSelect.Option value="true">真</ShopSelect.Option>
+              <ShopSelect.Option value="false">假</ShopSelect.Option>
+            </ShopSelect>
+          </Field>
+        )}
       </>
     );
   }
@@ -296,22 +385,28 @@ function SlotEditor({
       <>
         {metaSection}
         {detachedBanner}
-        <Field label={valueLabel} hint={hintParts} headerExtra={assignmentHeaderExtra}>
-          <ShopInput
-            type="number"
-            value={display}
-            placeholder={scalarEmptyPlaceholder}
-            disabled={detached}
-            onChange={(e) => {
-              const v = e.target.value.trim();
-              if (v === "") setSlotValue(undefined);
-              else {
-                const n = Number(v);
-                if (Number.isFinite(n)) setSlotValue(n);
-              }
-            }}
-          />
-        </Field>
+        {wrapAssignmentSection(
+          <Field
+            label={valueLabel}
+            {...(hintParts ? { hint: hintParts } : {})}
+            headerExtra={assignmentHeaderExtra}
+          >
+            <ShopInput
+              type="number"
+              value={display}
+              placeholder={scalarEmptyPlaceholder}
+              disabled={detached}
+              onChange={(e) => {
+                const v = e.target.value.trim();
+                if (v === "") setSlotValue(undefined);
+                else {
+                  const n = Number(v);
+                  if (Number.isFinite(n)) setSlotValue(n);
+                }
+              }}
+            />
+          </Field>
+        )}
       </>
     );
   }
@@ -323,18 +418,24 @@ function SlotEditor({
       <>
         {metaSection}
         {detachedBanner}
-        <Field label={valueLabel} hint={hintParts} headerExtra={assignmentHeaderExtra}>
-          <ShopTextArea
-            value={stringVal}
-            placeholder={scalarEmptyPlaceholder}
-            rows={4}
-            disabled={detached}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSlotValue(v === "" ? undefined : v);
-            }}
-          />
-        </Field>
+        {wrapAssignmentSection(
+          <Field
+            label={valueLabel}
+            {...(hintParts ? { hint: hintParts } : {})}
+            headerExtra={assignmentHeaderExtra}
+          >
+            <ShopTextArea
+              value={stringVal}
+              placeholder={scalarEmptyPlaceholder}
+              rows={4}
+              disabled={detached}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSlotValue(v === "" ? undefined : v);
+              }}
+            />
+          </Field>
+        )}
       </>
     );
   }
@@ -350,17 +451,23 @@ function SlotEditor({
     <>
       {metaSection}
       {detachedBanner}
-      <Field label={valueLabel} hint={hintParts} headerExtra={assignmentHeaderExtra}>
-        <ShopInput
-          value={stringVal}
-          placeholder={placeholder}
-          disabled={detached}
-          onChange={(e) => {
-            const v = e.target.value;
-            setSlotValue(v === "" ? undefined : v);
-          }}
-        />
-      </Field>
+      {wrapAssignmentSection(
+        <Field
+          label={valueLabel}
+          {...(hintParts ? { hint: hintParts } : {})}
+          headerExtra={assignmentHeaderExtra}
+        >
+          <ShopInput
+            value={stringVal}
+            placeholder={placeholder}
+            disabled={detached}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSlotValue(v === "" ? undefined : v);
+            }}
+          />
+        </Field>
+      )}
     </>
   );
 }
@@ -373,12 +480,14 @@ export function PayloadInspector({
   onCommitSlot,
   onPayloadChange,
   onTemplatePayloadChange,
+  onVariableDeleted,
   onSlotIdChange,
   selectedSlotId = null,
   autoOpenDataSourceSlotId = null,
   onAutoOpenDataSourceHandled,
   variant = "panel",
 }: Props) {
+  const { confirm } = useConfirmDialog();
   const [dataSourceModalOpen, setDataSourceModalOpen] = useState(false);
   const previewPayload = useMemo(
     () => buildPreviewPayload(payload, slotDrafts),
@@ -427,15 +536,27 @@ export function PayloadInspector({
     onCommitSlot(activeSlot.slotId);
   };
 
-  const handleDeleteActiveSlot = () => {
+  const handleDeleteActiveSlot = async () => {
     if (!activeSlot) return;
-    const ok = window.confirm(
-      `确定删除变量「${activeSlot.label ?? activeSlot.slotId}」吗？这会同步移除模板中的相关变量绑定，并从 payload 中删除该变量目录与赋值。`
-    );
+    const slotTitle = activeSlot.label ?? activeSlot.slotId;
+    const ok = await confirm({
+      title: "删除变量",
+      message: (
+        <p className="confirm-dialog__message">确定删除变量「{slotTitle}」吗？删除后不可恢复。</p>
+      ),
+      confirmLabel: "删除",
+      danger: true,
+    });
     if (!ok) return;
     const next = removeExternalVariableSlot(template, payload, activeSlot.slotId);
     onSlotDraftChange?.(activeSlot.slotId, null);
-    if (onTemplatePayloadChange) {
+    if (onVariableDeleted) {
+      await onVariableDeleted({
+        template: next.template,
+        payload: next.payload,
+        slotId: activeSlot.slotId,
+      });
+    } else if (onTemplatePayloadChange) {
       onTemplatePayloadChange(next);
     } else {
       onPayloadChange(next.payload);
@@ -444,86 +565,201 @@ export function PayloadInspector({
     if (nextId) onSlotIdChange?.(nextId);
   };
 
-  const intro =
-    variant === "embedded" ? (
-      <p className="inspector__muted payload-inspector__intro">
-        以下为整封邮件全部可外部赋值变量，与顶部「变量赋值」共用当前 <code>payload</code>。
-      </p>
-    ) : (
-      <p className="inspector__muted payload-inspector__intro">
-        列表变量：顶部固定变量名称与标识；其下为数据源、列表长度、行字段与只读预览。有实质修改时请点「保存变量」，顶栏「保存」写入 payload.json。
-      </p>
-    );
-
-  const emptyHint = (
-    <p className="inspector__muted">
-      当前模板没有可在赋值里替换的字段。请在底层 Block 的绑定中声明可外部赋值变量。
+  const embeddedIntro = (
+    <p className="inspector__muted payload-inspector__intro">
+      以下为整封邮件全部可外部赋值变量，与左侧「变量赋值」列表共用同一套数据。
     </p>
   );
 
-  const scrollBody = (
-    <div className="theme-inspector__scroll">
-      {intro}
-
-      {visibleSlots.length === 0 ? (
-        emptyHint
-      ) : (
-        visibleSlots.map((slot) => (
-          <section key={slot.slotId} className="theme-inspector__block payload-inspector__slot-block">
-            <SlotEditor
-              slot={slot}
-              payload={payload}
-              previewPayload={previewPayload}
-              slotDrafts={slotDrafts}
-              onSlotDraftChange={onSlotDraftChange}
-              template={template}
-              onPatch={onPayloadChange}
-              onTemplatePayloadChange={onTemplatePayloadChange}
-              onSlotIdChange={onSlotIdChange}
-              dataSourceModalOpen={dataSourceModalOpen}
-              onDataSourceModalOpenChange={setDataSourceModalOpen}
-            />
-          </section>
-        ))
-      )}
-    </div>
-  );
+  const emptyHint =
+    variant === "panel" ? (
+      <p className="inspector__muted">请先在左侧选择或新建变量。</p>
+    ) : (
+      <p className="inspector__muted">
+        当前模板没有可外部赋值的变量。请在区块绑定中声明变量，或通过左侧列表新建。
+      </p>
+    );
 
   if (variant === "embedded") {
     return (
       <div className="payload-inspector payload-inspector--embedded theme-inspector">
         <h3 className="side-inspector__payload-title">{title}</h3>
-        {scrollBody}
+        <div className="theme-inspector__scroll">
+          {embeddedIntro}
+          {visibleSlots.length === 0 ? (
+            emptyHint
+          ) : (
+            visibleSlots.map((slot) => (
+              <section key={slot.slotId} className="theme-inspector__block payload-inspector__slot-block">
+                <SlotEditor
+                  slot={slot}
+                  payload={payload}
+                  previewPayload={previewPayload}
+                  slotDrafts={slotDrafts}
+                  onSlotDraftChange={onSlotDraftChange}
+                  template={template}
+                  onPatch={onPayloadChange}
+                  onTemplatePayloadChange={onTemplatePayloadChange}
+                  onSlotIdChange={onSlotIdChange}
+                  dataSourceModalOpen={dataSourceModalOpen}
+                  onDataSourceModalOpenChange={setDataSourceModalOpen}
+                  layout="embedded"
+                />
+              </section>
+            ))
+          )}
+        </div>
       </div>
     );
   }
 
-  return (
-    <aside className="side-inspector theme-inspector payload-inspector">
-      <div className="side-inspector__headrow payload-inspector__headrow">
-        <h2 className="side-panel__title">{title}</h2>
-        {activeSlot ? (
-          <div className="payload-inspector__head-actions">
-            {activeSlotHasUnsavedEdits && onCommitSlot ? (
-              <ShopPrimaryButton
-                htmlType="button"
-                onClick={handleCommitActiveSlot}
-                title="将本变量修改写入当前邮件内存（仍须顶栏「保存」才写入 payload.json）"
-              >
-                保存变量
-              </ShopPrimaryButton>
-            ) : null}
-            <ShopSecondaryButton
-              htmlType="button"
-              onClick={handleDeleteActiveSlot}
-              title="删除变量目录、赋值及模板中的相关绑定"
-            >
-              删除变量
-            </ShopSecondaryButton>
+  if (!activeSlot) {
+    return (
+      <aside className="inspector inspector--payload payload-inspector" aria-label="变量详情">
+        <header className="payload-inspector__header">
+          <div className="side-inspector__headrow payload-inspector__headrow">
+            <h2 className="side-panel__title">变量详情</h2>
           </div>
-        ) : null}
+        </header>
+        <div className="payload-inspector__scroll">{emptyHint}</div>
+      </aside>
+    );
+  }
+
+  return (
+    <PayloadInspectorPanelActive
+      activeSlot={activeSlot}
+      title={title}
+      template={template}
+      payload={payload}
+      previewPayload={previewPayload}
+      slotDrafts={slotDrafts}
+      onSlotDraftChange={onSlotDraftChange}
+      onPayloadChange={onPayloadChange}
+      onTemplatePayloadChange={onTemplatePayloadChange}
+      onSlotIdChange={onSlotIdChange}
+      dataSourceModalOpen={dataSourceModalOpen}
+      onDataSourceModalOpenChange={setDataSourceModalOpen}
+      activeSlotHasUnsavedEdits={activeSlotHasUnsavedEdits}
+      onCommitSlot={onCommitSlot}
+      onCommitActiveSlot={handleCommitActiveSlot}
+      onDeleteActiveSlot={handleDeleteActiveSlot}
+    />
+  );
+}
+
+type PanelActiveProps = {
+  activeSlot: ExternalVariableSlotInfo;
+  title: string;
+  template: EmailTemplate;
+  payload: EmailPayload;
+  previewPayload: EmailPayload;
+  slotDrafts: PayloadSlotDraftMap;
+  onSlotDraftChange?: (slotId: string, draft: PayloadSlotDraft | null) => void;
+  onPayloadChange: (next: EmailPayload) => void;
+  onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
+  onSlotIdChange?: (slotId: string) => void;
+  dataSourceModalOpen: boolean;
+  onDataSourceModalOpenChange: (open: boolean) => void;
+  activeSlotHasUnsavedEdits: boolean;
+  onCommitSlot?: (slotId: string) => void;
+  onCommitActiveSlot: () => void;
+  onDeleteActiveSlot: () => void;
+};
+
+function PayloadInspectorPanelActive({
+  activeSlot,
+  title,
+  template,
+  payload,
+  previewPayload,
+  slotDrafts,
+  onSlotDraftChange,
+  onPayloadChange,
+  onTemplatePayloadChange,
+  onSlotIdChange,
+  dataSourceModalOpen,
+  onDataSourceModalOpenChange,
+  activeSlotHasUnsavedEdits,
+  onCommitSlot,
+  onCommitActiveSlot,
+  onDeleteActiveSlot,
+}: PanelActiveProps) {
+  const meta = usePayloadSlotMetaFields({
+    slot: activeSlot,
+    template,
+    payload,
+    onPayloadChange,
+    onTemplatePayloadChange,
+    onSlotIdChange,
+  });
+
+  return (
+    <aside className="inspector inspector--payload payload-inspector" aria-label="变量详情">
+      <header className="payload-inspector__header">
+        <div className="side-inspector__headrow payload-inspector__headrow">
+          <ShopInput
+            value={meta.labelDraft}
+            className="inspector__title-input"
+            onChange={(event) => meta.setLabelDraft(event.target.value)}
+            onBlur={meta.commitLabel}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                (event.currentTarget as HTMLInputElement).blur();
+              }
+              if (event.key === "Escape") {
+                event.preventDefault();
+                meta.setLabelDraft(activeSlot.label ?? "");
+                (event.currentTarget as HTMLInputElement).blur();
+              }
+            }}
+            aria-label="变量名称"
+            placeholder={activeSlot.slotId || title}
+          />
+          <div className="payload-inspector__head-actions">
+            {onCommitSlot ? (
+              <button
+                type="button"
+                className="resource-text-action"
+                disabled={!activeSlotHasUnsavedEdits}
+                onClick={onCommitActiveSlot}
+                title="保存当前变量的未提交修改"
+              >
+                保存
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="resource-text-action resource-text-action--danger"
+              onClick={() => void onDeleteActiveSlot()}
+              title="删除变量及其绑定"
+            >
+              删除
+            </button>
+          </div>
+        </div>
+      </header>
+      <div className="inspector__token-scroll payload-inspector__scroll">
+        <div className="payload-inspector__group">
+          <h3 className="inspector__subtitle">变量属性</h3>
+          <PayloadSlotMetaAttributesSection meta={meta} variant="production" />
+        </div>
+        <SlotEditor
+          slot={activeSlot}
+          payload={payload}
+          previewPayload={previewPayload}
+          slotDrafts={slotDrafts}
+          onSlotDraftChange={onSlotDraftChange}
+          template={template}
+          onPatch={onPayloadChange}
+          onTemplatePayloadChange={onTemplatePayloadChange}
+          onSlotIdChange={onSlotIdChange}
+          dataSourceModalOpen={dataSourceModalOpen}
+          onDataSourceModalOpenChange={onDataSourceModalOpenChange}
+          layout="panel"
+        />
       </div>
-      {scrollBody}
     </aside>
   );
 }

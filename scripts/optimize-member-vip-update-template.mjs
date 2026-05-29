@@ -128,7 +128,6 @@ for (const [id, block] of Object.entries(template.blocks)) {
   }
   if (id === "mv-hero-title" || id === "mv-hero-sub") {
     if (block.wrapperStyle) {
-      block.wrapperStyle.placement = { horizontal: "start", vertical: "end" };
       block.wrapperStyle.contentAlign = { horizontal: "left", vertical: "bottom" };
       block.wrapperStyle.widthMode = "fill";
       stats.layoutFixes += 1;

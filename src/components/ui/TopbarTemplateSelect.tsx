@@ -1,12 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
 import type { EmailListItem } from "../../types/email";
+import { logicalDeleteConfirmOptions } from "../../lib/logicalDeleteConfirm";
 import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
-import {
-  ShopInput,
-  ShopPrimaryButton,
-  ShopSecondaryButton,
-  ShopSelect,
-} from "./ShopFormControls";
+import { useConfirmDialog } from "./ConfirmDialogProvider";
+import { TopbarResourceField } from "./TopbarResourceField";
+import { ResourceSelectDropdownFooter } from "./ResourceSelectDropdownFooter";
+import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
 
 type TopbarTemplateSelectProps = {
@@ -14,8 +13,12 @@ type TopbarTemplateSelectProps = {
   value: string | null;
   disabled?: boolean;
   renaming?: boolean;
+  creating?: boolean;
   onSelect: (emailKey: string) => void;
   onRename: (displayName: string) => Promise<void>;
+  onDelete?: () => Promise<void>;
+  deleting?: boolean;
+  onOpenCreate?: () => void;
 };
 
 export function TopbarTemplateSelect({
@@ -23,9 +26,15 @@ export function TopbarTemplateSelect({
   value,
   disabled,
   renaming,
+  creating,
   onSelect,
   onRename,
+  onDelete,
+  deleting,
+  onOpenCreate,
 }: TopbarTemplateSelectProps) {
+  const { confirm } = useConfirmDialog();
+  const [selectOpen, setSelectOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftError, setDraftError] = useState<string | null>(null);
@@ -57,6 +66,18 @@ export function TopbarTemplateSelect({
     setDraftError(null);
   };
 
+  const confirmDelete = async () => {
+    if (!currentItem || !onDelete) return;
+    const ok = await confirm(
+      logicalDeleteConfirmOptions({
+        title: "逻辑删除邮件模板",
+        resourcePhrase: `邮件模板「${currentItem.displayName}」`,
+        fileHint: `data/emails/${currentItem.emailKey}/meta.json`,
+      })
+    );
+    if (ok) void onDelete();
+  };
+
   const submitRename = async () => {
     const normalized = draftName.trim();
     if (!normalized) {
@@ -72,39 +93,63 @@ export function TopbarTemplateSelect({
     }
   };
 
+  const resourceActions = [
+    {
+      id: "create",
+      label: "新建",
+      disabled: disabled || creating || !onOpenCreate,
+      onClick: () => onOpenCreate?.(),
+    },
+    {
+      id: "rename",
+      label: "重命名",
+      disabled: disabled || !currentItem || creating || deleting,
+      onClick: openRename,
+    },
+    {
+      id: "delete",
+      label: "删除",
+      danger: true,
+      disabled: disabled || !currentItem || !onDelete || creating || deleting,
+      onClick: () => void confirmDelete(),
+    },
+  ];
+
   return (
     <>
-      <div className="topbar__select-wrap">
-        <span className="topbar__select-label">邮件模板</span>
-        <div className="topbar__select-slot">
-          <ShopSelect
-            value={value ?? undefined}
-            placeholder={items.length ? undefined : "暂无模板"}
-            disabled={disabled}
-            getPopupContainer={() => document.body}
-            onChange={handleTemplatePick}
-            onSelect={handleTemplatePick}
-          >
-            {items.map((it) => (
-              <ShopSelect.Option key={it.emailKey} value={it.emailKey}>
-                {it.displayName} ({it.emailKey})
-              </ShopSelect.Option>
-            ))}
-          </ShopSelect>
-        </div>
-        <ShopSecondaryButton
-          className="topbar__rename-btn"
-          disabled={disabled || !currentItem}
-          onClick={openRename}
+      <TopbarResourceField label="邮件模板" variant="email-template">
+        <ShopSelect
+          value={value ?? undefined}
+          placeholder={items.length ? undefined : "暂无模板"}
+          disabled={disabled}
+          open={selectOpen}
+          onDropdownVisibleChange={setSelectOpen}
+          popupMatchSelectWidth
+          getPopupContainer={() => document.body}
+          dropdownRender={(menu) => (
+            <ResourceSelectDropdownFooter
+              menu={menu}
+              actions={resourceActions}
+              actionsAriaLabel="邮件模板操作"
+              busy={creating || deleting || renaming}
+              onAfterAction={() => setSelectOpen(false)}
+            />
+          )}
+          onChange={handleTemplatePick}
+          onSelect={handleTemplatePick}
         >
-          编辑
-        </ShopSecondaryButton>
-      </div>
+          {items.map((it) => (
+            <ShopSelect.Option key={it.emailKey} value={it.emailKey}>
+              {it.displayName?.trim() || it.emailKey}
+            </ShopSelect.Option>
+          ))}
+        </ShopSelect>
+      </TopbarResourceField>
 
       {renameOpen ? (
         <ShopSectionModal
           visible
-          title="编辑当前模板名称"
+          title="重命名邮件模板"
           onCancel={closeRename}
           maskClosable={!renaming}
           closable={!renaming}
@@ -115,7 +160,7 @@ export function TopbarTemplateSelect({
                 取消
               </ShopSecondaryButton>
               <ShopPrimaryButton onClick={() => void submitRename()} loading={renaming}>
-                保存名称
+                保存
               </ShopPrimaryButton>
             </div>
           }

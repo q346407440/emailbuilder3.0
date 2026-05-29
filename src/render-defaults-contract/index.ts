@@ -8,6 +8,7 @@ export { RENDER_DEFAULT_RULES, RENDER_DEFAULT_RULE_IDS } from "./rules";
 export {
   BUTTON_INNER_PADDING,
   EMAIL_ROOT_FIXED_WIDTH,
+  EMAIL_CANVAS_TEXT_FONT_FAMILY,
   FIXED_TEXT_LINE_HEIGHT,
   IMAGE_BACKGROUND_FALLBACK_COLOR,
   PREVIEW_BLOCK_OVERFLOW,
@@ -21,10 +22,29 @@ export {
   projectTextContentAlign,
 } from "./values";
 export {
+  FORBIDDEN_LEGACY_PROPS_RULES,
+  validateForbiddenLegacyProps,
+} from "./forbiddenLegacyProps";
+export {
   stripForbiddenRenderDefaultsFromBlock,
   stripForbiddenRenderDefaultsFromTemplate,
   validateRenderDefaultsForbiddenFields,
 } from "./validate";
+export {
+  DELIVERY_EXPORT_HEIGHT_MODE_ATTR,
+  DELIVERY_EXPORT_WIDTH_MODE_ATTR,
+  DELIVERY_EXPORT_STRIP_ATTRS,
+  DELIVERY_EXPORT_STRIP_CLASSES,
+  deliveryExportBoxModeDataAttrs,
+  type DeliveryExportBoxMode,
+} from "./deliveryExport";
+export {
+  EMAIL_PRESENTATION_TABLE_HTML_ATTRS,
+  EMAIL_PRESENTATION_FORBIDDEN_INLINE_STYLE_PROPERTIES,
+  EMAIL_PRESENTATION_FORBIDDEN_DISPLAY_VALUES,
+  EMAIL_PRESENTATION_FORBIDDEN_POSITION_VALUES,
+  type EmailPresentationForbiddenInlineStyleProperty,
+} from "./emailPresentation";
 
 import { RENDER_DEFAULT_RULES } from "./rules";
 

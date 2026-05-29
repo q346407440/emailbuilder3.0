@@ -38,7 +38,6 @@ for (const [id, block] of Object.entries(template.blocks)) {
   }
 
   if (BENEFIT_TEXT_COL.test(id) && block.wrapperStyle) {
-    block.wrapperStyle.placement = { horizontal: "start", vertical: "center" };
     block.wrapperStyle.widthMode = "fill";
     block.wrapperStyle.heightMode = "fill";
     block.wrapperStyle.contentAlign = { horizontal: "left", vertical: "center" };

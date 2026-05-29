@@ -1,6 +1,5 @@
 import type { BindingSpec, EmailBlock, EmailTemplate } from "../types/email";
 import { isThemeRef } from "../types/themeRef";
-import { normalizeThemeFontFamilyInput } from "./emailFontFamily";
 import { classifyField } from "./blockFieldClassification";
 import { getAtPath, setAtPath } from "./paths";
 import {
@@ -128,18 +127,6 @@ function fieldFollowsThemeBinding(block: EmailBlock, bindPath: string): boolean 
   return Boolean(spec && spec.mode === "theme");
 }
 
-const FONT_THEME_DETACH_BIND_PATHS = new Set([
-  "props.fontFamily",
-  "props.buttonStyle.fontFamily",
-]);
-
-/** 解除主题跟随时：字体字段烘焙为 template 可落盘的单一主字体，不写 CSS 字体栈。 */
-function coerceThemeDetachBakedValue(bindPath: string, value: unknown): unknown {
-  if (!FONT_THEME_DETACH_BIND_PATHS.has(bindPath)) return value;
-  if (typeof value !== "string") return value;
-  return normalizeThemeFontFamilyInput(value) ?? value;
-}
-
 /** 解除跟随时写入 themeRestoreJson 的字段快照（优先保留模板内 $themeRef 子树） */
 function themeDetachValueSnapshot(block: EmailBlock, bindPath: string, raw: unknown): string {
   if (containsThemeRefDeep(raw)) {
@@ -168,7 +155,7 @@ export function detachThemeFieldBranch(
   const bindingSnapshot =
     Object.keys(bindingTree).length > 0 ? JSON.stringify(bindingTree) : undefined;
   const mergedVal = readMergedField(merged, blockId, bindPath);
-  const toWrite = coerceThemeDetachBakedValue(bindPath, mergedVal === undefined ? raw : mergedVal);
+  const toWrite = mergedVal === undefined ? raw : mergedVal;
   let next = setTemplateFieldOnly(template, blockId, bindPath, toWrite);
   if (bindingSnapshot) {
     next = removeBlockBindingTree(next, blockId, bindPath);

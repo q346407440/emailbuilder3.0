@@ -1,5 +1,7 @@
 import he from "he";
-import type { TextBodyV1, TextDecoration, TextParagraph, TextRun } from "../types/email";
+import type { TextBody, TextDecoration, TextParagraph, TextRun } from "../types/email";
+
+const EMPTY_TEXT_BODY: TextBody = { paragraphs: [{ runs: [] }] };
 
 /** 将误存于 JSON 的 HTML 实体还原为 Unicode；再走 escapeHtml 生成快照 HTML */
 function normalizeStoredPlainText(raw: string): string {
@@ -27,6 +29,9 @@ const DECORATION_SET = new Set<TextDecoration>([
   "overline",
 ]);
 
+/** 邮件客户端默认会给 `<p>` 加上下边距；画布用 CSS 归零，发信 HTML 须内联同等语义 */
+export const EMAIL_TEXT_BODY_PARAGRAPH_INLINE_STYLE = "margin:0;padding:0";
+
 function normalizeDecoration(raw: unknown): TextDecoration {
   return DECORATION_SET.has(raw as TextDecoration) ? (raw as TextDecoration) : "none";
 }
@@ -35,6 +40,8 @@ export type TextBodyDefaults = {
   bold: boolean;
   italic: boolean;
   decoration: TextDecoration;
+  color?: string;
+  fontSize?: string;
 };
 
 /** 单个 run 的 HTML 片段（供编辑器胶囊混排） */
@@ -59,15 +66,28 @@ function mergeRunHtml(text: string, run: TextRun, defaults: TextBodyDefaults): s
   else if (effDeco === "overline")
     inner = `<span style="text-decoration:overline">${inner}</span>`;
 
+  const inlineStyles: string[] = [];
+  if (typeof run.fontSize === "string" && run.fontSize.trim()) {
+    inlineStyles.push(`font-size:${run.fontSize.trim()}`);
+  }
+
   if (link) {
+    const linkColor =
+      typeof run.color === "string" && run.color.trim() ? run.color.trim() : "#1565c0";
     /** 画布/编辑器与邮件客户端常见的默认链接样式（避免 color:inherit 导致无法辨认链接） */
-    inner = `<a href="${escapeAttr(link)}" style="color:#1565c0;text-decoration:underline">${inner}</a>`;
+    inner = `<a href="${escapeAttr(link)}" style="color:${escapeAttr(linkColor)};text-decoration:underline">${inner}</a>`;
+  } else if (typeof run.color === "string" && run.color.trim()) {
+    inlineStyles.push(`color:${run.color.trim()}`);
+  }
+
+  if (inlineStyles.length) {
+    inner = `<span style="${inlineStyles.join(";")}">${inner}</span>`;
   }
   return inner;
 }
 
 /** 将结构化正文渲染为邮件预览 HTML（runs 生成，非用户手写 `style=`） */
-export function renderTextBodyToHtml(body: TextBodyV1, defaults: TextBodyDefaults): string {
+export function renderTextBodyToHtml(body: TextBody, defaults: TextBodyDefaults): string {
   if (!body.paragraphs?.length) return "<p></p>";
   const parts: string[] = [];
   for (const para of body.paragraphs) {
@@ -77,7 +97,7 @@ export function renderTextBodyToHtml(body: TextBodyV1, defaults: TextBodyDefault
       const t = typeof run.text === "string" ? run.text : "";
       inner += mergeRunHtml(t, run, defaults);
     }
-    parts.push(`<p>${inner || "&nbsp;"}</p>`);
+    parts.push(`<p style="${EMAIL_TEXT_BODY_PARAGRAPH_INLINE_STYLE}">${inner || "&nbsp;"}</p>`);
   }
   return parts.join("");
 }
@@ -91,7 +111,9 @@ function marksEqual(a: TextRun, b: TextRun): boolean {
     a.bold === b.bold &&
     a.italic === b.italic &&
     a.decoration === b.decoration &&
-    (a.link ?? "") === (b.link ?? "")
+    (a.link ?? "") === (b.link ?? "") &&
+    (a.color ?? "") === (b.color ?? "") &&
+    (a.fontSize ?? "") === (b.fontSize ?? "")
   );
 }
 
@@ -113,6 +135,8 @@ type WalkMarks = {
   italic: boolean;
   decoration: TextDecoration;
   link: string;
+  color: string;
+  fontSize: string;
 };
 
 function walkNode(
@@ -132,6 +156,8 @@ function walkNode(
       decoration:
         marks.decoration !== defaults.decoration ? marks.decoration : undefined,
       link: marks.link !== blockMarks.link ? marks.link : undefined,
+      color: marks.color !== blockMarks.color ? marks.color : undefined,
+      fontSize: marks.fontSize !== blockMarks.fontSize ? marks.fontSize : undefined,
     };
     runs.push(run);
     return;
@@ -148,11 +174,17 @@ function walkNode(
       decoration:
         marks.decoration !== defaults.decoration ? marks.decoration : undefined,
       link: marks.link !== blockMarks.link ? marks.link : undefined,
+      color: marks.color !== blockMarks.color ? marks.color : undefined,
+      fontSize: marks.fontSize !== blockMarks.fontSize ? marks.fontSize : undefined,
     });
     return;
   }
 
   let next = { ...marks };
+  const inlineColor = el.style.color?.trim();
+  const inlineFontSize = el.style.fontSize?.trim();
+  if (inlineColor) next = { ...next, color: inlineColor };
+  if (inlineFontSize) next = { ...next, fontSize: inlineFontSize };
   if (tag === "A") {
     const href = el.getAttribute("href")?.trim() ?? "";
     next = { ...next, link: href };
@@ -169,6 +201,9 @@ function walkNode(
     if (td.includes("line-through")) next = { ...next, decoration: "line-through" };
     else if (td.includes("overline")) next = { ...next, decoration: "overline" };
     else if (td.includes("underline")) next = { ...next, decoration: "underline" };
+  } else if (tag === "FONT") {
+    const color = el.getAttribute("color")?.trim();
+    if (color) next = { ...next, color };
   }
 
   for (const child of Array.from(el.childNodes)) {
@@ -177,17 +212,17 @@ function walkNode(
 }
 
 /**
- * 将编辑器/片段 HTML 解析为 TextBodyV1（用于 contenteditable 回写）。
+ * 将编辑器/片段 HTML 解析为 TextBody（用于 contenteditable 回写）。
  */
-export function parseHtmlToTextBody(html: string, defaults: TextBodyDefaults): TextBodyV1 {
+export function parseHtmlToTextBody(html: string, defaults: TextBodyDefaults): TextBody {
   const source = typeof html === "string" ? html.trim() : "";
   if (!source) {
-    return { version: 1, paragraphs: [{ runs: [] }] };
+    return EMPTY_TEXT_BODY;
   }
   const parser = new DOMParser();
   const doc = parser.parseFromString(`<div>${source}</div>`, "text/html");
   const root = doc.body.firstElementChild as HTMLElement | null;
-  if (!root) return { version: 1, paragraphs: [{ runs: [] }] };
+  if (!root) return EMPTY_TEXT_BODY;
 
   const paragraphs: TextParagraph[] = [];
   const blockMarks: WalkMarks = {
@@ -195,6 +230,8 @@ export function parseHtmlToTextBody(html: string, defaults: TextBodyDefaults): T
     italic: defaults.italic,
     decoration: defaults.decoration,
     link: "",
+    color: defaults.color?.trim() ?? "",
+    fontSize: defaults.fontSize?.trim() ?? "",
   };
 
   const blockTags = new Set(["P", "DIV", "LI"]);
@@ -231,23 +268,22 @@ export function parseHtmlToTextBody(html: string, defaults: TextBodyDefaults): T
   }
 
   if (!paragraphs.length) {
-    return { version: 1, paragraphs: [{ runs: [] }] };
+    return EMPTY_TEXT_BODY;
   }
-  return { version: 1, paragraphs };
+  return { paragraphs };
 }
 
 /** 从旧版 props.content 生成初始 textBody */
 export function legacyContentHtmlToTextBody(
   html: string,
   defaults: TextBodyDefaults
-): TextBodyV1 {
+): TextBody {
   return parseHtmlToTextBody(html, defaults);
 }
 
-export function normalizeTextBody(raw: unknown): TextBodyV1 | null {
+export function normalizeTextBody(raw: unknown): TextBody | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
-  if (o.version !== 1) return null;
   const paras = o.paragraphs;
   if (!Array.isArray(paras)) return null;
   const paragraphs: TextParagraph[] = [];
@@ -270,16 +306,18 @@ export function normalizeTextBody(raw: unknown): TextBodyV1 | null {
             ? normalizeDecoration(tr.decoration)
             : undefined,
         link: typeof tr.link === "string" ? tr.link : undefined,
+        color: typeof tr.color === "string" ? tr.color : undefined,
+        fontSize: typeof tr.fontSize === "string" ? tr.fontSize : undefined,
       });
     }
     paragraphs.push({ runs });
   }
-  if (!paragraphs.length) return { version: 1, paragraphs: [{ runs: [] }] };
-  return { version: 1, paragraphs };
+  if (!paragraphs.length) return EMPTY_TEXT_BODY;
+  return { paragraphs };
 }
 
 /** 将结构化正文压平为纯文本（段落间换行），供整段绑定变量预览用 */
-export function textBodyToPlainString(body: TextBodyV1): string {
+export function textBodyToPlainString(body: TextBody): string {
   return body.paragraphs
     .map((para) => (para.runs ?? []).map((run) => run.text ?? "").join(""))
     .filter((line, index, lines) => line.length > 0 || (index < lines.length - 1 && lines[index + 1]!.length > 0))

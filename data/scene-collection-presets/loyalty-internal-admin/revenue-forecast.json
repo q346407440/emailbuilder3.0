@@ -1,0 +1,16 @@
+{
+  "presetId": "loyalty-internal-revenue-forecast",
+  "slotId": "loyaltyRevenueForecast",
+  "label": "收益预测",
+  "description": "继续使用预计可获得：每月 / 全年 GMV 两行",
+  "minItems": 2,
+  "maxItems": 2,
+  "itemFields": [
+    { "key": "value", "label": "金额", "valueType": "string", "required": true },
+    { "key": "label", "label": "周期说明", "valueType": "string", "required": true }
+  ],
+  "seedValues": [
+    { "value": "$10.00", "label": "每月 GMV 收益" },
+    { "value": "$10.00", "label": "全年 GMV 收益" }
+  ]
+}

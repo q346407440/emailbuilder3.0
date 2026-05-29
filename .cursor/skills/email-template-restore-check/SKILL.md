@@ -1,7 +1,7 @@
 ---
 name: email-template-restore-check
 description: >-
-  根据设计图/截图还原 Easy-Email 邮件时的易遗漏点与交付前自检清单（叠放层对齐、`wrapperStyle.placement`、禁止 crossAlign 与已废弃 overlay 撑高/空 layout 推右、堆叠模块与根 gap 上的圆角反模式、模块壳内内容贴边与 pageInline 分工等）。
+  根据设计图/截图还原 Easy-Email 邮件时的易遗漏点与交付前自检清单（叠放层对齐、`wrapperStyle.contentAlign`、禁止 crossAlign 与已废弃 overlay 撑高/空 layout 推右、堆叠模块与根 gap 上的圆角反模式、模块壳内内容贴边与 pageInline 分工等）。
   当用户用口语说「还原邮件模板」「按设计稿/Png/截图做邮件」「用我的还原邮件 skills」「实现这封邮件模板」「邮件学习模板」「project-plan 里对话要做模板」「模板还原检查」「还原遗漏」「像素还原自检」或迭代任意邮件模板 JSON 时，应在动手改结构/样式前**优先读取**本技能，避免返工。
 ---
 
@@ -56,13 +56,13 @@ description: >-
 
 **现象**：社媒等小标间距过大、铺满。  
 **根因**：父子 **`widthMode: fill`** 在表格行里等价均分。  
-**做法**：子块改 **`hug` / fixed**，收紧 **`gap`**；若要在 **行宽内居中** 一组子块：**父行 `fill` + `contentAlign.horizontal: center`**（外层模块仍可左对齐，见 **§18**）。勿让多个子块同为 **`fill`** 被表格均分。邮件级整组居中才用 **`hug` + `placement.center`**，见 **`email-template-restore-guide`** § 横向 layout：容器内相对居中。
+**做法**：子块改 **`hug` / fixed**，收紧 **`gap`**；若要在 **行宽内居中** 一组子块：**父行 `fill` + `contentAlign.horizontal: center`**（外层模块仍可左对齐，见 **§18**）。勿让多个子块同为 **`fill`** 被表格均分。邮件级整组居中：纵向父级 **`contentAlign.horizontal: center`**，或外层再包一层 **`layout`** 控制宽度，见 **`email-template-restore-guide`** § 横向 layout：容器内相对居中。
 
 ### 6. 底图叠放角标应贴顶却像垂直居中
 
 **现象**：角标应贴顶/贴边却居中；或堆 4～5 层等高壳 / 空 layout 推右。  
 **根因**：误以为只能靠撑高壳定位。  
-**做法**：当前运行时用 **`layout`/`image` + `wrapperStyle.backgroundImage`** 叠放；**整组**位置用容器双轴 **`contentAlign`**；**单个子块**贴边用 **`wrapperStyle.placement`**；内边距用 **`wrapperStyle.padding`**（root 用 **`emailRoot.props.padding`**）。禁止 **`overlayInset`**。语义见 **`render-defaults-contract`** **`semantic.backgroundPadding`**。
+**做法**：当前运行时用 **`layout`/`image` + `wrapperStyle.backgroundImage`** 叠放；**整组**位置用容器双轴 **`contentAlign`**（水平/竖直）；内边距用 **`wrapperStyle.padding`**（root 用 **`emailRoot.props.padding`**）。**禁止写入非法 `wrapperStyle` 字段（仅允许 `contentAlign` 双轴）。禁止 **`overlayInset`**。语义见 **`render-defaults-contract`** **`semantic.backgroundPadding`**。
 
 ### 7. 底图 `background.link` 整块可点
 
@@ -92,8 +92,8 @@ description: >-
 ### 12. 仍写 `layout.props.crossAlign`
 
 **现象**：`validateTemplate` 报错。  
-**根因**：交叉轴应在各子块 **`wrapperStyle.placement`**。  
-**做法**：**删除 `crossAlign`**，为子块补 **`placement`**。**不要**运行 **`strip-forbidden-wrapper-fields`** 指望删 crossAlign（该脚本**不**处理 props 上的键）；真源在 **`validate.ts`**。
+**根因**：交叉轴应对齐到各子块 **`wrapperStyle.contentAlign`** 或嵌套 **`layout`**。  
+**做法**：**删除 `crossAlign`**；为需不同对齐的子块分别写 **`contentAlign`**，或 **嵌套一层横/纵 `layout`** 分组。**不要**运行 **`strip-forbidden-wrapper-fields`** 指望删 crossAlign（该脚本**不**处理 props 上的键）；真源在 **`validate.ts`**。
 
 ### 13. 图片不渲染（404/403/防盗链）
 
@@ -132,38 +132,33 @@ description: >-
 
 ### 18. 横排应在容器内相对居中，却贴容器左缘
 
-**现象**：`layout` + **`direction: horizontal`** 的品牌行（Logo + 字标）、图标条等，设计稿上是 **在这一行宽度里居中**，预览却 **整组挤在容器左侧**；或误把横排 **`hug` + `placement.center`** 摆到邮件正中，与「模块整体仍左对齐」冲突。  
-**根因**：把「居中」理解成 **邮件级整组居中**，只改了 **`placement`**，未改横排 **`contentAlign.horizontal: center`**；或横排 **`fill` + `contentAlign: left`**，子块再 **`fill`** 被均分（§5）。  
+**现象**：`layout` + **`direction: horizontal`** 的品牌行（Logo + 字标）、图标条等，设计稿上是 **在这一行宽度里居中**，预览却 **整组挤在容器左侧**；或误把整组 **`hug`** 摆到邮件正中，与「模块整体仍左对齐」冲突。  
+**根因**：把「居中」理解成 **邮件级整组居中**，未改横排 **`contentAlign.horizontal: center`**；或横排 **`fill` + `contentAlign: left`**，子块再 **`fill`** 被均分（§5）。  
 **做法**：  
 - **默认（模块左对齐 + 行内居中）**：横排 **`widthMode: fill`**（随父级内容宽），**`contentAlign.horizontal: center`**；子块 **`hug` / fixed**；纵向父级（如 `mw-brand`）保持 **`contentAlign.horizontal: left`**。  
 - **同宽条带内文案居中**（如 `MEMBER EXCLUSIVE`）：文本 **`fill` + `contentAlign.horizontal: center`**。  
-- **横排内子块竖直互相对齐**（如 Logo 与字标）：父级 `contentAlign.vertical: center` **不够**——子块若写 **`placement.vertical: start`** 会覆盖父级交叉轴；并排子块应 **`placement.vertical: center`**（实现见 **`EmailPreview`** `crossVerticalAlignForTableRowChild`）。  
-- **仅稿面要求邮件级居中** 时：再用横排 **`hug` + `placement.horizontal: center`** 等，见 **`email-template-restore-guide`** § 横向 layout：容器内相对居中。  
+- **横排内子块竖直互相对齐**（如 Logo 与字标）：横排父级 **`contentAlign.vertical: center`**；若仍不齐，为各子块分别设 **`contentAlign.vertical: center`**（在 hug/fixed 高允许时），或 **嵌套纵排 `layout`** 包一组子块。  
+- **仅稿面要求邮件级居中** 时：纵向父级 **`contentAlign.horizontal: center`**，或外层 **`layout` + `hug` 宽** 再配合父级 **`contentAlign`**，见 **`email-template-restore-guide`** § 横向 layout。  
 与 §5（fill 均分）对照排查。
 
 ### 20. 底图叠放区「相对居中」误改子块 `hug`（应改父级「容器内内容摆放」）
 
-**现象**：`layout` / `image` 带 **`wrapperStyle.backgroundImage`**，叠放子块（如欢迎白卡 `mwc-hero-card`）应在横幅 **宽度内** 水平或竖直居中，预览却贴左；Agent 把子块改成 **`widthMode: hug`** 或只靠子块 **`placement.horizontal: center`**，与用户要求的 Inspector **「容器内内容摆放」** 不符。  
+**现象**：`layout` / `image` 带 **`wrapperStyle.backgroundImage`**，叠放子块（如欢迎白卡 `mwc-hero-card`）应在横幅 **宽度内** 水平或竖直居中，预览却贴左；Agent 把子块改成 **`widthMode: hug`** 或误写非法 wrapperStyle 字段，与用户要求的 Inspector **「容器内内容摆放」** 不符。  
 **根因**：  
-- 把 **`contentAlign`（容器内）** 与 **`placement`（相对父级）**、**`widthMode`** 混为一谈；  
-- 子块为 **`fill`** 时，父级 **`contentAlign.horizontal: center`** 对「整块占满行宽」几乎无视觉差，误以为必须 **`hug` 收窄** 才能看见居中；  
-- 在子块上写 **`placement.center` / `end`**，覆盖父级叠放栈的 **`contentAlign`** 主轴/交叉轴语义。  
+- 把 **`contentAlign`** 与 **`widthMode`** 混为一谈；  
+- 子块为 **`fill`** 时，父级 **`contentAlign.horizontal: center`** 对「整块占满行宽」几乎无视觉差，误以为必须 **`hug` 收窄** 才能看见居中。  
 **做法（默认修复顺序，自上而下）**：  
 
 | 步骤 | 改谁 | 改什么 | 勿做什么 |
 |------|------|--------|----------|
-| 1 | **底图父容器**（如 `mwc-mod-hero`） | Inspector **「容器内内容摆放」** → **`wrapperStyle.contentAlign`**（水平 `center`；竖直按稿 `top` / `center` / `bottom`） | 勿先改子块宽度 |
-| 2 | **叠放子 layout / 文本** | 需 **壳内文案居中**：子块 **`widthMode: fill` + `contentAlign.horizontal: center`**（同 §18 满宽条带文案） | 勿为「居中」默认改 **`hug`** |
-| 3 | **叠放子块相对父级** | 默认 **`placement` 保持 `start`**，让父级 **`contentAlign`** 生效 | 勿用子块 **`placement.center`** 代替父级 **容器内内容摆放** |
-| 4 | **仅稿面明确「整块按内容宽度」** | 才将子 layout 设为 **`hug`**，并仍配合父级 **`contentAlign`** | **禁止**用 **`hug` 冒充** 父级 **容器内相对居中** |
-| 5 | **纵排父级 + 子 `widthMode: fill`** | **禁止** 写 `wrapperStyle.placement`（校验与 Inspector 均不开放）；整项相对父级摆放无产品语义，只用父/子 **`contentAlign`** | — |
-| 5b | **纵排父级 + 子宽 `hug` / `fixed`** | **可配** `placement.horizontal`（`center`/`end`）；竖直看子高是否 fill（fill 高则仅水平轴） | 与 §5 勿混 |
-| 6 | **横排父级 + 子 `heightMode: fill`** | 同上（横排 + fill 高）；竖直对齐改父/子 **`contentAlign`** 或子块 **`hug` 高 + `placement.vertical`** | — |
-| 6b | **横排父级 + 子高 `hug` / `fixed`** | **可配** `placement.vertical`（`center`/`end`）；子宽 fill 时 Inspector 仅左列三点；水平看子宽是否 fill | 与 §6 对称；样例 `mw-logo-img` / `mw-logo-wordmark` |
+| 1 | **底图父容器**（如 `mwc-mod-hero`） | **`wrapperStyle.contentAlign`**（水平 `center`；竖直按稿 `top` / `center` / `bottom`） | 勿先改子块宽度；**勿写非法 wrapperStyle 字段** |
+| 2 | **叠放子 layout / 文本** | 壳内文案居中：子块 **`widthMode: fill` + `contentAlign.horizontal: center`**（同 §18） | 勿为「居中」默认改 **`hug`** |
+| 3 | **per-child 不同对齐** | **嵌套 `layout`/`grid`** 或各子块各自 **`contentAlign`** | 勿写非法 wrapperStyle 字段 |
+| 4 | **仅稿面明确「整块按内容宽度」** | 子 layout **`hug`**，并仍配合父级 **`contentAlign`** | **禁止**用 **`hug` 冒充** 父级容器内居中 |
 
-**样例**：`member-welcome` **居中流式** `mwc-mod-hero`（底图）+ `mwc-hero-card`（白卡 **`fill`**）：父 **`contentAlign.horizontal: center`**；白卡 **`fill`** + 内文 **`contentAlign.horizontal: center`**；贴底时改父 **`contentAlign.vertical: bottom`**，**不要**改白卡为 **`hug`**；白卡 **勿写 `placement`**（纵排 + fill 宽）。  
-**对照**：§6 底图叠放分工；**`easy-email-concepts`**「自己的容器」；**`email-template-restore-guide`** § 底图叠放与容器内居中。  
-**代码真源（校验/Inspector/迁移）**：**`src/lib/placementConfigurability.ts`**（`isRelativePlacementAxisConfigurable`）；勿在技能里维护第二份键表。
+**样例**：`member-welcome` **居中流式** `mwc-mod-hero`（底图）+ `mwc-hero-card`（白卡 **`fill`**）：父 **`contentAlign.horizontal: center`**；白卡 **`fill`** + 内文 **`contentAlign.horizontal: center`**；贴底时改父 **`contentAlign.vertical: bottom`**，**不要**改白卡为 **`hug`**。  
+**对照**：§6；**`easy-email-concepts`**；**`email-template-restore-guide`** § 底图叠放。  
+**代码真源**：**`src/lib/contentAlignConfigurability.ts`**、**`validate.ts`**；迁移 **`npm run validate:all（非法 wrapperStyle 字段）`**。
 
 ### 归纳：比例 + 间距应与结构同步
 
@@ -180,8 +175,8 @@ description: >-
 - [ ] **画布滚到底**（`.canvas-scroll` 等，见 **`email-config-motherboard`**）  
 - [ ] **比例 / 间距**对照截图过一遍  
 - [ ] **横排小标 / 品牌行**：子块非误用 **`fill`** 均分（§5）；需 **容器内居中** 时横排 **`fill` + `contentAlign.horizontal: center`**（§18），勿与「邮件级整组居中」混淆  
-- [ ] **横排多子块竖直对齐**：子块 **`placement.vertical`**；**无 `crossAlign`**（§12）  
-- [ ] **底图叠放**：**`padding` / `contentAlign` / `placement`** 分工正确；**无 `overlayInset`**（§6、§11）；叠放区居中先改 **父级容器内内容摆放**，**勿**误改子块 **`hug`**（§20）  
+- [ ] **横排多子块竖直对齐**：父/子 **`contentAlign.vertical`** 或嵌套 layout；**无 `crossAlign`**（§12）  
+- [ ] **底图叠放**：**`padding` + 父级双轴 `contentAlign`**；**无非法 wrapperStyle 字段、无 `overlayInset`**（§6、§11）；叠放区居中先改 **父级容器内内容摆放**，**勿**误改子块 **`hug`**（§20）  
 - [ ] **text**：**`textBody`**、无手写 **`style=`**（§8）  
 - [ ] **细线**：优先 **`separator.divider`**（§9）  
 - [ ] **边框/圆角两级 mode**、**icon 仅契约字段** 等 → **以校验器输出为准**  

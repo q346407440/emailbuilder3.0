@@ -45,7 +45,7 @@ function minimalTemplate(bindings: EmailTemplate["blocks"]["root"]["bindings"]):
         },
         props: {
           content: "<p>hello</p>",
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "hello" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "hello" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
@@ -265,6 +265,97 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
       validPayload({ products: [{ name: "Cloud", href: "https://example.com/p" }] }, productSlots)
     );
     assert.equal(ok.length, 0);
+  });
+
+  it("collection displayRule 支持按字段值过滤配置", () => {
+    const template = minimalTemplate({
+      "props.items": {
+        mode: "variable",
+        allowExternal: true,
+        slotId: "products",
+        valueType: "collection",
+        itemFields: [
+          { key: "type", label: "类型", valueType: "string", required: true },
+          { key: "title", label: "名称", valueType: "string", required: true },
+        ],
+      },
+    });
+    const slots: EmailPayload["slots"] = {
+      products: {
+        label: "products",
+        valueType: "collection",
+        scene: "loyalty-internal-admin",
+        sceneCollectionPresetId: "testSceneProducts",
+        itemFields: [
+          { key: "type", label: "类型", valueType: "string", required: true },
+          { key: "title", label: "名称", valueType: "string", required: true },
+        ],
+        displayRule: {
+          keyField: "type",
+          includeValues: ["A", "C"],
+          excludeValues: ["legacy"],
+        },
+        displayRulePreset: {
+          keyField: "type",
+          includeValues: ["A", "C"],
+          options: [
+            { value: "A", label: "类型 A" },
+            { value: "C", label: "类型 C" },
+          ],
+        },
+      },
+    };
+    const issues = validatePayloadAgainstTemplate(
+      template,
+      validPayload({ products: [{ type: "A", title: "一" }] }, slots)
+    );
+    assert.equal(issues.length, 0);
+  });
+
+  it("collection displayRule 非法配置应报错", () => {
+    const template = minimalTemplate({});
+    const payload = validPayload(
+      {},
+      {
+        products: {
+          label: "products",
+          valueType: "collection",
+          itemFields: [{ key: "title", label: "标题", valueType: "string" }],
+          displayRule: {
+            keyField: "bad.field",
+            includeValues: ["  "],
+          } as unknown as EmailPayload["slots"]["products"]["displayRule"],
+          displayRulePreset: {
+            keyField: "",
+            includeValues: [],
+            options: [{ value: "A", label: "" }],
+          } as unknown as EmailPayload["slots"]["products"]["displayRulePreset"],
+        },
+      }
+    );
+    const issues = validatePayloadAgainstTemplate(template, payload);
+    assert.ok(issues.some((i) => i.path.endsWith("displayRule.keyField")));
+    assert.ok(issues.some((i) => i.path.endsWith("displayRule.includeValues")));
+    assert.ok(issues.some((i) => i.path.endsWith("displayRulePreset.keyField")));
+    assert.ok(issues.some((i) => i.path.endsWith("displayRulePreset.includeValues")));
+    assert.ok(issues.some((i) => i.path.endsWith("displayRulePreset.options[0].label")));
+  });
+
+  it("collection displayRule 仅允许内置场景变量声明", () => {
+    const template = minimalTemplate({});
+    const payload = validPayload(
+      {},
+      {
+        products: {
+          label: "products",
+          valueType: "collection",
+          itemFields: [{ key: "title", label: "标题", valueType: "string" }],
+          displayRule: { keyField: "type", includeValues: ["A"] },
+        },
+      }
+    );
+    const issues = validatePayloadAgainstTemplate(template, payload);
+    assert.ok(issues.some((i) => i.path.endsWith("displayRule")));
   });
 
   it("拒绝 values 中无 payload.slots 目录项的键", () => {

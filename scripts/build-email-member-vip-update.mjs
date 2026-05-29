@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 生成「VIP 会员服务更新」学习模板到 data/emails/member-vip-update/
  */
@@ -47,8 +49,6 @@ const border0 = () => ({
 
 const radius0 = () => ({ mode: "unified", radius: "0" });
 
-const placement = (h, v) => ({ horizontal: h, vertical: v });
-
 const themeRef = (path) => ({ $themeRef: path });
 
 const themeBinding = (path) => ({
@@ -80,7 +80,7 @@ const modShellBindings = () => ({
 });
 
 const wsBase = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -90,7 +90,6 @@ const wsBase = (extra = {}) => ({
 });
 
 const textBodyRuns = (runs) => ({
-  version: 1,
   paragraphs: [{ runs }],
 });
 
@@ -158,7 +157,7 @@ function build() {
       parentId,
       children: [iconWrapId, textColId],
       wrapperStyle: wsBase({
-        placement: placement("start", "start"),
+        contentAlign: contentAlignFromAxes("start", "start"),
         contentAlign: { horizontal: "left", vertical: "top" },
       }),
       props: { direction: "horizontal", gapMode: "fixed", gap: "10px" },
@@ -171,7 +170,7 @@ function build() {
       parentId: cellId,
       children: [iconId],
       wrapperStyle: {
-        placement: placement("start", "center"),
+        contentAlign: contentAlignFromAxes("start", "center"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "fixed",
         width: "40px",
@@ -194,7 +193,7 @@ function build() {
       parentId: iconWrapId,
       children: [],
       wrapperStyle: {
-        placement: placement("center", "center"),
+        contentAlign: contentAlignFromAxes("center", "center"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "hug",
         heightMode: "hug",
@@ -226,7 +225,7 @@ function build() {
       type: "layout",
       parentId: cellId,
       children: [titleId, subId],
-      wrapperStyle: wsBase({ widthMode: "fill", placement: placement("start", "center") }),
+      wrapperStyle: wsBase({ widthMode: "fill", contentAlign: contentAlignFromAxes("start", "center") }),
       props: { direction: "vertical", gapMode: "fixed", gap: "2px" },
       bindings: {},
     });
@@ -240,7 +239,6 @@ function build() {
       props: {
         content: `<p>${item.title}</p>`,
         textBody: textBodyRuns([{ text: item.title, bold: true }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: "#2C2416",
         bold: true,
@@ -256,7 +254,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${index}.title`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
       },
     });
@@ -270,7 +267,6 @@ function build() {
       props: {
         content: `<p>${item.subtitle}</p>`,
         textBody: textBodyRuns([{ text: item.subtitle }]),
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: "#6B5E4F",
         bold: false,
@@ -286,7 +282,6 @@ function build() {
           fieldKind: "content",
           slotPath: `${index}.subtitle`,
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
       },
     });
@@ -304,7 +299,7 @@ function build() {
     parentId: modLogo,
     children: [logoImg],
     wrapperStyle: wsBase({
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -317,7 +312,7 @@ function build() {
     parentId: logoRow,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       contentAlign: { horizontal: "center", vertical: "center" },
       widthMode: "fixed",
       width: "140px",
@@ -380,7 +375,7 @@ function build() {
     parentId: modHero,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
       widthMode: "fill",
       heightMode: "fixed",
@@ -437,7 +432,6 @@ function build() {
     props: {
       content: "<p>VIP</p>",
       textBody: textBodyRuns([{ text: "VIP", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.display"),
       color: "#C9A227",
       bold: true,
@@ -454,7 +448,6 @@ function build() {
         fieldKind: "content",
         label: "VIP 大标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.display"),
     },
   });
@@ -468,7 +461,6 @@ function build() {
     props: {
       content: "<p>Exclusive membership</p>",
       textBody: textBodyRuns([{ text: "Exclusive membership" }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: "#D4AF37",
       bold: false,
@@ -485,7 +477,6 @@ function build() {
         fieldKind: "content",
         label: "VIP 副标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
     },
   });
@@ -506,7 +497,6 @@ function build() {
     props: {
       content: "<p>Hi Member Name</p>",
       textBody: textBodyRuns([{ text: "Hi Member Name" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: "#F3F4F6",
       bold: false,
@@ -523,7 +513,6 @@ function build() {
         fieldKind: "content",
         label: "问候称呼",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
     },
   });
@@ -542,7 +531,6 @@ function build() {
           text: "We're thrilled to share that zyzshop1 Membership Services have been updated to bring more ease, clarity, and member-only features.",
         },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: "#E5E7EB",
       bold: false,
@@ -560,7 +548,6 @@ function build() {
         fieldKind: "content",
         label: "会员服务更新说明",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
     },
   });
@@ -581,7 +568,6 @@ function build() {
     props: {
       content: snapshotFromRuns(termsRuns),
       textBody: textBodyRuns(termsRuns),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#D1D5DB",
       bold: false,
@@ -607,7 +593,6 @@ function build() {
         fieldKind: "content",
         label: "隐私政策链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -662,7 +647,7 @@ function build() {
     parentId: modVipCard,
     children: [vipDiamondWrap, vipBadge, vipLevelTitle],
     wrapperStyle: wsBase({
-      placement: placement("start", "center"),
+      contentAlign: contentAlignFromAxes("start", "center"),
       contentAlign: { horizontal: "left", vertical: "center" },
     }),
     props: { direction: "horizontal", gapMode: "fixed", gap: "10px" },
@@ -675,7 +660,7 @@ function build() {
     parentId: vipLevelRow,
     children: [vipDiamondIcon],
     wrapperStyle: {
-      placement: placement("start", "center"),
+      contentAlign: contentAlignFromAxes("start", "center"),
       widthMode: "fixed",
       width: "36px",
       heightMode: "fixed",
@@ -696,7 +681,7 @@ function build() {
     parentId: vipDiamondWrap,
     children: [],
     wrapperStyle: {
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       widthMode: "hug",
       heightMode: "hug",
       border: border0(),
@@ -720,7 +705,6 @@ function build() {
     props: {
       content: "<p>V1</p>",
       textBody: textBodyRuns([{ text: "V1", bold: true }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#2C2416",
       bold: true,
@@ -737,7 +721,6 @@ function build() {
         fieldKind: "content",
         label: "等级徽章",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -754,7 +737,6 @@ function build() {
     props: {
       content: "<p>VIP 1</p>",
       textBody: textBodyRuns([{ text: "VIP 1", bold: true }]),
-      fontFamily: themeRef("fonts.heading"),
       fontSize: themeRef("tokens.typography.h1"),
       color: "#2C2416",
       bold: true,
@@ -771,7 +753,6 @@ function build() {
         fieldKind: "content",
         label: "VIP 等级标题",
       },
-      "props.fontFamily": themeBinding("fonts.heading"),
       "props.fontSize": themeBinding("tokens.typography.h1"),
     },
   });
@@ -785,7 +766,6 @@ function build() {
     props: {
       content: "<p>Spent $1000.00 more to reach VIP next level</p>",
       textBody: textBodyRuns([{ text: "Spent $1000.00 more to reach VIP next level" }]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: "#4A3F32",
       bold: false,
@@ -802,7 +782,6 @@ function build() {
         fieldKind: "content",
         label: "升级进度说明",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
     },
   });
@@ -813,7 +792,7 @@ function build() {
     parentId: modVipCard,
     children: [progressFill, progressRemain],
     wrapperStyle: {
-      ...wsBase({ placement: placement("start", "start") }),
+      ...wsBase({ contentAlign: contentAlignFromAxes("start", "start") }),
       borderRadius: { mode: "unified", radius: "9999px" },
       heightMode: "fixed",
       height: "10px",
@@ -912,7 +891,7 @@ function build() {
     wrapperStyle: {
       widthMode: "fill",
       heightMode: "hug",
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
       border: border0(),
       borderRadius: radius0(),
     },
@@ -931,7 +910,6 @@ function build() {
       textBody: textBodyRuns([
         { text: "Activate your membership now to receive the following benefits:" },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: "#2C2416",
       bold: false,
@@ -948,7 +926,6 @@ function build() {
         fieldKind: "content",
         label: "激活引导语",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
     },
   });
@@ -1006,7 +983,7 @@ function build() {
     children: [],
     wrapperStyle: wsBase({
       contentAlign: { horizontal: "center", vertical: "top" },
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
     }),
     props: {
       text: "👉 I Agree and Activate My Benefits",
@@ -1015,7 +992,6 @@ function build() {
         widthMode: "hug",
         backgroundColor: "#111111",
         textColor: "#C9A227",
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         border: border0(),
         borderRadius: { mode: "unified", radius: themeRef("tokens.radius.cta") },
@@ -1042,7 +1018,6 @@ function build() {
         fieldKind: "content",
         label: "激活按钮链接",
       },
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.body"),
       "props.buttonStyle.borderRadius.radius": themeBinding("tokens.radius.cta"),
     },
@@ -1059,7 +1034,6 @@ function build() {
       textBody: textBodyRuns([
         { text: "*Actual membership benefits are as issued at the time of your activation." },
       ]),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#8A7B6A",
       bold: false,
@@ -1076,7 +1050,6 @@ function build() {
         fieldKind: "content",
         label: "权益免责声明",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -1103,7 +1076,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns1),
       textBody: textBodyRuns(accountRuns1),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: "#E5E7EB",
       bold: false,
@@ -1120,7 +1092,6 @@ function build() {
         fieldKind: "content",
         label: "注册账户链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
     },
   });
@@ -1140,7 +1111,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns2),
       textBody: textBodyRuns(accountRuns2),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.body"),
       color: "#E5E7EB",
       bold: false,
@@ -1157,7 +1127,6 @@ function build() {
         fieldKind: "content",
         label: "重置密码链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.body"),
     },
   });
@@ -1183,7 +1152,6 @@ function build() {
     props: {
       content: snapshotFromRuns(accountRuns3),
       textBody: textBodyRuns(accountRuns3),
-      fontFamily: themeRef("fonts.body"),
       fontSize: themeRef("tokens.typography.caption"),
       color: "#9CA3AF",
       bold: false,
@@ -1227,7 +1195,6 @@ function build() {
         fieldKind: "content",
         label: "客服邮箱 mailto 链接",
       },
-      "props.fontFamily": themeBinding("fonts.body"),
       "props.fontSize": themeBinding("tokens.typography.caption"),
     },
   });
@@ -1238,7 +1205,7 @@ function build() {
     parentId: null,
     children: modIds,
     wrapperStyle: {
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -1323,10 +1290,6 @@ function writeTokenPresets() {
             secondary: "#9CA3AF",
             surface: "#0D0D0D",
           },
-          fonts: {
-            heading: "Georgia",
-            body: "'Segoe UI'",
-          },
           spacing: {
             section: "24px",
             gap: "14px",
@@ -1355,10 +1318,8 @@ function writeMeta() {
     description:
       "店铺 Logo、VIP 主视觉、问候与条款说明、VIP 状态卡（等级/进度/权益/激活 CTA）、账户与联系；样式经 tokenPresets 统一管理。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: { type: "screenshot", url: "" },
     defaultStylePresetSelection: "local",
   };
 }

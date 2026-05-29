@@ -10,6 +10,11 @@ import type {
 import { collectionBindingUsesItemIndex } from "../payload-contract/repeat-list-item-binding";
 import { mergeTemplatePayload } from "./merge";
 import { getAtPath, setAtPath } from "./paths";
+import { isRepeatHostBlock, isRepeatHostBlockType } from "./repeatHostBlock";
+import { applyCollectionDisplayRule } from "./collectionDisplayRule";
+
+export { isRepeatHostBlock, isRepeatHostBlockType } from "./repeatHostBlock";
+export type { RepeatHostBlock } from "./repeatHostBlock";
 
 export const REPEAT_CLONE_ID_MARK = "__repeatClone__";
 
@@ -37,11 +42,14 @@ export function collectionItems(payload: EmailPayload | null, repeat: RepeatRegi
   if (repeat.itemPath?.trim()) return [];
   const raw = payload?.values?.[repeat.slotId];
   if (!Array.isArray(raw)) return [];
-  const maxItems = repeat.maxItems;
   const items = raw.filter((item): item is Record<string, unknown> => {
     return item !== null && typeof item === "object" && !Array.isArray(item);
   });
-  return typeof maxItems === "number" ? items.slice(0, maxItems) : items;
+  const slotDef = payload?.slots?.[repeat.slotId];
+  const slotRule = slotDef?.sceneCollectionPresetId ? slotDef.displayRule : undefined;
+  const filtered = applyCollectionDisplayRule(items, slotRule);
+  if (typeof repeat.maxItems === "number") return filtered.slice(0, repeat.maxItems);
+  return filtered;
 }
 
 function stripCollectionIndex(slotPath: string): string {
@@ -113,12 +121,6 @@ function buildCloneBlockId(sourceId: string, repeatBlockId: string, itemIndex: n
   return `${sourceId}${REPEAT_CLONE_ID_MARK}${repeatBlockId}_${itemIndex}`;
 }
 
-export function isRepeatHostBlock(
-  block: EmailBlock | undefined
-): block is Extract<EmailBlock, { type: "layout" | "grid" }> {
-  return block?.type === "layout" || block?.type === "grid";
-}
-
 export type RepeatContextRelation = "host" | "row-template" | "mapped-field";
 
 /** 选中区块相对列表重复宿主的关系（含父级/祖先 repeat 继承） */
@@ -148,7 +150,7 @@ export function isDescendantOfBlock(
 
 /**
  * 解析当前选中区块所处的列表重复上下文。
- * - 宿主 layout/grid 自身带 repeat → relation=host
+ * - 宿主 layout/grid/image 自身带 repeat → relation=host
  * - 子孙位于某宿主行模板子树内 → row-template 或 mapped-field
  * - 不在任何 repeat 行模板内 → null
  */
@@ -195,6 +197,28 @@ export function resolveRepeatContextForBlock(
   }
 
   return null;
+}
+
+/**
+ * 是否为「列表重复」绑定层之下的子级区块（行模板 / fallback / 映射字段子树）。
+ * 画布选中此类区块时不展示插入、移动、复制、删除等操作钮；repeat 宿主自身返回 false。
+ */
+export function isRepeatListBindingChildBlock(template: EmailTemplate, blockId: string): boolean {
+  const ctx = resolveRepeatContextForBlock(template, blockId);
+  if (ctx) return ctx.relation !== "host";
+
+  let walkId: string | null = blockId;
+  while (walkId) {
+    const block = template.blocks[walkId];
+    if (!block?.parentId) break;
+    const parent = template.blocks[block.parentId];
+    if (parent?.repeat?.mode === "collection" && isRepeatHostBlock(parent)) {
+      const managed = [...parent.repeat.prototypeChildIds, ...parent.repeat.fallbackChildIds];
+      return managed.some((rootId) => isDescendantOfBlock(template, blockId, rootId));
+    }
+    walkId = block.parentId;
+  }
+  return false;
 }
 
 export function collectionItemCount(
@@ -265,6 +289,7 @@ function clonePrototypeSubtree(opts: {
   sourceTemplate: EmailTemplate;
   sourceId: string;
   parentId: string;
+  repeatHostSourceId: string;
   repeat: RepeatRegionBinding;
   itemIndex: number;
   item: Record<string, unknown>;
@@ -278,6 +303,9 @@ function clonePrototypeSubtree(opts: {
   const nextBlock = clone(source) as EmailBlock;
   nextBlock.id = nextId;
   nextBlock.parentId = opts.parentId;
+  if (opts.sourceId === opts.repeatHostSourceId) {
+    delete nextBlock.repeat;
+  }
   if (nextBlock.bindings) {
     const nextBindings: NonNullable<EmailBlock["bindings"]> = {};
     for (const [bindPath, spec] of Object.entries(nextBlock.bindings)) {
@@ -389,6 +417,65 @@ export function expandRepeatRegions(template: EmailTemplate, payload: EmailPaylo
     const repeat = block.repeat;
     if (repeat?.mode === "collection") {
       const items = resolveRepeatItemsForExpansion(repeat, payload, contexts);
+      const selfRepeat =
+        repeat.prototypeChildIds.length === 1 && repeat.prototypeChildIds[0] === block.id;
+      if (selfRepeat && block.parentId) {
+        const parent = out.blocks[block.parentId];
+        const sourceParent = template.blocks[block.parentId];
+        if (!parent || !sourceParent) return;
+        const sourceSiblings = sourceParent.children ?? [];
+        const at = sourceSiblings.indexOf(block.id);
+        if (at < 0) return;
+        const before = sourceSiblings.slice(0, at);
+        const after = sourceSiblings.slice(at + 1);
+        const expandedSiblingIds: string[] = [];
+        const expandedContexts = new Map<string, RepeatRuntimeContext[]>();
+        items.forEach((item, itemIndex) => {
+          const ctxItem = isRecord(item) ? item : {};
+          const anchorCtx =
+            repeat.itemPath?.trim()
+              ? [...contexts].reverse().find((ctx) => ctx.slotId === repeat.slotId)
+              : null;
+          const itemPath =
+            repeat.itemPath?.trim()
+              ? anchorCtx
+                ? `${anchorCtx.itemPath}.${repeat.itemPath}.${itemIndex}`
+                : repeat.anchorItemIndex !== undefined
+                  ? `${repeat.anchorItemIndex}.${repeat.itemPath}.${itemIndex}`
+                  : `${repeat.itemPath}.${itemIndex}`
+              : String(itemIndex);
+          const nextContexts = [
+            ...contexts,
+            { slotId: repeat.slotId, itemIndex, item: ctxItem, itemPath },
+          ];
+          const clonedId = clonePrototypeSubtree({
+            out,
+            sourceTemplate: template,
+            sourceId: block.id,
+            parentId: block.parentId,
+            repeatHostSourceId: block.id,
+            repeat,
+            itemIndex,
+            item: ctxItem,
+            itemPath,
+            materializeRepeatItemBindings: false,
+          });
+          if (clonedId) {
+            expandedSiblingIds.push(clonedId);
+            expandedContexts.set(clonedId, nextContexts);
+          }
+        });
+        parent.children = [...before, ...expandedSiblingIds, ...after];
+        const expandedSet = new Set(expandedSiblingIds);
+        for (const siblingId of parent.children) {
+          if (expandedSet.has(siblingId)) {
+            expandBlock(siblingId, expandedContexts.get(siblingId) ?? contexts);
+          } else if (siblingId !== block.id) {
+            expandBlock(siblingId, contexts);
+          }
+        }
+        return;
+      }
       // 嵌套 repeat 时 out 上可能已有外层克隆的行模板子节点；拆静态兄弟须以磁盘 template 的 children 为准
       const sourceHostId = isRepeatCloneBlockId(blockId)
         ? sourceBlockIdFromRepeatClone(blockId)
@@ -421,6 +508,7 @@ export function expandRepeatRegions(template: EmailTemplate, payload: EmailPaylo
             sourceTemplate: template,
             sourceId: prototypeChildId,
             parentId: block.id,
+            repeatHostSourceId: block.id,
             repeat,
             itemIndex,
             item: ctxItem,
@@ -467,7 +555,7 @@ export function applyRepeatRegionBinding(
   const block = next.blocks[blockId];
   if (!block) return template;
   if (!isRepeatHostBlock(block)) {
-    throw new Error("列表重复只能绑定在 layout 或 grid 容器上，不能绑定在邮件根节点。");
+    throw new Error("列表重复只能绑定在布局容器、栅格或图片区块上，不能绑定在邮件根节点。");
   }
   block.repeat = {
     mode: "collection",
@@ -685,10 +773,14 @@ function materializeRepeatExpandedSubtree(
   next: EmailTemplate,
   merged: EmailTemplate,
   hostBlockId: string,
-  repeat: RepeatRegionBinding
+  repeat: RepeatRegionBinding,
+  options?: {
+    topCloneIds?: string[];
+    topParentId?: string;
+  }
 ): string[] {
   const expandedHost = merged.blocks[hostBlockId];
-  const topCloneIds = expandedHost?.children ?? [];
+  const topCloneIds = options?.topCloneIds ?? expandedHost?.children ?? [];
   if (topCloneIds.length === 0) return [];
 
   const idsToRemove = new Set<string>();
@@ -728,7 +820,7 @@ function materializeRepeatExpandedSubtree(
       permanentBlock.id = permanentId;
       permanentBlock.parentId =
         cloneId === topCloneId
-          ? hostBlockId
+          ? (options?.topParentId ?? hostBlockId)
           : (idMap.get(mergedBlock.parentId ?? "") ?? mergedBlock.parentId);
       permanentBlock.children = (permanentBlock.children ?? []).map(
         (childId) => idMap.get(childId) ?? childId
@@ -771,14 +863,18 @@ export function removeRepeatRegionBinding(
   if (!host?.repeat) return template;
 
   const repeat = host.repeat;
+  const selfRepeat =
+    repeat.prototypeChildIds.length === 1 && repeat.prototypeChildIds[0] === blockId;
   const itemCount = collectionItems(payload, repeat).length;
 
   if (itemCount === 0) {
     const next = clone(template);
     const block = next.blocks[blockId];
     if (!block) return template;
-    const fallbackChildIds = repeat.fallbackChildIds.filter((childId) => Boolean(next.blocks[childId]));
-    block.children = fallbackChildIds.length > 0 ? fallbackChildIds : block.children;
+    if (!selfRepeat) {
+      const fallbackChildIds = repeat.fallbackChildIds.filter((childId) => Boolean(next.blocks[childId]));
+      block.children = fallbackChildIds.length > 0 ? fallbackChildIds : block.children;
+    }
     delete block.repeat;
     return next;
   }
@@ -790,6 +886,31 @@ export function removeRepeatRegionBinding(
   );
 
   const next = clone(template);
+  if (selfRepeat && host.parentId) {
+    const topCloneIds = (merged.blocks[host.parentId]?.children ?? []).filter(
+      (id) => isRepeatCloneBlockId(id) && sourceBlockIdFromRepeatClone(id) === blockId
+    );
+    const permanentTopIds = materializeRepeatExpandedSubtree(next, merged, blockId, repeat, {
+      topCloneIds,
+      topParentId: host.parentId,
+    });
+    const parent = next.blocks[host.parentId];
+    if (!parent) return template;
+    const currentChildren = parent.children ?? [];
+    const at = currentChildren.indexOf(blockId);
+    if (at < 0) return template;
+    parent.children = [
+      ...currentChildren.slice(0, at),
+      ...permanentTopIds,
+      ...currentChildren.slice(at + 1),
+    ];
+    for (const id of collectSubtreeBlockIds(next, blockId)) {
+      delete next.blocks[id];
+      if (next.blockMeta) delete next.blockMeta[id];
+    }
+    return next;
+  }
+
   const permanentTopIds = materializeRepeatExpandedSubtree(next, merged, blockId, repeat);
   const hostBlock = next.blocks[blockId];
   if (!hostBlock) return template;

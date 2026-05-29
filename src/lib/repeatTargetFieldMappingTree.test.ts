@@ -33,7 +33,7 @@ function miniTemplate(): EmailTemplate {
             valueType: "string",
           },
         },
-        props: { textBody: { version: 1, paragraphs: [{ runs: [{ text: "" }] }] } },
+        props: { textBody: { paragraphs: [{ runs: [{ text: "" }] }] } },
       },
       productBadge: {
         type: "text",
@@ -46,7 +46,7 @@ function miniTemplate(): EmailTemplate {
             valueType: "string",
           },
         },
-        props: { textBody: { version: 1, paragraphs: [{ runs: [{ text: "" }] }] } },
+        props: { textBody: { paragraphs: [{ runs: [{ text: "" }] }] } },
       },
       skuSection: {
         type: "layout",

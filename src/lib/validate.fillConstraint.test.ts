@@ -43,7 +43,7 @@ function buildTemplateForFillConstraint(opts: {
         wrapperStyle: {
           widthMode: opts.parentWidthMode,
           heightMode: opts.parentHeightMode,
-          placement: { horizontal: "center", vertical: "center" },
+          contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
           direction: opts.parentDirection,
@@ -59,7 +59,7 @@ function buildTemplateForFillConstraint(opts: {
         wrapperStyle: {
           widthMode: opts.childWidthMode,
           heightMode: opts.childHeightMode,
-          placement: { horizontal: "center", vertical: "center" },
+          contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
           direction: "vertical",
@@ -88,7 +88,7 @@ describe("validateTemplate · 宽度轴 fill 约束", () => {
     assert.equal(hasIssue(issues, "blocks.child.wrapperStyle.widthMode"), true);
   });
 
-  it("父纵向 + 父宽 hug + 子宽 fill => 不命中宽度轴校验", () => {
+  it("父纵向 + 父宽 hug + 子宽 fill => 命中宽度轴校验", () => {
     const template = buildTemplateForFillConstraint({
       parentDirection: "vertical",
       parentWidthMode: "hug",
@@ -97,7 +97,7 @@ describe("validateTemplate · 宽度轴 fill 约束", () => {
       childHeightMode: "hug",
     });
     const issues = validateTemplate(template);
-    assert.equal(hasIssue(issues, "blocks.child.wrapperStyle.widthMode"), false);
+    assert.equal(hasIssue(issues, "blocks.child.wrapperStyle.widthMode"), true);
   });
 
   it("父横向 + 父宽 fill + 子宽 fill => 不命中宽度轴校验", () => {

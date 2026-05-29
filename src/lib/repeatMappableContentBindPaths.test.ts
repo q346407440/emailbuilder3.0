@@ -18,7 +18,7 @@ function textBlock(overrides: Partial<EmailBlock> = {}): EmailBlock {
     children: [],
     wrapperStyle: {},
     props: {
-      textBody: { version: 1, paragraphs: [{ runs: [{ text: "Hi" }] }] },
+      textBody: { paragraphs: [{ runs: [{ text: "Hi" }] }] },
       bold: false,
       italic: false,
       decoration: "none",

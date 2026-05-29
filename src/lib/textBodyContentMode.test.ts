@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { TextBlock, TextBodyV1 } from "../types/email";
+import type { TextBlock, TextBody } from "../types/email";
 import { getTextBodyContentMode, getWholeTextBodyVariableBindPath } from "./textBodyContentMode";
 
-const multiRunBody: TextBodyV1 = {
-  version: 1,
+const multiRunBody: TextBody = {
   paragraphs: [
     {
       runs: [
@@ -16,8 +15,7 @@ const multiRunBody: TextBodyV1 = {
   ],
 };
 
-const singleVarBody: TextBodyV1 = {
-  version: 1,
+const singleVarBody: TextBody = {
   paragraphs: [{ runs: [{ text: "zyzshop1" }] }],
 };
 

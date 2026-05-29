@@ -1,96 +1,64 @@
 import { useEffect, useRef, useState } from "react";
 import { message } from "@shoplazza/sds";
-import type { EmailMeta } from "../types/email";
-import { getEmailMeta, putEmailMeta } from "../api/client";
+import { captureEmailPreviewHtmlFromDom } from "../lib/captureEmailPreviewHtml";
+import { resolveTestEmailSubject } from "../lib/emailDeliveryFields";
+import {
+  buildMetaEditorPersistPatch,
+  metaToEditorForm,
+  type MetaEditorFormSnapshot,
+} from "../lib/metaEditorPersist";
+import { getEmailMeta, getSmtpTestStatus, putEmailMeta, sendTestEmail, type SmtpTestStatus } from "../api/client";
+import { SendTestEmailModal } from "./SendTestEmailModal";
 import { Field } from "./ui/Field";
-import { ShopInput, ShopSelect, ShopTextArea } from "./ui/ShopFormControls";
+import { InspectorPanelSection } from "./ui/InspectorPanelSection";
+import { ShopInput, ShopTextArea } from "./ui/ShopFormControls";
 
-/** 连续自动保存时合并提示，避免 message 刷屏 */
+/** 保存成功提示做节流，避免连续点击刷屏。 */
 const META_SAVE_TOAST_MIN_MS = 2400;
+
+function isMetaFormEqual(a: MetaEditorFormSnapshot, b: MetaEditorFormSnapshot): boolean {
+  return (
+    a.displayName === b.displayName &&
+    a.description === b.description &&
+    a.subject === b.subject &&
+    a.preheader === b.preheader
+  );
+}
 
 type Props = {
   emailKey: string | null;
   onError?: (message: string) => void;
+  /** panel: 左侧整栏；embedded: 作为右侧 inspector 内容区 */
+  variant?: "panel" | "embedded";
+  /** 顶栏触发发送测试邮件（仅 embedded 场景会使用） */
+  openSendTestNonce?: number;
+  /** 回传当前是否可发送测试邮件（给顶栏按钮禁用态） */
+  onSendTestCapabilityChange?: (capable: boolean) => void;
 };
 
-type FormState = {
-  displayName: string;
-  description: string;
-  owner: string;
-  status: "draft" | "active" | "deprecated";
-  supersededBy: string;
-  designSourceType: "figma" | "sketch" | "screenshot" | "other";
-  designSourceUrl: string;
-  subject: string;
-  preheader: string;
-  senderName: string;
-  senderEmail: string;
-  campaignTag: string;
-};
-
-const STATUS_OPTIONS: Array<{ value: FormState["status"]; label: string }> = [
-  { value: "draft", label: "draft（草稿）" },
-  { value: "active", label: "active（活跃）" },
-  { value: "deprecated", label: "deprecated（已淘汰）" },
-];
-
-const DESIGN_SOURCE_TYPE_OPTIONS: Array<{ value: FormState["designSourceType"]; label: string }> = [
-  { value: "figma", label: "Figma" },
-  { value: "sketch", label: "Sketch" },
-  { value: "screenshot", label: "截图" },
-  { value: "other", label: "其它" },
-];
-
-function metaToForm(meta: EmailMeta | null): FormState {
-  return {
-    displayName: meta?.displayName ?? "",
-    description: meta?.description ?? "",
-    owner: meta?.owner ?? "",
-    status: (meta?.status as FormState["status"]) ?? "draft",
-    supersededBy: meta?.supersededBy ?? "",
-    designSourceType: (meta?.designSource?.type as FormState["designSourceType"]) ?? "figma",
-    designSourceUrl: meta?.designSource?.url ?? "",
-    subject: meta?.delivery?.subject ?? "",
-    preheader: meta?.delivery?.preheader ?? "",
-    senderName: meta?.delivery?.senderName ?? "",
-    senderEmail: meta?.delivery?.senderEmail ?? "",
-    campaignTag: meta?.delivery?.campaignTag ?? "",
-  };
-}
-
-function formToPatch(form: FormState): Partial<EmailMeta> {
-  return {
-    displayName: form.displayName,
-    description: form.description,
-    owner: form.owner,
-    status: form.status,
-    supersededBy: form.supersededBy || undefined,
-    designSource: {
-      type: form.designSourceType,
-      url: form.designSourceUrl,
-    },
-    delivery: {
-      subject: form.subject,
-      preheader: form.preheader,
-      senderName: form.senderName,
-      senderEmail: form.senderEmail,
-      campaignTag: form.campaignTag,
-    },
-  };
-}
-
-export function MetaEditor({ emailKey, onError }: Props) {
-  const [form, setForm] = useState<FormState>(() => metaToForm(null));
+export function MetaEditor({
+  emailKey,
+  onError,
+  variant = "panel",
+  openSendTestNonce = 0,
+  onSendTestCapabilityChange,
+}: Props) {
+  const [form, setForm] = useState<MetaEditorFormSnapshot>(() => metaToEditorForm(null));
+  const [savedForm, setSavedForm] = useState<MetaEditorFormSnapshot>(() => metaToEditorForm(null));
   const [loaded, setLoaded] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [smtpStatus, setSmtpStatus] = useState<SmtpTestStatus | null>(null);
+  const [sendTestOpen, setSendTestOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [savingMeta, setSavingMeta] = useState(false);
   const lastMetaToastAtRef = useRef(0);
-
-  const supersededRequired = form.status === "deprecated";
+  const prevOpenSendTestNonceRef = useRef(openSendTestNonce);
 
   useEffect(() => {
     let cancelled = false;
     if (!emailKey) {
-      setForm(metaToForm(null));
+      const emptyForm = metaToEditorForm(null);
+      setForm(emptyForm);
+      setSavedForm(emptyForm);
       setLoaded(false);
       return;
     }
@@ -99,7 +67,9 @@ export function MetaEditor({ emailKey, onError }: Props) {
       try {
         const m = await getEmailMeta(emailKey);
         if (cancelled) return;
-        setForm(metaToForm(m));
+        const nextForm = metaToEditorForm(m);
+        setForm(nextForm);
+        setSavedForm(nextForm);
         setLoaded(true);
       } catch (err) {
         if (cancelled) return;
@@ -112,6 +82,24 @@ export function MetaEditor({ emailKey, onError }: Props) {
     };
   }, [emailKey, onError]);
 
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const status = await getSmtpTestStatus();
+        if (!cancelled) setSmtpStatus(status);
+      } catch (err) {
+        if (!cancelled) {
+          setSmtpStatus({ configured: false });
+          onError?.(err instanceof Error ? err.message : String(err));
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [onError]);
+
   function notifyMetaPersisted() {
     const now = Date.now();
     if (now - lastMetaToastAtRef.current < META_SAVE_TOAST_MIN_MS) return;
@@ -119,171 +107,172 @@ export function MetaEditor({ emailKey, onError }: Props) {
     message.info("元信息已写入 meta.json", 1.6);
   }
 
-  function scheduleSave(next: FormState) {
-    if (!emailKey || !loaded) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      void (async () => {
-        try {
-          await putEmailMeta(emailKey, formToPatch(next));
-          notifyMetaPersisted();
-        } catch (err) {
-          onError?.(err instanceof Error ? err.message : String(err));
-        }
-      })();
-    }, 500);
+  function update<K extends keyof MetaEditorFormSnapshot>(key: K, value: MetaEditorFormSnapshot[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm((prev) => {
-      const next = { ...prev, [key]: value };
-      scheduleSave(next);
-      return next;
-    });
+  async function saveMeta(next: MetaEditorFormSnapshot): Promise<boolean> {
+    if (!emailKey || !loaded) return false;
+    setSavingMeta(true);
+    try {
+      await putEmailMeta(emailKey, buildMetaEditorPersistPatch(next));
+      setSavedForm(next);
+      notifyMetaPersisted();
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      onError?.(msg);
+      message.error(msg);
+      return false;
+    } finally {
+      setSavingMeta(false);
+    }
   }
 
   const disabled = !emailKey;
+  const isEmbedded = variant === "embedded";
+  const dirty = loaded && !disabled && !isMetaFormEqual(form, savedForm);
+  const canSendTest = !disabled && Boolean(smtpStatus?.configured);
 
-  return (
-    <aside className="theme-panel theme-sidebar meta-editor">
-      <header className="theme-panel__header">
-        <h2 className="side-panel__title">邮件元信息</h2>
-      </header>
+  useEffect(() => {
+    onSendTestCapabilityChange?.(canSendTest);
+  }, [canSendTest, onSendTestCapabilityChange]);
 
-      <div className="theme-panel__body theme-panel__side-nav meta-editor__body">
-        <div className="theme-panel__group">
-          <h3 className="theme-panel__group-title">基础</h3>
-          <Field label="显示名称">
+  useEffect(() => {
+    const prev = prevOpenSendTestNonceRef.current;
+    prevOpenSendTestNonceRef.current = openSendTestNonce;
+    if (!isEmbedded) return;
+    if (openSendTestNonce === prev) return;
+    if (!canSendTest) return;
+    setSendTestOpen(true);
+  }, [canSendTest, isEmbedded, openSendTestNonce]);
+
+  async function handleSendTestEmail(args: { to: string }) {
+    if (!emailKey) return;
+    const subject = resolveTestEmailSubject({
+      subject: form.subject,
+      displayName: form.displayName,
+      emailKey,
+    });
+    const preheader = form.preheader.trim();
+    const html = captureEmailPreviewHtmlFromDom({ subject, preheader });
+    if (!html) {
+      message.error("未找到画布预览内容，请确认中间「画布预览」已加载");
+      return;
+    }
+    setSending(true);
+    try {
+      const result = await sendTestEmail(emailKey, {
+        to: args.to,
+        html,
+        subject,
+        preheader,
+      });
+      message.success(`测试邮件已发送${result.messageId ? `（${result.messageId}）` : ""}`, 3);
+      setSendTestOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      message.error(msg);
+      onError?.(msg);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const content = (
+    <div className={isEmbedded ? "meta-editor__scroll meta-editor__scroll--embedded" : "block-tree__scroll meta-editor__scroll"}>
+        {dirty ? <p className="meta-editor__save-status meta-editor__save-status--dirty">有未保存修改</p> : null}
+
+        <InspectorPanelSection title="基础" className="meta-editor__section">
+          <Field label="显示名称" className="meta-editor__field">
             <ShopInput
               value={form.displayName}
               onChange={(e) => update("displayName", e.target.value)}
               disabled={disabled}
+              placeholder="邮件在列表中的名称"
             />
           </Field>
-          <Field label="说明">
+          <Field label="说明" className="meta-editor__field">
             <ShopTextArea
               rows={2}
               value={form.description}
               onChange={(e) => update("description", e.target.value)}
               disabled={disabled}
+              placeholder="可选，内部备注"
             />
           </Field>
-          <Field label="负责人">
-            <ShopInput
-              value={form.owner}
-              onChange={(e) => update("owner", e.target.value)}
-              disabled={disabled}
-              placeholder="例如：marketing@team"
-            />
-          </Field>
-          <Field label="状态">
-            <ShopSelect
-              value={form.status}
-              disabled={disabled}
-              style={{ width: "100%" }}
-              onChange={(v) =>
-                update("status", (typeof v === "string" ? v : form.status) as FormState["status"])
-              }
-            >
-              {STATUS_OPTIONS.map((o) => (
-                <ShopSelect.Option key={o.value} value={o.value}>
-                  {o.label}
-                </ShopSelect.Option>
-              ))}
-            </ShopSelect>
-          </Field>
-          {supersededRequired ? (
-            <Field label="被谁取代">
-              <ShopInput
-                value={form.supersededBy}
-                onChange={(e) => update("supersededBy", e.target.value)}
-                disabled={disabled}
-                placeholder="另一个 emailKey"
-              />
-            </Field>
-          ) : null}
-        </div>
+        </InspectorPanelSection>
 
-        <div className="theme-panel__group">
-          <h3 className="theme-panel__group-title">投递信息</h3>
-          <Field label="主题行 subject">
+        <InspectorPanelSection title="投递信息" className="meta-editor__section">
+          <Field label="主题行" className="meta-editor__field">
             <ShopInput
               value={form.subject}
               onChange={(e) => update("subject", e.target.value)}
               disabled={disabled}
-              placeholder="邮件主题（收件箱第一行）"
+              placeholder="收件箱第一行（subject）"
             />
           </Field>
-          <Field label="预览文本 preheader">
+          <Field label="预览摘要" className="meta-editor__field">
             <ShopInput
               value={form.preheader}
               onChange={(e) => update("preheader", e.target.value)}
               disabled={disabled}
-              placeholder="收件箱第二行的隐藏摘要"
+              placeholder="收件箱第二行（preheader）"
             />
           </Field>
-          <Field label="发件人显示名">
-            <ShopInput
-              value={form.senderName}
-              onChange={(e) => update("senderName", e.target.value)}
-              disabled={disabled}
-            />
-          </Field>
-          <Field label="发件人地址">
-            <ShopInput
-              type="email"
-              value={form.senderEmail}
-              onChange={(e) => update("senderEmail", e.target.value)}
-              disabled={disabled}
-              placeholder="noreply@example.com"
-            />
-          </Field>
-          <Field label="Campaign Tag">
-            <ShopInput
-              value={form.campaignTag}
-              onChange={(e) => update("campaignTag", e.target.value)}
-              disabled={disabled}
-              placeholder="例如：engagement_q2_grooming"
-            />
-          </Field>
-        </div>
-
-        <div className="theme-panel__group">
-          <h3 className="theme-panel__group-title">设计源</h3>
-          <Field label="来源类型">
-            <ShopSelect
-              value={form.designSourceType}
-              disabled={disabled}
-              style={{ width: "100%" }}
-              onChange={(v) =>
-                update(
-                  "designSourceType",
-                  (typeof v === "string" ? v : form.designSourceType) as FormState["designSourceType"]
-                )
-              }
-            >
-              {DESIGN_SOURCE_TYPE_OPTIONS.map((o) => (
-                <ShopSelect.Option key={o.value} value={o.value}>
-                  {o.label}
-                </ShopSelect.Option>
-              ))}
-            </ShopSelect>
-          </Field>
-          <Field label="链接">
-            <ShopInput
-              type="url"
-              value={form.designSourceUrl}
-              onChange={(e) => update("designSourceUrl", e.target.value)}
-              disabled={disabled}
-              placeholder="https://www.figma.com/..."
-            />
-          </Field>
-        </div>
-
-        <p className="inspector__muted meta-editor__hint">
-          失焦或停止输入 500ms 后自动写入 <code>meta.json</code>。
-        </p>
+        </InspectorPanelSection>
       </div>
-    </aside>
+  );
+
+  return (
+    <>
+      {isEmbedded ? (
+        <>
+          <div className="side-inspector__headrow meta-editor__headrow">
+            <h2 className="side-panel__title">邮件元信息</h2>
+            <div className="resource-text-actions meta-editor__head-actions" role="group" aria-label="元信息操作">
+              <button
+                type="button"
+                className="resource-text-action"
+                disabled={disabled || savingMeta || !dirty}
+                onClick={() => void saveMeta(form)}
+                title="保存元信息到 meta.json"
+              >
+                {savingMeta ? "保存中…" : "保存"}
+              </button>
+              <button
+                type="button"
+                className="resource-text-action"
+                disabled={disabled || savingMeta || !dirty}
+                onClick={() => setForm(savedForm)}
+                title="还原到最近一次已保存状态"
+              >
+                还原
+              </button>
+            </div>
+          </div>
+          {content}
+        </>
+      ) : (
+        <aside className="block-tree meta-editor" aria-label="邮件元信息">
+          <div className="block-tree__title">邮件元信息</div>
+          {content}
+        </aside>
+      )}
+      <SendTestEmailModal
+        visible={sendTestOpen}
+        sending={sending}
+        disabled={disabled}
+        smtpStatus={smtpStatus}
+        displayName={form.displayName}
+        emailKey={emailKey ?? ""}
+        subject={form.subject}
+        preheader={form.preheader}
+        onCancel={() => {
+          if (!sending) setSendTestOpen(false);
+        }}
+        onSend={handleSendTestEmail}
+      />
+    </>
   );
 }

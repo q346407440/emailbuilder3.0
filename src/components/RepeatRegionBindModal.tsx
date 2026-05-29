@@ -40,7 +40,9 @@ import {
 } from "../lib/repeatNestedBindingUi";
 import { Field } from "./ui/Field";
 import { ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ui/ShopFormControls";
+import { SelectablePickerRadioCell } from "./ui/SelectablePickerRadioCell";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
+import { PickerTreeTable } from "./ui/PickerTreeTable";
 
 const LOOP_SCOPE_OPTIONS: Array<{ value: RepeatLoopScope; label: string }> = [
   { value: "parentOnly", label: "只循环父级列表" },
@@ -48,21 +50,35 @@ const LOOP_SCOPE_OPTIONS: Array<{ value: RepeatLoopScope; label: string }> = [
   { value: "childOnly", label: "只循环子级列表" },
 ];
 
-type WizardStepId = "scope" | "parent" | "child" | "parentMap" | "childMap";
+type WizardStepId =
+  | "parentSlot"
+  | "scope"
+  | "parentTemplate"
+  | "child"
+  | "parentMap"
+  | "childMap";
 
 type WizardStep = { id: WizardStepId; title: string };
 
 function buildWizardSteps(args: {
+  showLoopScope: boolean;
   loopScope: RepeatLoopScope;
+  showParentSection: boolean;
+  hideParentTemplateStep: boolean;
   showChildSection: boolean;
   showParentMapping: boolean;
   showChildMapping: boolean;
 }): WizardStep[] {
-  const steps: WizardStep[] = [{ id: "scope", title: "循环范围" }];
-  steps.push({
-    id: "parent",
-    title: args.loopScope === "childOnly" ? "父级变量" : "父级列表",
-  });
+  const steps: WizardStep[] = [{ id: "parentSlot", title: "列表变量" }];
+  if (args.showLoopScope) {
+    steps.push({ id: "scope", title: "循环范围" });
+  }
+  if (args.showParentSection && !args.hideParentTemplateStep) {
+    steps.push({
+      id: "parentTemplate",
+      title: args.loopScope === "childOnly" ? "父级变量" : "父级行模板",
+    });
+  }
   if (args.showParentMapping) {
     steps.push({ id: "parentMap", title: "父级字段映射" });
   }
@@ -174,6 +190,8 @@ export type RepeatRegionBindModalProps = {
   anchorItemIndex?: number;
   parentTargetFieldOptions: RepeatTargetFieldOption[];
   childTargetFieldOptions?: RepeatTargetFieldOption[];
+  /** 简化模式：父级行模板由外层自动确定，向导中不再展示该步骤 */
+  hideParentTemplateStep?: boolean;
   repeatSlotId: string;
   repeatPrototypeOptionKey: string;
   parentMappingDraft: Record<string, string>;
@@ -217,6 +235,7 @@ export function RepeatRegionBindModal({
   anchorItemIndex = 0,
   parentTargetFieldOptions,
   childTargetFieldOptions = [],
+  hideParentTemplateStep = false,
   repeatSlotId,
   repeatPrototypeOptionKey,
   parentMappingDraft,
@@ -241,16 +260,27 @@ export function RepeatRegionBindModal({
   const showChildSection = loopScope === "parentAndChild" || loopScope === "childOnly";
   const showParentMapping = showParentSection && loopScope !== "childOnly";
   const showChildMapping = showChildSection && childTargetFieldOptions.length > 0;
-  const wizardMode = showLoopScope;
+  const wizardMode = true;
   const wizardSteps = useMemo(
     () =>
       buildWizardSteps({
+        showLoopScope,
         loopScope,
+        showParentSection,
+        hideParentTemplateStep,
         showChildSection,
         showParentMapping,
         showChildMapping,
       }),
-    [loopScope, showChildSection, showParentMapping, showChildMapping]
+    [
+      showLoopScope,
+      loopScope,
+      showParentSection,
+      hideParentTemplateStep,
+      showChildSection,
+      showParentMapping,
+      showChildMapping,
+    ]
   );
   const [wizardStepIndex, setWizardStepIndex] = useState(0);
   const currentWizardStep = wizardSteps[wizardStepIndex];
@@ -292,7 +322,10 @@ export function RepeatRegionBindModal({
 
   const validateWizardStep = (stepId: WizardStepId | undefined): string | null => {
     if (!stepId) return null;
-    if (stepId === "parent") {
+    if (stepId === "parentSlot") {
+      if (!repeatSlotId) return "请选择父级列表变量。";
+    }
+    if (stepId === "parentTemplate") {
       if (!repeatSlotId) return "请选择父级列表变量。";
       if (showParentSection && !repeatPrototypeOptionKey) return "请选择父级行模板。";
     }
@@ -408,11 +441,11 @@ export function RepeatRegionBindModal({
   const parentRowTemplateStep =
     showParentSection && parentPickerContextRootIds.length > 0 && parentPickerOptions.length > 0 ? (
       <Field
-        label={canvasMode ? "父级重复范围" : "父级行模板"}
+        label={canvasMode ? "父级重复范围" : "父级行模板（每条数据渲染成一行）"}
         className="inspector-field--modal-table"
       >
         <p className="repeat-region-bind-modal__section-hint inspector__muted">
-          在列表循环容器下的区块树中点选；单块仅复制该块，layout/grid 则复制该容器及其子级。
+          仅可选择父级循环容器下的第一层子块作为行模板；行模板内部子块会随行自动复制，无需单独选择。
         </p>
         <RepeatPrototypePickerTable
           template={template}
@@ -434,7 +467,7 @@ export function RepeatRegionBindModal({
         ) : null}
       </Field>
     ) : showParentSection ? (
-      <Field label={canvasMode ? "父级重复范围" : "父级行模板"}>
+      <Field label={canvasMode ? "父级重复范围" : "父级行模板（每条数据渲染成一行）"}>
         <p className="repeat-region-bind-modal__empty-hint">当前没有可选的父级行模板。</p>
       </Field>
     ) : null;
@@ -587,15 +620,12 @@ export function RepeatRegionBindModal({
 
   const renderWizardStepBody = () => {
     switch (currentWizardStep?.id) {
+      case "parentSlot":
+        return parentSlotStep;
       case "scope":
         return scopeStepContent;
-      case "parent":
-        return (
-          <>
-            {parentSlotStep}
-            {parentRowTemplateStep}
-          </>
-        );
+      case "parentTemplate":
+        return parentRowTemplateStep;
       case "child":
         return (
           <>
@@ -611,39 +641,6 @@ export function RepeatRegionBindModal({
         return null;
     }
   };
-
-  const renderLegacySinglePage = () => (
-    <>
-      {scopePreviewBlock}
-      {scopeStepContent}
-      {parentSlotStep}
-      {parentRowTemplateStep}
-      {showChildSection ? (
-        <Field label="子级列表">
-          {childCollectionStep}
-          {childRowTemplateStep}
-        </Field>
-      ) : null}
-      {showParentMapping && repeatCandidate && parentTargetFieldOptions.length > 0 ? (
-        <Field label="父级字段映射" className="inspector-field--modal-table">
-          {parentMappingStep}
-        </Field>
-      ) : null}
-      {showChildMapping && repeatCandidate && onChildMappingDraftChange ? (
-        <Field label="子级字段映射" className="inspector-field--modal-table">
-          {childMappingStep}
-        </Field>
-      ) : null}
-      {repeatCandidate &&
-      !showParentMapping &&
-      !showChildMapping &&
-      (loopScope === "parentOnly" || loopScope === "childOnly") ? (
-        <p className="repeat-region-bind-modal__empty-hint">
-          行模板内没有可映射的业务字段，将沿用模板已有变量绑定。
-        </p>
-      ) : null}
-    </>
-  );
 
   return (
     <ShopSectionModal
@@ -665,9 +662,9 @@ export function RepeatRegionBindModal({
               <ShopSecondaryButton
                 htmlType="button"
                 onClick={onRemove}
-                title="将物化为静态预览行，并清除父级与子级列表循环"
+                title="将物化为静态预览行，并清除列表循环"
               >
-                解除列表绑定（含子级 skus）
+                解除列表绑定
               </ShopSecondaryButton>
             ) : null}
           </div>
@@ -714,14 +711,10 @@ export function RepeatRegionBindModal({
         }`}
       >
         {scopePreviewBlock}
-        {wizardMode ? (
-          <>
-            <WizardStepNav steps={wizardSteps} currentIndex={wizardStepIndex} />
-            <div className="repeat-region-bind-modal__wizard-body">{renderWizardStepBody()}</div>
-          </>
-        ) : (
-          renderLegacySinglePage()
-        )}
+        <>
+          <WizardStepNav steps={wizardSteps} currentIndex={wizardStepIndex} />
+          <div className="repeat-region-bind-modal__wizard-body">{renderWizardStepBody()}</div>
+        </>
       </div>
     </ShopSectionModal>
   );
@@ -992,41 +985,35 @@ function CollectionSlotPickerTable({
     : "repeat-region-collection-slot";
 
   return (
-    <div
-      className="text-body-var-pill-modal__table-wrap repeat-region-bind-modal__table-viewport repeat-region-bind-modal__slot-picker-wrap"
+    <PickerTreeTable
+      className="repeat-region-bind-modal__slot-picker-wrap"
       role={slotReadOnly ? "group" : "radiogroup"}
-      aria-label={
+      ariaReadonly={slotReadOnly}
+      ariaLabel={
         pickNestedChild
           ? "可选子级列表"
           : slotReadOnly
             ? "已选父级列表变量"
             : "可选列表变量"
       }
-    >
-      <table className="text-body-var-pill-modal__table">
-        <thead>
-          <tr>
-            <th className="text-body-var-pill-modal__th text-body-var-pill-modal__th--radio" scope="col">
-              <span className="text-body-var-pill-modal__sr-only">
-                {slotReadOnly ? "展开" : "选择"}
-              </span>
-            </th>
-            <th className="text-body-var-pill-modal__th" scope="col">
-              名称
-            </th>
-            <th className="text-body-var-pill-modal__th" scope="col">
-              标识
-            </th>
-            <th className="text-body-var-pill-modal__th text-body-var-pill-modal__th--type" scope="col">
-              类型
-            </th>
-            <th className="text-body-var-pill-modal__th" scope="col">
-              首项示例
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {candidates.flatMap((candidate) => {
+      columns={[
+        {
+          key: "radio",
+          className: "text-body-var-pill-modal__th text-body-var-pill-modal__th--radio",
+          title: (
+            <span className="text-body-var-pill-modal__sr-only">{slotReadOnly ? "展开" : "选择"}</span>
+          ),
+        },
+        { key: "name", className: "text-body-var-pill-modal__th", title: "名称" },
+        { key: "id", className: "text-body-var-pill-modal__th", title: "标识" },
+        {
+          key: "type",
+          className: "text-body-var-pill-modal__th text-body-var-pill-modal__th--type",
+          title: "类型",
+        },
+        { key: "value", className: "text-body-var-pill-modal__th", title: "首项示例" },
+      ]}
+      body={candidates.flatMap((candidate) => {
             const selected = candidate.key === selectedSlotId;
             const example = formatCollectionSlotListSummary(
               payload,
@@ -1093,14 +1080,11 @@ function CollectionSlotPickerTable({
                       aria-hidden
                     />
                   ) : (
-                    <input
-                      type="radio"
+                    <SelectablePickerRadioCell
                       name={radioGroupName}
-                      className="text-body-var-pill-modal__radio"
                       checked={selected}
+                      label={`选择 ${candidate.label}`}
                       onChange={() => onSelectSlotId(candidate.key)}
-                      onClick={(e) => e.stopPropagation()}
-                      aria-label={`选择 ${candidate.label}`}
                     />
                   )}
                 </td>
@@ -1169,14 +1153,11 @@ function CollectionSlotPickerTable({
                         {isGroupOpen ? "▼" : "▶"}
                       </button>
                       {pickNestedChild ? (
-                        <input
-                          type="radio"
+                        <SelectablePickerRadioCell
                           name={radioGroupName}
-                          className="text-body-var-pill-modal__radio"
                           checked={Boolean(pathSelected)}
+                          label={`选择 ${groupLabel}`}
                           onChange={() => nestedCollectionSelection?.onSelectPath(entry.path)}
-                          onClick={(e) => e.stopPropagation()}
-                          aria-label={`选择 ${groupLabel}`}
                         />
                       ) : null}
                     </td>
@@ -1232,9 +1213,7 @@ function CollectionSlotPickerTable({
 
             return [mainRow, ...detailRows];
           })}
-        </tbody>
-      </table>
-    </div>
+    />
   );
 }
 
@@ -1302,7 +1281,6 @@ function RepeatPrototypePickerTable({
       return next;
     });
   };
-
   const treeRowClass = (depth: number, extra = "") =>
     `text-body-var-pill-modal__row${depth > 0 ? " text-body-var-pill-modal__row--nested" : ""}${extra}`;
 
@@ -1362,7 +1340,7 @@ function RepeatPrototypePickerTable({
           </td>
           <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">{row.typeLabel}</td>
           <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value inspector__muted">
-            —
+            不可单独选择（随行模板自动复制）
           </td>
         </tr>
       );
@@ -1376,6 +1354,7 @@ function RepeatPrototypePickerTable({
     const hint = disabled
       ? "该行模板已在父级步骤选用，不可再选为子级行模板。"
       : `循环写在「${row.hostLabel}」；${row.modeLabel}。${row.description}`;
+
     return (
       <tr
         key={row.rowKey}
@@ -1420,15 +1399,12 @@ function RepeatPrototypePickerTable({
           ) : (
             <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
           )}
-          <input
-            type="radio"
+          <SelectablePickerRadioCell
             name={`repeat-region-prototype-${ariaLabel}`}
-            className="text-body-var-pill-modal__radio"
             checked={selected}
             disabled={readOnly || disabled}
+            label={`选择 ${row.label}，${row.modeLabel}`}
             onChange={() => onSelectOptionKey(row.optionKey)}
-            onClick={(e) => e.stopPropagation()}
-            aria-label={`选择 ${row.label}，${row.modeLabel}`}
           />
         </td>
         <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
@@ -1453,37 +1429,28 @@ function RepeatPrototypePickerTable({
   }
 
   return (
-    <div
-      className="text-body-var-pill-modal__table-wrap repeat-region-bind-modal__table-viewport repeat-region-bind-modal__slot-picker-wrap"
+    <PickerTreeTable
+      className="repeat-region-bind-modal__slot-picker-wrap"
       role="radiogroup"
-      aria-label={ariaLabel}
-      aria-readonly={readOnly || undefined}
-    >
-      <table className="text-body-var-pill-modal__table">
-        <thead>
-          <tr>
-            <th className="text-body-var-pill-modal__th text-body-var-pill-modal__th--radio" scope="col">
-              <span className="text-body-var-pill-modal__sr-only">选择</span>
-            </th>
-            <th className="text-body-var-pill-modal__th" scope="col">
-              名称
-            </th>
-            <th className="text-body-var-pill-modal__th" scope="col">
-              标识
-            </th>
-            <th className="text-body-var-pill-modal__th text-body-var-pill-modal__th--type" scope="col">
-              类型
-            </th>
-            <th className="text-body-var-pill-modal__th" scope="col">
-              说明
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleRows.map((row) => renderRepeatPrototypePickerRow(row))}
-        </tbody>
-      </table>
-    </div>
+      ariaLabel={ariaLabel}
+      ariaReadonly={readOnly}
+      columns={[
+        {
+          key: "radio",
+          className: "text-body-var-pill-modal__th text-body-var-pill-modal__th--radio",
+          title: <span className="text-body-var-pill-modal__sr-only">选择</span>,
+        },
+        { key: "name", className: "text-body-var-pill-modal__th", title: "名称" },
+        { key: "id", className: "text-body-var-pill-modal__th", title: "标识" },
+        {
+          key: "type",
+          className: "text-body-var-pill-modal__th text-body-var-pill-modal__th--type",
+          title: "类型",
+        },
+        { key: "desc", className: "text-body-var-pill-modal__th", title: "说明" },
+      ]}
+      body={visibleRows.map((row) => renderRepeatPrototypePickerRow(row))}
+    />
   );
 }
 

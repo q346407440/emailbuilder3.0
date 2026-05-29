@@ -117,7 +117,7 @@ function migrateTemplate(template: EmailTemplate): {
       blockChanged = true;
     }
     if (!body) {
-      body = { version: 1, paragraphs: [{ runs: [{ text: "" }] }] };
+      body = { paragraphs: [{ runs: [{ text: "" }] }] };
       props.textBody = body;
       textBodyCreated += 1;
       blockChanged = true;

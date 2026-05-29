@@ -17,8 +17,7 @@ function block(
     children,
     props: {
       content: "<p>x</p>",
-      textBody: { version: 1, paragraphs: [{ runs: [{ text: "x" }] }] },
-      fontFamily: "Arial, sans-serif",
+      textBody: { paragraphs: [{ runs: [{ text: "x" }] }] },
       fontSize: "14px",
       color: "#111",
       bold: false,

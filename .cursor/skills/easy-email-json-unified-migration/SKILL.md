@@ -32,12 +32,12 @@ skills **只**保留流程与交付检查语义；**禁止**在 skills 内维护
 - [ ] 全部模板已迁到新结构；**`npm run validate:all`** 通过。
 - [ ] **`type: "icon"`** 仅 `src` / `color` / `size`（或契约允许项）；无废弃来源字段（迁移脚本见 **`package.json`** `migrate:icon-url-only`）。
 - [ ] **禁止字段**：`wrapperStyle.selfAlign`、`backgroundContentAlign`、`overlayInset` 等 → **`validate.ts`** + **`render-defaults-contract`**；可用 **`npx tsx scripts/strip-forbidden-wrapper-fields.ts --write`** 清理 **strip 已实现的 wrapper 项**。  
-- [ ] **`layout.props.crossAlign`**：**由 `validate.ts` 拒绝**；须手工或专用迁移删除并改子块 **`placement`**；**不**在 `strip-forbidden-wrapper-fields` 中处理；**不以 `rules.ts` 为 crossAlign 真源**。
+- [ ] **`layout.props.crossAlign`**：**由 `validate.ts` 拒绝**；须手工删除并改为子块 **`contentAlign`** 或嵌套 **`layout`**；**不**在 `strip-forbidden-wrapper-fields` 中处理。
 - [ ] 无「页面主容器」无意义中间 layout（见 **`validate.ts`** / **`email-config-motherboard`**）；相关迁移见 **`package.json`**（如 `migrate:flatten-root`）。
 - [ ] **`emailRoot.props`**：`gapMode` / `gap`（`gap` 非空）；根 **`direction` / `contentAlign`** 不写（见 **`render-defaults-contract`**）。
-- [ ] 除 **`emailRoot`** 外：双轴 **`wrapperStyle.contentAlign`** + **`wrapperStyle.placement`**（以 **`validate.ts`** 为准）。
+- [ ] 除 **`emailRoot`** 外：双轴 **`wrapperStyle.contentAlign`**（**禁止非法 `wrapperStyle` 字段）。
 - [ ] **`border` / `borderRadius`** 两级 mode 对象；无字符串短写（迁移见 **`package.json`** `migrate:border-mode`）。
-- [ ] **`SpacingValue`**：`unified` 仅单边长度；四边不同用 **`separate`**；禁止 unified 多值简写（**`validate.ts`**；存量 **`npm run normalize:spacing-unified:write`**）。
+- [ ] **`SpacingValue`**：`unified` 仅单边长度；四边不同用 **`separate`**；禁止 unified 多值简写（**`validate.ts`**）。
 - [ ] Inspector 与 JSON 能力对齐（新增字段时同步三处）。
 - [ ] 无「读旧字段兜底」的分支代码。
 - [ ] skills 无与 **`block-contract`** / **`render-defaults-contract`** 冲突的第二份键表。

@@ -1,3 +1,4 @@
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 一次性脚手架：按 Dr. Martens「Made in England」设计图生成 made-in-england-gift 邮件目录。
  * 运行：node scripts/scaffold-made-in-england-gift.mjs
@@ -139,7 +140,7 @@ function collBinding(slotId, slotPath, opts = {}) {
 
 function baseWrapper(overrides = {}) {
   return {
-    placement: { horizontal: "start", vertical: "start" },
+    contentAlign: contentAlignFromAxes("start", "start"),
     widthMode: "fill",
     heightMode: "hug",
     border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
@@ -202,8 +203,10 @@ function textBlock(id, parentId, html, text, bindings, style = {}) {
     children: [],
     wrapperStyle: baseWrapper({
       widthMode: style.widthMode ?? "fill",
-      placement: style.placement,
-      contentAlign: style.contentAlign ?? { horizontal: "left", vertical: "top" },
+      contentAlign:
+        style.contentAlign ??
+        axesAlignRecord(style.contentAlignAxes) ??
+        { horizontal: "left", vertical: "top" },
       backgroundColor: style.backgroundColor,
       padding: style.padding,
       border: style.border ?? (hasBg ? { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" } : undefined),
@@ -211,8 +214,7 @@ function textBlock(id, parentId, html, text, bindings, style = {}) {
     }),
     props: {
       content: html,
-      textBody: { version: 1, paragraphs: [{ runs: [{ text, ...style.runStyle }] }] },
-      fontFamily: themeRef(style.fontFamily ?? "fonts.body"),
+      textBody: { paragraphs: [{ runs: [{ text, ...style.runStyle }] }] },
       fontSize: themeRef(style.fontSize ?? "tokens.typography.body"),
       color: style.color ? (typeof style.color === "string" ? style.color : themeRef(style.color)) : themeRef("colors.primary"),
       bold: style.bold ?? false,
@@ -220,7 +222,6 @@ function textBlock(id, parentId, html, text, bindings, style = {}) {
       decoration: "none",
     },
     bindings: {
-      "props.fontFamily": themeBinding(style.fontFamily ?? "fonts.body"),
       "props.fontSize": themeBinding(style.fontSize ?? "tokens.typography.body"),
       ...(typeof style.color === "string"
         ? {}
@@ -247,8 +248,10 @@ function buttonBlock(id, parentId, label, url, bindings, style = {}) {
     children: [],
     wrapperStyle: baseWrapper({
       widthMode: style.widthMode ?? "hug",
-      placement: style.placement ?? { horizontal: "center", vertical: "start" },
-      contentAlign: style.contentAlign ?? { horizontal: "center", vertical: "center" },
+      contentAlign:
+        style.contentAlign ??
+        axesAlignRecord(style.contentAlignAxes) ??
+        { horizontal: "center", vertical: "center" },
     }),
     props: {
       text: label,
@@ -256,7 +259,6 @@ function buttonBlock(id, parentId, label, url, bindings, style = {}) {
       buttonStyle: {
         backgroundColor: bg,
         textColor: style.textColor ?? "#FFFFFF",
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         border,
         borderRadius: radius,
@@ -269,7 +271,6 @@ function buttonBlock(id, parentId, label, url, bindings, style = {}) {
       ...(typeof style.backgroundColor !== "string" && !style.backgroundColor
         ? { "props.buttonStyle.backgroundColor": themeBinding("colors.primary") }
         : {}),
-      "props.buttonStyle.fontFamily": themeBinding("fonts.body"),
       "props.buttonStyle.fontSize": themeBinding("tokens.typography.body"),
       "props.buttonStyle.borderRadius.radius":
         typeof radius.radius === "object" && radius.radius?.$themeRef
@@ -364,7 +365,7 @@ function buildProductCell(cellId, index) {
       },
       {
         widthMode: "hug",
-        placement: { horizontal: "end", vertical: "start" },
+        contentAlign: contentAlignFromAxes("end", "start"),
         contentAlign: { horizontal: "center", vertical: "top" },
         backgroundColor: "#FFF200",
         color: "#000000",
@@ -382,7 +383,7 @@ function buildProductCell(cellId, index) {
       {
         "props.textBody.paragraphs.0.runs.0.text": collBinding("products", `${index}.title`),
       },
-      { fontSize: "tokens.typography.body", bold: true, fontFamily: "fonts.heading" }
+      { fontSize: "tokens.typography.body", bold: true }
     ),
     [desc]: textBlock(
       desc,
@@ -430,7 +431,7 @@ function buildCategoryCell(cellId, index, defaults) {
         textColor: item.textColor,
         borderRadius: { mode: "unified", radius: "0" },
         padding: { mode: "separate", top: "16px", right: "12px", bottom: "16px", left: "12px" },
-        placement: { horizontal: "center", vertical: "center" },
+        contentAlign: contentAlignFromAxes("center", "center"),
         border: { mode: "unified", width: "1px", style: "solid", color: item.borderColor },
       }
     ),
@@ -592,7 +593,7 @@ function buildTemplate() {
         },
         {
           contentAlign: { horizontal: "center", vertical: "center" },
-          placement: { horizontal: "center", vertical: "center" },
+          contentAlign: contentAlignFromAxes("center", "center"),
           color: "#FFF200",
           fontSize: "tokens.typography.caption",
           bold: true,
@@ -610,7 +611,7 @@ function buildTemplate() {
         parentId: `${P}-mod-logo`,
         children: [`${P}-logo-mark`],
         wrapperStyle: baseWrapper({
-          placement: { horizontal: "center", vertical: "center" },
+          contentAlign: contentAlignFromAxes("center", "center"),
           contentAlign: { horizontal: "center", vertical: "center" },
           padding: { mode: "unified", unified: "20px" },
         }),
@@ -630,7 +631,7 @@ function buildTemplate() {
         },
         {
           widthMode: "hug",
-          placement: { horizontal: "center", vertical: "center" },
+          contentAlign: contentAlignFromAxes("center", "center"),
           contentAlign: { horizontal: "center", vertical: "center" },
           backgroundColor: "#FFF200",
           color: "#000000",
@@ -662,7 +663,7 @@ function buildTemplate() {
             label: "主标题",
           }),
         },
-        { fontSize: "tokens.typography.display", bold: true, fontFamily: "fonts.heading" }
+        { fontSize: "tokens.typography.display", bold: true }
       ),
       [`${P}-hero-img`]: imageBlock(
         `${P}-hero-img`,
@@ -787,7 +788,7 @@ function buildTemplate() {
             label: "Gift Guide 标题",
           }),
         },
-        { fontSize: "tokens.typography.h1", bold: true, fontFamily: "fonts.heading", widthMode: "hug" }
+        { fontSize: "tokens.typography.h1", bold: true, widthMode: "hug" }
       ),
       [`${P}-gift-cta`]: buttonBlock(
         `${P}-gift-cta`,
@@ -807,7 +808,7 @@ function buildTemplate() {
           borderRadius: { mode: "unified", radius: "0" },
           padding: { mode: "separate", top: "10px", right: "16px", bottom: "10px", left: "16px" },
           widthMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
+          contentAlign: contentAlignFromAxes("start", "start"),
         }
       ),
       [`${P}-gift-img`]: imageBlock(
@@ -896,7 +897,7 @@ function buildTemplate() {
         },
         wrapperStyle: baseWrapper({
           widthMode: "hug",
-          placement: { horizontal: "end", vertical: "center" },
+          contentAlign: contentAlignFromAxes("end", "center"),
           contentAlign: { horizontal: "right", vertical: "center" },
         }),
         props: { direction: "horizontal", gapMode: "fixed", gap: "12px" },
@@ -1065,7 +1066,7 @@ function buildTemplate() {
         parentId: null,
         children: rootChildren,
         wrapperStyle: {
-          placement: { horizontal: "center" },
+          contentAlign: contentAlignFromAxes("center", "start"),
           widthMode: "fill",
           heightMode: "hug",
         },
@@ -1122,16 +1123,12 @@ const tokenPresets = {
   presets: {
     default: {
       label: "Dr. Martens Made in England",
-      description: "黑底黄强调、奶油 Hero、白底商品区与标准 14 键间距字号。",
+      description: "黑底黄强调、奶油 Hero、白底商品区与标准 12 键间距字号。",
       tokens: {
         colors: {
           primary: "#000000",
           secondary: "#9CA3AF",
           surface: "#FFFFFF",
-        },
-        fonts: {
-          heading: "Georgia",
-          body: "Helvetica, Arial, sans-serif",
         },
         spacing: {
           section: "24px",
@@ -1223,13 +1220,8 @@ const meta = {
   description:
     "按设计图还原：顶栏包邮、Logo、Hero、导语 CTA、2×3 商品循环列表、Gift Guide、分类 2×2、页脚社媒与法律信息。含样式预设与 payload 变量。",
   source: "agent",
-  status: "draft",
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
-  designSource: {
-    type: "screenshot",
-    url: "give-handcrafted-this-holiday-95fcc805-e434-4cac-b3af-d2b57774044a.png",
-  },
   defaultStylePresetSelection: {
     presetId: "default",
     source: "email",

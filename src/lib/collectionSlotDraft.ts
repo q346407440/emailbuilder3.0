@@ -1,3 +1,13 @@
+import type {
+  BuiltinAlbumListConfig,
+  BuiltinProductListConfig,
+} from "../payload-contract/collection-builtin-catalog-config";
+import {
+  DEFAULT_BUILTIN_ALBUM_LIST_CONFIG,
+  DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG,
+  normalizeBuiltinAlbumListConfig,
+  normalizeBuiltinProductListConfig,
+} from "../payload-contract/collection-builtin-catalog-config";
 import type { BuiltinCollectionCatalogId, CollectionDataSource } from "../payload-contract/collection-data-source";
 import { defaultCollectionDataSource } from "../payload-contract/collection-data-source";
 import {
@@ -46,20 +56,39 @@ export type CollectionEditorSnapshot = {
   catalog: BuiltinCollectionCatalogId;
   sort: BuiltinCollectionSortId;
   extract: BuiltinCollectionExtract;
+  productConfig?: BuiltinProductListConfig;
+  albumConfig?: BuiltinAlbumListConfig;
 };
 
 function kindToDataSource(
   kind: CollectionDataSourceKind,
   catalog: BuiltinCollectionCatalogId,
   sort: BuiltinCollectionSortId,
-  extract: BuiltinCollectionExtract
+  extract: BuiltinCollectionExtract,
+  productConfig?: BuiltinProductListConfig,
+  albumConfig?: BuiltinAlbumListConfig
 ): CollectionDataSource {
   if (kind === "custom") return { type: "custom" };
   const base = { type: "remote" as const, provider: "builtin" as const, catalog, sort };
-  if (extract.kind === "similarTo") {
-    return { ...base, extract };
+  const withExtract =
+    extract.kind === "similarTo" || extract.kind === "complement"
+      ? { ...base, extract }
+      : base;
+  if (catalog === "products") {
+    return {
+      ...withExtract,
+      productConfig: normalizeBuiltinProductListConfig(
+        productConfig ?? DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG
+      ),
+    };
   }
-  return base;
+  if (catalog === "albums") {
+    return {
+      ...withExtract,
+      albumConfig: normalizeBuiltinAlbumListConfig(albumConfig ?? DEFAULT_BUILTIN_ALBUM_LIST_CONFIG),
+    };
+  }
+  return withExtract;
 }
 
 export { builtinCatalogLabel };
@@ -82,6 +111,8 @@ function writeCacheFromSnapshot(
       catalog: snapshot.catalog,
       sort: snapshot.sort,
       extract: snapshot.extract,
+      productConfig: snapshot.productConfig,
+      albumConfig: snapshot.albumConfig,
       ...(fieldMap !== undefined ? { fieldMap: { ...fieldMap } } : {}),
     };
   }
@@ -136,6 +167,8 @@ function readSnapshotFromCache(
       catalog: caches.builtin.catalog,
       sort: caches.builtin.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT,
       extract: normalizeBuiltinCollectionExtract(caches.builtin.extract),
+      productConfig: caches.builtin.productConfig,
+      albumConfig: caches.builtin.albumConfig,
     };
   }
 
@@ -198,7 +231,9 @@ export function switchCollectionDataSourceDraft(
     nextKind,
     nextSnapshot.catalog,
     nextSnapshot.sort,
-    nextSnapshot.extract
+    nextSnapshot.extract,
+    nextSnapshot.productConfig,
+    nextSnapshot.albumConfig
   );
 
   return {
@@ -224,7 +259,9 @@ export function patchCollectionDraftSnapshot(
     snapshot.kind,
     snapshot.catalog,
     snapshot.sort,
-    snapshot.extract
+    snapshot.extract,
+    snapshot.productConfig,
+    snapshot.albumConfig
   );
   const caches = writeCacheFromSnapshot(
     { ...draft.collectionSources },
@@ -283,8 +320,18 @@ export function draftToCollectionSnapshot(
     base.catalog = ds.catalog ?? draft.collectionSources?.builtin?.catalog ?? "products";
     base.sort = ds.sort ?? base.sort;
     base.extract = normalizeBuiltinCollectionExtract(ds.extract);
+    base.productConfig =
+      ds.productConfig ??
+      draft.collectionSources?.builtin?.productConfig ??
+      DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG;
+    base.albumConfig =
+      ds.albumConfig ??
+      draft.collectionSources?.builtin?.albumConfig ??
+      DEFAULT_BUILTIN_ALBUM_LIST_CONFIG;
   } else if (draft.collectionSources?.builtin?.catalog) {
     base.catalog = draft.collectionSources.builtin.catalog;
+    base.productConfig = draft.collectionSources.builtin.productConfig;
+    base.albumConfig = draft.collectionSources.builtin.albumConfig;
   }
 
   return base;
@@ -302,9 +349,67 @@ function refreshBuiltinPreviewItems(
     itemFields,
     snapshot.fixedLength,
     snapshot.sort,
-    { payload, slotId, extract: snapshot.extract }
+    {
+      payload: {
+        ...payload,
+        slots: {
+          ...payload.slots,
+          [slotId]: {
+            ...payload.slots[slotId],
+            dataSource: kindToDataSource(
+              "builtin",
+              snapshot.catalog,
+              snapshot.sort,
+              snapshot.extract,
+              snapshot.productConfig,
+              snapshot.albumConfig
+            ),
+          },
+        },
+      },
+      slotId,
+      extract: snapshot.extract,
+    }
   );
   return { ...snapshot, items };
+}
+
+/** 内置商品列表场景配置变更并刷新预览 */
+export function applyBuiltinProductConfigToDraft(
+  draft: PayloadSlotDraft,
+  snapshot: CollectionEditorSnapshot,
+  itemFields: BindingCollectionField[],
+  productConfig: BuiltinProductListConfig,
+  payload: EmailPayload,
+  slotId: string
+): PayloadSlotDraft {
+  if (snapshot.kind !== "builtin") return draft;
+  const nextSnap = refreshBuiltinPreviewItems(
+    { ...snapshot, productConfig: normalizeBuiltinProductListConfig(productConfig) },
+    itemFields,
+    payload,
+    slotId
+  );
+  return patchCollectionDraftSnapshot(draft, nextSnap);
+}
+
+/** 内置专辑列表场景配置变更并刷新预览 */
+export function applyBuiltinAlbumConfigToDraft(
+  draft: PayloadSlotDraft,
+  snapshot: CollectionEditorSnapshot,
+  itemFields: BindingCollectionField[],
+  albumConfig: BuiltinAlbumListConfig,
+  payload: EmailPayload,
+  slotId: string
+): PayloadSlotDraft {
+  if (snapshot.kind !== "builtin") return draft;
+  const nextSnap = refreshBuiltinPreviewItems(
+    { ...snapshot, albumConfig: normalizeBuiltinAlbumListConfig(albumConfig) },
+    itemFields,
+    payload,
+    slotId
+  );
+  return patchCollectionDraftSnapshot(draft, nextSnap);
 }
 
 /** 内置数据源下切换 catalog 并刷新预览行 */

@@ -1,4 +1,5 @@
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
+import type { CollectionDisplayRule, CollectionDisplayRulePreset } from "../payload-contract/types";
 import type { BindingCollectionField, EmailPayload, EmailTemplate } from "../types/email";
 
 /** 模板中允许外部 payload 赋值的变量槽（variable + allowExternal） */
@@ -14,6 +15,8 @@ export type ExternalVariableSlotInfo = {
   minItems?: number;
   maxItems?: number;
   dataSource?: CollectionDataSource;
+  displayRule?: CollectionDisplayRule;
+  displayRulePreset?: CollectionDisplayRulePreset;
   /** 该槽位全部绑定区块的最近公共父级（画布联动选中；单处绑定时即为该区块自身） */
   primaryBlockId?: string;
 };
@@ -251,6 +254,8 @@ export function collectPayloadVariableSlots(
       minItems: def.minItems,
       maxItems: def.maxItems,
       dataSource: def.dataSource,
+      displayRule: def.displayRule,
+      displayRulePreset: def.displayRulePreset,
       bindings: bindingBySlotId.get(slotId) ?? [],
       defaultValue: payload.values[slotId],
     })

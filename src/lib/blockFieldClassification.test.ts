@@ -27,8 +27,7 @@ describe("blockFieldClassification —— 通用 wrapperStyle 字段", () => {
     assert.equal(classifyField("layout", "wrapperStyle.height"), "style");
   });
 
-  it("placement / text contentAlign → structural", () => {
-    assert.equal(classifyField("layout", "wrapperStyle.placement.horizontal"), "structural");
+  it("text contentAlign → structural", () => {
     assert.equal(classifyField("text", "wrapperStyle.contentAlign.horizontal"), "structural");
   });
 
@@ -44,7 +43,7 @@ describe("blockFieldClassification —— 通用 wrapperStyle 字段", () => {
 });
 
 describe("blockFieldClassification —— emailRoot", () => {
-  it("背景色 / padding / border → style；gapMode / width → structural；根字体字段不再作为样式配置", () => {
+  it("背景色 / padding / border → style；gapMode / width → structural", () => {
     assert.equal(classifyField("emailRoot", "props.backgroundColor"), "style");
     assert.equal(classifyField("emailRoot", "props.padding.unified"), "style");
     assert.equal(classifyField("emailRoot", "props.border.color"), "style");
@@ -56,7 +55,6 @@ describe("blockFieldClassification —— emailRoot", () => {
     assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.link"), "content");
     assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.fit"), "structural");
     assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.position"), "style");
-    assert.equal(classifyField("emailRoot", "props.fontFamily"), "structural");
   });
 });
 
@@ -66,12 +64,17 @@ describe("blockFieldClassification —— text", () => {
     assert.equal(classifyField("text", "props.textBody"), "content");
     assert.equal(classifyField("text", "props.text"), "content");
     assert.equal(classifyField("text", "props.html"), "content");
-    assert.equal(classifyField("text", "props.fontFamily"), "style");
     assert.equal(classifyField("text", "props.fontSize"), "style");
     assert.equal(classifyField("text", "props.color"), "style");
     assert.equal(classifyField("text", "props.bold"), "style");
     assert.equal(classifyField("text", "props.italic"), "style");
     assert.equal(classifyField("text", "props.decoration"), "style");
+  });
+
+  it("textBody run color/fontSize → structural（仅字面量）；run text → content", () => {
+    assert.equal(classifyField("text", "props.textBody.paragraphs.0.runs.1.color"), "structural");
+    assert.equal(classifyField("text", "props.textBody.paragraphs.0.runs.1.fontSize"), "structural");
+    assert.equal(classifyField("text", "props.textBody.paragraphs.0.runs.0.text"), "content");
   });
 });
 
@@ -166,6 +169,11 @@ describe("blockFieldClassification —— 兜底与最长前缀优先", () => {
   it("未声明字段路径默认 structural（保守，禁止误绑）", () => {
     assert.equal(classifyField("text", "props.unknownField"), "structural");
     assert.equal(classifyField("imaginaryBlock", "props.color"), "structural");
+  });
+
+  it("grid wrapperStyle.backgroundImage.src → content", () => {
+    assert.equal(classifyField("grid", "wrapperStyle.backgroundImage.src"), "content");
+    assert.equal(classifyField("grid", "wrapperStyle.backgroundImage.fit"), "structural");
   });
 
   it("最长前缀优先：wrapperStyle.backgroundImage.src 应优先于通用规则", () => {

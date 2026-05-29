@@ -70,7 +70,7 @@ type Props = {
 type SourceOption = {
   source: FieldSource;
   label: string;
-  description: string;
+  description?: string;
   enabled: boolean;
   active: boolean;
   action?: () => void;
@@ -97,16 +97,16 @@ function fieldKindLabel(kind: FieldKind): string {
 }
 
 function sourceHelp(source: FieldSource): string {
-  if (source === "theme") return "字段值引用样式预设（tokenPresets）展开后的设计令牌（$themeRef）。";
-  if (source === "variable") return "跟随 payload.json 中的业务变量。";
-  if (source === "inlineVariable") return "正文中包含一个或多个 payload 文中变量。";
-  return "直接写入当前模板字段。";
+  if (source === "theme") return "跟随样式预设。";
+  if (source === "variable") return "跟随变量。";
+  if (source === "inlineVariable") return "正文中使用变量占位。";
+  return "使用当前输入值。";
 }
 
 function disabledThemeReason(kind: FieldKind): string {
-  if (kind === "content") return "内容字段不能绑定样式预设令牌；请使用变量或字面量。";
-  if (kind === "structural") return "结构字段不能绑定来源。";
-  return "令牌选择器将在后续版本接入。";
+  if (kind === "content") return "内容字段暂不支持跟随样式预设。";
+  if (kind === "structural") return "该字段暂不支持来源切换。";
+  return "当前不可用。";
 }
 
 /** 内容字段胶囊在 UI 上的态（与正文聚合态对齐；listItem 为列表重复行模板内字段映射） */
@@ -450,16 +450,16 @@ export function InspectorFieldSource({
       source: "literal",
       label: "字面量",
       description: isListItemField
-        ? "列表行内字段不能直接改为字面量；须先解除列表重复绑定。"
+        ? "列表行内字段不能直接改为字面量，请先解除列表绑定。"
         : state.source === "literal"
-          ? "当前直接写在模板字段中。"
+          ? "当前使用输入值。"
           : state.source === "inlineVariable"
             ? canBake
-              ? "将当前预览文案烘焙为自由文本，并移除文中变量绑定。"
-              : "需要等待合并预览完成后才能移除文中变量。"
+              ? "改为固定文本。"
+              : "请稍后重试。"
             : canBake
-              ? "将当前预览值烘焙为模板字面量。"
-              : "需要等待合并预览完成后才能改为字面量。",
+              ? "改为固定值。"
+              : "请稍后重试。",
       active: state.source === "literal" || state.detached,
       enabled:
         isListItemField ||
@@ -526,7 +526,7 @@ export function InspectorFieldSource({
       items.push({
         source: "variable",
         label: "切换列表字段",
-        description: `改绑到「${repeatListItemCtx.collectionLabel}」的另一项字段（如 title / subtitle），不能切换列表槽或标量变量。`,
+        description: `切换到「${repeatListItemCtx.collectionLabel}」中的其他字段。`,
         active: false,
         enabled: listItemFieldCandidates.length > 1,
         action: () => {
@@ -543,10 +543,10 @@ export function InspectorFieldSource({
             : "绑定标量变量";
       const bindDescription =
         contentCapsuleMode === "variable"
-          ? "在弹窗中选择其他标量变量，整字段改绑（不含列表类变量）。"
+          ? "选择其他变量。"
           : contentCapsuleMode === "inlineVariable"
-            ? "将正文整体改为跟随一个标量变量（会先烘焙文中变量为字面量）。"
-            : "在弹窗中绑定或新建标量变量，整字段跟随（不含列表类变量）。";
+            ? "将正文改为跟随一个变量。"
+            : "绑定或新建变量。";
       items.push({
         source: "variable",
         label: bindLabel,
@@ -649,9 +649,9 @@ export function InspectorFieldSource({
     (contentCapsuleMode === "listItem" ? "list-item" : SOURCE_CLASS[state.source]);
   const badgeTitle =
     contentCapsuleMode === "listItem" && repeatListItemCtx
-      ? `${fieldKindLabel(state.fieldKind)}：跟随列表「${repeatListItemCtx.collectionLabel}」的项字段「${repeatListItemCtx.itemFieldKey}」；由列表重复展开，不可改为字面量。`
+      ? `${fieldKindLabel(state.fieldKind)}：跟随列表「${repeatListItemCtx.collectionLabel}」中的字段「${repeatListItemCtx.itemFieldKey}」。`
       : `${fieldKindLabel(state.fieldKind)}：${
-          state.detached ? "已解除跟随，当前直接写入模板字段。" : sourceHelp(state.source)
+          state.detached ? "已解除跟随，当前使用输入值。" : sourceHelp(state.source)
         }`;
 
   const themeFollowing = state.source === "theme" && !state.detached;
@@ -690,7 +690,9 @@ export function InspectorFieldSource({
             }}
           >
             <span className="inspector-field-source__option-title">{option.label}</span>
-            <span className="inspector-field-source__option-desc">{option.description}</span>
+            {option.description ? (
+              <span className="inspector-field-source__option-desc">{option.description}</span>
+            ) : null}
           </button>
         ))}
         {state.fieldKind === "style" && themeTokenCandidates.length > 0 ? (

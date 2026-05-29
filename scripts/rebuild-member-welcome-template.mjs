@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 /**
  * 重建 member-welcome/layouts/card/template.json
  * - 业务槽位与 bindings 语义不变
@@ -7,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { finalizeGeneratedTemplate } from "./lib/finalize-generated-template.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, "../data/emails/member-welcome/layouts/card/template.json");
@@ -85,7 +88,7 @@ function varBinding(slotId, valueType, extra = {}) {
 
 function shell(overrides = {}) {
   return {
-    placement: { horizontal: "start", vertical: "start" },
+    contentAlign: contentAlignFromAxes("start", "start"),
     widthMode: "fill",
     heightMode: "hug",
     border: transparentBorder,
@@ -179,7 +182,7 @@ const template = {
       parentId: null,
       children: ["mw-brand", "mw-hero", "mw-intro", "mw-benefits", "mw-account"],
       wrapperStyle: {
-        placement: { horizontal: "center", vertical: "start" },
+        contentAlign: contentAlignFromAxes("center", "start"),
         widthMode: "fill",
         heightMode: "hug",
       },
@@ -212,7 +215,7 @@ const template = {
       parentId: "mw-root",
       children: ["mw-brand-row", "mw-member-tag"],
       wrapperStyle: shell({
-        placement: { horizontal: "start", vertical: "start" },
+        contentAlign: contentAlignFromAxes("start", "start"),
         contentAlign: { horizontal: "left", vertical: "top" },
         backgroundColor: PAGE_CANVAS_BG,
         padding: {
@@ -250,10 +253,8 @@ const template = {
       props: {
         content: "<p>MEMBER EXCLUSIVE</p>",
         textBody: {
-          version: 1,
           paragraphs: [{ runs: [{ text: "MEMBER EXCLUSIVE", bold: true }] }],
         },
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: themeRef("colors.secondary"),
         bold: true,
@@ -261,7 +262,6 @@ const template = {
         decoration: "none",
       },
       bindings: {
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
         "props.color": themeBinding("colors.secondary"),
       },
@@ -277,7 +277,7 @@ const template = {
         width: "44px",
         heightMode: "fixed",
         height: "44px",
-        placement: { horizontal: "start", vertical: "center" },
+        contentAlign: contentAlignFromAxes("start", "center"),
         borderRadius: { mode: "unified", radius: themeRef("tokens.radius.cta") },
         contentAlign: { horizontal: "center", vertical: "center" },
         backgroundImage: {
@@ -314,13 +314,12 @@ const template = {
       wrapperStyle: shell({
         widthMode: "hug",
         heightMode: "hug",
-        placement: { horizontal: "start", vertical: "center" },
+        contentAlign: contentAlignFromAxes("start", "center"),
         contentAlign: { horizontal: "left", vertical: "center" },
       }),
       props: {
         content: "<p>zyzshop1</p>",
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "zyzshop1", bold: true }] }] },
-        fontFamily: themeRef("fonts.heading"),
+        textBody: { paragraphs: [{ runs: [{ text: "zyzshop1", bold: true }] }] },
         fontSize: themeRef("tokens.typography.h1"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -333,7 +332,6 @@ const template = {
           label: "店铺字标",
           description: "与图形标并排展示的品牌名，与正文中的店铺名称共用同一变量。",
         }),
-        "props.fontFamily": themeBinding("fonts.heading"),
         "props.fontSize": themeBinding("tokens.typography.h1"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -384,7 +382,7 @@ const template = {
       parentId: "mw-hero",
       children: [],
       wrapperStyle: shell({
-        placement: { horizontal: "center", vertical: "center" },
+        contentAlign: contentAlignFromAxes("center", "center"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "fill",
         padding: {
@@ -397,8 +395,7 @@ const template = {
       }),
       props: {
         content: "<p>Enjoy various benefits!</p>",
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "Enjoy various benefits!" }] }] },
-        fontFamily: themeRef("fonts.heading"),
+        textBody: { paragraphs: [{ runs: [{ text: "Enjoy various benefits!" }] }] },
         fontSize: themeRef("tokens.typography.display"),
         color: "#FFFFFF",
         bold: true,
@@ -410,7 +407,6 @@ const template = {
           defaultValue: "Enjoy various benefits!",
           label: "欢迎副标题",
         }),
-        "props.fontFamily": themeBinding("fonts.heading"),
         "props.fontSize": themeBinding("tokens.typography.display"),
       },
     },
@@ -435,7 +431,6 @@ const template = {
         content:
           "<p>Hi {{ memberName }}, we're excited to provide you with more exclusive member services and savings:</p>",
         textBody: {
-          version: 1,
           paragraphs: [
             {
               runs: [
@@ -446,7 +441,6 @@ const template = {
             },
           ],
         },
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: false,
@@ -470,7 +464,6 @@ const template = {
             },
           ],
         },
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -497,8 +490,7 @@ const template = {
       wrapperStyle: shell(),
       props: {
         content: "<p>Your benefits:</p>",
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "Your benefits:", bold: true }] }] },
-        fontFamily: themeRef("fonts.heading"),
+        textBody: { paragraphs: [{ runs: [{ text: "Your benefits:", bold: true }] }] },
         fontSize: themeRef("tokens.typography.h1"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -506,7 +498,6 @@ const template = {
         decoration: "none",
       },
       bindings: {
-        "props.fontFamily": themeBinding("fonts.heading"),
         "props.fontSize": themeBinding("tokens.typography.h1"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -570,7 +561,7 @@ const template = {
       parentId: "mw-benefit-row",
       children: [],
       wrapperStyle: shell({
-        placement: { horizontal: "center", vertical: "start" },
+        contentAlign: contentAlignFromAxes("center", "start"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "fixed",
         width: "52px",
@@ -613,8 +604,7 @@ const template = {
       wrapperStyle: shell({ contentAlign: { horizontal: "center", vertical: "top" } }),
       props: {
         content: "<p>Get points</p>",
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "Get points", bold: true }] }] },
-        fontFamily: themeRef("fonts.body"),
+        textBody: { paragraphs: [{ runs: [{ text: "Get points", bold: true }] }] },
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: true,
@@ -623,7 +613,6 @@ const template = {
       },
       bindings: {
         "props.textBody.paragraphs.0.runs.0.text": collectionBinding("0.title", "权益标题"),
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -637,8 +626,7 @@ const template = {
       wrapperStyle: shell({ contentAlign: { horizontal: "center", vertical: "top" } }),
       props: {
         content: "<p>Reward 888 points</p>",
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "Reward 888 points" }] }] },
-        fontFamily: themeRef("fonts.body"),
+        textBody: { paragraphs: [{ runs: [{ text: "Reward 888 points" }] }] },
         fontSize: themeRef("tokens.typography.caption"),
         color: themeRef("colors.secondary"),
         bold: false,
@@ -647,7 +635,6 @@ const template = {
       },
       bindings: {
         "props.textBody.paragraphs.0.runs.0.text": collectionBinding("0.subtitle", "权益说明"),
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
         "props.color": themeBinding("colors.secondary"),
       },
@@ -692,7 +679,6 @@ const template = {
         content:
           "<p>You need to log into your store account to enjoy member services and savings. I don't have an account. <a href=\"https://example.com/register\">Create an account</a></p>",
         textBody: {
-          version: 1,
           paragraphs: [
             {
               runs: [
@@ -708,7 +694,6 @@ const template = {
             },
           ],
         },
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: false,
@@ -720,7 +705,6 @@ const template = {
           defaultValue: "https://example.com/register",
           label: "注册账户链接",
         }),
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -736,7 +720,6 @@ const template = {
         content:
           "<p>If you agree to join the membership during Checkout, we have created an account for you. <a href=\"https://example.com/reset-password\">Reset password</a></p>",
         textBody: {
-          version: 1,
           paragraphs: [
             {
               runs: [
@@ -752,7 +735,6 @@ const template = {
             },
           ],
         },
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.body"),
         color: themeRef("colors.primary"),
         bold: false,
@@ -764,7 +746,6 @@ const template = {
           defaultValue: "https://example.com/reset-password",
           label: "重置密码链接",
         }),
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.body"),
         "props.color": themeBinding("colors.primary"),
       },
@@ -780,7 +761,6 @@ const template = {
         content:
           "<p>We are committed to making your experience enjoyable. For questions or feedback, please contact the <a href=\"https://example.com/store\">zyzshop1</a> Team at <a href=\"mailto:lintingting516@gmail.com\">lintingting516@gmail.com</a></p>",
         textBody: {
-          version: 1,
           paragraphs: [
             {
               runs: [
@@ -798,7 +778,6 @@ const template = {
             },
           ],
         },
-        fontFamily: themeRef("fonts.body"),
         fontSize: themeRef("tokens.typography.caption"),
         color: themeRef("colors.secondary"),
         bold: false,
@@ -822,7 +801,6 @@ const template = {
           defaultValue: "mailto:lintingting516@gmail.com",
           label: "客服邮箱 mailto 链接",
         }),
-        "props.fontFamily": themeBinding("fonts.body"),
         "props.fontSize": themeBinding("tokens.typography.caption"),
         "props.color": themeBinding("colors.secondary"),
       },
@@ -831,5 +809,6 @@ const template = {
 };
 
 fs.writeFileSync(OUT, `${JSON.stringify(template, null, 2)}\n`, "utf8");
+finalizeGeneratedTemplate(OUT);
 console.log("已写入", OUT);
 console.log("区块数:", Object.keys(template.blocks).length);

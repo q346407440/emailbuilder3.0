@@ -24,7 +24,7 @@ export function normalizeWrapperContentAlign(raw: unknown): Required<WrapperCont
   return { horizontal, vertical };
 }
 
-/** 为所有普通 block 补齐容器内内容九宫格对齐。emailRoot 的根级堆叠仍由根配置单独管理。 */
+/** 为所有普通 block 补齐容器内内容摆放（水平 + 竖直双轴）。emailRoot 的根级堆叠仍由根配置单独管理。 */
 export function ensureWrapperContentAlignPersisted(block: EmailBlock): boolean {
   if (block.type === "emailRoot") return false;
   const ws = (block.wrapperStyle ?? {}) as NonNullable<EmailBlock["wrapperStyle"]>;

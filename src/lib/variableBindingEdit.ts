@@ -187,7 +187,7 @@ export function removeExternalVariableSlot(
 
       if (spec.mode === "interpolate" && spec.interpolationSlots?.some((slot) => slot.slotId === slotId)) {
         const slot = spec.interpolationSlots.find((item) => item.slotId === slotId);
-        const replacement =
+        const substitute =
           typeof p.values[slotId] === "string"
             ? p.values[slotId]
             : typeof slot?.defaultValue === "string"
@@ -202,7 +202,7 @@ export function removeExternalVariableSlot(
               ? getAtPath((block.wrapperStyle ?? {}) as Record<string, unknown>, subPath)
               : undefined;
         if (typeof target === "string") {
-          const nextValue = target.replace(INTERPOLATION_TOKEN_RE(slotId), replacement);
+          const nextValue = target.replace(INTERPOLATION_TOKEN_RE(slotId), substitute);
           if (root === "props") setAtPath(block.props as Record<string, unknown>, subPath, nextValue);
           else if (root === "wrapperStyle" && block.wrapperStyle) {
             setAtPath(block.wrapperStyle as Record<string, unknown>, subPath, nextValue);

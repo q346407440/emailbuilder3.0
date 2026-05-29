@@ -1,0 +1,50 @@
+{
+  "presetId": "loyalty-internal-abnormal-config",
+  "slotId": "loyaltyAbnormalConfigItems",
+  "label": "异常配置项",
+  "description": "关键问题卡片：问题标题 + 问题说明",
+  "displayRulePreset": {
+    "keyField": "type",
+    "includeValues": [
+      "points_threshold",
+      "max_discount",
+      "guest_order_threshold",
+      "member_points_balance_low"
+    ],
+    "options": [
+      { "value": "points_threshold", "label": "积分使用门槛高" },
+      { "value": "max_discount", "label": "单笔订单积分最大抵扣金额过高" },
+      { "value": "guest_order_threshold", "label": "未注册用户订单优惠门槛过高" },
+      { "value": "member_points_balance_low", "label": "会员可用积分余额过低" }
+    ]
+  },
+  "minItems": 4,
+  "maxItems": 4,
+  "itemFields": [
+    { "key": "type", "label": "问题类型标识", "valueType": "string", "required": true },
+    { "key": "title", "label": "问题标题", "valueType": "string", "required": true },
+    { "key": "description", "label": "问题说明", "valueType": "string", "required": true }
+  ],
+  "seedValues": [
+    {
+      "type": "points_threshold",
+      "title": "积分使用门槛高",
+      "description": "积分抵扣金额门槛过高，用户不愿使用，转化下降"
+    },
+    {
+      "type": "max_discount",
+      "title": "单笔订单积分最大抵扣金额过高",
+      "description": "存在利润侵蚀风险，影响利润率"
+    },
+    {
+      "type": "guest_order_threshold",
+      "title": "未注册用户订单优惠门槛过高",
+      "description": "用户首次下单意愿下降，拉新转化受阻"
+    },
+    {
+      "type": "member_points_balance_low",
+      "title": "会员可用积分余额过低",
+      "description": "会员很难使用积分体系，复购率降低"
+    }
+  ]
+}

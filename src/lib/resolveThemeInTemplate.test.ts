@@ -6,10 +6,6 @@ import { bakeThemeRefs, resolveThemeInTemplate } from "./resolveThemeInTemplate"
 
 const theme: ExpandedTheme = {
   schemaVersion: "2.0.0",
-  fonts: {
-    heading: "Arial, sans-serif",
-    body: "Arial, sans-serif",
-  },
   colors: {
     brand: "#0056a8",
     accent: "#ff832a",
@@ -46,7 +42,6 @@ function templateWithProps(props: Record<string, unknown>): EmailTemplate {
         props: {
           width: "600px",
           backgroundColor: "#fff",
-          fontFamily: "Arial, sans-serif",
           border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
           padding: { mode: "unified", unified: "0" },
           gapMode: "fixed",
@@ -148,7 +143,6 @@ describe("resolveThemeInTemplate", () => {
           props: {
             width: "600px",
             backgroundColor: "#fff",
-            fontFamily: "Arial, sans-serif",
             border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
             padding: { mode: "unified", unified: "0" },
             gapMode: "fixed",

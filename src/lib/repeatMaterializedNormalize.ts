@@ -236,7 +236,7 @@ function findParentRowTemplateRoot(
   return { keepRootId: children[0] ?? prototypeRootId, prototypeRootId };
 }
 
-/** 列表 repeat 宿主的行模板：优先 layout/grid 子块（非 strip 下第一个叶子） */
+/** 列表 repeat 宿主的行模板：优先 layout/grid/image 子块（非 strip 下第一个叶子） */
 function repeatRowTemplateChildId(
   template: EmailTemplate,
   hostId: string
@@ -245,7 +245,7 @@ function repeatRowTemplateChildId(
   if (!host) return undefined;
   for (const childId of host.children ?? []) {
     const child = template.blocks[childId];
-    if (child && (child.type === "layout" || child.type === "grid")) {
+    if (child && (child.type === "layout" || child.type === "grid" || child.type === "image")) {
       return childId;
     }
   }

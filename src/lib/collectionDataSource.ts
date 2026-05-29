@@ -9,6 +9,7 @@ import {
   type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
 import type { BindingCollectionField, EmailPayload, PayloadSlotDefinition } from "../types/email";
+import type { CollectionDisplayRule } from "../payload-contract/types";
 import {
   projectBuiltinCatalogItems,
   type BuiltinCollectionCatalogId,
@@ -216,6 +217,8 @@ export function resolveCollectionPreviewItems(
       fixedLength,
       sort: ds.sort,
       extract: ds.extract,
+      productConfig: ds.productConfig,
+      albumConfig: ds.albumConfig,
       payload,
       slotId,
     });
@@ -236,12 +239,17 @@ export function builtinPreviewItemsForSlot(
   }
 ): Record<string, unknown>[] {
   if (ctx?.payload && ctx.slotId) {
+    const ds = ctx.payload.slots[ctx.slotId]?.dataSource;
     const result = resolveBuiltinCollectionItems({
       catalog,
       itemFields,
       fixedLength,
       sort,
       extract: ctx.extract ?? DEFAULT_BUILTIN_COLLECTION_EXTRACT,
+      productConfig:
+        ds?.type === "remote" && ds.provider === "builtin" ? ds.productConfig : undefined,
+      albumConfig:
+        ds?.type === "remote" && ds.provider === "builtin" ? ds.albumConfig : undefined,
       payload: ctx.payload,
       slotId: ctx.slotId,
     });
@@ -277,13 +285,16 @@ export function updatePayloadCollectionSlotMeta(
     minItems?: number;
     maxItems?: number;
     dataSource?: CollectionDataSource;
+    displayRule?: CollectionDisplayRule;
   },
   patch: {
     fixedLength?: number;
     dataSource?: CollectionDataSource;
+    displayRule?: CollectionDisplayRule;
   }
 ): typeof slotDef {
   const next = { ...slotDef };
+  const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(patch, "displayRule");
   if (patch.fixedLength !== undefined) {
     const len = clampFixedLength(patch.fixedLength);
     next.minItems = len;
@@ -291,6 +302,9 @@ export function updatePayloadCollectionSlotMeta(
   }
   if (patch.dataSource !== undefined) {
     next.dataSource = patch.dataSource;
+  }
+  if (hasDisplayRulePatch) {
+    next.displayRule = patch.displayRule;
   }
   return next;
 }
@@ -302,6 +316,7 @@ export function patchPayloadCollectionSlot(
     fixedLength?: number;
     dataSource?: CollectionDataSource;
     itemFields?: BindingCollectionField[];
+    displayRule?: CollectionDisplayRule;
     values?: Record<string, unknown>[];
   }
 ): EmailPayload {
@@ -314,14 +329,16 @@ export function patchPayloadCollectionSlot(
     values: { ...payload.values },
   };
 
+  const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(patch, "displayRule");
   let slotDef: PayloadSlotDefinition = { ...entry };
   if (patch.itemFields !== undefined) {
     slotDef = { ...slotDef, itemFields: patch.itemFields };
   }
-  if (patch.fixedLength !== undefined || patch.dataSource !== undefined) {
+  if (patch.fixedLength !== undefined || patch.dataSource !== undefined || hasDisplayRulePatch) {
     slotDef = updatePayloadCollectionSlotMeta(slotDef, {
       fixedLength: patch.fixedLength,
       dataSource: patch.dataSource,
+      displayRule: patch.displayRule,
     }) as PayloadSlotDefinition;
   }
 

@@ -2,7 +2,7 @@ import type { EmailBlock, EmailTemplate } from "../types/email";
 import type { SectionMaster } from "../types/master";
 import { decorateThemeAndKindBindings } from "./decorateBindings";
 import { CATALOG_ROOT_ID, buildCatalogEmailRoot } from "./blockDefaults";
-import { normalizeTemplateBlockDefaults } from "./placementMigration";
+import { normalizeTemplateBlockDefaults } from "./templateBlockDefaults";
 
 export type SectionSourceSpec = {
   masterId: string;

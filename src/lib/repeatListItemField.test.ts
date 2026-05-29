@@ -13,7 +13,7 @@ const TEXT_RUN_BIND = "props.textBody.paragraphs.0.runs.0.text";
 
 function textProps(text: string) {
   return {
-    textBody: { version: 1 as const, paragraphs: [{ runs: [{ text }] }] },
+    textBody: { paragraphs: [{ runs: [{ text }] }] },
     bold: false,
     italic: false,
     decoration: "none" as const,
@@ -166,6 +166,112 @@ describe("repeatListItemField", () => {
       formatCollectionFirstItemFieldExample(payload, "memberBenefits", "subtitle"),
       "Reward 888 points"
     );
+  });
+
+  it("resolveRepeatListItemFieldBinding：repeat.fieldMappings（行模板无 bindings）", () => {
+    const template = tpl({
+      host: {
+        id: "host",
+        type: "layout",
+        parentId: "root",
+        children: ["row"],
+        repeat: {
+          mode: "collection",
+          slotId: "items",
+          prototypeChildIds: ["row"],
+          fallbackChildIds: ["row"],
+          itemFields: [
+            { key: "title", label: "标题", valueType: "string", required: true },
+            { key: "description", label: "说明", valueType: "string", required: true },
+          ],
+          fieldMappings: [
+            {
+              id: "map-title",
+              sourcePath: "title",
+              targetBlockId: "row",
+              targetBindPath: TEXT_RUN_BIND,
+              label: "标题",
+              valueType: "string",
+            },
+          ],
+        },
+        wrapperStyle: {},
+        props: { direction: "vertical" },
+      },
+      row: {
+        id: "row",
+        type: "text",
+        parentId: "host",
+        children: [],
+        wrapperStyle: {},
+        props: textProps("占位"),
+        bindings: {},
+      },
+      root: {
+        id: "root",
+        type: "emailRoot",
+        parentId: null,
+        children: ["host"],
+        props: { width: "600px" },
+      },
+    });
+
+    const ctx = resolveRepeatListItemFieldBinding(template, "row", TEXT_RUN_BIND);
+    assert.ok(ctx);
+    assert.equal(ctx.itemFieldKey, "title");
+    assert.equal(ctx.relation, "mapped-field");
+  });
+
+  it("applyRepeatListItemFieldKey 改写 fieldMappings 的 sourcePath", () => {
+    const template = tpl({
+      host: {
+        id: "host",
+        type: "layout",
+        parentId: "root",
+        children: ["row"],
+        repeat: {
+          mode: "collection",
+          slotId: "items",
+          prototypeChildIds: ["row"],
+          fallbackChildIds: ["row"],
+          itemFields: [
+            { key: "title", label: "标题", valueType: "string", required: true },
+            { key: "description", label: "说明", valueType: "string", required: true },
+          ],
+          fieldMappings: [
+            {
+              id: "map-title",
+              sourcePath: "title",
+              targetBlockId: "row",
+              targetBindPath: TEXT_RUN_BIND,
+              label: "标题",
+              valueType: "string",
+            },
+          ],
+        },
+        wrapperStyle: {},
+        props: { direction: "vertical" },
+      },
+      row: {
+        id: "row",
+        type: "text",
+        parentId: "host",
+        children: [],
+        wrapperStyle: {},
+        props: textProps("占位"),
+      },
+      root: {
+        id: "root",
+        type: "emailRoot",
+        parentId: null,
+        children: ["host"],
+        props: { width: "600px" },
+      },
+    });
+
+    const next = applyRepeatListItemFieldKey(template, "row", TEXT_RUN_BIND, "description");
+    const mapping = next.blocks.host.repeat?.fieldMappings?.[0];
+    assert.equal(mapping?.sourcePath, "description");
   });
 
   it("filterRepeatItemFieldsForBindPath 按路径筛选 image 字段", () => {

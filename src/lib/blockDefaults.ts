@@ -12,8 +12,6 @@ const T = {
   colorPrimary: themeRef("colors.primary"),
   colorSecondary: themeRef("colors.secondary"),
   colorSurface: themeRef("colors.surface"),
-  fontHeading: themeRef("fonts.heading"),
-  fontBody: themeRef("fonts.body"),
   gap: themeRef("tokens.spacing.gap"),
   section: themeRef("tokens.spacing.section"),
   pageInline: themeRef("tokens.spacing.pageInline"),
@@ -54,7 +52,6 @@ function defaultBorderRadius() {
 
 function defaultWrapperBase() {
   return {
-    placement: { horizontal: "center" as const, vertical: "center" as const },
     contentAlign: { horizontal: "left" as const, vertical: "top" as const },
     widthMode: "fill" as const,
     heightMode: "hug" as const,
@@ -65,7 +62,6 @@ function defaultThemedTextProps(color = T.colorPrimary) {
   return {
     fontSize: T.typoBody,
     color,
-    fontFamily: T.fontBody,
     bold: false,
     italic: false,
     decoration: "none" as const,
@@ -99,7 +95,6 @@ function buildDemoTextBlock(
     parentId,
     children: [],
     wrapperStyle: {
-      placement: { horizontal: "start", vertical: "start" },
       contentAlign: { horizontal: "left", vertical: "top" },
       widthMode: "fill",
       heightMode: "hug",
@@ -107,7 +102,7 @@ function buildDemoTextBlock(
       borderRadius: defaultBorderRadius(),
     },
     props: {
-      textBody: { version: 1, paragraphs: [{ runs: [{ text }] }] },
+      textBody: { paragraphs: [{ runs: [{ text }] }] },
       ...defaultThemedTextProps(color),
     },
     bindings: {},
@@ -132,7 +127,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       children: [],
       wrapperStyle: {
         ...defaultWrapperBase(),
-        placement: { horizontal: "start", vertical: "start" },
         contentAlign: { horizontal: "left", vertical: "top" },
         border: defaultBorder(),
         borderRadius: defaultBorderRadius(),
@@ -172,7 +166,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       children: [],
       wrapperStyle: {
         ...defaultWrapperBase(),
-        placement: { horizontal: "center", vertical: "center" },
         border: defaultBorder(),
         borderRadius: defaultBorderRadius(),
         padding: sectionPadding(),
@@ -215,7 +208,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       parentId,
       children: [],
       wrapperStyle: {
-        placement: { horizontal: "start", vertical: "start" },
         contentAlign: { horizontal: "left", vertical: "top" },
         widthMode: "fill",
         heightMode: "hug",
@@ -223,7 +215,7 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
         borderRadius: defaultBorderRadius(),
       },
       props: {
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "示例正文" }] }] },
+        textBody: { paragraphs: [{ runs: [{ text: "示例正文" }] }] },
         ...defaultThemedTextProps(T.colorPrimary),
       },
       bindings: {},
@@ -241,7 +233,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       parentId,
       children: [],
       wrapperStyle: {
-        placement: { horizontal: "start", vertical: "start" },
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "fill",
         heightMode: "hug",
@@ -273,7 +264,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       parentId,
       children: [],
       wrapperStyle: {
-        placement: { horizontal: "center", vertical: "center" },
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "hug",
         heightMode: "hug",
@@ -304,7 +294,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
         ...defaultWrapperBase(),
         widthMode: "hug",
         heightMode: "hug",
-        placement: { horizontal: "center", vertical: "start" },
         contentAlign: { horizontal: "left", vertical: "top" },
         border: defaultBorder(),
         borderRadius: defaultBorderRadius(),
@@ -316,7 +305,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
           widthMode: "hug",
           backgroundColor: T.colorSurface,
           textColor: T.colorPrimary,
-          fontFamily: T.fontBody,
           fontSize: T.typoBody,
           border: {
             mode: "unified",
@@ -346,7 +334,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       wrapperStyle: {
         widthMode: "fill",
         heightMode: "hug",
-        placement: { horizontal: "center", vertical: "center" },
         contentAlign: { horizontal: "left", vertical: "top" },
         padding: sectionPadding(),
       },
@@ -367,7 +354,6 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
       children: [],
       wrapperStyle: {
         ...defaultWrapperBase(),
-        placement: { horizontal: "start", vertical: "start" },
         contentAlign: { horizontal: "left", vertical: "top" },
         widthMode: "fill",
         heightMode: "hug",
@@ -395,7 +381,6 @@ export function buildCatalogEmailRoot(children: string[]): EmailBlock {
     parentId: null,
     children,
     wrapperStyle: {
-      placement: { horizontal: "center" },
       widthMode: "fill",
       heightMode: "hug",
     },

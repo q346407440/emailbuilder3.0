@@ -12,14 +12,14 @@ description: >-
 
 | 问题 | 路径 |
 |------|------|
-| **14 个标准 family.scale 列表与排序** | **`src/token-preset-contract/standard-keys.ts`**（`TOKEN_PRESET_STANDARD_KEYS`） |
+| **12 个标准 family.scale 列表与排序** | **`src/token-preset-contract/standard-keys.ts`**（`TOKEN_PRESET_STANDARD_KEYS`） |
 | 预设 JSON 校验 | **`src/token-preset-contract/validate.ts`**（已接入 **`npm run validate:all`**） |
 | **`$themeRef` 路径白名单** | **`src/token-preset-contract/theme-ref-paths.ts`** |
 | 某模板字段是否允许出现 `$themeRef` | **`src/lib/resolveThemeInTemplate.ts`**（如 `isThemeRefAllowed`） |
 | tokenPresets 外壳字段 | **`src/lib/validateTokenPresets.ts`** · **`src/token-preset-contract/validate.ts`** |
 | 样例邮件 | **`data/emails/on-cart-abandon-2/tokenPresets.json`**（与该校验通过的 template 对齐） |
 
-**不**在本技能重复打印 14 行键表；与 `standard-keys.ts` 冲突以 **代码** 为准。
+**不**在本技能重复打印 12 行键表；与 `standard-keys.ts` 冲突以 **代码** 为准。
 
 ## 维护流程
 
@@ -34,7 +34,7 @@ description: >-
 
 ## 刻意不绑 token
 
-骨架类：**`widthMode`**、**`direction`**、**`placement`** 等——以字面量稳定表达；例外与对比度特例见 **`email-template-restore-check`**。
+骨架类：**`widthMode`**、**`direction`**、**`contentAlign`** 等——以字面量稳定表达；例外与对比度特例见 **`email-template-restore-check`**。
 
 ## 工作台语义（摘要）
 

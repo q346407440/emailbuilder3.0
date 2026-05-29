@@ -81,7 +81,7 @@ function resolveRepeatHostItemFieldsForSlot(
     if (
       repeat?.mode === "collection" &&
       repeat.slotId === slotId &&
-      (host?.type === "layout" || host?.type === "grid")
+      (host?.type === "layout" || host?.type === "grid" || host?.type === "image")
     ) {
       const inPrototype = repeat.prototypeChildIds.some((pid) =>
         isDescendantOfBlock(template, blockId, pid)

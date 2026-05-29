@@ -9,12 +9,17 @@ import {
   TEXT_BODY_VAR_PILL_INNER_LINK_CLASS,
   TEXT_BODY_VAR_PILL_TEXT_CLASS,
 } from "./textBodyEditorFormat";
-import type { TextBodyV1 } from "../types/email";
+import type { TextBody } from "../types/email";
 
-const defaults = { bold: false, italic: false, decoration: "none" as const };
+const defaults = {
+  bold: false,
+  italic: false,
+  decoration: "none" as const,
+  color: "#111827",
+  fontSize: "16px",
+};
 
-const sampleBody: TextBodyV1 = {
-  version: 1,
+const sampleBody: TextBody = {
   paragraphs: [
     {
       runs: [
@@ -129,5 +134,15 @@ describe("textBodyEditorFormat", () => {
     const parsed = parseEditorHtmlToTextBody(html, defaults, sampleBody, meta);
     assert.equal(parsed.paragraphs[0]?.runs[1]?.text, "zyzshop1");
     assert.equal(parsed.paragraphs[0]?.runs[1]?.link, "https://example.com/store");
+  });
+
+  it("parseEditorHtmlToTextBody 保留 run 级字色与字号", { skip: typeof DOMParser === "undefined" }, () => {
+    const html = `<p><span style="color:#ff1f1f;font-size:18px">高亮</span>文本</p>`;
+    const parsed = parseEditorHtmlToTextBody(html, defaults, { paragraphs: [{ runs: [] }] }, []);
+    assert.equal(parsed.paragraphs[0]?.runs[0]?.text, "高亮");
+    assert.equal(parsed.paragraphs[0]?.runs[0]?.color, "rgb(255, 31, 31)");
+    assert.equal(parsed.paragraphs[0]?.runs[0]?.fontSize, "18px");
+    assert.equal(parsed.paragraphs[0]?.runs[1]?.text, "文本");
+    assert.equal(parsed.paragraphs[0]?.runs[1]?.color, undefined);
   });
 });

@@ -1,5 +1,5 @@
 import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
-import type { TextBodyV1 } from "../types/email";
+import type { TextBody } from "../types/email";
 import type { ExpandedTheme } from "../types/theme";
 import {
   getTextBodyContentMode,
@@ -19,7 +19,7 @@ type Props = {
   template: EmailTemplate;
   payload: EmailPayload;
   block: EmailBlock & { type: "text" };
-  textBody: TextBodyV1;
+  textBody: TextBody;
   mergedTemplate: EmailTemplate | null;
   effectiveDesignTokens?: ExpandedTheme | null;
   onUpdate: (next: { template: EmailTemplate; payload: EmailPayload }) => void;

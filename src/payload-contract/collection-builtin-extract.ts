@@ -1,5 +1,5 @@
-/** 内置 catalog 列表的提取/衍生策略（仅 provider=builtin 时生效） */
-export const BUILTIN_COLLECTION_EXTRACT_KINDS = ["none", "similarTo"] as const;
+/** 内置 catalog 列表的提取/衍生策略（仅 provider=builtin 时生效；算法粒度为 SPU） */
+export const BUILTIN_COLLECTION_EXTRACT_KINDS = ["none", "similarTo", "complement"] as const;
 
 export type BuiltinCollectionExtractKind = (typeof BUILTIN_COLLECTION_EXTRACT_KINDS)[number];
 
@@ -9,18 +9,18 @@ export const BUILTIN_COLLECTION_EXTRACT_MATCH_FIELDS = ["href", "name"] as const
 export type BuiltinCollectionExtractMatchField =
   (typeof BUILTIN_COLLECTION_EXTRACT_MATCH_FIELDS)[number];
 
+type BuiltinCollectionExtractAnchor = {
+  /** 锚点列表槽（须为内置商品列表） */
+  fromSlotId: string;
+  /** 锚定列表第几条（从 1 起计），取该条 SPU */
+  anchorItemIndex?: number;
+  matchField?: BuiltinCollectionExtractMatchField;
+};
+
 export type BuiltinCollectionExtract =
   | { kind: "none" }
-  | {
-      kind: "similarTo";
-      /**
-       * 锚点列表槽（如主推单品）；读取 payload.values[fromSlotId] 首项。
-       * 匹配粒度为 **SPU（商品）**：用该行的 href/name 等在目录中排除整款商品；
-       * 不按 SKU 规格比对，槽内多 SKU 展示字段不参与相似品计算。
-       */
-      fromSlotId: string;
-      matchField?: BuiltinCollectionExtractMatchField;
-    };
+  | ({ kind: "similarTo" } & BuiltinCollectionExtractAnchor)
+  | ({ kind: "complement" } & BuiltinCollectionExtractAnchor);
 
 export const DEFAULT_BUILTIN_COLLECTION_EXTRACT: BuiltinCollectionExtract = { kind: "none" };
 
@@ -43,26 +43,37 @@ export function normalizeBuiltinCollectionExtract(
   return extract;
 }
 
+export function builtinCollectionExtractAnchorIndex(
+  extract: BuiltinCollectionExtractAnchor
+): number {
+  const n = extract.anchorItemIndex ?? 1;
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+}
+
 export function builtinCollectionExtractKindUiLabel(kind: BuiltinCollectionExtractKind): string {
   switch (kind) {
     case "none":
-      return "无（仅目录 + 排序）";
+      return "无";
     case "similarTo":
-      return "相似品（排除锚点商品）";
+      return "相似品";
+    case "complement":
+      return "搭配品";
   }
 }
 
 export function builtinCollectionExtractLabel(extract: BuiltinCollectionExtract): string {
-  if (extract.kind === "none") return "无（仅目录 + 排序）";
-  if (extract.kind === "similarTo") {
-    return `相似品（来自「${extract.fromSlotId}」）`;
+  if (extract.kind === "none") return "无（可配置排序）";
+  if (extract.kind === "similarTo" || extract.kind === "complement") {
+    const label = extract.kind === "similarTo" ? "相似品" : "搭配品";
+    const idx = builtinCollectionExtractAnchorIndex(extract);
+    return `${label}（锚点：${extract.fromSlotId} 第 ${idx} 条 SPU）`;
   }
   return extract.kind;
 }
 
 export function builtinCollectionExtractNeedsAnchorSlot(
   extract: BuiltinCollectionExtract | undefined
-): extract is Extract<BuiltinCollectionExtract, { kind: "similarTo" }> {
+): extract is Extract<BuiltinCollectionExtract, { kind: "similarTo" | "complement" }> {
   const normalized = normalizeBuiltinCollectionExtract(extract);
-  return normalized.kind === "similarTo";
+  return normalized.kind === "similarTo" || normalized.kind === "complement";
 }

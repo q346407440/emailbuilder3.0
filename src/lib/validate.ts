@@ -23,6 +23,7 @@ import {
   resolveEffectiveBindingSlotValueType,
 } from "../payload-contract/repeat-list-item-binding";
 import { validateVariableBindingFieldCompatibility } from "../payload-contract/variable-slot-compatibility";
+import { validateForbiddenLegacyProps } from "../render-defaults-contract/forbiddenLegacyProps";
 import { validateRenderDefaultsForbiddenFields } from "../render-defaults-contract/validate";
 import { EMAIL_ROOT_FIXED_WIDTH, emailRootWidthMismatchReason } from "../render-defaults-contract/values";
 import { layoutBackgroundImageRenderable } from "./wrapperBackgroundImage";
@@ -31,13 +32,7 @@ import { extractInterpolationSlotIds } from "./interpolateText";
 import { getAtPath } from "./paths";
 import { isRepeatHostBlock, resolveRepeatContextForBlock } from "./repeatRegion";
 import { validateVisibilityRule } from "../visibility-contract";
-import {
-  buildPlacementResolveInputForBlock,
-  placementAxisValidationReason,
-  relativePlacementValidationReason,
-} from "./placementConfigurability";
-import { placementParentKindForBlock } from "./placementParentContext";
-import { checkTokenPresetFontStorageValue } from "./emailFontFamily";
+import { collectContentAlignEffectivenessIssues } from "./contentAlignConfigurability";
 
 export type ValidationIssue = {
   path: string;
@@ -54,8 +49,6 @@ export function isBlockingValidationIssue(issue: ValidationIssue): boolean {
 export function blockingValidationIssues(issues: ValidationIssue[]): ValidationIssue[] {
   return issues.filter(isBlockingValidationIssue);
 }
-
-const ROOT_FONT_KEYS = ["fontFamily", "headingFontFamily", "bodyFontFamily"] as const;
 
 function validateSpacingValue(path: string, raw: unknown, issues: ValidationIssue[]): void {
   if (isThemeRef(raw)) return;
@@ -99,21 +92,6 @@ function validateSpacingObject(
     path,
     reason: "间距对象须显式包含 mode: unified 或 separate",
   });
-}
-
-function validatePlacementAxis(
-  path: string,
-  raw: unknown,
-  issues: ValidationIssue[],
-  axisLabel: string
-): void {
-  if (raw === undefined) return;
-  if (raw !== "start" && raw !== "center" && raw !== "end") {
-    issues.push({
-      path,
-      reason: `${axisLabel}仅允许 start / center / end`,
-    });
-  }
 }
 
 function validateContentAlignHorizontalRequired(
@@ -185,23 +163,6 @@ function validateRequiredString(path: string, raw: unknown, issues: ValidationIs
   return raw;
 }
 
-/**
- * 模板 / tokenPresets 落盘字体口径：仅允许单一主字体（`fonts.*` token 由预设解析层追加通用族名）。
- * `$themeRef` 指向的档位在 tokenPresets 校验中检查。
- */
-export function validatePersistedSingleFontFamily(
-  path: string,
-  raw: unknown,
-  issues: ValidationIssue[]
-): void {
-  if (isThemeRef(raw)) return;
-  if (typeof raw !== "string") return;
-  const check = checkTokenPresetFontStorageValue(raw);
-  if (!check.ok) {
-    issues.push({ path, reason: check.reason });
-  }
-}
-
 function validateOverlayStackProps(
   blockTypeLabel: "layout" | "image",
   blockPath: string,
@@ -244,7 +205,7 @@ function validateOverlayStackProps(
 }
 
 function validateOptionalWrapperBackgroundImage(
-  blockTypeLabel: "emailRoot" | "layout",
+  blockTypeLabel: "emailRoot" | "layout" | "grid",
   path: string,
   wsBg: Record<string, unknown> | undefined,
   issues: ValidationIssue[]
@@ -413,9 +374,11 @@ function validateTextBodyStructure(
     return;
   }
   const o = raw as Record<string, unknown>;
-  if (o.version !== 1) {
-    issues.push({ path: `${path}.version`, reason: "textBody.version 仅支持 1" });
-    return;
+  if ("version" in o) {
+    issues.push({
+      path: `${path}.version`,
+      reason: "禁止 props.textBody.version；正文形态由 template.schemaVersion 与迁移脚本统一管理",
+    });
   }
   if (!Array.isArray(o.paragraphs)) {
     issues.push({ path: `${path}.paragraphs`, reason: "textBody.paragraphs 必须为数组" });
@@ -460,6 +423,31 @@ function validateTextBodyStructure(
       if (typeof r.link === "string" && /^\s*javascript:/i.test(r.link)) {
         issues.push({ path: `${rPath}.link`, reason: "不允许 javascript: 链接" });
       }
+      if (r.color !== undefined) {
+        if (typeof r.color !== "string" || !r.color.trim()) {
+          issues.push({ path: `${rPath}.color`, reason: "run.color 必须为非空字符串或省略" });
+        } else if (String(r.color).includes("$themeRef")) {
+          issues.push({
+            path: `${rPath}.color`,
+            reason: "run.color 仅允许字面量颜色，不可使用 $themeRef（段内字色不可绑样式变量）",
+          });
+        }
+      }
+      if (r.fontSize !== undefined) {
+        if (typeof r.fontSize !== "string" || !r.fontSize.trim()) {
+          issues.push({ path: `${rPath}.fontSize`, reason: "run.fontSize 必须为非空字符串或省略" });
+        } else if (String(r.fontSize).includes("$themeRef")) {
+          issues.push({
+            path: `${rPath}.fontSize`,
+            reason: "run.fontSize 仅允许字面量字号，不可使用 $themeRef（段内字号不可绑样式变量）",
+          });
+        } else if (!/^\d+(\.\d+)?(px|em|rem|%)$/.test(String(r.fontSize).trim())) {
+          issues.push({
+            path: `${rPath}.fontSize`,
+            reason: "run.fontSize 须为长度值（如 14px、1.2em）",
+          });
+        }
+      }
     });
   });
 }
@@ -493,22 +481,7 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
         reason: emailRootWidthMismatchReason(rawWidth),
       });
     }
-    if ("outerBackgroundColor" in root.props) {
-      issues.push({
-        path: `blocks.${root.id}.props.outerBackgroundColor`,
-        reason:
-          "emailRoot 禁止配置画布外侧底色；工作区灰底由项目固定 EMAIL_CANVAS_WORKSPACE_BACKGROUND（#f1f1f1）",
-      });
-    }
     validateRequiredString(`blocks.${root.id}.props.backgroundColor`, root.props.backgroundColor, issues);
-    for (const legacyKey of ROOT_FONT_KEYS) {
-      if (legacyKey in root.props) {
-        issues.push({
-          path: `blocks.${root.id}.props.${legacyKey}`,
-          reason: "emailRoot 已废弃画布根字体字段，请在 text/button 块级绑定 fonts.* token",
-        });
-      }
-    }
     if (
       root.props.padding === undefined ||
       root.props.padding === null ||
@@ -525,18 +498,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
     validateBorderConfig(`blocks.${root.id}.props.border`, root.props.border, issues, {
       required: true,
     });
-    if ("direction" in root.props) {
-      issues.push({
-        path: `blocks.${root.id}.props.direction`,
-        reason: "画布根节点固定纵向排列，不再支持配置排列方向",
-      });
-    }
-    if ("contentAlign" in root.props) {
-      issues.push({
-        path: `blocks.${root.id}.props.contentAlign`,
-        reason: "画布根节点不再支持内容对齐配置，请使用子区块相对父级对齐",
-      });
-    }
     const rootGapMode = root.props.gapMode;
     if (
       rootGapMode !== undefined &&
@@ -626,52 +587,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
     }
 
     validateSpacingObject(`blocks.${id}.wrapperStyle.padding`, block.wrapperStyle?.padding, issues);
-    validatePlacementAxis(
-      `blocks.${id}.wrapperStyle.placement.horizontal`,
-      (block.wrapperStyle as { placement?: { horizontal?: unknown } } | undefined)?.placement
-        ?.horizontal,
-      issues,
-      "相对父级水平放置（placement.horizontal）"
-    );
-    validatePlacementAxis(
-      `blocks.${id}.wrapperStyle.placement.vertical`,
-      (block.wrapperStyle as { placement?: { vertical?: unknown } } | undefined)?.placement
-        ?.vertical,
-      issues,
-      "相对父级竖直放置（placement.vertical）"
-    );
-    const placementInput = buildPlacementResolveInputForBlock(t, id);
-    const placementRaw = (
-      block.wrapperStyle as { placement?: { horizontal?: unknown; vertical?: unknown } } | undefined
-    )?.placement;
-    const relativeReason = relativePlacementValidationReason(placementRaw, placementInput);
-    if (relativeReason) {
-      issues.push({ path: `blocks.${id}.wrapperStyle.placement`, reason: relativeReason });
-    }
-    const hReason = placementAxisValidationReason(
-      "horizontal",
-      placementRaw?.horizontal,
-      placementInput
-    );
-    if (hReason) {
-      issues.push({ path: `blocks.${id}.wrapperStyle.placement.horizontal`, reason: hReason });
-    }
-    const vReason = placementAxisValidationReason("vertical", placementRaw?.vertical, placementInput);
-    if (vReason) {
-      issues.push({ path: `blocks.${id}.wrapperStyle.placement.vertical`, reason: vReason });
-    }
-    if (placementParentKindForBlock(t, id) === "none" && placementRaw) {
-      const hasNonStart =
-        (placementRaw.horizontal && placementRaw.horizontal !== "start") ||
-        (placementRaw.vertical && placementRaw.vertical !== "start");
-      if (hasNonStart) {
-        issues.push({
-          path: `blocks.${id}.wrapperStyle.placement`,
-          reason:
-            "当前父级非表格槽位，不可配置相对父级摆放；请删除 placement 或仅保留 start",
-        });
-      }
-    }
     validateWrapperDimensionSemantics(
       `blocks.${id}.wrapperStyle`,
       block.wrapperStyle as Record<string, unknown> | undefined,
@@ -754,14 +669,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
       validateRequiredString(`blocks.${id}.props.src`, props.src, issues);
       validateRequiredString(`blocks.${id}.props.color`, props.color, issues);
       validateRequiredString(`blocks.${id}.props.size`, props.size, issues);
-      for (const legacyKey of ["customSrc", "iconSrcMode", "libraryAssetId", "uploadedAssetId"] as const) {
-        if (legacyKey in props) {
-          issues.push({
-            path: `blocks.${id}.props.${legacyKey}`,
-            reason: "已废弃：图标地址仅使用 props.src（URL），请移除该字段",
-          });
-        }
-      }
     }
 
     if (block.type === "layout") {
@@ -775,41 +682,18 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
 
       const lp = block.props as Record<string, unknown>;
       validateOverlayStackProps("layout", `blocks.${id}`, lp, issues);
-      if ("minHeight" in lp) {
-        issues.push({
-          path: `blocks.${id}.props.minHeight`,
-          reason: "layout 容器高度已迁移至 wrapperStyle.heightMode / wrapperStyle.height",
-        });
-      }
-      if ("height" in lp) {
-        issues.push({
-          path: `blocks.${id}.props.height`,
-          reason: "layout 容器高度已迁移至 wrapperStyle.heightMode / wrapperStyle.height",
-        });
-      }
-      if ("crossAlign" in lp) {
-        issues.push({
-          path: `blocks.${id}.props.crossAlign`,
-          reason:
-            "layout.crossAlign 已移除，请改为在各子区块使用 wrapperStyle.placement",
-        });
-      }
     }
 
     if (block.type === "grid") {
+      const wsBg = block.wrapperStyle?.backgroundImage as Record<string, unknown> | undefined;
+      validateOptionalWrapperBackgroundImage(
+        "grid",
+        `blocks.${id}.wrapperStyle.backgroundImage`,
+        wsBg,
+        issues
+      );
+
       const gp = block.props as Record<string, unknown>;
-      if ("items" in gp) {
-        issues.push({
-          path: `blocks.${id}.props.items`,
-          reason: "栅格固定按 children 顺序排布，不再支持跨列/跨行单元格配置",
-        });
-      }
-      if ("columnsPerRow" in gp) {
-        issues.push({
-          path: `blocks.${id}.props.columnsPerRow`,
-          reason: "栅格列数请使用 columns，不再支持 columnsPerRow",
-        });
-      }
       const cellWidthMode = gp.cellWidthMode;
       if (
         cellWidthMode !== undefined &&
@@ -849,14 +733,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
           issues.push({
             path: `blocks.${id}.props.cellHeight`,
             reason: "grid.cellHeightMode=fixed 时，必须填写 cellHeight",
-          });
-        }
-      }
-      for (const legacyKey of ["rowHeightMode", "rowHeight"] as const) {
-        if (legacyKey in gp) {
-          issues.push({
-            path: `blocks.${id}.props.${legacyKey}`,
-            reason: "已废弃：栅格单元格高度请使用 props.cellHeightMode / props.cellHeight",
           });
         }
       }
@@ -946,24 +822,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
         issues,
         { allowHug: true, label: "button 按钮本体" }
       );
-      if (buttonStyle && "padding" in buttonStyle) {
-        issues.push({
-          path: `blocks.${id}.props.buttonStyle.padding`,
-          reason: "按钮内边距由渲染层统一固定，不再作为 JSON 配置项",
-        });
-      }
-      if (buttonStyle && "fontWeight" in buttonStyle) {
-        issues.push({
-          path: `blocks.${id}.props.buttonStyle.fontWeight`,
-          reason: "按钮文字粗细请使用 buttonStyle.bold",
-        });
-      }
-      if (buttonStyle && "fontStyle" in buttonStyle) {
-        issues.push({
-          path: `blocks.${id}.props.buttonStyle.fontStyle`,
-          reason: "按钮文字斜体请使用 buttonStyle.italic",
-        });
-      }
       if (buttonStyle?.bold !== undefined && typeof buttonStyle.bold !== "boolean") {
         issues.push({
           path: `blocks.${id}.props.buttonStyle.bold`,
@@ -984,16 +842,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
         buttonStyle?.borderRadius,
         issues,
         { required: true }
-      );
-      validateRequiredString(
-        `blocks.${id}.props.buttonStyle.fontFamily`,
-        buttonStyle?.fontFamily,
-        issues
-      );
-      validatePersistedSingleFontFamily(
-        `blocks.${id}.props.buttonStyle.fontFamily`,
-        buttonStyle?.fontFamily,
-        issues
       );
     }
 
@@ -1021,72 +869,20 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
         ca.vertical,
         issues
       );
+      for (const issue of collectContentAlignEffectivenessIssues(id, t, block)) {
+        issues.push(issue);
+      }
     }
 
     if (block.type !== "text") continue;
-    if ("lineHeight" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.lineHeight`,
-        reason: "text.lineHeight 已废弃，文本行高由渲染层统一固定，不允许在 JSON 中配置",
-      });
-    }
-    if (block.props && typeof block.props === "object" && "textKind" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.textKind`,
-        reason: "textKind 已移除；请删除该字段，标题样式请用 fontFamily / fontSize 等 token 绑定表达。",
-      });
-    }
-    if (block.props && typeof block.props === "object" && "fontMode" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.fontMode`,
-        reason: "fontMode 已废弃（含 inherit）；请在 props.fontFamily 上显式绑定 fonts.heading / fonts.body 等 token",
-      });
-    }
-    validateRequiredString(`blocks.${id}.props.fontFamily`, block.props?.fontFamily, issues);
-    validatePersistedSingleFontFamily(`blocks.${id}.props.fontFamily`, block.props?.fontFamily, issues);
-    if (block.props && typeof block.props === "object" && "content" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.content`,
-        reason: "text.props.content 已废弃，请仅使用 props.textBody；可运行 npm run migrate:remove-text-props-content:write",
-      });
-    }
     const tb = (block.props as { textBody?: unknown }).textBody;
-    const hasTextBody =
-      tb !== undefined &&
-      tb !== null &&
-      typeof tb === "object" &&
-      (tb as { version?: number }).version === 1;
-    if (!hasTextBody) {
+    if (tb === undefined || tb === null || typeof tb !== "object" || Array.isArray(tb)) {
       issues.push({
         path: `blocks.${id}.props.textBody`,
-        reason: "text 区块必须使用结构化正文（props.textBody.version = 1）",
+        reason: "text 区块必须使用结构化正文（props.textBody.paragraphs）",
       });
     } else {
       validateTextBodyStructure(`blocks.${id}.props.textBody`, tb, issues);
-    }
-    if (block.bindings?.["props.content"]) {
-      issues.push({
-        path: `blocks.${id}.bindings.props.content`,
-        reason: "禁止在 props.content 上绑定变量，请改绑到 props.textBody 或其 run 路径",
-      });
-    }
-    if ("fontWeight" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.fontWeight`,
-        reason: "text.fontWeight 已废弃，请使用布尔字段 bold",
-      });
-    }
-    if ("fontStyle" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.fontStyle`,
-        reason: "text.fontStyle 已废弃，请使用布尔字段 italic",
-      });
-    }
-    if ("textDecoration" in block.props) {
-      issues.push({
-        path: `blocks.${id}.props.textDecoration`,
-        reason: "text.textDecoration 已废弃，请使用枚举字段 decoration",
-      });
     }
     if (typeof block.props?.bold !== "boolean") {
       issues.push({
@@ -1246,7 +1042,7 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
       if (!isRepeatHostBlock(block)) {
         issues.push({
           path,
-          reason: "列表重复只能绑定在 layout 或 grid 容器上，不能绑定在邮件根节点",
+          reason: "列表重复只能绑定在布局容器、栅格或图片区块上，不能绑定在邮件根节点",
         });
       }
       const repeatIssues = validateExternalVariableBindingSpec(path, {
@@ -1264,13 +1060,21 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
       if (block.repeat.prototypeChildIds.length === 0) {
         issues.push({ path: `${path}.prototypeChildIds`, reason: "列表重复区域必须至少选择一个原型子区块" });
       }
-      for (const childId of block.repeat.prototypeChildIds) {
-        if (!block.children.includes(childId)) {
-          issues.push({
-            path: `${path}.prototypeChildIds`,
-            reason: `原型子区块「${childId}」必须是当前容器的直接子节点`,
-          });
-        }
+      const selfRepeatOnly =
+        block.repeat.prototypeChildIds.length === 1 &&
+        block.repeat.prototypeChildIds[0] === blockId;
+      if (!selfRepeatOnly) {
+        issues.push({
+          path: `${path}.prototypeChildIds`,
+          reason:
+            "旧版列表重复已禁用：必须绑定在哪一层就复制哪一层，prototypeChildIds 只能为当前区块自身 id",
+        });
+      }
+      if (block.repeat.fallbackChildIds.some((childId) => childId !== blockId)) {
+        issues.push({
+          path: `${path}.fallbackChildIds`,
+          reason: "fallbackChildIds 仅允许包含当前区块自身 id（旧版回退子区块写法已禁用）",
+        });
       }
       for (const childId of block.repeat.fallbackChildIds) {
         if (!t.blocks[childId]) {
@@ -1507,6 +1311,7 @@ export function validateTemplate(t: EmailTemplate): ValidationIssue[] {
   issues.push(...validateTemplateBindings(t));
   issues.push(...validateTemplateBlockContracts(t));
   issues.push(...validateRenderDefaultsForbiddenFields(t));
+  issues.push(...validateForbiddenLegacyProps(t));
   return issues;
 }
 

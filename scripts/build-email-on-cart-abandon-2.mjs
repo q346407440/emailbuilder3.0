@@ -1,37 +1,6 @@
 #!/usr/bin/env node
-/**
- * 一次性生成「弃购挽留 / On 风格」学习模板到 data/emails/on-cart-abandon-2/
- * 模板字面量：模块壳 padding 24px、主布局 gap 16px、紧凑行 gap 8px；字号 26/15/11。
- * 样式预设：颜色主/副/表面、字号四档、间距三档、面板容器/主按钮圆角；生成后由绑定脚本写入 $themeRef。
- */
-import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { normalizeTokenPresetTokens } from "./lib/token-preset-standard-order.mjs";
-import { defaultLayoutDir } from "./lib/email-layout-output.mjs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, "..");
-const OUT_DIR = join(ROOT, "data", "emails", "on-cart-abandon-2");
-const LAYOUT_DIR = defaultLayoutDir(OUT_DIR);
-
-const S = {
-  modPad: "24px",
-  gapMd: "16px",
-  gapSm: "8px",
-  /** 邮件首屏大标题（600px 宽内不宜过大） */
-  fsDisplay: "36px",
-  fsH: "26px",
-  /** 样式预设「小标题」档，介于大标题与正文之间 */
-  fsTitleS: "20px",
-  fsBody: "15px",
-  fsMicro: "11px",
-};
-
-/** 与 src/lib/emailFontFamily.ts 默认栈及样式预设 fonts.* 一致 */
-const FONT_HEADING = "'Source Sans 3'";
-const FONT_BODY = "'Source Sans 3'";
+import { contentAlignFromAxes, axesAlignRecord } from "./lib/content-align-axis.mjs";
 
 const border0 = () => ({
   mode: "unified",
@@ -53,13 +22,8 @@ const padMod = () => ({
 /** 栅格外层容器默认内边距（与校验/Inspector 统一+分边模式对齐；0 也须显式写出） */
 const pad0 = () => ({ mode: "unified", unified: "0" });
 
-const placement = (h, v) => ({
-  horizontal: h,
-  vertical: v,
-});
-
 const wsText = (align, wm = "fill") => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: align, vertical: "top" },
   widthMode: wm,
   heightMode: "hug",
@@ -68,7 +32,7 @@ const wsText = (align, wm = "fill") => ({
 });
 
 const wsLayout = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -80,7 +44,7 @@ const wsLayout = (extra = {}) => ({
 
 /** 标准栅格外壳：含显式 wrapperStyle.padding，宫格间距仍由 props.gap 控制 */
 const wsGrid = (extra = {}) => ({
-  placement: placement("start", "start"),
+  contentAlign: contentAlignFromAxes("start", "start"),
   contentAlign: { horizontal: "left", vertical: "top" },
   widthMode: "fill",
   heightMode: "hug",
@@ -91,7 +55,6 @@ const wsGrid = (extra = {}) => ({
 });
 
 const textBody = (t) => ({
-  version: 1,
   paragraphs: [{ runs: [{ text: t }] }],
 });
 
@@ -104,7 +67,6 @@ const textBlock = (id, parentId, name, content, opts) => ({
   props: {
     content: `<p>${content}</p>`,
     textBody: textBody(content.replace(/<[^>]+>/g, "")),
-    fontFamily: opts.fontFamily ?? FONT_BODY,
     fontSize: opts.fontSize,
     color: opts.color,
     bold: opts.bold ?? false,
@@ -121,7 +83,7 @@ const btnGhost = (id, parentId, name, text) => ({
   children: [],
   wrapperStyle: {
     ...wsText("center", "fill"),
-    placement: placement("center", "start"),
+    contentAlign: contentAlignFromAxes("center", "start"),
   },
   props: {
     text,
@@ -130,7 +92,6 @@ const btnGhost = (id, parentId, name, text) => ({
       widthMode: "hug",
       backgroundColor: "#ffffff",
       textColor: "#000000",
-      fontFamily: FONT_BODY,
       fontSize: "15px",
       border: { mode: "unified", width: "1px", style: "solid", color: "#000000" },
       borderRadius: radius0(),
@@ -237,7 +198,7 @@ const imgBlock = (id, parentId, name, src, alt, w, h) => ({
   parentId,
   children: [],
   wrapperStyle: {
-    placement: placement("start", "start"),
+    contentAlign: contentAlignFromAxes("start", "start"),
     contentAlign: { horizontal: "center", vertical: "top" },
     widthMode: "fill",
     heightMode: "fixed",
@@ -264,7 +225,7 @@ const iconBlk = (id, parentId, name, src) => ({
   parentId,
   children: [],
   wrapperStyle: {
-    placement: placement("start", "start"),
+    contentAlign: contentAlignFromAxes("start", "start"),
     contentAlign: { horizontal: "center", vertical: "center" },
     widthMode: "hug",
     heightMode: "hug",
@@ -336,7 +297,7 @@ function build() {
       ...wsLayout({ backgroundColor: "#ffffff", padding: undefined }),
       widthMode: "fill",
       heightMode: "hug",
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     },
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -350,12 +311,11 @@ function build() {
     children: [],
     wrapperStyle: {
       ...wsText("center", "hug"),
-      placement: placement("center", "center"),
+      contentAlign: contentAlignFromAxes("center", "center"),
     },
     props: {
       content: "<p>on</p>",
       textBody: textBody("on"),
-      fontFamily: FONT_HEADING,
       fontSize: S.fsBody,
       color: "#000000",
       bold: true,
@@ -642,7 +602,7 @@ function build() {
       parentId: catGrid,
       children: [txt],
       wrapperStyle: {
-        placement: placement("start", "start"),
+        contentAlign: contentAlignFromAxes("start", "start"),
         contentAlign: { horizontal: "center", vertical: "center" },
         widthMode: "fill",
         heightMode: "fixed",
@@ -681,7 +641,7 @@ function build() {
         widthMode: "fill",
       })
     );
-    blocks[txt].wrapperStyle.placement = placement("center", "center");
+    blocks[txt].wrapperStyle.contentAlign = contentAlignFromAxes("center", "center");
     blocks[txt].bindings = {
       "props.textBody.paragraphs.0.runs.0.text": categoryItemsBinding(`${i}.name`, defaultCategoryItems),
     };
@@ -740,7 +700,7 @@ function build() {
     children: [ftLogo],
     wrapperStyle: {
       ...wsLayout({ backgroundColor: "#ffffff" }),
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
     },
     props: { direction: "horizontal", gapMode: "fixed", gap: "0" },
@@ -758,7 +718,7 @@ function build() {
       widthMode: "hug",
     })
   );
-  blocks[ftLogo].wrapperStyle.placement = placement("center", "center");
+  blocks[ftLogo].wrapperStyle.contentAlign = contentAlignFromAxes("center", "center");
   blocks[ftLogo].bindings = {
     "props.textBody.paragraphs.0.runs.0.text": variableBinding("footerBrandWordmark", "string", "on", {
       label: "页脚品牌字标",
@@ -774,7 +734,7 @@ function build() {
     children: iconIds,
     wrapperStyle: {
       ...wsLayout({ backgroundColor: "#ffffff" }),
-      placement: placement("center", "start"),
+      contentAlign: contentAlignFromAxes("center", "start"),
       contentAlign: { horizontal: "center", vertical: "top" },
       widthMode: "hug",
       heightMode: "hug",
@@ -791,7 +751,7 @@ function build() {
       `社媒 ${i + 1}`,
       iconBlk(iconIds[i], ftIcons, `社媒 ${i + 1}`, iconSrcs[i])
     );
-    blocks[iconIds[i]].wrapperStyle.placement = placement("start", "center");
+    blocks[iconIds[i]].wrapperStyle.contentAlign = contentAlignFromAxes("start", "center");
     blocks[iconIds[i]].bindings = {
       "props.src": footerSocialIconsBinding(`${i}.iconSrc`, defaultFooterSocialIcons, i === 0),
     };
@@ -803,7 +763,6 @@ function build() {
   ];
 
   const linkParagraph = {
-    version: 1,
     paragraphs: [
       {
         runs: [
@@ -819,11 +778,10 @@ function build() {
     type: "text",
     parentId: modFt,
     children: [],
-    wrapperStyle: { ...wsText("center", "fill"), placement: placement("center", "start") },
+    wrapperStyle: { ...wsText("center", "fill"), contentAlign: contentAlignFromAxes("center", "start") },
     props: {
       content: "<p><a href=\"https://example.com\">VIEW IN BROWSER</a>  |  <a href=\"https://example.com\">UNSUBSCRIBE</a></p>",
       textBody: linkParagraph,
-      fontFamily: FONT_BODY,
       fontSize: S.fsMicro,
       color: "#000000",
       bold: false,
@@ -889,7 +847,7 @@ function build() {
     parentId: null,
     children,
     wrapperStyle: {
-      placement: { horizontal: "center" },
+      contentAlign: contentAlignFromAxes("center", "start"),
       widthMode: "fill",
       heightMode: "hug",
     },
@@ -919,10 +877,8 @@ function build() {
     displayName: "弃购挽留 2（On 风格学习模板）",
     description: "按设计图分模块还原：顶栏、主推、最近浏览 3×2、分类 2×2、页脚。间距 24/16/8px，字号 26/15/11px。",
     source: "agent",
-    status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    designSource: { type: "screenshot", url: "" },
   };
 
   const payload = {
@@ -960,10 +916,6 @@ function build() {
             secondary: "#6b7280",
             surface: "#ffffff",
           },
-          fonts: {
-            heading: FONT_HEADING,
-            body: FONT_BODY,
-          },
           spacing: {
             section: S.modPad,
             gap: S.gapMd,
@@ -989,7 +941,9 @@ function build() {
 
   mkdirSync(OUT_DIR, { recursive: true });
 mkdirSync(LAYOUT_DIR, { recursive: true });
-  writeFileSync(join(LAYOUT_DIR, "template.json"), JSON.stringify(template, null, 2), "utf8");
+  const templatePath = join(LAYOUT_DIR, "template.json");
+  writeFileSync(templatePath, JSON.stringify(template, null, 2), "utf8");
+  finalizeGeneratedTemplate(templatePath);
   writeFileSync(join(OUT_DIR, "meta.json"), JSON.stringify(meta, null, 2), "utf8");
   writeFileSync(join(OUT_DIR, "payload.json"), JSON.stringify(payload, null, 2), "utf8");
   writeFileSync(join(LAYOUT_DIR, "tokenPresets.json"), JSON.stringify(tokenPresets, null, 2), "utf8");

@@ -1,4 +1,5 @@
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
+import type { CollectionDisplayRule, CollectionDisplayRulePreset } from "../payload-contract/types";
 import type { VisibilityRule } from "../visibility-contract/types";
 
 export type BindingMode = "literal" | "variable" | "theme" | "interpolate";
@@ -207,6 +208,10 @@ export type TextRun = {
   bold?: boolean;
   italic?: boolean;
   decoration?: TextDecoration;
+  /** 段内局部字色（字面量颜色值；不可绑 theme/variable，见 blockFieldClassification） */
+  color?: string;
+  /** 段内局部字号（如 `14px`；不可绑 theme/variable） */
+  fontSize?: string;
   /** 非空时表示该片段为超链接（邮件场景常见：「在线查看」、段落内链） */
   link?: string;
 };
@@ -215,30 +220,15 @@ export type TextParagraph = {
   runs: TextRun[];
 };
 
-/** 正文结构化模型 v1：多段，每段由若干 run 组成 */
-export type TextBodyV1 = {
-  version: 1;
+/** 正文结构化模型：多段，每段由若干 run 组成（形态迭代由 template.schemaVersion + 迁移脚本负责，不在此嵌 version） */
+export type TextBody = {
   paragraphs: TextParagraph[];
 };
+
 export type HorizontalAlign = "left" | "center" | "right";
 
 /** 作为 flex/grid 子项时在父级交叉轴上的对齐；画布映射为 align-self */
 export type SelfAlignCross = "stretch" | "start" | "center" | "end";
-
-export type WrapperSelfAlign = {
-  horizontal?: HorizontalAlign;
-  /** 相对父级 flex 容器交叉轴（横向 layout 多为垂直方向；纵向 layout 多为水平方向） */
-  cross?: SelfAlignCross;
-};
-
-/** 相对父级内容区的放置轴：start=左或上、center=居中、end=右或下（不随父级 flex-direction 改变含义） */
-export type PlacementAxis = "start" | "center" | "end";
-
-/** 区块整体相对父容器内容区的放置语义（与块内 contentAlign 排版对齐分离） */
-export type WrapperPlacement = {
-  horizontal?: PlacementAxis;
-  vertical?: PlacementAxis;
-};
 
 export type WrapperContentAlign = {
   horizontal?: HorizontalAlign;
@@ -276,11 +266,7 @@ export type WrapperStyle = {
   borderRadius?: BorderRadiusValue;
   border?: BorderValue;
   padding?: SpacingValue;
-  /**
-   * 相对父级的放置语义（Inspector「相对父级水平/竖直放置」）。
-   */
-  placement?: WrapperPlacement;
-  /** 当前区块外层容器内部的内容九宫格对齐，与相对父级 placement 分离。 */
+  /** 当前区块外层容器内部的内容对齐（水平 + 竖直双轴）。 */
   contentAlign?: WrapperContentAlign;
   /** 设置后画布以「底图 + 子层叠放」渲染该 layout（与 JSON 契约一致，右侧面板可编辑） */
   backgroundImage?: WrapperBackgroundImage;
@@ -309,9 +295,7 @@ export type LayoutBlockProps = {
 
 export type TextBlockProps = {
   /** 结构化正文（分段 + run 级样式/链接）；画布预览与富文本编辑唯一真源 */
-  textBody: TextBodyV1;
-  /** 字体（字面量或 $themeRef）；禁止 fontMode:inherit，须块级显式绑定 */
-  fontFamily?: string;
+  textBody: TextBody;
   fontSize?: string;
   color?: string;
   bold: boolean;
@@ -334,8 +318,6 @@ export type ButtonStyleProps = {
   width?: string;
   backgroundColor?: string;
   textColor?: string;
-  /** 按钮文案字体（字面量或 $themeRef） */
-  fontFamily?: string;
   /** 按钮文案字号；未设置时画布按 15px，与历史默认一致 */
   fontSize?: string;
   borderRadius?: BorderRadiusValue;
@@ -465,6 +447,11 @@ export type PayloadSlotDefinition = {
   minItems?: number;
   maxItems?: number;
   dataSource?: CollectionDataSource;
+  displayRule?: CollectionDisplayRule;
+  displayRulePreset?: CollectionDisplayRulePreset;
+  /** 场景内置列表变量预设 id；有值时不使用粘贴 JSON 配置数据源 */
+  sceneCollectionPresetId?: string;
+  scene?: "loyalty-internal-admin" | "loyalty-merchant-admin";
 };
 
 export type EmailPayload = {
@@ -492,36 +479,10 @@ export type EmailListItem = {
   hasLayoutVariants?: boolean;
   /** 列表展示用：当前激活的版式 id */
   activeLayoutVariantId?: string;
-  updatedAt?: string;
-};
-
-export type EmailMetaDelivery = {
-  subject?: string;
-  preheader?: string;
-  senderName?: string;
-  senderEmail?: string;
-  campaignTag?: string;
-};
-
-export type EmailMetaDesignSource = {
-  type?: "figma" | "sketch" | "screenshot" | "other";
-  url?: string;
-};
-
-export type EmailMeta = {
-  displayName: string;
-  /**
-   * 打开本模板「样式预设」工作台时默认选中的侧栏项。
-   * `local`：本邮件目录下 tokenPresets.json；否则为公共预设 id（与 data/token-presets/<id>.json 一致）。
-   */
-  defaultStylePresetSelection?: "local" | string;
-  description?: string;
-  source?: "agent" | "human" | string;
-  owner?: string;
-  status?: "draft" | "active" | "deprecated";
-  supersededBy?: string;
+  /** 列表排序用：模板创建时间（ISO） */
   createdAt?: string;
   updatedAt?: string;
-  designSource?: EmailMetaDesignSource;
-  delivery?: EmailMetaDelivery;
 };
+
+/** meta.json 形态真源见 src/meta-contract/types.ts */
+export type { EmailMeta, EmailMetaDelivery } from "../meta-contract/types";

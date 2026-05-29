@@ -11,7 +11,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { EmailTemplate } from "../src/types/email";
-import { normalizeTemplateBlockDefaults } from "../src/lib/placementMigration";
+import { normalizeTemplateBlockDefaults } from "../src/lib/templateBlockDefaults";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");

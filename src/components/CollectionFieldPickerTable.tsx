@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CollectionFieldPickerOption } from "../lib/collectionFieldMapping";
 import { canBindTargetPathToSourceKey } from "../lib/collectionFieldMappingTree";
+import { SelectablePickerRadioCell } from "./ui/SelectablePickerRadioCell";
 
 function isPickerRowVisible(
   opt: CollectionFieldPickerOption,
@@ -160,17 +161,14 @@ export function CollectionFieldPickerTable({
                       aria-hidden
                     />
                   ) : null}
-                  <input
-                    type="radio"
+                  <SelectablePickerRadioCell
                     name={name}
-                    className="text-body-var-pill-modal__radio"
                     checked={selected}
                     disabled={!selectable}
+                    label={opt.label}
                     onChange={() => {
                       if (selectable) onSelect(opt.key);
                     }}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={opt.label}
                   />
                 </td>
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">

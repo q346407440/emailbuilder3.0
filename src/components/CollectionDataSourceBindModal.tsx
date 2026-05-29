@@ -395,8 +395,8 @@ export function CollectionDataSourceBindModal({
       <div className="text-body-inline-var-modal repeat-region-bind-modal collection-ds-bind-modal">
         <p className="inspector__muted repeat-region-bind-modal__empty-hint">
           {snapshot.kind === "custom"
-            ? "数据源类型请在右侧变量面板切换。此处粘贴 JSON 并配置字段关联，应用后请在变量详情点「保存变量」。"
-            : "数据源类型、内置目录与列表规则请在右侧变量面板配置。应用后将保存当前内置预览数据。"}
+            ? "粘贴 JSON 并配置字段关联，应用后请在变量详情点「保存变量」。"
+            : "商品/专辑范围与列表规则请在右侧变量面板配置。应用后将保存当前内置预览数据。"}
         </p>
 
         {snapshot.kind === "custom" ? (

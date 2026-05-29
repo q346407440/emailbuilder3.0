@@ -6,7 +6,7 @@ export const PROJECT_LAYOUT_CONTENT_ALIGN: WrapperContentAlign = {
   vertical: "top",
 };
 
-/** 底图叠放层默认对齐（不写 JSON；叠放块位置用子级 placement） */
+/** 底图叠放层默认对齐（不写 JSON；叠放区用容器 contentAlign 或嵌套 layout） */
 export const PROJECT_BACKGROUND_CONTENT_ALIGN: WrapperBackgroundContentAlign = {
   horizontal: "left",
   vertical: "top",
@@ -28,6 +28,9 @@ export const IMAGE_BACKGROUND_FALLBACK_COLOR = "#f0f0f0";
 
 /** 文本块行高（画布预览） */
 export const FIXED_TEXT_LINE_HEIGHT = "1.3";
+
+/** 邮件画布文本渲染用 font-family（非 JSON 配置项） */
+export const EMAIL_CANVAS_TEXT_FONT_FAMILY = "Arial, sans-serif";
 
 /** 画布根节点内容区固定宽度（校验、规范化默认值、预览与 Inspector 共用真源） */
 export const EMAIL_ROOT_FIXED_WIDTH = "600px";
@@ -79,12 +82,14 @@ export function projectLayoutContentAlign(
   return { horizontal, vertical };
 }
 
-/** 纵排 layout 内层栈格：组内自上而下堆叠，主轴对齐由外层 td valign 表达。 */
-export function projectLayoutInnerStackContentAlign(direction: unknown): WrapperContentAlign {
-  if (normalizeLayoutStackDirection(direction) === "horizontal") {
-    return PROJECT_LAYOUT_CONTENT_ALIGN;
-  }
-  return { horizontal: PROJECT_LAYOUT_CONTENT_ALIGN.horizontal, vertical: "top" };
+/**
+ * @deprecated 请使用 {@link projectLayoutContentAlign}。纵排/横排均透传 wrapperStyle.contentAlign。
+ */
+export function projectLayoutInnerStackContentAlign(
+  direction: unknown,
+  raw?: WrapperContentAlign | null
+): WrapperContentAlign {
+  return projectLayoutContentAlign(direction, raw);
 }
 
 export function projectBackgroundContentAlign(): WrapperBackgroundContentAlign {

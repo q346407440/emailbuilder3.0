@@ -10,6 +10,20 @@ function isEmptyStringLike(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === "string" && value.trim() === "");
 }
 
+/** 数值槽：未赋值或非法类型视为空（兼容对接方漏传、传错类型） */
+function isNumberValueEmpty(value: unknown): boolean {
+  return value === undefined || value === null || typeof value !== "number" || !Number.isFinite(value);
+}
+
+/** 布尔槽：未赋值或非法类型视为空 */
+function isBooleanValueEmpty(value: unknown): boolean {
+  return value === undefined || value === null || typeof value !== "boolean";
+}
+
+function isCollectionEmpty(value: unknown): boolean {
+  return !Array.isArray(value) || value.length === 0;
+}
+
 function collectionLength(value: unknown): number | null {
   return Array.isArray(value) ? value.length : null;
 }
@@ -49,13 +63,27 @@ export function evaluateVisibilityRule(rule: VisibilityRule, payload: EmailPaylo
 
   switch (rule.operator) {
     case "isEmpty":
-      return rule.valueType === "collection"
-        ? collectionLength(value) === 0
-        : isEmptyStringLike(value);
+      switch (rule.valueType) {
+        case "collection":
+          return isCollectionEmpty(value);
+        case "number":
+          return isNumberValueEmpty(value);
+        case "boolean":
+          return isBooleanValueEmpty(value);
+        default:
+          return isEmptyStringLike(value);
+      }
     case "isNotEmpty":
-      return rule.valueType === "collection"
-        ? (collectionLength(value) ?? 0) > 0
-        : !isEmptyStringLike(value);
+      switch (rule.valueType) {
+        case "collection":
+          return !isCollectionEmpty(value);
+        case "number":
+          return !isNumberValueEmpty(value);
+        case "boolean":
+          return !isBooleanValueEmpty(value);
+        default:
+          return !isEmptyStringLike(value);
+      }
     case "equals":
       return value === rule.compareValue;
     case "notEquals":

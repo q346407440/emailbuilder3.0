@@ -13,7 +13,6 @@ const CSS_SCALAR_FIELD_NAMES = new Set([
   "backgroundColor",
   "color",
   "textColor",
-  "fontFamily",
   "fontSize",
   "lineHeight",
   "gap",

@@ -5,9 +5,9 @@ import {
   type KeyboardEventHandler,
   type MouseEventHandler,
 } from "react";
-import { message } from "@shoplazza/sds";
+import { ColorPicker, message } from "@shoplazza/sds";
 import type { InputRef } from "@shoplazza/sds";
-import type { EmailPayload, TextBodyV1 } from "../types/email";
+import type { EmailPayload, TextBody } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import type { TextBodyDefaults } from "../lib/textBodyFormat";
 import { TextBodyInlineVariableModal } from "./TextBodyInlineVariableModal";
@@ -22,13 +22,16 @@ import {
 } from "../lib/textBodyEditorFormat";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
+import { useAdaptiveOverlayEdge } from "../hooks/useAdaptiveOverlayEdge";
+import { antdOverlayEdge } from "../lib/antdOverlayEdge";
+import { parseCssColorToRgba, rgbaForPicker, rgbaToCss } from "../lib/colorCss";
 
 type Props = {
   /** 用于在外层模板变更时重置编辑器内容 */
   editorKey: string;
-  textBody: TextBodyV1;
+  textBody: TextBody;
   defaults: TextBodyDefaults;
-  onCommit: (next: TextBodyV1) => void;
+  onCommit: (next: TextBody) => void;
   payload?: EmailPayload | null;
   externalVariableSlots?: ExternalVariableSlotInfo[];
   onInlineVariableFromSelection?: (args: {
@@ -36,7 +39,7 @@ type Props = {
     slotId: string;
     label: string;
     defaultValue: string;
-    nextTextBody: TextBodyV1;
+    nextTextBody: TextBody;
     valueType?: string;
   }) => void;
   /** 正文 run 级 variable 绑定：编辑器内以胶囊展示 */
@@ -124,6 +127,7 @@ function metaFromPillElement(
 }
 
 const TEXT_BODY_VAR_PILL_SELECTED_CLASS = "text-rich-editor__var-pill--selected";
+const TEXT_COLOR_FALLBACK = "#000000";
 
 function findVariablePillsInRange(range: Range, root: HTMLElement): HTMLElement[] {
   const pills: HTMLElement[] = [];
@@ -191,6 +195,30 @@ function anchorTextPreview(anchor: HTMLAnchorElement | null): string {
   return t.length <= maxLen ? t : `${t.slice(0, maxLen - 1)}…`;
 }
 
+function resolveSingleTextColorInRange(range: Range, root: HTMLElement): string | null {
+  if (range.collapsed) return null;
+  const colors = new Set<string>();
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    if (!range.intersectsNode(node)) continue;
+    const fullText = node.textContent ?? "";
+    if (!fullText) continue;
+    const startOffset = node === range.startContainer ? range.startOffset : 0;
+    const endOffset = node === range.endContainer ? range.endOffset : fullText.length;
+    if (endOffset <= startOffset) continue;
+    const slice = fullText.slice(startOffset, endOffset);
+    if (!slice.trim()) continue;
+    const host = node.parentElement ?? root;
+    const computedColor = window.getComputedStyle(host).color;
+    const rgba = parseCssColorToRgba(computedColor);
+    if (!rgba) continue;
+    colors.add(rgbaToCss(rgba));
+    if (colors.size > 1) return null;
+  }
+  return colors.size === 1 ? [...colors][0]! : null;
+}
+
 /**
  * 结构化正文编辑器：contenteditable + execCommand，字符级粗斜体/装饰/链接。
  */
@@ -213,6 +241,7 @@ export function TextRichEditor({
   const debounceId = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dirtyRef = useRef(false);
   const linkInputRef = useRef<InputRef>(null);
+  const colorTriggerWrapRef = useRef<HTMLDivElement>(null);
   const shakeWrapRef = useRef<HTMLDivElement>(null);
   const variableRunsKey = JSON.stringify(
     variableRuns.map((m) => [m.textBindPath, m.displayText, m.displayLink, m.slotId])
@@ -227,6 +256,16 @@ export function TextRichEditor({
 
   const [variableModalOpen, setVariableModalOpen] = useState(false);
   const [variableSelectionPreview, setVariableSelectionPreview] = useState("");
+  const [runColorDraft, setRunColorDraft] = useState("#ff1f1f");
+  const { open: colorPickerOpen, overlayEdge, overlayClassName, onVisibleChange } = useAdaptiveOverlayEdge({
+    triggerRef: colorTriggerWrapRef,
+    preferredEdge: "topLeft",
+    estimatedPopupHeight: 292,
+    estimatedPopupWidth: 258,
+    overlayClassName: "color-field__dropdown-overlay",
+  });
+
+  const pickerColorValue = rgbaToCss(rgbaForPicker(runColorDraft));
 
   useEffect(() => {
     const el = ref.current;
@@ -303,6 +342,25 @@ export function TextRichEditor({
         /* ignore */
       }
     }
+  };
+
+  const syncRunColorDraftFromSelection = () => {
+    const root = ref.current;
+    if (!root) {
+      setRunColorDraft(TEXT_COLOR_FALLBACK);
+      return;
+    }
+    restoreSelection();
+    const sel = window.getSelection();
+    if (sel?.rangeCount && root.contains(sel.anchorNode)) {
+      selRange.current = sel.getRangeAt(0).cloneRange();
+    }
+    const range = selRange.current;
+    if (!range || !rangeInsideEditor(range, root)) {
+      setRunColorDraft(TEXT_COLOR_FALLBACK);
+      return;
+    }
+    setRunColorDraft(resolveSingleTextColorInRange(range, root) ?? TEXT_COLOR_FALLBACK);
   };
 
   const exec = (command: string, value?: string) => {
@@ -568,7 +626,7 @@ export function TextRichEditor({
         aria-label="富文本样式工具条"
         onMouseDown={captureSelection}
       >
-        <div className="inspector-rich-toolbar__group" role="group" aria-label="字体样式">
+        <div className="inspector-rich-toolbar__group" role="group" aria-label="文本样式">
           <ShopSecondaryButton
             className="inspector-rich-toolbar__btn"
             title="加粗"
@@ -639,6 +697,47 @@ export function TextRichEditor({
             <span className="inspector-rich-toolbar__icon">链</span>
           </ShopSecondaryButton>
           <ShopSecondaryButton
+            className="inspector-rich-toolbar__btn inspector-rich-toolbar__btn--color"
+            title="设置字色"
+            aria-label="设置字色"
+            onMouseDown={captureSelection}
+            onClick={() => syncRunColorDraftFromSelection()}
+          >
+            <ColorPicker
+              value={pickerColorValue}
+              disabledAlpha={false}
+              onChange={(c: { toRgb: () => { r: number; g: number; b: number }; getAlpha: () => number }) => {
+                const { r, g, b } = c.toRgb();
+                const next = rgbaToCss({ r, g, b, a: c.getAlpha() });
+                setRunColorDraft(next);
+                exec("foreColor", next);
+              }}
+              dropdownProps={{
+                ...antdOverlayEdge(overlayEdge),
+                onVisibleChange: (visible: boolean) => {
+                  if (visible) syncRunColorDraftFromSelection();
+                  onVisibleChange(visible);
+                },
+                overlayClassName,
+                openClassName: "",
+                destroyPopupOnHide: true,
+                getPopupContainer: (triggerNode: HTMLElement) =>
+                  triggerNode.ownerDocument?.body ?? triggerNode,
+              }}
+            >
+              <div
+                ref={colorTriggerWrapRef}
+                className="inspector-rich-toolbar__color-trigger-shell"
+                aria-expanded={colorPickerOpen}
+              >
+                <span
+                  className="inspector-rich-toolbar__color-swatch"
+                  style={{ backgroundColor: runColorDraft }}
+                />
+              </div>
+            </ColorPicker>
+          </ShopSecondaryButton>
+          <ShopSecondaryButton
             className="inspector-rich-toolbar__btn"
             title="清除格式"
             aria-label="清除格式"
@@ -680,7 +779,7 @@ export function TextRichEditor({
         onKeyUp={() => syncVariablePillSelectionHighlight(ref.current)}
       />
       <p className="text-rich-editor__hint">
-        段落之间可用 Enter 分段；区块上的字号/颜色仍为整段默认。选中文字后可设置粗斜体、装饰与链接；双击蓝色链接可编辑地址；快捷键 ⌘K / Ctrl+K
+        段落之间可用 Enter 分段；区块上的字号/颜色仍为整段默认。选中文字后可设置粗斜体、装饰、字色与链接；双击蓝色链接可编辑地址；快捷键 ⌘K / Ctrl+K
         打开链接对话框。
         {variableRuns.length > 0
           ? " 紫色边框胶囊内为 payload 变量回显；有链接时为蓝色下划线文字。点击胶囊可改绑变量，Backspace 可删除。"

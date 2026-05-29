@@ -1,3 +1,4 @@
+import type { BuiltinAlbumListConfig, BuiltinProductListConfig } from "./collection-builtin-catalog-config";
 import type { BuiltinCollectionExtract } from "./collection-builtin-extract";
 import type { BuiltinCollectionSortId } from "./collection-builtin-sort";
 
@@ -14,8 +15,12 @@ export type CollectionDataSource =
       catalog: BuiltinCollectionCatalogId;
       /** 在 catalog 范围内的排序；编辑器预览与运行时解析共用契约 */
       sort?: BuiltinCollectionSortId;
-      /** 在 catalog 范围内做相似品等衍生 */
+      /** 在 catalog 范围内做相似品 / 搭配品等衍生（SPU 级） */
       extract?: BuiltinCollectionExtract;
+      /** catalog=products 时：粒度、范围、SKU 树选等 */
+      productConfig?: BuiltinProductListConfig;
+      /** catalog=albums 时：多选专辑 */
+      albumConfig?: BuiltinAlbumListConfig;
     };
 
 export function defaultCollectionDataSource(): CollectionDataSource {

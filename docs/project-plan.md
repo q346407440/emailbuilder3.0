@@ -1800,23 +1800,25 @@ contentAlign
 
 
 # 对话330：
+> **注（2026-05）**：`wrapperStyle.【已移除字段】` 已从产品移除；现行见 **`docs/prd.md` §4.2** 与 **`npm run migrate:strip-【已移除字段】:write`**。下列「【已移除字段】 迭代」为历史计划记录。
+
 帮针对以下未覆盖的内容：写一个 cursorplan
 尚未覆盖（计划后续迭代）
-独立迁移脚本 migrate:placement、normalize 脚本、intent/blueprint 生成器改为输出 placement（目前仍写 selfAlign，resolver 可读旧数据）。
-文档与 .cursor/skills 口径、resolvePlacementSemantics 在 Inspector 的降级提示。
+独立迁移脚本 migrate:【已移除字段】、normalize 脚本、intent/blueprint 生成器改为输出 【已移除字段】（目前仍写 selfAlign，resolver 可读旧数据）。
+文档与 .cursor/skills 口径、contentAlign 可配性在 Inspector 的降级提示。
 服务端/merge 若需单独 derived layout 契约。
 
 # 对话331：
-根据：/Users/hengliheng/.cursor/plans/placement_后续迭代计划_e6a72ca7.plan.md
+根据：/Users/hengliheng/.cursor/plans/content-align_后续迭代计划_e6a72ca7.plan.md
 执行迭代
 
 # 对话332：
-帮我实现：希望蓝图中间层也直接写 placement
+帮我实现：希望蓝图中间层也直接写 【已移除字段】
 
 # 对话333：
 模板：product_recommend_madein_template58
 中存在大量的 block 的：相对父级竖直放置
-配置在前端是空选中的，这个是与我的迭代优化后的 placement 的约束相关导致的吗？
+配置在前端是空选中的，这个是与我的迭代优化后的 【已移除字段】 的约束相关导致的吗？
 
 # 对话334：
 或者我的这一批旧的模板都可以选择清空，然后我再让你还原新的模板，然后新的模板走处于新的约束的邮件架构的 json，或者新的 poc 的实现流程，就不会出现这个问题了对吗？
@@ -2451,9 +2453,11 @@ Theme 主题
 画布外灰为项目固定 `EMAIL_CANVAS_WORKSPACE_BACKGROUND`（`#f1f1f1`），已从 template 移除 `outerBackgroundColor`。
 布局 / 对齐（自检清单那一挂）
 
-`placement` 与 `contentAlign` 是否表达同一意图（叠字、顶/底字标、头图条带内居中 vs 贴底）。
-横向一排小元素忌 `fill` 均分（页脚社媒行改为 hug + 水平居中）。
-Logo 条 + 字标：白条 `fill` 时行内 `contentAlign` 勿 `left` 把 hug 字标挤到左边；字标块 `contentAlign.vertical` 与 `placement` 对齐。
+> **现行（2026-05）**：仅 **`contentAlign`** 双轴；勿再写 **`【已移除字段】`**。见 **`email-template-restore-check`**。
+
+叠字、顶/底字标、头图条带内居中 vs 贴底：统一用父/子 **`contentAlign`** 与嵌套 layout 表达。
+横向一排小元素忌 `fill` 均分（页脚社媒行改为 hug + 横排父级 `contentAlign.horizontal: center`）。
+Logo 条 + 字标：白条 `fill` 时行内 `contentAlign.horizontal: center`；字标与 Logo 竖直中线对齐用横排父级或子块 **`contentAlign.vertical: center`**。
 **主视觉「底图 + 叠字」**：优先 `layout.container` 的 `wrapperStyle.backgroundImage` + 单文本子块叠放；叠字横纵位置（贴底 / 垂直居中 / 顶）在**语义合理**前提下，应用 **MCP 截图目视**再定，勿只凭 JSON 猜。
 结构与层级（扁平化）
 

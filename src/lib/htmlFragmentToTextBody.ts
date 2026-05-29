@@ -2,7 +2,7 @@
  * 将遗留 HTML 片段（通常为 props.content）解析为结构化正文，供迁移脚本与 YAML 展开器共用。
  */
 import { NodeType, parse, TextNode } from "node-html-parser";
-import type { TextBodyV1, TextDecoration } from "../types/email";
+import type { TextBody, TextDecoration } from "../types/email";
 import type { TextBodyDefaults } from "./textBodyFormat";
 
 type RunLike = {
@@ -94,8 +94,10 @@ function walkNode(
   }
 }
 
-/** 从 HTML 片段生成 textBody v1（段落拆分规则与 migrate:text-body 一致）。 */
-export function htmlFragmentToTextBody(html: string, defaults: TextBodyDefaults): TextBodyV1 {
+const EMPTY_TEXT_BODY: TextBody = { paragraphs: [{ runs: [] }] };
+
+/** 从 HTML 片段生成 textBody（段落拆分规则与 migrate:text-body 一致）。 */
+export function htmlFragmentToTextBody(html: string, defaults: TextBodyDefaults): TextBody {
   const source = typeof html === "string" ? html.trim() : "";
   const baseMarks: WalkMarks = {
     bold: defaults.bold,
@@ -103,11 +105,11 @@ export function htmlFragmentToTextBody(html: string, defaults: TextBodyDefaults)
     decoration: defaults.decoration,
     link: "",
   };
-  if (!source) return { version: 1, paragraphs: [{ runs: [] }] };
+  if (!source) return EMPTY_TEXT_BODY;
 
   const root = parse(`<div>${source}</div>`);
   const container = root.firstElementChild;
-  if (!container) return { version: 1, paragraphs: [{ runs: [] }] };
+  if (!container) return EMPTY_TEXT_BODY;
 
   const paragraphs: Array<{ runs: RunLike[] }> = [];
   const blockTags = new Set(["P", "DIV", "LI"]);
@@ -137,6 +139,6 @@ export function htmlFragmentToTextBody(html: string, defaults: TextBodyDefaults)
     if (runs.length) flush(runs);
   }
 
-  if (!paragraphs.length) return { version: 1, paragraphs: [{ runs: [] }] };
-  return { version: 1, paragraphs };
+  if (!paragraphs.length) return EMPTY_TEXT_BODY;
+  return { paragraphs };
 }

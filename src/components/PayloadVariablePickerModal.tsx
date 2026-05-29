@@ -5,6 +5,7 @@ import { isPayloadSlotIdTaken } from "../lib/payloadSlotRegister";
 import { SLOT_ID_PATTERN } from "../payload-contract/value-types";
 import { slotValueTypeLabelForPicker } from "../lib/variableSlotCompatibility";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
+import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 
 function formatSlotDisplayValue(slot: ExternalVariableSlotInfo, payload: EmailPayload): string {
@@ -216,82 +217,45 @@ export function PayloadVariablePickerModal({
               <p className="text-body-var-pill-modal__hint">
                 在下方表格中单选一个变量后点「确定」。列表类（collection）变量不在此选择。
               </p>
-              <div
-                className="text-body-var-pill-modal__table-wrap"
-                role="radiogroup"
-                aria-label="可选 payload 变量"
-              >
-                <table className="text-body-var-pill-modal__table">
-                  <thead>
-                    <tr>
-                      <th className="text-body-var-pill-modal__th text-body-var-pill-modal__th--radio" scope="col">
-                        <span className="text-body-var-pill-modal__sr-only">选择</span>
-                      </th>
-                      <th className="text-body-var-pill-modal__th" scope="col">
-                        名称
-                      </th>
-                      <th className="text-body-var-pill-modal__th" scope="col">
-                        标识
-                      </th>
-                      <th className="text-body-var-pill-modal__th text-body-var-pill-modal__th--type" scope="col">
-                        类型
-                      </th>
-                      <th className="text-body-var-pill-modal__th" scope="col">
-                        当前值
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {scalarSlots.map((slot) => {
-                      const selected = slot.slotId === selectedSlotId;
+              <SelectablePickerTable
+                ariaLabel="可选 payload 变量"
+                rowKey={(slot) => slot.slotId}
+                selectedKey={selectedSlotId}
+                onSelect={setSelectedSlotId}
+                radioName="payload-var-picker-slot"
+                dataSource={scalarSlots}
+                columns={[
+                  {
+                    key: "label",
+                    title: "名称",
+                    render: (slot) => slot.label ?? slot.slotId,
+                  },
+                  {
+                    key: "id",
+                    title: "标识",
+                    render: (slot) => (
+                      <code className="selectable-picker-table__mono">{slot.slotId}</code>
+                    ),
+                  },
+                  {
+                    key: "type",
+                    title: "类型",
+                    width: 72,
+                    render: (slot) => slotValueTypeLabelForPicker(slot.valueType),
+                  },
+                  {
+                    key: "value",
+                    title: "当前值",
+                    ellipsis: true,
+                    render: (slot) => {
                       const displayValue = formatSlotDisplayValue(slot, payload);
                       return (
-                        <tr
-                          key={slot.slotId}
-                          className={`text-body-var-pill-modal__row${selected ? " text-body-var-pill-modal__row--selected" : ""}`}
-                          onClick={() => setSelectedSlotId(slot.slotId)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setSelectedSlotId(slot.slotId);
-                            }
-                          }}
-                          tabIndex={0}
-                          role="radio"
-                          aria-checked={selected}
-                        >
-                          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-                            <input
-                              type="radio"
-                              name="payload-var-picker-slot"
-                              className="text-body-var-pill-modal__radio"
-                              checked={selected}
-                              onChange={() => setSelectedSlotId(slot.slotId)}
-                              onClick={(e) => e.stopPropagation()}
-                              aria-label={`选择 ${slot.label ?? slot.slotId}`}
-                            />
-                          </td>
-                          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
-                            {slot.label ?? slot.slotId}
-                          </td>
-                          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-                            <code>{slot.slotId}</code>
-                          </td>
-                          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">
-                            {slotValueTypeLabelForPicker(slot.valueType)}
-                          </td>
-                          <td
-                            className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value"
-                            title={displayValue}
-                          >
-                            {displayValue}
-                          </td>
-                        </tr>
+                        <span title={displayValue}>{displayValue}</span>
                       );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                    },
+                  },
+                ]}
+              />
             </>
           )
         ) : (

@@ -50,7 +50,7 @@ export function repeatMappingTabLabel(
 export function hasAuthoritativeTextBody(block: EmailBlock): boolean {
   if (block.type !== "text") return false;
   const body = normalizeTextBody((block as TextBlock).props?.textBody);
-  return body?.version === 1;
+  return Array.isArray(body?.paragraphs);
 }
 
 /**
@@ -91,7 +91,10 @@ export function listRepeatMappableContentBindPaths(block: EmailBlock): string[] 
     paths.add("wrapperStyle.backgroundImage.alt");
     paths.add("wrapperStyle.backgroundImage.link");
   }
-  if (block.type === "layout" && block.wrapperStyle?.backgroundImage) {
+  if (
+    (block.type === "layout" || block.type === "grid" || block.type === "image") &&
+    block.wrapperStyle?.backgroundImage
+  ) {
     paths.add("wrapperStyle.backgroundImage.src");
     paths.add("wrapperStyle.backgroundImage.alt");
     paths.add("wrapperStyle.backgroundImage.link");

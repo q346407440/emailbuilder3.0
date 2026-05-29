@@ -5,7 +5,6 @@
 
 const FAMILY_TITLE_ZH: Record<string, string> = {
   colors: "颜色",
-  fonts: "字体",
   spacing: "间距",
   radius: "圆角",
   typography: "字号",
@@ -23,10 +22,6 @@ const SCALE_TITLE_ZH: Partial<Record<string, Record<string, string>>> = {
     text: "主文字色",
     textMuted: "次要文字色",
     border: "边框色",
-  },
-  fonts: {
-    heading: "标题字体",
-    body: "正文字体",
   },
   spacing: {
     xs: "特小档",

@@ -1,19 +1,20 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import type { EmailPayload, EmailTemplate, TextBodyV1 } from "../types/email";
+import type { EmailPayload, EmailTemplate, TextBody } from "../types/email";
 import { mergeTemplatePayload } from "./merge";
 import {
   applyRepeatRegionBinding,
   expandRepeatRegions,
   isDescendantOfBlock,
+  isRepeatListBindingChildBlock,
   removeRepeatRegionBinding,
   resolveRepeatContextForBlock,
 } from "./repeatRegion";
 
 const TEXT_RUN_BIND = "props.textBody.paragraphs.0.runs.0.text";
 
-function firstRunText(props: { textBody?: TextBodyV1 }): string {
+function firstRunText(props: { textBody?: TextBody }): string {
   return props.textBody?.paragraphs?.[0]?.runs?.[0]?.text ?? "";
 }
 
@@ -58,7 +59,6 @@ function templateWithRepeatPrototype(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "center", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: { direction: "vertical", gapMode: "fixed", gap: "0" },
@@ -71,16 +71,14 @@ function templateWithRepeatPrototype(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "默认商品" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "默认商品" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
           color: "#111111",
-          fontFamily: "Arial, sans-serif",
           fontSize: "14px",
         },
         bindings: {
@@ -102,16 +100,14 @@ function templateWithRepeatPrototype(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "备用商品" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "备用商品" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
           color: "#111111",
-          fontFamily: "Arial, sans-serif",
           fontSize: "14px",
         },
       },
@@ -144,6 +140,47 @@ describe("repeatRegion", () => {
     ]);
     assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "第一件");
     assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "第二件");
+  });
+
+  it("repeat 展开前按 payload.slots.displayRule 过滤列表项", () => {
+    const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
+      slotId: "products",
+      prototypeChildIds: ["row"],
+      fallbackChildIds: ["fallback"],
+      itemFields: [
+        { key: "type", label: "类型", valueType: "string" },
+        { key: "title", label: "商品名称", valueType: "string" },
+      ],
+    });
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
+      slots: {
+        products: {
+          label: "商品列表",
+          valueType: "collection",
+          sceneCollectionPresetId: "testSceneProducts",
+          itemFields: [
+            { key: "type", label: "类型", valueType: "string" },
+            { key: "title", label: "商品名称", valueType: "string" },
+          ],
+          displayRule: { keyField: "type", includeValues: ["A", "C"] },
+        },
+      },
+      values: {
+        products: [
+          { type: "A", title: "第一件" },
+          { type: "B", title: "第二件" },
+          { type: "C", title: "第三件" },
+        ],
+      },
+    };
+
+    const expanded = expandRepeatRegions(template, payload);
+    assert.deepEqual(expanded.blocks.list.children, ["row__repeatClone__list_0", "row__repeatClone__list_1"]);
+
+    const merged = mergeTemplatePayload(expanded, payload);
+    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "第一件");
+    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "第三件");
   });
 
   it("payload 数组为空时不渲染占位子项，解除后恢复静态 children", () => {
@@ -383,6 +420,18 @@ describe("repeatRegion", () => {
     assert.equal(resolveRepeatContextForBlock(template, "fallback"), null);
   });
 
+  it("isRepeatListBindingChildBlock：宿主可操作、行模板与 fallback 子树隐藏画布操作", () => {
+    const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
+      slotId: "products",
+      prototypeChildIds: ["row"],
+      fallbackChildIds: ["fallback"],
+      itemFields: [{ key: "title", label: "商品名称", valueType: "string" }],
+    });
+    assert.equal(isRepeatListBindingChildBlock(template, "list"), false);
+    assert.equal(isRepeatListBindingChildBlock(template, "row"), true);
+    assert.equal(isRepeatListBindingChildBlock(template, "fallback"), true);
+  });
+
   it("展开时保留 repeat 宿主上原型前后的静态兄弟", () => {
     const base = templateWithRepeatPrototype();
     const template = structuredClone(base);
@@ -398,16 +447,15 @@ describe("repeatRegion", () => {
       wrapperStyle: {
         widthMode: "fill",
         heightMode: "hug",
-        placement: { horizontal: "start", vertical: "start" },
+        contentAlign: { horizontal: "left", vertical: "top" },
         contentAlign: { horizontal: "left", vertical: "top" },
       },
       props: {
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "标题" }] }] },
+        textBody: { paragraphs: [{ runs: [{ text: "标题" }] }] },
         bold: false,
         italic: false,
         decoration: "none",
         color: "#111111",
-        fontFamily: "Arial, sans-serif",
         fontSize: "14px",
       },
     };
@@ -452,16 +500,15 @@ describe("repeatRegion", () => {
       wrapperStyle: {
         widthMode: "fill",
         heightMode: "hug",
-        placement: { horizontal: "start", vertical: "start" },
+        contentAlign: { horizontal: "left", vertical: "top" },
         contentAlign: { horizontal: "left", vertical: "top" },
       },
       props: {
-        textBody: { version: 1, paragraphs: [{ runs: [{ text: "标题" }] }] },
+        textBody: { paragraphs: [{ runs: [{ text: "标题" }] }] },
         bold: false,
         italic: false,
         decoration: "none",
         color: "#111111",
-        fontFamily: "Arial, sans-serif",
         fontSize: "14px",
       },
     };

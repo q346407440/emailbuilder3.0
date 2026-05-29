@@ -1,9 +1,9 @@
-import { checkTokenPresetFontStorageValue } from "../font-family-contract";
 import {
   EMAIL_CONTAINER_SPACING_MAX_PX,
   parseSpacingPx,
   spacingPxExceedsMax,
 } from "../lib/spacingPxCap";
+import { validateOptionalDeletedAtField } from "../lib/logicalDelete";
 import type { TokenPresets } from "../types/tokenPreset";
 import {
   TOKEN_PRESET_FAMILY_ORDER,
@@ -17,7 +17,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-/** 校验单个 `presets.*.tokens` 对象：仅允许标准 family/scale，且 14 键齐全 */
+/** 校验单个 `presets.*.tokens` 对象：仅允许标准 family/scale，且 12 键齐全 */
 export function validateTokenPresetTokens(
   tokensPath: string,
   tokens: Record<string, unknown>
@@ -52,16 +52,6 @@ export function validateTokenPresetTokens(
     for (const scale of TOKEN_PRESET_SCALE_ORDER[family] ?? []) {
       if (!(scale in scalesRaw)) {
         issues.push({ path: `${scalesPath}.${scale}`, reason: `缺少标准 scale「${scale}」` });
-      }
-    }
-    if (family === "fonts") {
-      for (const scale of TOKEN_PRESET_SCALE_ORDER.fonts ?? []) {
-        const raw = scalesRaw[scale];
-        if (typeof raw !== "string") continue;
-        const fontCheck = checkTokenPresetFontStorageValue(raw);
-        if (!fontCheck.ok) {
-          issues.push({ path: `${scalesPath}.${scale}`, reason: fontCheck.reason });
-        }
       }
     }
     if (family === "spacing") {
@@ -99,6 +89,8 @@ export function validateTokenPresets(
   if (tokenPresets.schemaVersion !== "1.0.0") {
     issues.push({ path: "tokenPresets.schemaVersion", reason: "样式预设版本必须为 1.0.0" });
   }
+  const deletedAtIssue = validateOptionalDeletedAtField(tokenPresets.deletedAt, "tokenPresets.deletedAt");
+  if (deletedAtIssue) issues.push(deletedAtIssue);
   if (!tokenPresets.activePresetId || typeof tokenPresets.activePresetId !== "string") {
     issues.push({ path: "tokenPresets.activePresetId", reason: "activePresetId 必须为非空字符串" });
   }

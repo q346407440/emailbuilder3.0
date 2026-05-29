@@ -5,6 +5,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
+if [[ -f .env ]]; then
+  echo "[start] 加载 .env 环境变量"
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
 kill_port() {
   local port="$1"
   local pids

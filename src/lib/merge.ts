@@ -1,6 +1,7 @@
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { getAtPath, setAtPath } from "./paths";
 import { interpolateTextValue } from "./interpolateText";
+import { applyCollectionDisplayRule } from "./collectionDisplayRule";
 
 function clone<T>(v: T): T {
   return structuredClone(v);
@@ -42,11 +43,24 @@ export function mergeTemplatePayload(
 
       if (spec.mode === "variable" && spec.allowExternal === true) {
         if (payload.detachedVariableSlotIds?.includes(spec.slotId)) continue;
+        const slotDef = payload.slots?.[spec.slotId];
         const rawSlotVal = payload.values[spec.slotId];
-        const slotVal =
-          spec.slotPath && rawSlotVal !== undefined
-            ? getAtPath(rawSlotVal as Record<string, unknown>, spec.slotPath)
+        const mergedSlotVal =
+          slotDef?.valueType === "collection" &&
+          Boolean(slotDef.sceneCollectionPresetId) &&
+          Array.isArray(rawSlotVal)
+            ? applyCollectionDisplayRule(
+                rawSlotVal.filter(
+                  (item): item is Record<string, unknown> =>
+                    item !== null && typeof item === "object" && !Array.isArray(item)
+                ),
+                slotDef.displayRule
+              )
             : rawSlotVal;
+        const slotVal =
+          spec.slotPath && mergedSlotVal !== undefined
+            ? getAtPath(mergedSlotVal as Record<string, unknown>, spec.slotPath)
+            : mergedSlotVal;
         if (slotVal === undefined) continue;
         if (subPath) setAtPath(target as Record<string, unknown>, subPath, slotVal);
         else (block as Record<string, unknown>)[root] = slotVal;

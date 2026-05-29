@@ -7,7 +7,6 @@ function buildTemplate(contentAlign: unknown): EmailTemplate {
   const wrapperStyle: Record<string, unknown> = {
     widthMode: "fill",
     heightMode: "hug",
-    placement: { horizontal: "start", vertical: "start" },
   };
   if (contentAlign !== "__missing__") {
     wrapperStyle.contentAlign = contentAlign;
@@ -47,10 +46,8 @@ function buildTemplate(contentAlign: unknown): EmailTemplate {
         props: {
           content: "<p>Hello</p>",
           textBody: {
-            version: 1,
             paragraphs: [{ runs: [{ text: "Hello" }] }],
           },
-          fontFamily: "Arial, sans-serif",
           fontSize: "14px",
           color: "#222222",
           bold: false,

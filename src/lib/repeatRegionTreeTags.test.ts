@@ -45,7 +45,6 @@ function templateWithHeadingAndList(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "center", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: { direction: "vertical", gapMode: "fixed", gap: "0" },
@@ -58,16 +57,14 @@ function templateWithHeadingAndList(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "标题" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "标题" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
           color: "#111",
-          fontFamily: "Arial",
           fontSize: "14px",
         },
       },
@@ -79,7 +76,6 @@ function templateWithHeadingAndList(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: { direction: "vertical", gapMode: "fixed", gap: "0" },
@@ -92,16 +88,14 @@ function templateWithHeadingAndList(): EmailTemplate {
         wrapperStyle: {
           widthMode: "fill",
           heightMode: "hug",
-          placement: { horizontal: "start", vertical: "start" },
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          textBody: { version: 1, paragraphs: [{ runs: [{ text: "商品" }] }] },
+          textBody: { paragraphs: [{ runs: [{ text: "商品" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
           color: "#111",
-          fontFamily: "Arial",
           fontSize: "14px",
         },
       },

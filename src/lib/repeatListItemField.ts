@@ -71,11 +71,22 @@ function leadingCollectionIndex(slotPath: string): string {
   return /^\d+$/.test(head) ? head : "0";
 }
 
-/**
- * 当前 bindPath 是否为「列表重复行模板内」的 collection 项字段映射。
- * 不含 repeat 宿主自身（宿主在「列表」Tab 配置）。
- */
-export function resolveRepeatListItemFieldBinding(
+function buildRepeatListItemFieldContext(
+  ctx: ResolvedRepeatContext,
+  itemFieldKey: string
+): RepeatListItemFieldContext | null {
+  if (!itemFieldKey) return null;
+  const fieldMeta = findCollectionFieldByPath(ctx.repeat.itemFields, itemFieldKey);
+  if (!fieldMeta) return null;
+  return {
+    ...ctx,
+    itemFieldKey,
+    itemFieldLabel: fieldMeta.label?.trim() || itemFieldKey,
+    collectionLabel: ctx.repeat.label?.trim() || ctx.repeat.slotId,
+  };
+}
+
+function resolveRepeatListItemFieldBindingFromBlockBinding(
   template: EmailTemplate,
   blockId: string,
   bindPath: string
@@ -97,18 +108,40 @@ export function resolveRepeatListItemFieldBinding(
   if (!ctx || ctx.relation === "host") return null;
   if (spec.slotId !== ctx.repeat.slotId) return null;
 
-  const itemFieldKey = stripLeadingCollectionIndex(spec.slotPath);
-  if (!itemFieldKey) return null;
+  return buildRepeatListItemFieldContext(ctx, stripLeadingCollectionIndex(spec.slotPath));
+}
 
-  const fieldMeta = findCollectionFieldByPath(ctx.repeat.itemFields, itemFieldKey);
-  if (!fieldMeta) return null;
+/** 列表绑定向导 fieldMappings：行模板块上无 bindings，映射写在 repeat 宿主 */
+function resolveRepeatListItemFieldBindingFromFieldMappings(
+  template: EmailTemplate,
+  blockId: string,
+  bindPath: string
+): RepeatListItemFieldContext | null {
+  const ctx = resolveRepeatContextForBlock(template, blockId);
+  if (!ctx || ctx.relation === "host") return null;
 
-  return {
-    ...ctx,
-    itemFieldKey,
-    itemFieldLabel: fieldMeta.label?.trim() || itemFieldKey,
-    collectionLabel: ctx.repeat.label?.trim() || ctx.repeat.slotId,
-  };
+  const mapping = ctx.repeat.fieldMappings?.find(
+    (m) => m.targetBlockId === blockId && m.targetBindPath === bindPath
+  );
+  if (!mapping) return null;
+
+  return buildRepeatListItemFieldContext(ctx, stripLeadingCollectionIndex(mapping.sourcePath));
+}
+
+/**
+ * 当前 bindPath 是否为「列表重复行模板内」的 collection 项字段映射。
+ * 含：行模板 block.bindings（旧式/展开写入）与 repeat.fieldMappings（合一绑定向导）。
+ * 不含 repeat 宿主自身（宿主在「列表」Tab 配置）。
+ */
+export function resolveRepeatListItemFieldBinding(
+  template: EmailTemplate,
+  blockId: string,
+  bindPath: string
+): RepeatListItemFieldContext | null {
+  return (
+    resolveRepeatListItemFieldBindingFromBlockBinding(template, blockId, bindPath) ??
+    resolveRepeatListItemFieldBindingFromFieldMappings(template, blockId, bindPath)
+  );
 }
 
 /** 行模板字段切换映射到同一 collection 的另一 itemField（不改数组槽 slotId） */
@@ -124,20 +157,38 @@ export function applyRepeatListItemFieldKey(
 
   const block = template.blocks[blockId];
   const spec = block?.bindings?.[bindPath];
-  if (!spec) return template;
+  if (spec) {
+    const t = structuredClone(template);
+    const prevPath = spec.slotPath ?? "";
+    const index = leadingCollectionIndex(prevPath);
+    t.blocks[blockId] = {
+      ...t.blocks[blockId]!,
+      bindings: {
+        ...t.blocks[blockId]!.bindings,
+        [bindPath]: {
+          ...spec,
+          slotPath: `${index}.${nextFieldKey}`,
+        },
+      },
+    };
+    return t;
+  }
+
+  const mapping = ctx.repeat.fieldMappings?.find(
+    (m) => m.targetBlockId === blockId && m.targetBindPath === bindPath
+  );
+  if (!mapping) return template;
 
   const t = structuredClone(template);
-  const prevPath = spec.slotPath ?? "";
-  const index = leadingCollectionIndex(prevPath);
-  t.blocks[blockId] = {
-    ...t.blocks[blockId]!,
-    bindings: {
-      ...t.blocks[blockId]!.bindings,
-      [bindPath]: {
-        ...spec,
-        slotPath: `${index}.${nextFieldKey}`,
-      },
-    },
+  const host = t.blocks[ctx.hostId];
+  if (!host?.repeat?.fieldMappings?.length) return template;
+  host.repeat = {
+    ...host.repeat,
+    fieldMappings: host.repeat.fieldMappings.map((m) =>
+      m.targetBlockId === blockId && m.targetBindPath === bindPath
+        ? { ...m, sourcePath: nextFieldKey, label: findCollectionFieldByPath(ctx.repeat.itemFields, nextFieldKey)?.label ?? m.label }
+        : m
+    ),
   };
   return t;
 }

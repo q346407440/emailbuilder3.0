@@ -1,4 +1,8 @@
 import type {
+  BuiltinAlbumListConfig,
+  BuiltinProductListConfig,
+} from "../payload-contract/collection-builtin-catalog-config";
+import type {
   BuiltinCollectionCatalogId,
   CollectionDataSource,
 } from "../payload-contract/collection-data-source";
@@ -25,6 +29,7 @@ import {
   resolveCollectionFixedLength,
 } from "./collectionDataSource";
 import { applyBuiltinCollectionResolves } from "./resolveBuiltinCollectionItems";
+import { applyCollectionDisplayRule } from "./collectionDisplayRule";
 
 export type CollectionDataSourceKind = "custom" | "builtin";
 
@@ -40,6 +45,8 @@ export type CollectionBuiltinSourceDraft = {
   catalog: BuiltinCollectionCatalogId;
   sort?: BuiltinCollectionSortId;
   extract?: BuiltinCollectionExtract;
+  productConfig?: BuiltinProductListConfig;
+  albumConfig?: BuiltinAlbumListConfig;
   fieldMap?: Record<string, string>;
 };
 
@@ -157,6 +164,7 @@ export function seedCollectionSlotDraft(
       minItems: entry?.minItems,
       maxItems: entry?.maxItems,
       dataSource: ds,
+      displayRule: entry?.displayRule,
       itemFields: entry?.itemFields,
     },
     value: structuredClone(committedItems),
@@ -197,6 +205,7 @@ export function isPayloadSlotDraftDirty(
 
   if (draft.slotDefPatch) {
     const patch = draft.slotDefPatch;
+    const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(patch, "displayRule");
     if (patch.minItems !== undefined && patch.minItems !== entry.minItems) return true;
     if (patch.maxItems !== undefined && patch.maxItems !== entry.maxItems) return true;
     if (patch.itemFields !== undefined && !stableJsonEqual(patch.itemFields, entry.itemFields ?? [])) {
@@ -205,6 +214,11 @@ export function isPayloadSlotDraftDirty(
     if (patch.dataSource !== undefined) {
       const committedDs = entry.dataSource ?? defaultCollectionDataSource();
       if (!stableJsonEqual(patch.dataSource, committedDs)) return true;
+    }
+    if (hasDisplayRulePatch) {
+      const nextRule = patch.displayRule;
+      const committedRule = entry.displayRule;
+      if (!stableJsonEqual(nextRule, committedRule)) return true;
     }
   }
 
@@ -260,7 +274,19 @@ export function buildPreviewPayload(
           return merged;
         })();
 
-  return applyBuiltinCollectionResolves(next);
+  next = applyBuiltinCollectionResolves(next);
+  const withDisplayRule: EmailPayload = {
+    ...next,
+    values: { ...next.values },
+  };
+  for (const [slotId, slotDef] of Object.entries(withDisplayRule.slots)) {
+    if (slotDef.valueType !== "collection" || !slotDef.displayRule || !slotDef.sceneCollectionPresetId) {
+      continue;
+    }
+    const current = toCollectionItems(withDisplayRule.values[slotId]);
+    withDisplayRule.values[slotId] = applyCollectionDisplayRule(current, slotDef.displayRule);
+  }
+  return withDisplayRule;
 }
 
 /** 将单槽草稿合并进已提交 payload（保存变量） */
@@ -286,14 +312,20 @@ export function commitPayloadSlotDraft(
   }
 
   if (entry.valueType === "collection") {
+    const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(
+      draft.slotDefPatch ?? {},
+      "displayRule"
+    );
     const hasCollectionPatch =
       draft.slotDefPatch?.dataSource !== undefined ||
+      hasDisplayRulePatch ||
       draft.slotDefPatch?.itemFields !== undefined ||
       draft.slotDefPatch?.minItems !== undefined ||
       draft.value !== undefined;
     if (hasCollectionPatch) {
       next = patchPayloadCollectionSlot(next, slotId, {
         dataSource: draft.slotDefPatch?.dataSource,
+        displayRule: draft.slotDefPatch?.displayRule,
         itemFields: draft.slotDefPatch?.itemFields,
         values: draft.value as Record<string, unknown>[] | undefined,
         fixedLength:

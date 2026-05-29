@@ -1,9 +1,11 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
+import { getVisibilityOperatorsForValueType } from "../visibility-contract";
 import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
 import { updateExternalVariableSlotValueType } from "../lib/externalVariableSlotEdit";
 import { resolveEffectiveBindingSlotValueType } from "./repeat-list-item-binding";
 import {
+  filterSlotsForVisibilityPicker,
   filterSlotsForVariablePicker,
   inferBindingValueTypeRequirement,
   inferVariablePickerPurpose,
@@ -84,6 +86,21 @@ describe("variable-slot-compatibility", () => {
     ];
     const filtered = filterSlotsForVariablePicker(slots, "contentText");
     assert.deepEqual(filtered.map((s) => s.slotId), ["a", "b", "c"]);
+  });
+
+  it("布尔显隐运算符含为空/不为空与为真/为假", () => {
+    const ops = getVisibilityOperatorsForValueType("boolean").map((o) => o.operator);
+    assert.deepEqual(ops, ["isEmpty", "isNotEmpty", "isTrue", "isFalse"]);
+  });
+
+  it("filterSlotsForVisibilityPicker 排除颜色型业务变量", () => {
+    const slots = [
+      { slotId: "name", valueType: "string" },
+      { slotId: "accent", valueType: "color" },
+      { slotId: "vip", valueType: "boolean" },
+    ];
+    const filtered = filterSlotsForVisibilityPicker(slots);
+    assert.deepEqual(filtered.map((s) => s.slotId), ["name", "vip"]);
   });
 });
 

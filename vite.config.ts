@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import http from "node:http";
 
 export default defineConfig({
   plugins: [react()],
@@ -18,6 +19,8 @@ export default defineConfig({
       "/api": {
         target: "http://127.0.0.1:8787",
         changeOrigin: true,
+        /** 多标签 + 多条 SSE 时避免代理连接池耗尽（兜底；开发态 fetch 默认直连 8787） */
+        agent: new http.Agent({ keepAlive: true, maxSockets: 64 }),
       },
     },
   },

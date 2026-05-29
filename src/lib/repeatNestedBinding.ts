@@ -732,7 +732,10 @@ export function deriveUnifiedRepeatPlanFromTemplate(
 
 function clearRepeatsInSubtree(template: EmailTemplate, rootIds: string[]): EmailTemplate {
   let next = template;
+  const rootIdSet = new Set(rootIds);
   for (const blockId of collectSubtreeBlockIds(template, rootIds)) {
+    // 行模板根自身可带 repeat（含 self-repeat 宿主=原型）；只清子树内嵌套 repeat
+    if (rootIdSet.has(blockId)) continue;
     const block = next.blocks[blockId];
     if (!block?.repeat) continue;
     const cleared = clone(next);
@@ -854,7 +857,7 @@ export function applyUnifiedRepeatBinding(
 
   const parentHost = template.blocks[plan.parentHostId];
   if (!parentHost || !isRepeatHostBlock(parentHost)) {
-    throw new Error("父级列表重复只能绑定在 layout 或 grid 容器上。");
+    throw new Error("父级列表重复只能绑定在布局容器、栅格或图片区块上。");
   }
 
   let next = template;
