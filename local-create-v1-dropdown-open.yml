@@ -1,0 +1,83 @@
+- generic [ref=e246]:
+  - banner [ref=e247]:
+    - img "LOYALTY & PUSH OPERATIONS" [ref=e249]
+    - button "当前登录用户" [ref=e250]:
+      - img [ref=e252]
+      - generic [ref=e254]: Heng Li
+  - generic [ref=e255]:
+    - complementary [ref=e256]:
+      - navigation "CRM 导航" [ref=e257]:
+        - button "商家邮件" [ref=e258] [cursor=pointer]:
+          - img [ref=e259]
+          - generic [ref=e261]: 商家邮件
+        - link "邮件模板编辑" [ref=e262] [cursor=pointer]:
+          - /url: http://127.0.0.1:5180/editor
+          - img [ref=e263]
+          - generic [ref=e266]: 邮件模板编辑
+    - main [ref=e267]:
+      - generic [ref=e268]:
+        - generic [ref=e269]:
+          - button "返回商家邮件列表" [ref=e270] [cursor=pointer]:
+            - img [ref=e271]
+          - heading "创建邮件" [level=4] [ref=e273]
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - generic [ref=e276]:
+              - generic [ref=e277]: 邮件名称
+              - generic [ref=e278]:
+                - textbox "请输入邮件名称" [ref=e279]
+                - generic [ref=e280]: 0 / 20
+            - generic [ref=e281]:
+              - generic [ref=e282]:
+                - generic [ref=e283]: 触发条件
+                - generic [ref=e284]: 预计店铺数：0
+              - generic [ref=e285]:
+                - button "店铺ID" [ref=e286]
+                - button "包含" [ref=e287]
+                - textbox "多个 ID 可用逗号或空格分隔" [ref=e288]
+              - generic [ref=e289]:
+                - button "添加条件" [ref=e290] [cursor=pointer]
+                - button "确定" [ref=e291] [cursor=pointer]
+            - generic [ref=e292]:
+              - generic [ref=e293]: 再次触发规则
+              - generic [ref=e294] [cursor=pointer]:
+                - radio "仅触发一次 同一店铺只会进入一次，即使再次满足触发条件也不重复进入。" [ref=e295]
+                - generic [ref=e296]:
+                  - strong [ref=e297]: 仅触发一次
+                  - generic [ref=e298]: 同一店铺只会进入一次，即使再次满足触发条件也不重复进入。
+              - generic [ref=e299] [cursor=pointer]:
+                - radio "允许重复进入 只要店铺再次从不满足触发条件变成满足触发条件，就重新进入。" [checked] [ref=e300]
+                - generic [ref=e301]:
+                  - strong [ref=e302]: 允许重复进入
+                  - generic [ref=e303]: 只要店铺再次从不满足触发条件变成满足触发条件，就重新进入。
+              - generic [ref=e304] [cursor=pointer]:
+                - radio "允许在一段时间后重新进入 达到指定冷却时间后，再次从不满足触发条件变成满足触发条件时允许重新进入。" [ref=e305]
+                - generic [ref=e306]:
+                  - strong [ref=e307]: 允许在一段时间后重新进入
+                  - generic [ref=e308]: 达到指定冷却时间后，再次从不满足触发条件变成满足触发条件时允许重新进入。
+          - complementary [ref=e309]:
+            - heading "邮件推送" [level=5] [ref=e310]
+            - generic [ref=e311]:
+              - generic [ref=e312]:
+                - generic [ref=e313]: 邮件模版
+                - tablist "邮件模板版本" [ref=e314]:
+                  - tab "V1" [selected] [ref=e315] [cursor=pointer]
+                  - tab "V2" [ref=e316] [cursor=pointer]
+              - generic [ref=e317]:
+                - button "试用中未完成配置" [expanded] [active] [ref=e318] [cursor=pointer]:
+                  - generic [ref=e319]: 试用中未完成配置
+                  - img [ref=e321]
+                - listbox "邮件模板列表" [ref=e335]:
+                  - generic [ref=e336]: V1 当前无模板数据
+            - generic [ref=e323]:
+              - generic [ref=e324]: 最多发送次数
+              - generic [ref=e325]: 1 次
+            - generic [ref=e326]:
+              - generic [ref=e327]: 发送间隔天数
+              - generic [ref=e328]: 1 天
+            - generic [ref=e329]:
+              - generic [ref=e330]: 触发后发送
+              - generic [ref=e331]: 第 1 天发送
+        - generic [ref=e332]:
+          - button "取消" [ref=e333] [cursor=pointer]
+          - button "确认" [ref=e334] [cursor=pointer]

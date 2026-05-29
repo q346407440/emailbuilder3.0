@@ -1,0 +1,216 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: 邮件主题
+      - generic [ref=e8]: Loyalty & Push 消息提醒
+      - img [ref=e10] [cursor=pointer]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e17]
+        - img [ref=e20]
+      - generic [ref=e23]:
+        - button "发送测试邮件" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]: 发送测试邮件
+        - button "保存邮件" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: 保存邮件
+  - generic [ref=e28]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e36] [cursor=pointer]:
+          - img [ref=e37]
+          - generic [ref=e39]: 分割线
+        - generic [ref=e45] [cursor=pointer]:
+          - img [ref=e46]
+          - generic [ref=e48]: 数据展示
+        - generic [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e58]: 未完成配置
+        - generic [ref=e64] [cursor=pointer]:
+          - img [ref=e65]
+          - generic [ref=e67]: 收益预测
+        - generic [ref=e73] [cursor=pointer]:
+          - img [ref=e74]
+          - generic [ref=e78]: 推荐订阅套餐
+        - generic [ref=e84] [cursor=pointer]:
+          - img [ref=e85]
+          - generic [ref=e87]: 正向数据
+        - generic [ref=e93] [cursor=pointer]:
+          - img [ref=e94]
+          - generic [ref=e97]: 异常配置项
+      - generic [ref=e103] [cursor=pointer]:
+        - img [ref=e104]
+        - text: 添加内容
+    - generic [ref=e109]:
+      - generic [ref=e113]:
+        - generic [ref=e122]:
+          - generic [ref=e124]: 📈 行业商家平均增长表现
+          - generic [ref=e126]:
+            - generic [ref=e127]:
+              - generic [ref=e128]: +10%
+              - generic [ref=e129]: 转化率提升
+            - generic [ref=e130]:
+              - generic [ref=e131]: +10%
+              - generic [ref=e132]: 客单价提升
+            - generic [ref=e133]:
+              - generic [ref=e134]: +10%
+              - generic [ref=e135]: 复购率提升
+        - generic [ref=e138]:
+          - generic [ref=e141]: 🚀点一下，转化效果看得见
+          - generic [ref=e144]:
+            - generic [ref=e145]: 积分抵扣金额待开启
+            - generic [ref=e146]: 让顾客用积分抵现，提升支付意愿和复购
+          - generic [ref=e149]:
+            - generic [ref=e150]: 未注册用户订单优惠待开启
+            - generic [ref=e151]: 新客无需注册即可入会享优惠，降低转化门槛
+          - generic [ref=e154]:
+            - generic [ref=e155]: 入会/支付奖励积分待开启
+            - generic [ref=e156]: 注册或下单即得积分，激励持续消费
+        - generic [ref=e159]:
+          - generic [ref=e162]: 👇 继续使用预计可获得
+          - generic [ref=e164]:
+            - generic [ref=e165]: $10.00
+            - generic [ref=e166]: 每月 GMV 收益
+            - generic [ref=e167]: $10.00
+            - generic [ref=e168]: 全年 GMV 收益
+        - generic [ref=e173]:
+          - generic [ref=e174]: growth 版本：$10.00 / 月
+          - generic [ref=e175]:
+            - text: 原价 $20.00/mo
+            - generic [ref=e176]: 连续12个月订阅优惠 $10.00
+          - generic [ref=e177]: 每月 ROI 预计可达到 1:3
+        - generic [ref=e180]:
+          - generic [ref=e182]: 📈 你已经获得的增长
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - generic [ref=e185]:
+                - generic [ref=e186]: 新增订阅邮箱
+                - generic [ref=e187]: "10.00"
+              - generic [ref=e188]:
+                - generic [ref=e189]: 转化率
+                - generic [ref=e190]: +10%
+                - generic [ref=e191]: 试用期间 VS 使用LP前
+              - generic [ref=e192]:
+                - generic [ref=e193]: 客单价
+                - generic [ref=e194]: +10%
+                - generic [ref=e195]: 试用期间 VS 使用LP前
+              - generic [ref=e196]:
+                - generic [ref=e197]: 会员客单价
+                - generic [ref=e198]: +10%
+                - generic [ref=e199]: 试用期间 VS 使用LP前
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - generic [ref=e203]: 累计 GMV
+                - generic [ref=e204]: $10.00
+              - generic [ref=e205]:
+                - generic [ref=e206]: GMV 占比
+                - generic [ref=e207]: 10%
+              - generic [ref=e208]:
+                - generic [ref=e209]: 订单占比
+                - generic [ref=e210]: 10%
+        - generic [ref=e213]:
+          - generic [ref=e216]: 👇 当前存在的关键问题
+          - generic [ref=e219]:
+            - generic [ref=e220]: ❌ 积分使用门槛高
+            - generic [ref=e221]: → 积分抵扣金额门槛过高，用户不愿使用，转化下降
+          - generic [ref=e224]:
+            - generic [ref=e225]: ❌ 单笔订单积分最大抵扣金额过高
+            - generic [ref=e226]: → 存在利润侵蚀风险，影响利润率
+          - generic [ref=e229]:
+            - generic [ref=e230]: ❌ 未注册用户订单优惠门槛过高
+            - generic [ref=e231]: → 用户首次下单意愿下降，拉新转化受阻
+          - generic [ref=e234]:
+            - generic [ref=e235]: ❌ 会员可用积分余额过低
+            - generic [ref=e236]: → 会员很难使用积分体系，复购率降低
+        - generic [ref=e240]:
+          - generic [ref=e241]: 如您有任何问题，欢迎随时联系我们
+          - generic [ref=e242]:
+            - link "CS@shoplazza.com":
+              - /url: mailto:CS@shoplazza.com
+          - paragraph [ref=e243]
+          - generic [ref=e244]: 祝生意兴隆!
+          - generic [ref=e245]: Loyalty & Push团队
+      - generic:
+        - generic: 数据展示
+    - generic [ref=e247]:
+      - generic [ref=e248]:
+        - generic [ref=e249]: 数据展示
+        - generic [ref=e250] [cursor=pointer]:
+          - img [ref=e251]
+          - text: 删除卡片
+      - generic [ref=e253]:
+        - generic [ref=e370]:
+          - generic "展示指标" [ref=e372]
+          - generic [ref=e376]:
+            - generic [ref=e377] [cursor=pointer]:
+              - checkbox "转化率提升" [checked] [ref=e379]
+              - generic [ref=e381]: 转化率提升
+            - generic [ref=e382] [cursor=pointer]:
+              - checkbox "客单价提升" [checked] [ref=e384]
+              - generic [ref=e386]: 客单价提升
+            - generic [ref=e387] [cursor=pointer]:
+              - checkbox "复购率提升" [checked] [ref=e389]
+              - generic [ref=e391]: 复购率提升
+        - generic [ref=e393]:
+          - generic "标题文案" [ref=e395]
+          - textbox "请输入内容" [ref=e399]: 📈 行业商家平均增长表现
+        - generic [ref=e401]:
+          - generic "背景颜色" [ref=e403]
+          - generic [ref=e411] [cursor=pointer]:
+            - generic [ref=e412]: "#000000"
+            - generic [ref=e413]:
+              - generic [ref=e415]: "0"
+              - generic [ref=e416]: "%"
+        - generic [ref=e418]:
+          - generic "边距" [ref=e420]
+          - generic [ref=e424]:
+            - generic [ref=e426]:
+              - generic [ref=e427]:
+                - generic:
+                  - button "Increase Value" [ref=e428] [cursor=pointer]:
+                    - img "up" [ref=e429]:
+                      - img [ref=e430]
+                  - button "Decrease Value" [disabled] [ref=e432]:
+                    - img "down" [ref=e433]:
+                      - img [ref=e434]
+                - spinbutton [ref=e437]: "0"
+              - generic:
+                - generic: px
+            - generic [ref=e438]:
+              - generic [ref=e440]:
+                - generic [ref=e441]:
+                  - generic:
+                    - button "Increase Value" [ref=e442] [cursor=pointer]:
+                      - img "up" [ref=e443]:
+                        - img [ref=e444]
+                    - button "Decrease Value" [disabled] [ref=e446]:
+                      - img "down" [ref=e447]:
+                        - img [ref=e448]
+                  - spinbutton [ref=e451]: "0"
+                - generic:
+                  - generic: px
+              - generic "启用联动" [ref=e452] [cursor=pointer]:
+                - img [ref=e453]
+              - generic [ref=e458]:
+                - generic [ref=e459]:
+                  - generic:
+                    - button "Increase Value" [ref=e460] [cursor=pointer]:
+                      - img "up" [ref=e461]:
+                        - img [ref=e462]
+                    - button "Decrease Value" [disabled] [ref=e464]:
+                      - img "down" [ref=e465]:
+                        - img [ref=e466]
+                  - spinbutton [ref=e469]: "0"
+                - generic:
+                  - generic: px
+            - generic [ref=e471]:
+              - generic [ref=e472]:
+                - generic:
+                  - button "Increase Value" [ref=e473] [cursor=pointer]:
+                    - img "up" [ref=e474]:
+                      - img [ref=e475]
+                  - button "Decrease Value" [disabled] [ref=e477]:
+                    - img "down" [ref=e478]:
+                      - img [ref=e479]
+                - spinbutton [ref=e482]: "0"
+              - generic:
+                - generic: px

@@ -289,7 +289,7 @@ export function draftToCollectionSnapshot(
 ): CollectionEditorSnapshot {
   const fixedLength =
     draft.slotDefPatch?.minItems === draft.slotDefPatch?.maxItems
-      ? (draft.slotDefPatch.minItems ?? 1)
+      ? (draft.slotDefPatch?.minItems ?? 1)
       : (draft.slotDefPatch?.maxItems ?? draft.slotDefPatch?.minItems ?? 1);
 
   const kind = draft.activeCollectionSource ?? collectionDataSourceKind(draft.slotDefPatch?.dataSource);
