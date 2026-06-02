@@ -1,6 +1,6 @@
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
-import type { CollectionDisplayRule, CollectionDisplayRulePreset } from "../payload-contract/types";
 import type { BindingCollectionField, EmailPayload, EmailTemplate } from "../types/email";
+import { getPayloadSlotIdsInOrder } from "./payloadSlotOrder";
 
 /** 模板中允许外部 payload 赋值的变量槽（variable + allowExternal） */
 export type ExternalVariableSlotInfo = {
@@ -15,8 +15,7 @@ export type ExternalVariableSlotInfo = {
   minItems?: number;
   maxItems?: number;
   dataSource?: CollectionDataSource;
-  displayRule?: CollectionDisplayRule;
-  displayRulePreset?: CollectionDisplayRulePreset;
+  itemVisibility?: boolean[];
   /** 该槽位全部绑定区块的最近公共父级（画布联动选中；单处绑定时即为该区块自身） */
   primaryBlockId?: string;
 };
@@ -178,7 +177,7 @@ export function collectExternalVariableSlots(template: EmailTemplate | null): Ex
           valueType: block.visibility.valueType,
           label: block.visibility.label,
           description: block.visibility.description,
-          itemFields: block.visibility.itemFields,
+          itemFields: block.visibility.itemFields as BindingCollectionField[] | undefined,
           minItems: block.visibility.minItems,
           maxItems: block.visibility.maxItems,
         },
@@ -232,7 +231,8 @@ function isScalarValueType(valueType: string): boolean {
 }
 
 /**
- * 变量目录以 payload.slots 为唯一真源；template 仅贡献绑定位置与画布排序。
+ * 变量目录以 payload.slots 为唯一真源；侧栏顺序按 slotOrder / 登记顺序（创建顺序）。
+ * template 仅贡献 bindings 与画布联动用的 primaryBlockId。
  */
 export function collectPayloadVariableSlots(
   template: EmailTemplate | null,
@@ -244,8 +244,9 @@ export function collectPayloadVariableSlots(
     bindingBySlotId.set(slot.slotId, slot.bindings);
   }
 
-  const slots: ExternalVariableSlotInfo[] = Object.entries(payload.slots).map(
-    ([slotId, def]) => ({
+  const slotById = new Map<string, ExternalVariableSlotInfo>();
+  for (const [slotId, def] of Object.entries(payload.slots)) {
+    slotById.set(slotId, {
       slotId,
       valueType: def.valueType,
       label: def.label,
@@ -254,14 +255,23 @@ export function collectPayloadVariableSlots(
       minItems: def.minItems,
       maxItems: def.maxItems,
       dataSource: def.dataSource,
-      displayRule: def.displayRule,
-      displayRulePreset: def.displayRulePreset,
+      itemVisibility: def.itemVisibility,
       bindings: bindingBySlotId.get(slotId) ?? [],
       defaultValue: payload.values[slotId],
-    })
-  );
+    });
+  }
 
-  return sortSlotsByDocumentOrder(template, slots);
+  return getPayloadSlotIdsInOrder(payload)
+    .map((slotId) => slotById.get(slotId))
+    .filter((slot): slot is ExternalVariableSlotInfo => slot !== undefined)
+    .map((slot) => ({
+      ...slot,
+      primaryBlockId:
+        lowestCommonAncestorBlockId(
+          template,
+          slot.bindings.map((b) => b.blockId)
+        ) ?? undefined,
+    }));
 }
 
 /** 标量变量槽（文中变量弹窗、Payload 侧栏标量列表） */

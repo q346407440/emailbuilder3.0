@@ -22,7 +22,7 @@ function textProps(text: string) {
 
 function tpl(blocks: EmailTemplate["blocks"]): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     emailId: "t",
     templateId: "t",
     templateVersion: 1,

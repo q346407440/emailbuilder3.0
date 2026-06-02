@@ -9,8 +9,6 @@ const TEXT_RUN_LINK_BIND_RE = /^props\.textBody\.paragraphs\.(\d+)\.runs\.(\d+)\
 export const TEXT_BODY_VAR_PILL_CLASS = "text-rich-editor__var-pill";
 export const TEXT_BODY_VAR_PILL_TEXT_CLASS = "text-rich-editor__var-pill__text";
 export const TEXT_BODY_VAR_PILL_INNER_LINK_CLASS = "text-rich-editor__var-pill__link";
-/** @deprecated 使用 TEXT_BODY_VAR_PILL_INNER_LINK_CLASS */
-export const TEXT_BODY_VAR_PILL_LINK_CLASS = TEXT_BODY_VAR_PILL_INNER_LINK_CLASS;
 export const TEXT_BODY_VAR_PILL_BIND_ATTR = "data-ee-text-bind";
 
 /** 正文中单个 run 的 variable 绑定（text + 可选 link） */
@@ -141,7 +139,7 @@ export function renderTextBodyToEditorHtml(
 
 function mergePreservedVariableRuns(
   parsed: TextBody,
-  sourceBody: TextBody,
+  _sourceBody: TextBody,
   variableRuns: TextBodyVariableRunMeta[]
 ): TextBody {
   if (!variableRuns.length) return parsed;

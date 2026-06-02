@@ -1,5 +1,8 @@
-import type { BindingCollectionField } from "../types/email";
-import { isCollectionField } from "../payload-contract/collection-item-fields";
+import type { BindingCollectionField, EmailPayload } from "../types/email";
+import {
+  isCollectionField,
+  normalizeCollectionItemFields,
+} from "../payload-contract/collection-item-fields";
 import {
   BUILTIN_SKU_SCHEMA_FIELD_KEYS,
   type BuiltinSkuSchemaFieldKey,
@@ -107,7 +110,60 @@ export function parseCollectionJsonSample(
   if (!first || !isRecord(first)) {
     return { ok: false, error: "数组至少须有一项对象" };
   }
-  return { ok: true, sample: { keys: Object.keys(first), firstItem: first } };
+  return {
+    ok: true,
+    sample: { keys: listCatalogSourceFieldKeysForPicker(first), firstItem: first },
+  };
+}
+
+function inferScalarValueTypeFromJson(
+  key: string,
+  value: unknown
+): BindingCollectionField["valueType"] {
+  if (typeof value === "number" && Number.isFinite(value)) return "number";
+  if (typeof value === "boolean") return "boolean";
+  if (typeof value !== "string") return "string";
+  const lowerKey = key.toLowerCase();
+  const stringValue = value.trim();
+  if (/^https?:\/\//i.test(stringValue) || lowerKey.includes("href") || lowerKey.includes("url")) {
+    return "url";
+  }
+  return "string";
+}
+
+/** 从 JSON 数组首项对象推断列表行 itemFields（含嵌套 collection，如 SPU 下的 skus） */
+export function inferCollectionItemFieldsFromFirstRow(
+  row: Record<string, unknown>
+): BindingCollectionField[] {
+  const out: BindingCollectionField[] = [];
+  for (const [key, value] of Object.entries(row)) {
+    if (Array.isArray(value)) {
+      const nestedRows = value.filter(
+        (item): item is Record<string, unknown> =>
+          Boolean(item) && typeof item === "object" && !Array.isArray(item)
+      );
+      const childFields =
+        nestedRows.length > 0
+          ? inferCollectionItemFieldsFromFirstRow(nestedRows[0]!)
+          : [];
+      out.push({
+        key,
+        label: key,
+        valueType: "collection",
+        itemFields: childFields,
+        minItems: 0,
+        maxItems: Math.max(5, value.length),
+      });
+      continue;
+    }
+    if (value !== null && typeof value === "object") continue;
+    out.push({
+      key,
+      label: key,
+      valueType: inferScalarValueTypeFromJson(key, value),
+    });
+  }
+  return normalizeCollectionItemFields(out);
 }
 
 /** 从 JSON 样本解析出数组第一项的字段 key 列表（供字段关联下拉） */
@@ -282,7 +338,7 @@ function buildLeafPickerOption(
   };
 }
 
-function listPickerKeysForSample(
+export function listPickerKeysForSample(
   sample: CollectionJsonSample,
   itemFields: BindingCollectionField[]
 ): string[] {
@@ -404,6 +460,78 @@ export function buildCollectionFieldPickerRows(
 
   if (sample) {
     appendUndeclaredSampleKeysToPickerRows(rows, sample, itemFields);
+  }
+
+  return rows;
+}
+
+/** 列表 repeat 步骤 2：仅补首层未声明的标量样本键（不含子列表数组与 skus.xxx） */
+function appendUndeclaredTopLevelScalarSampleKeysToPickerRows(
+  rows: CollectionFieldPickerOption[],
+  sample: CollectionJsonSample,
+  scalarItemFields: BindingCollectionField[]
+): void {
+  const existingLeafKeys = new Set(
+    rows.filter((r) => r.kind === "leaf" && r.key).map((r) => r.key)
+  );
+  const declaredKeys = new Set(scalarItemFields.map((f) => f.key));
+
+  for (const key of Object.keys(sample.firstItem)) {
+    if (
+      key === "skus" ||
+      key === "maxSkuSalePrice" ||
+      isIndexedSkuFlatSourceKey(key) ||
+      key.includes(".") ||
+      declaredKeys.has(key) ||
+      existingLeafKeys.has(key)
+    ) {
+      continue;
+    }
+    const raw = sample.firstItem[key];
+    if (Array.isArray(raw)) continue;
+    rows.push({
+      ...buildLeafPickerOption(key, sample, scalarItemFields),
+      kind: "leaf",
+      depth: 0,
+    });
+    existingLeafKeys.add(key);
+  }
+}
+
+/**
+ * 列表 repeat 步骤 2 字段映射：仅当前层标量列（契约 repeat.bindWizard.fieldMapping.scalarsOnly）。
+ * 子 collection 由子级循环容器在步骤 1 单独绑定，不在父级映射表出现。
+ */
+export function buildRepeatListScalarFieldPickerRows(
+  sample: CollectionJsonSample | null,
+  scalarItemFields: BindingCollectionField[]
+): CollectionFieldPickerOption[] {
+  const rows: CollectionFieldPickerOption[] = [
+    { key: "", label: "不映射", typeLabel: "—", example: "—", kind: "none", depth: 0 },
+  ];
+
+  for (const field of scalarItemFields) {
+    if (isCollectionField(field)) continue;
+    rows.push(
+      sample
+        ? {
+            ...buildLeafPickerOption(field.key, sample, scalarItemFields),
+            kind: "leaf",
+            depth: 0,
+          }
+        : {
+            key: field.key,
+            label: field.label?.trim() || field.key,
+            typeLabel: collectionItemFieldValueTypeLabel(field.valueType),
+            example: "—",
+            kind: "leaf",
+            depth: 0,
+          }
+    );
+  }
+
+  if (sample) {
+    appendUndeclaredTopLevelScalarSampleKeysToPickerRows(rows, sample, scalarItemFields);
   }
 
   return rows;

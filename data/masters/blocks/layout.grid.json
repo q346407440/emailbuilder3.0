@@ -1,4 +1,5 @@
 {
+  "schemaVersion": "4.0.0",
   "masterId": "layout.grid",
   "name": "栅格",
   "version": "1.0.0",
@@ -7,385 +8,365 @@
   "blockType": "layout.grid",
   "sampleBlockId": "__sample_grid__",
   "catalogRootBlockId": "__catalog_root__",
-  "blocks": {
-    "__catalog_root__": {
-      "id": "__catalog_root__",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "__sample_grid__"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "backgroundColor": "#FFFFFF",
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "__sample_grid__": {
-      "id": "__sample_grid__",
-      "type": "grid",
-      "parentId": "__catalog_root__",
-      "children": [
-        "__demo_grid_cell_1__",
-        "__demo_grid_cell_2__",
-        "__demo_grid_cell_3__",
-        "__demo_grid_cell_4__"
-      ],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        }
-      },
-      "props": {
-        "columns": 2,
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        },
-        "cellWidthMode": "auto",
-        "cellHeightMode": "content-max"
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "__demo_grid_cell_1__": {
-      "id": "__demo_grid_cell_1__",
-      "type": "text",
-      "parentId": "__sample_grid__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "栅格单元 1"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "__demo_grid_cell_2__": {
-      "id": "__demo_grid_cell_2__",
-      "type": "text",
-      "parentId": "__sample_grid__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "栅格单元 2"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "__demo_grid_cell_3__": {
-      "id": "__demo_grid_cell_3__",
-      "type": "text",
-      "parentId": "__sample_grid__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "栅格单元 3"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "__demo_grid_cell_4__": {
-      "id": "__demo_grid_cell_4__",
-      "type": "text",
-      "parentId": "__sample_grid__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "栅格单元 4"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    }
-  },
-  "blockMeta": {
-    "__catalog_root__": {
+  "root": {
+    "id": "__catalog_root__",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "预览根"
     },
-    "__sample_grid__": {
-      "blockType": "layout.grid",
-      "name": "栅格"
+    "props": {
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
     },
-    "__demo_grid_cell_1__": {
-      "blockType": "content.text",
-      "name": "栅格单元 1"
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
     },
-    "__demo_grid_cell_2__": {
-      "blockType": "content.text",
-      "name": "栅格单元 2"
-    },
-    "__demo_grid_cell_3__": {
-      "blockType": "content.text",
-      "name": "栅格单元 3"
-    },
-    "__demo_grid_cell_4__": {
-      "blockType": "content.text",
-      "name": "栅格单元 4"
-    }
+    "children": [
+      {
+        "id": "__sample_grid__",
+        "type": "grid",
+        "blockMeta": {
+          "blockType": "layout.grid",
+          "name": "栅格"
+        },
+        "props": {
+          "columns": 2,
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          },
+          "cellWidthMode": "auto",
+          "cellHeightMode": "content-max"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "__demo_grid_cell_1__",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "栅格单元 1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "栅格单元 1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "__demo_grid_cell_2__",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "栅格单元 2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "栅格单元 2"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "__demo_grid_cell_3__",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "栅格单元 3"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "栅格单元 3"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "__demo_grid_cell_4__",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "栅格单元 4"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "栅格单元 4"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      }
+    ]
   }
 }

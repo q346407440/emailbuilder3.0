@@ -1,7 +1,7 @@
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { getAtPath, setAtPath } from "./paths";
 import { interpolateTextValue } from "./interpolateText";
-import { applyCollectionDisplayRule } from "./collectionDisplayRule";
+import { applyCollectionItemVisibility } from "./collectionItemVisibility";
 
 function clone<T>(v: T): T {
   return structuredClone(v);
@@ -46,15 +46,13 @@ export function mergeTemplatePayload(
         const slotDef = payload.slots?.[spec.slotId];
         const rawSlotVal = payload.values[spec.slotId];
         const mergedSlotVal =
-          slotDef?.valueType === "collection" &&
-          Boolean(slotDef.sceneCollectionPresetId) &&
-          Array.isArray(rawSlotVal)
-            ? applyCollectionDisplayRule(
+          slotDef?.valueType === "collection" && Array.isArray(rawSlotVal)
+            ? applyCollectionItemVisibility(
                 rawSlotVal.filter(
                   (item): item is Record<string, unknown> =>
                     item !== null && typeof item === "object" && !Array.isArray(item)
                 ),
-                slotDef.displayRule
+                slotDef.itemVisibility
               )
             : rawSlotVal;
         const slotVal =

@@ -136,6 +136,7 @@ export function MetaEditor({
 
   useEffect(() => {
     onSendTestCapabilityChange?.(canSendTest);
+    return () => onSendTestCapabilityChange?.(false);
   }, [canSendTest, onSendTestCapabilityChange]);
 
   useEffect(() => {

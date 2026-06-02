@@ -2,31 +2,29 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { message } from "@shoplazza/sds";
 import type { BindingCollectionField, EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
-import { builtinPreviewItemsForSlot } from "../lib/collectionDataSource";
+import { builtinPreviewItemsForSlot, extractArrayFromJsonRoot } from "../lib/collectionDataSource";
 import {
   buildCollectionFieldPickerRows,
   buildDefaultCollectionFieldMap,
+  collectionItemsToJsonPaste,
+  inferCollectionItemFieldsFromFirstRow,
+  listPickerKeysForSample,
   parseCollectionJsonSample,
   parseCollectionJsonTextWithFieldMap,
   type CollectionJsonSample,
 } from "../lib/collectionFieldMapping";
+import { toCollectionItems } from "../lib/payloadSlotDraft";
 import {
   defaultExpandedCollectionGroupPaths,
-  canBindTargetPathToSourceKey,
-  collectionFieldMappingDepthMismatchMessage,
-  findLeafFieldByMappingPath,
-  firstLeafMappingPath,
   flattenItemFieldsForFieldMap,
   validateCollectionFieldMapDepth,
 } from "../lib/collectionFieldMappingTree";
-import { CollectionFieldPickerTable } from "./CollectionFieldPickerTable";
 import { validateCollectionItemFields } from "../lib/collectionItemFieldsEdit";
 import { resolveEffectiveCollectionItemFields } from "../lib/collectionSlotEffective";
 import {
   draftToCollectionSnapshot,
   patchCollectionDraftSnapshot,
   readCollectionFieldMapFromCache,
-  sampleFromCollectionSnapshot,
   type CollectionEditorSnapshot,
 } from "../lib/collectionSlotDraft";
 import { buildPreviewPayload, type PayloadSlotDraft } from "../lib/payloadSlotDraft";
@@ -39,183 +37,58 @@ type Props = {
   slot: ExternalVariableSlotInfo;
   committedPayload: EmailPayload;
   draft: PayloadSlotDraft;
+  /** 重新导入：按 JSON 首项刷新列表行字段结构 */
+  reimportMode?: boolean;
   onDraftChange: (draft: PayloadSlotDraft) => void;
   onClose: () => void;
   onApply: () => void;
 };
 
-function groupHasChildMapping(
-  groupPath: string,
-  itemFields: BindingCollectionField[],
-  fieldMap: Record<string, string>
-): boolean {
-  const parent = itemFields.find((f) => f.key === groupPath && f.valueType === "collection");
-  if (!parent || parent.valueType !== "collection") return false;
-  return (parent.itemFields ?? []).some((child) => {
-    if (child.valueType === "collection") return false;
-    return Boolean(fieldMap[`${groupPath}.${child.key}`]?.trim());
-  });
+function countJsonListItems(jsonText: string): number | null {
+  const trimmed = jsonText.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    const extracted = extractArrayFromJsonRoot(parsed);
+    return extracted.ok ? extracted.items.length : null;
+  } catch {
+    return null;
+  }
 }
 
-function SourceFieldMappingSplitPanel({
-  visible,
-  itemFields,
-  fieldMap,
+function JsonSamplePreviewTable({
   sample,
-  onFieldMapChange,
+  previewItemFields,
 }: {
-  visible: boolean;
-  itemFields: BindingCollectionField[];
-  fieldMap: Record<string, string>;
-  sample: CollectionJsonSample | null;
-  onFieldMapChange: (next: Record<string, string>) => void;
+  sample: CollectionJsonSample;
+  previewItemFields: BindingCollectionField[];
 }) {
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
-    defaultExpandedCollectionGroupPaths(itemFields)
-  );
-  const [activeMappingPath, setActiveMappingPath] = useState(() => firstLeafMappingPath(itemFields));
-
-  useEffect(() => {
-    if (!visible) return;
-    setExpandedGroups(defaultExpandedCollectionGroupPaths(itemFields));
-    setActiveMappingPath((prev) => {
-      if (findLeafFieldByMappingPath(itemFields, prev)) return prev;
-      return firstLeafMappingPath(itemFields);
-    });
-  }, [visible, itemFields]);
-
-  const navEntries = useMemo(
-    () => flattenItemFieldsForFieldMap(itemFields, expandedGroups),
-    [itemFields, expandedGroups]
-  );
-  const activeLeaf = findLeafFieldByMappingPath(itemFields, activeMappingPath);
-  if (!activeLeaf || !sample) return null;
-
-  const mappedSourceKey = fieldMap[activeMappingPath] ?? "";
-  const depthMismatch = collectionFieldMappingDepthMismatchMessage(
-    activeMappingPath,
-    mappedSourceKey
-  );
-  const sourceOptions = buildCollectionFieldPickerRows(sample, itemFields);
-  const mappedOption = sourceOptions.find((o) => o.key === mappedSourceKey);
-
-  const toggleGroup = (groupPath: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(groupPath)) next.delete(groupPath);
-      else next.add(groupPath);
-      return next;
-    });
-  };
-
+  const rows = buildCollectionFieldPickerRows(sample, previewItemFields).slice(0, 8);
+  if (rows.length === 0) return null;
   return (
-    <div className="repeat-region-bind-modal__mapping-split">
-      <nav className="repeat-region-bind-modal__mapping-tabs" aria-label="列表行字段">
-        {navEntries.map((entry) => {
-          if (entry.kind === "group") {
-            const isExpanded = expandedGroups.has(entry.path);
-            const mapped = groupHasChildMapping(entry.path, itemFields, fieldMap);
-            return (
-              <div
-                key={entry.path}
-                className="repeat-region-bind-modal__mapping-tab-row"
-                style={{ ["--mapping-depth" as string]: String(entry.depth) }}
-              >
-                <button
-                  type="button"
-                  className="repeat-region-bind-modal__mapping-expand"
-                  aria-expanded={isExpanded}
-                  aria-label={isExpanded ? "折叠子字段" : "展开子字段"}
-                  onClick={() => toggleGroup(entry.path)}
-                >
-                  {isExpanded ? "▼" : "▶"}
-                </button>
-                <button
-                  type="button"
-                  className="repeat-region-bind-modal__mapping-tab repeat-region-bind-modal__mapping-tab--group"
-                  title={entry.path}
-                  onClick={() => toggleGroup(entry.path)}
-                >
-                  <span className="repeat-region-bind-modal__mapping-tab-label">
-                    {entry.field.label || entry.path}
-                  </span>
-                  {mapped ? (
-                    <span className="repeat-region-bind-modal__mapping-tab-dot" aria-hidden />
-                  ) : null}
-                </button>
-              </div>
-            );
-          }
-
-          const isActive = entry.path === activeMappingPath;
-          const mapped = Boolean(fieldMap[entry.path]?.trim());
-          return (
-            <div
-              key={entry.path}
-              className="repeat-region-bind-modal__mapping-tab-row"
-              style={{ ["--mapping-depth" as string]: String(entry.depth) }}
-            >
-              <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
-              <button
-                type="button"
-                className={`repeat-region-bind-modal__mapping-tab${
-                  isActive ? " repeat-region-bind-modal__mapping-tab--active" : ""
-                }`}
-                title={
-                  entry.path !== (entry.field.label || entry.field.key)
-                    ? `${entry.field.label} (${entry.path})`
-                    : entry.path
-                }
-                onClick={() => setActiveMappingPath(entry.path)}
-              >
-                <span className="repeat-region-bind-modal__mapping-tab-label">
-                  {entry.field.label || entry.field.key}
-                </span>
-                {mapped ? (
-                  <span className="repeat-region-bind-modal__mapping-tab-dot" aria-hidden />
-                ) : null}
-              </button>
-            </div>
-          );
-        })}
-      </nav>
-      <div className="repeat-region-bind-modal__mapping-panel">
-        <div className="repeat-region-bind-modal__mapping-panel-head">
-          <span className="repeat-region-bind-modal__mapping-panel-target">
-            {activeLeaf.field.label || activeLeaf.field.key}
-          </span>
-          <span
-            className={`repeat-region-bind-modal__mapping-panel-current${
-              depthMismatch ? " repeat-region-bind-modal__mapping-panel-current--invalid" : ""
-            }`}
-          >
-            当前映射：
-            {depthMismatch
-              ? depthMismatch
-              : mappedOption && mappedOption.key
-                ? mappedOption.example !== "—"
-                  ? `${mappedOption.label}（${mappedOption.example}）`
-                  : mappedOption.label
-                : "不映射"}
-          </span>
-        </div>
-        <div className="repeat-region-bind-modal__mapping-panel-scroll">
-          <CollectionFieldPickerTable
-            ariaLabel="映射到数据源字段"
-            name={`collection-ds-field-map-${activeMappingPath.replace(/\./g, "-")}`}
-            options={sourceOptions}
-            mappedKey={mappedSourceKey}
-            activeTargetPath={activeMappingPath}
-            onSelect={(key) => {
-              if (!canBindTargetPathToSourceKey(activeMappingPath, key)) return;
-              onFieldMapChange({ ...fieldMap, [activeMappingPath]: key });
-            }}
-          />
-        </div>
-        <p className="repeat-region-bind-modal__mapping-hint">
-          左右两侧均支持子列表折叠；须同级绑定（一级对一级、子列表列对 skus.xxx）。应用后按映射写入预览数据。
+    <div className="collection-ds-bind-modal__sample-preview">
+      <p className="collection-ds-bind-modal__sample-preview-title">首条数据预览</p>
+      <table className="collection-ds-bind-modal__sample-table">
+        <thead>
+          <tr>
+            <th scope="col">字段</th>
+            <th scope="col">示例值</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key}>
+              <td>{row.label}</td>
+              <td className="collection-ds-bind-modal__sample-value">{row.example}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {sample.keys.length > rows.length ? (
+        <p className="inspector__muted collection-ds-bind-modal__sample-more">
+          另有 {sample.keys.length - rows.length} 个字段
         </p>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -225,6 +98,7 @@ export function CollectionDataSourceBindModal({
   slot,
   committedPayload,
   draft,
+  reimportMode = false,
   onDraftChange,
   onClose,
   onApply,
@@ -241,7 +115,8 @@ export function CollectionDataSourceBindModal({
   );
 
   const [jsonError, setJsonError] = useState("");
-  const [sample, setSample] = useState<CollectionJsonSample | null>(null);
+  const [previewSample, setPreviewSample] = useState<CollectionJsonSample | null>(null);
+
   const fieldMap =
     draft.collectionFieldMap ??
     readCollectionFieldMapFromCache(draft.collectionSources, snapshot.kind) ??
@@ -254,46 +129,68 @@ export function CollectionDataSourceBindModal({
     [draft, onDraftChange]
   );
 
-  const refreshSample = (
-    jsonText: string,
-    itemsPath?: string
-  ): { ok: true; sample: CollectionJsonSample } | { ok: false; error: string } => {
-    const result = parseCollectionJsonSample(jsonText, itemsPath);
-    if (!result.ok) {
-      setSample(null);
-      return result;
-    }
-    setSample(result.sample);
-    const defaults = buildDefaultCollectionFieldMap(itemFields, result.sample.keys);
-    if (Object.keys(defaults).length > 0) {
-      onDraftChange({
-        ...draft,
-        collectionFieldMap: { ...defaults, ...draft.collectionFieldMap },
-      });
-    }
-    return result;
-  };
-
   useEffect(() => {
     if (!visible) return;
     setJsonError("");
-    setSample(sampleFromCollectionSnapshot(snapshot));
+    if (
+      reimportMode &&
+      snapshot.kind === "custom" &&
+      !snapshot.jsonPaste.trim()
+    ) {
+      const items =
+        snapshot.items.length > 0
+          ? snapshot.items
+          : toCollectionItems(committedPayload.values[slot.slotId]);
+      if (items.length > 0) {
+        pushSnapshot({
+          ...snapshot,
+          jsonPaste: collectionItemsToJsonPaste(items),
+        });
+      }
+    }
   }, [
     visible,
     slot.slotId,
+    reimportMode,
     snapshot.kind,
     snapshot.jsonPaste,
     snapshot.items,
-    snapshot.catalog,
-    snapshot.sort,
-    snapshot.extract,
+    committedPayload.values,
+    pushSnapshot,
   ]);
 
-  const resolveFieldMapForParse = (): Record<string, string> => {
-    const keys = sample?.keys ?? [];
-    const map = { ...buildDefaultCollectionFieldMap(itemFields, keys), ...fieldMap };
-    const expanded = defaultExpandedCollectionGroupPaths(itemFields);
-    for (const entry of flattenItemFieldsForFieldMap(itemFields, expanded)) {
+  /** 仅解析预览，不写草稿 */
+  useEffect(() => {
+    if (!visible || snapshot.kind !== "custom") return;
+    const text = snapshot.jsonPaste.trim();
+    if (!text) {
+      setPreviewSample(null);
+      setJsonError("");
+      return;
+    }
+    const result = parseCollectionJsonSample(text);
+    if (!result.ok) {
+      setPreviewSample(null);
+      setJsonError(result.error);
+      return;
+    }
+    setPreviewSample(result.sample);
+    setJsonError("");
+  }, [visible, snapshot.kind, snapshot.jsonPaste]);
+
+  const previewItemFields = useMemo(() => {
+    if (!previewSample) return itemFields;
+    if (itemFields.length > 0 && !reimportMode) return itemFields;
+    return inferCollectionItemFieldsFromFirstRow(previewSample.firstItem);
+  }, [previewSample, itemFields, reimportMode]);
+
+  const resolveFieldMapForParse = (
+    fields: BindingCollectionField[],
+    pickerKeys: string[]
+  ): Record<string, string> => {
+    const map = { ...buildDefaultCollectionFieldMap(fields, pickerKeys), ...fieldMap };
+    const expanded = defaultExpandedCollectionGroupPaths(fields);
+    for (const entry of flattenItemFieldsForFieldMap(fields, expanded)) {
       if (entry.kind !== "leaf") continue;
       if (!map[entry.path]?.trim()) {
         map[entry.path] = entry.path.includes(".") ? entry.path : entry.field.key;
@@ -302,168 +199,254 @@ export function CollectionDataSourceBindModal({
     return map;
   };
 
-  const applyParsedPreview = (jsonText: string, itemsPath?: string) => {
-    const err = validateCollectionItemFields(itemFields);
-    if (err) {
-      message.error(err);
+  const applyJsonImport = (jsonText: string): boolean => {
+    const trimmed = jsonText.trim();
+    if (!trimmed) {
+      setJsonError("请粘贴 JSON 数据");
+      message.error("请粘贴 JSON 数据");
       return false;
     }
-    const sampleResult = refreshSample(jsonText, itemsPath);
+
+    const sampleResult = parseCollectionJsonSample(trimmed);
     if (!sampleResult.ok) {
+      setJsonError(sampleResult.error);
       message.error(sampleResult.error);
       return false;
     }
-    const map = resolveFieldMapForParse();
-    const depthCheck = validateCollectionFieldMapDepth(itemFields, map);
+
+    const shouldInferFields = itemFields.length === 0 || reimportMode;
+    const effectiveItemFields = shouldInferFields
+      ? inferCollectionItemFieldsFromFirstRow(sampleResult.sample.firstItem)
+      : itemFields;
+
+    if (effectiveItemFields.length === 0) {
+      const err = "未能从 JSON 首项推断出列表行字段，请检查数据结构";
+      setJsonError(err);
+      message.error(err);
+      return false;
+    }
+
+    const fieldErr = validateCollectionItemFields(effectiveItemFields);
+    if (fieldErr) {
+      setJsonError(fieldErr);
+      message.error(fieldErr);
+      return false;
+    }
+
+    const pickerKeys = listPickerKeysForSample(sampleResult.sample, effectiveItemFields);
+    const map = resolveFieldMapForParse(effectiveItemFields, pickerKeys);
+    const depthCheck = validateCollectionFieldMapDepth(effectiveItemFields, map);
     if (!depthCheck.ok) {
+      setJsonError(depthCheck.error);
       message.error(depthCheck.error);
       return false;
     }
-    const result = parseCollectionJsonTextWithFieldMap(jsonText, itemFields, map, {
+
+    const result = parseCollectionJsonTextWithFieldMap(trimmed, effectiveItemFields, map, {
       fixedLength: snapshot.fixedLength,
-      itemsPath,
     });
     if (!result.ok) {
       setJsonError(result.error);
       message.error(result.error);
       return false;
     }
+
     setJsonError("");
+    const draftExtra: Partial<PayloadSlotDraft> = {
+      collectionFieldMap: map,
+      value: result.items,
+    };
+    if (shouldInferFields) {
+      draftExtra.slotDefPatch = { itemFields: effectiveItemFields };
+    }
     pushSnapshot(
       {
         ...snapshot,
+        jsonPaste: trimmed,
         items: result.items,
       },
-      { collectionFieldMap: map }
+      draftExtra
     );
     return true;
   };
 
-  const handleApply = () => {
-    const err = validateCollectionItemFields(itemFields);
-    if (err) {
-      message.error(err);
-      return;
-    }
-    const depthCheck = validateCollectionFieldMapDepth(itemFields, fieldMap);
-    if (!depthCheck.ok) {
-      message.error(depthCheck.error);
-      return;
-    }
-    if (snapshot.kind === "custom" && snapshot.jsonPaste.trim()) {
-      if (!applyParsedPreview(snapshot.jsonPaste)) return;
-    } else if (snapshot.kind === "builtin") {
+  const handleConfirm = () => {
+    if (snapshot.kind === "builtin") {
+      const err = validateCollectionItemFields(itemFields);
+      if (err) {
+        message.error(err);
+        return;
+      }
       const items = builtinPreviewItemsForSlot(
         snapshot.catalog,
         itemFields,
         snapshot.fixedLength,
-        snapshot.sort,
+        undefined,
         {
           payload: contextPayload,
           slotId: slot.slotId,
-          extract: snapshot.extract,
+          sortPolicy: snapshot.sortPolicy,
         }
       );
       pushSnapshot({ ...snapshot, kind: "builtin", catalog: snapshot.catalog, items });
+      onApply();
+      return;
     }
+
+    if (!applyJsonImport(snapshot.jsonPaste)) return;
+    message.success("已导入，请在右侧核对列表行字段与数据预览，并点击「保存变量」");
     onApply();
   };
 
-  const showFieldMapping = itemFields.length > 0 && sample !== null && sample.keys.length > 0;
+  const jsonListCount = countJsonListItems(snapshot.jsonPaste);
+  const jsonLooksValid = previewSample !== null && !jsonError;
+  const modalTitle =
+    snapshot.kind === "custom"
+      ? reimportMode
+        ? "重新导入 JSON"
+        : "从 JSON 导入列表数据"
+      : "配置数据源";
+  const slotTitle = slot.label?.trim() || slot.slotId;
+
+  if (snapshot.kind === "custom") {
+    return (
+      <ShopSectionModal
+        title={modalTitle}
+        visible={visible}
+        centered
+        destroyOnClose
+        maskClosable={false}
+        keyboard
+        wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap collection-ds-bind-modal-wrap"
+        onCancel={onClose}
+        footer={
+          <div className="collection-ds-bind-modal__footer">
+            <ShopSecondaryButton htmlType="button" onClick={onClose}>
+              取消
+            </ShopSecondaryButton>
+            <div className="shop-section-modal__footer-actions collection-ds-bind-modal__footer-actions">
+              <ShopPrimaryButton
+                htmlType="button"
+                disabled={!snapshot.jsonPaste.trim()}
+                onClick={handleConfirm}
+              >
+                确定
+              </ShopPrimaryButton>
+            </div>
+          </div>
+        }
+      >
+        <div className="text-body-inline-var-modal collection-ds-bind-modal">
+          <div className="collection-ds-bind-modal__context-banner" role="status">
+            <span className="collection-ds-bind-modal__context-label">当前变量</span>
+            <strong className="collection-ds-bind-modal__context-name">{slotTitle}</strong>
+            <span className="collection-ds-bind-modal__context-meta">
+              邮件展示 {snapshot.fixedLength} 条
+              {reimportMode ? " · 将按 JSON 刷新行字段与数据" : ""}
+            </span>
+          </div>
+
+          <p className="repeat-region-bind-modal__section-hint">
+            粘贴 JSON 数组后点「确定」：自动识别列表行字段并填入右侧数据预览。失败时会提示原因；成功后请点「保存变量」落盘。
+          </p>
+
+          <div className="collection-ds-bind-modal__paste-layout">
+            <section className="collection-ds-bind-modal__paste-card">
+              <Field
+                label="JSON 数据"
+                hint={'须为对象数组，例如 [{"name":"…","imageSrc":"https://…"}]'}
+              >
+                <ShopTextArea
+                  value={snapshot.jsonPaste}
+                  placeholder={'[\n  {\n    "name": "示例商品",\n    "imageSrc": "https://…"\n  }\n]'}
+                  rows={12}
+                  onChange={(e) => {
+                    pushSnapshot({ ...snapshot, jsonPaste: e.target.value });
+                  }}
+                />
+                {jsonError ? (
+                  <p className="payload-inspector__meta-error" role="alert">
+                    {jsonError}
+                  </p>
+                ) : null}
+              </Field>
+            </section>
+
+            <aside className="collection-ds-bind-modal__paste-side">
+              <div
+                className={[
+                  "collection-ds-bind-modal__status-card",
+                  jsonLooksValid
+                    ? "collection-ds-bind-modal__status-card--ok"
+                    : snapshot.jsonPaste.trim()
+                      ? "collection-ds-bind-modal__status-card--pending"
+                      : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                <span className="collection-ds-bind-modal__status-title">校验</span>
+                {jsonError && snapshot.jsonPaste.trim() ? (
+                  <p className="collection-ds-bind-modal__status-line collection-ds-bind-modal__status-line--error">
+                    {jsonError}
+                  </p>
+                ) : jsonLooksValid && previewSample ? (
+                  <>
+                    <p className="collection-ds-bind-modal__status-line">
+                      格式正确 · 共 <strong>{jsonListCount ?? "—"}</strong> 条
+                    </p>
+                    <p className="collection-ds-bind-modal__status-line">
+                      将导入 <strong>{previewItemFields.length}</strong> 个顶层行字段
+                    </p>
+                  </>
+                ) : snapshot.jsonPaste.trim() ? (
+                  <p className="collection-ds-bind-modal__status-line">正在校验…</p>
+                ) : (
+                  <p className="collection-ds-bind-modal__status-line">等待粘贴 JSON</p>
+                )}
+              </div>
+
+              {jsonLooksValid && previewSample ? (
+                <JsonSamplePreviewTable
+                  sample={previewSample}
+                  previewItemFields={previewItemFields}
+                />
+              ) : (
+                <div className="collection-ds-bind-modal__paste-placeholder">
+                  <p>粘贴合法 JSON 后，这里显示首条数据预览，便于确认字段是否正确。</p>
+                </div>
+              )}
+            </aside>
+          </div>
+        </div>
+      </ShopSectionModal>
+    );
+  }
 
   return (
     <ShopSectionModal
-      title="配置数据源"
+      title={modalTitle}
       visible={visible}
       centered
       destroyOnClose
       maskClosable={false}
       keyboard
-      wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap repeat-region-bind-modal-wrap collection-ds-bind-modal-wrap"
+      wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap collection-ds-bind-modal-wrap"
       onCancel={onClose}
       footer={
         <div className="shop-section-modal__footer-actions">
           <ShopSecondaryButton htmlType="button" onClick={onClose}>
             取消
           </ShopSecondaryButton>
-          <ShopPrimaryButton htmlType="button" onClick={handleApply}>
+          <ShopPrimaryButton htmlType="button" onClick={handleConfirm}>
             应用
           </ShopPrimaryButton>
         </div>
       }
     >
-      <div className="text-body-inline-var-modal repeat-region-bind-modal collection-ds-bind-modal">
-        <p className="inspector__muted repeat-region-bind-modal__empty-hint">
-          {snapshot.kind === "custom"
-            ? "粘贴 JSON 并配置字段关联，应用后请在变量详情点「保存变量」。"
-            : "商品/专辑范围与列表规则请在右侧变量面板配置。应用后将保存当前内置预览数据。"}
-        </p>
-
-        {snapshot.kind === "custom" ? (
-          <Field label="自定义 JSON">
-            <ShopTextArea
-              value={snapshot.jsonPaste}
-              placeholder={'[{"title":"…","iconSrc":"https://…"}, …]'}
-              rows={4}
-              onChange={(e) => {
-                setJsonError("");
-                pushSnapshot({ ...snapshot, jsonPaste: e.target.value });
-              }}
-            />
-            {jsonError ? <p className="payload-inspector__meta-error">{jsonError}</p> : null}
-            <div className="payload-collection-config__actions">
-              <ShopSecondaryButton
-                htmlType="button"
-                disabled={!snapshot.jsonPaste.trim()}
-                onClick={() => {
-                  const r = refreshSample(snapshot.jsonPaste);
-                  if (!r.ok) message.error(r.error);
-                  else message.success("已识别 JSON 字段");
-                }}
-              >
-                识别 JSON 字段
-              </ShopSecondaryButton>
-              <ShopSecondaryButton
-                htmlType="button"
-                disabled={!snapshot.jsonPaste.trim() || itemFields.length === 0}
-                onClick={() => {
-                  if (applyParsedPreview(snapshot.jsonPaste)) {
-                    message.success("已解析并填入预览");
-                  }
-                }}
-              >
-                解析并填入预览
-              </ShopSecondaryButton>
-            </div>
-          </Field>
-        ) : null}
-
-
-        {showFieldMapping ? (
-          <Field label="字段关联" className="collection-ds-bind-modal__field-mapping">
-            <SourceFieldMappingSplitPanel
-              key={snapshot.kind}
-              visible={visible}
-              itemFields={itemFields}
-              fieldMap={fieldMap}
-              sample={sample}
-              onFieldMapChange={(next) =>
-                onDraftChange(
-                  patchCollectionDraftSnapshot({ ...draft, collectionFieldMap: next }, snapshot)
-                )
-              }
-            />
-          </Field>
-        ) : snapshot.kind === "custom" && itemFields.length > 0 ? (
-          <p className="repeat-region-bind-modal__empty-hint">
-            请先粘贴或填写 JSON 样本并点击「识别 JSON 字段」，再进行字段关联。
-          </p>
-        ) : snapshot.kind === "custom" ? (
-          <p className="repeat-region-bind-modal__empty-hint">
-            请先在变量详情中配置「列表行字段」，再配置数据源与字段关联。
-          </p>
-        ) : null}
-      </div>
+      <p className="inspector__muted">
+        商品/专辑范围与列表规则请在右侧变量面板配置。应用后将保存当前内置预览数据。
+      </p>
     </ShopSectionModal>
   );
 }

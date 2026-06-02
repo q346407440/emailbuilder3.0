@@ -83,10 +83,6 @@ export function setCollectionItemFieldType(
   }
   return updateCollectionItemField(root, path, {
     valueType: valueType as Exclude<BindingCollectionField["valueType"], "collection">,
-    itemFields: undefined,
-    minItems: undefined,
-    maxItems: undefined,
-    dataSource: undefined,
   });
 }
 

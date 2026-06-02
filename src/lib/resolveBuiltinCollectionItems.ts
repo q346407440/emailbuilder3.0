@@ -1,13 +1,13 @@
-import type { BuiltinCollectionCatalogId, CollectionDataSource } from "../payload-contract/collection-data-source";
-import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  normalizeBuiltinCollectionExtract,
-  type BuiltinCollectionExtract,
-} from "../payload-contract/collection-builtin-extract";
+import type { BuiltinCollectionCatalogId } from "../payload-contract/collection-data-source";
 import {
   DEFAULT_BUILTIN_COLLECTION_SORT,
   type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
+import {
+  readSortPolicyFromBuiltinDataSource,
+  sortPolicyTargetSlotId,
+  type NormalizedBuiltinSortPolicy,
+} from "../payload-contract/collection-builtin-sort-policy";
 import {
   normalizeBuiltinAlbumListConfig,
   normalizeBuiltinProductListConfig,
@@ -26,6 +26,12 @@ import {
   type ParseCollectionJsonResult,
   resolveCollectionFixedLength,
 } from "./collectionDataSource";
+import { isMerchantSpuTreeRelatedNestedKey } from "./loyaltyMerchantSpuTreePresetSeed";
+
+export type CollectionResolveContext = {
+  /** repeat 展开或显式传入的锚点 SPU 行；缺省时派生策略用 target 槽首项 */
+  anchorRow?: Record<string, unknown> | null;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -36,14 +42,13 @@ function toRowArray(value: unknown): Record<string, unknown>[] {
   return value.map((item) => (isRecord(item) ? item : {}));
 }
 
-function anchorRowFromPayload(
+function anchorRowFromPayloadValues(
   payload: EmailPayload,
-  fromSlotId: string,
-  anchorItemIndex = 1
+  slotId: string,
+  itemIndex = 0
 ): Record<string, unknown> | null {
-  const rows = toRowArray(payload.values[fromSlotId]);
-  const idx = Math.max(0, anchorItemIndex - 1);
-  return rows[idx] ?? null;
+  const rows = toRowArray(payload.values[slotId]);
+  return rows[itemIndex] ?? null;
 }
 
 function fixedLengthForNestedField(field: Extract<BindingCollectionField, { valueType: "collection" }>) {
@@ -61,6 +66,7 @@ function mergeProjectedRowWithExplicitNestedCollections(
   const next = { ...projectedRow };
   for (const field of itemFields) {
     if (field.valueType !== "collection") continue;
+    if (isMerchantSpuTreeRelatedNestedKey(field.key)) continue;
     if (!(field.key in currentRow)) continue;
     const currentValue = currentRow[field.key];
     if (!Array.isArray(currentValue)) {
@@ -90,45 +96,86 @@ function preserveExplicitNestedCollectionValues(
   );
 }
 
-/** 按 builtin dataSource（catalog + sort + extract + 场景配置）解析列表行 */
-export function resolveBuiltinCollectionItems(opts: {
+function resolveAnchorForPolicy(
+  payload: EmailPayload,
+  sortPolicy: NormalizedBuiltinSortPolicy,
+  context?: CollectionResolveContext
+): Record<string, unknown> | null {
+  if (sortPolicy.kind !== "derived") return null;
+  if (context && "anchorRow" in context) {
+    return context.anchorRow ?? null;
+  }
+  return anchorRowFromPayloadValues(payload, sortPolicy.targetSlotId, 0);
+}
+
+/** 按 builtin dataSource + sortPolicy + 锚点行解析列表（预览/发信/repeat 共用） */
+export function resolveBuiltinCollectionItemsForAnchor(opts: {
   catalog: BuiltinCollectionCatalogId;
   itemFields: BindingCollectionField[];
   fixedLength: number;
-  sort?: BuiltinCollectionSortId;
-  extract?: BuiltinCollectionExtract;
+  sortPolicy: NormalizedBuiltinSortPolicy;
   productConfig?: ReturnType<typeof normalizeBuiltinProductListConfig>;
   albumConfig?: ReturnType<typeof normalizeBuiltinAlbumListConfig>;
   payload: EmailPayload;
   slotId: string;
+  anchorRow?: Record<string, unknown> | null;
 }): ParseCollectionJsonResult {
-  const sort = opts.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT;
-  const extract = normalizeBuiltinCollectionExtract(opts.extract);
-  const { catalog, itemFields, fixedLength, payload } = opts;
+  const { catalog, itemFields, fixedLength, payload, slotId, sortPolicy } = opts;
 
   if (!itemFields.length) {
     return { ok: false, error: "未声明 itemFields，无法解析列表" };
   }
 
+  const regularSort: BuiltinCollectionSortId =
+    sortPolicy.kind === "regular"
+      ? sortPolicy.sort
+      : DEFAULT_BUILTIN_COLLECTION_SORT;
+
   let projected: Record<string, unknown>[];
 
-  if (catalog === "products" && opts.productConfig) {
-    if (extract.kind === "similarTo" || extract.kind === "complement") {
-      const anchorIndex = extract.anchorItemIndex ?? 1;
-      const anchor = anchorRowFromPayload(payload, extract.fromSlotId, anchorIndex);
-      if (!anchor || !Object.keys(anchor).some((k) => String(anchor[k] ?? "").trim())) {
-        return {
-          ok: false,
-          error: `相似品/搭配品须先有锚点槽「${extract.fromSlotId}」第 ${anchorIndex} 条列表数据`,
-        };
-      }
+  if (sortPolicy.kind === "derived") {
+    const anchorRow =
+      opts.anchorRow !== undefined
+        ? opts.anchorRow
+        : resolveAnchorForPolicy(payload, sortPolicy);
+    if (
+      !anchorRow ||
+      !Object.keys(anchorRow).some((k) => String(anchorRow[k] ?? "").trim())
+    ) {
+      return {
+        ok: false,
+        error: `相似品/搭配品须先有目标槽「${sortPolicy.targetSlotId}」的列表数据作为锚点`,
+      };
     }
+    const projectFn =
+      sortPolicy.strategy === "complement"
+        ? projectBuiltinCatalogComplement
+        : projectBuiltinCatalogSimilarTo;
+    if (catalog === "products" && opts.productConfig) {
+      projected = resolveBuiltinProductListItems({
+        config: opts.productConfig,
+        itemFields,
+        limit: fixedLength,
+        sortPolicy,
+        payload,
+        anchorRow,
+      });
+    } else {
+      projected = projectFn(
+        catalog,
+        itemFields,
+        fixedLength,
+        regularSort,
+        anchorRow,
+        "href"
+      );
+    }
+  } else if (catalog === "products" && opts.productConfig) {
     projected = resolveBuiltinProductListItems({
       config: opts.productConfig,
       itemFields,
       limit: fixedLength,
-      sort,
-      extract,
+      sortPolicy,
       payload,
     });
   } else if (catalog === "albums" && opts.albumConfig) {
@@ -136,35 +183,16 @@ export function resolveBuiltinCollectionItems(opts: {
       config: opts.albumConfig,
       itemFields,
       limit: fixedLength,
-      sort,
+      sort: regularSort,
     });
-  } else if (extract.kind === "similarTo" || extract.kind === "complement") {
-    const anchorIndex = extract.anchorItemIndex ?? 1;
-    const anchor = anchorRowFromPayload(payload, extract.fromSlotId, anchorIndex);
-    if (!anchor || !Object.keys(anchor).some((k) => String(anchor[k] ?? "").trim())) {
-      return {
-        ok: false,
-        error: `相似品/搭配品须先有锚点槽「${extract.fromSlotId}」第 ${anchorIndex} 条列表数据`,
-      };
-    }
-    const projectFn =
-      extract.kind === "complement" ? projectBuiltinCatalogComplement : projectBuiltinCatalogSimilarTo;
-    projected = projectFn(
-      catalog,
-      itemFields,
-      fixedLength,
-      sort,
-      anchor,
-      extract.matchField ?? "href"
-    );
   } else {
-    projected = projectBuiltinCatalogItems(catalog, itemFields, fixedLength, sort);
+    projected = projectBuiltinCatalogItems(catalog, itemFields, fixedLength, regularSort);
   }
 
   const mergedProjected = preserveExplicitNestedCollectionValues(
     projected,
     payload,
-    opts.slotId,
+    slotId,
     itemFields
   );
 
@@ -174,22 +202,61 @@ export function resolveBuiltinCollectionItems(opts: {
   };
 }
 
+/** 带 repeat/发信上下文的统一解析入口 */
+export function resolveCollectionForContext(
+  slotId: string,
+  payload: EmailPayload,
+  context?: CollectionResolveContext
+): ParseCollectionJsonResult {
+  const def = payload.slots?.[slotId];
+  if (!def || def.valueType !== "collection") {
+    return { ok: false, error: `槽「${slotId}」不是 collection` };
+  }
+  const ds = def.dataSource;
+  if (ds?.type !== "remote" || ds.provider !== "builtin") {
+    return { ok: false, error: `槽「${slotId}」不是内置列表数据源` };
+  }
+  const sortPolicy = readSortPolicyFromBuiltinDataSource(ds);
+  const fixedLength = resolveCollectionFixedLength(def.minItems, def.maxItems);
+  const itemFields = def.itemFields ?? [];
+  const anchorRow =
+    sortPolicy.kind === "derived"
+      ? context && "anchorRow" in context
+        ? context.anchorRow ?? null
+        : resolveAnchorForPolicy(payload, sortPolicy, context)
+      : undefined;
+
+  return resolveBuiltinCollectionItemsForAnchor({
+    catalog: ds.catalog,
+    itemFields,
+    fixedLength,
+    sortPolicy,
+    productConfig:
+      ds.productConfig !== undefined
+        ? normalizeBuiltinProductListConfig(ds.productConfig)
+        : undefined,
+    albumConfig:
+      ds.albumConfig !== undefined ? normalizeBuiltinAlbumListConfig(ds.albumConfig) : undefined,
+    payload,
+    slotId,
+    anchorRow,
+  });
+}
+
 function isBuiltinResolvableSlot(def: PayloadSlotDefinition | undefined): boolean {
   if (!def || def.valueType !== "collection") return false;
   const ds = def.dataSource;
   return ds?.type === "remote" && ds.provider === "builtin";
 }
 
-function slotAnchorDependencyFromDef(def: PayloadSlotDefinition): string | undefined {
+function slotTargetDependencyFromDef(def: PayloadSlotDefinition): string | undefined {
   const ds = def.dataSource;
   if (ds?.type !== "remote" || ds.provider !== "builtin") return undefined;
-  if (ds.extract?.kind === "similarTo" || ds.extract?.kind === "complement") {
-    return ds.extract.fromSlotId;
-  }
-  return undefined;
+  const policy = readSortPolicyFromBuiltinDataSource(ds);
+  return sortPolicyTargetSlotId(policy);
 }
 
-/** 对 builtin 列表按拓扑顺序写入 values（用于预览/发信前） */
+/** 对 builtin 列表按拓扑顺序写入 values（整槽预览；锚 = target 首项） */
 export function applyBuiltinCollectionResolves(payload: EmailPayload): EmailPayload {
   const slots = payload.slots ?? {};
   const allBuiltin = Object.entries(slots)
@@ -213,12 +280,12 @@ export function applyBuiltinCollectionResolves(payload: EmailPayload): EmailPayl
 
     const fixedLength = resolveCollectionFixedLength(def.minItems, def.maxItems);
     const itemFields = def.itemFields ?? [];
-    const result = resolveBuiltinCollectionItems({
+    const sortPolicy = readSortPolicyFromBuiltinDataSource(ds);
+    const result = resolveBuiltinCollectionItemsForAnchor({
       catalog: ds.catalog,
       itemFields,
       fixedLength,
-      sort: ds.sort,
-      extract: ds.extract,
+      sortPolicy,
       productConfig:
         ds.productConfig !== undefined
           ? normalizeBuiltinProductListConfig(ds.productConfig)
@@ -229,6 +296,10 @@ export function applyBuiltinCollectionResolves(payload: EmailPayload): EmailPayl
           : undefined,
       payload: next,
       slotId,
+      anchorRow:
+        sortPolicy.kind === "derived"
+          ? anchorRowFromPayloadValues(next, sortPolicy.targetSlotId, 0)
+          : undefined,
     });
     if (result.ok) {
       next.values[slotId] = result.items;
@@ -244,7 +315,7 @@ function topologicalBuiltinSlotOrder(
   const deps = new Map<string, string>();
   for (const [slotId, def] of Object.entries(slots)) {
     if (!isBuiltinResolvableSlot(def)) continue;
-    const fromId = slotAnchorDependencyFromDef(def!);
+    const fromId = slotTargetDependencyFromDef(def!);
     if (fromId) deps.set(slotId, fromId);
   }
 
@@ -274,8 +345,8 @@ function topologicalBuiltinSlotOrder(
   return ordered;
 }
 
-/** 列出可作锚点引用的 collection 槽（排除自身；须为内置商品列表） */
-export function listCollectionSlotIdsForExtract(
+/** 列出可作派生排序目标的内置商品列表槽（排除自身） */
+export function listDerivedSortTargetSlotIds(
   payload: EmailPayload,
   excludeSlotId: string
 ): string[] {
@@ -292,11 +363,11 @@ export function listCollectionSlotIdsForExtract(
     .sort((a, b) => a.localeCompare(b));
 }
 
-export function resolveBuiltinExtractFromDataSource(
-  dataSource: CollectionDataSource | undefined
-): BuiltinCollectionExtract {
-  if (dataSource?.type === "remote" && dataSource.provider === "builtin") {
-    return normalizeBuiltinCollectionExtract(dataSource.extract);
-  }
-  return DEFAULT_BUILTIN_COLLECTION_EXTRACT;
+export function readSortPolicyFromPayloadSlot(
+  payload: EmailPayload,
+  slotId: string
+): NormalizedBuiltinSortPolicy | null {
+  const ds = payload.slots?.[slotId]?.dataSource;
+  if (ds?.type !== "remote" || ds.provider !== "builtin") return null;
+  return readSortPolicyFromBuiltinDataSource(ds);
 }

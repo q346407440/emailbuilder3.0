@@ -1,6 +1,6 @@
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
-import type { CollectionDisplayRule, CollectionDisplayRulePreset } from "../payload-contract/types";
 import type { VisibilityRule } from "../visibility-contract/types";
+import type { ThemeRef } from "./themeRef";
 
 export type BindingMode = "literal" | "variable" | "theme" | "interpolate";
 
@@ -133,11 +133,6 @@ export type RepeatRegionBinding = {
   slotId: string;
   /** 当前 collection 项中用于继续展开子列表的字段路径，例如 skus。 */
   itemPath?: string;
-  /**
-   * 仅循环子级列表且不在父级 repeat 行内时：取父级槽 values 中第几项作为锚定父项（0 起）。
-   * 与 itemPath 合用，例如 products[0].skus。
-   */
-  anchorItemIndex?: number;
   /** 被按 collection 每一项复制的原型子树根节点。 */
   prototypeChildIds: string[];
   /** 解除列表绑定后恢复的静态子节点顺序。 */
@@ -153,11 +148,11 @@ export type RepeatRegionBinding = {
 
 export type SpacingValue = {
   mode: "unified" | "separate";
-  unified?: string;
-  top?: string;
-  right?: string;
-  bottom?: string;
-  left?: string;
+  unified?: string | ThemeRef;
+  top?: string | ThemeRef;
+  right?: string | ThemeRef;
+  bottom?: string | ThemeRef;
+  left?: string | ThemeRef;
 };
 
 export type BorderStyle = "solid" | "dashed" | "dotted";
@@ -277,12 +272,12 @@ export type WrapperStyle = {
 export type LayoutGapMode = "fixed" | "auto";
 
 export type EmailRootProps = {
-  backgroundColor?: string;
+  backgroundColor?: string | ThemeRef;
   border?: BorderValue;
   width?: string;
   padding?: SpacingValue;
   gapMode?: LayoutGapMode;
-  gap?: string;
+  gap?: string | ThemeRef;
   [key: string]: unknown;
 };
 
@@ -417,10 +412,13 @@ export type EmailBlock =
   | EmailBlockBase<"grid", GridBlockProps>
   | EmailBlockBase<"icon", IconBlockProps>;
 
-/** 当前仓库唯一支持的邮件模板 JSON 版本（不保留旧版兼容）。 */
-export const EMAIL_TEMPLATE_SCHEMA_VERSION = "3.0.0" as const;
+export type TextBlock = Extract<EmailBlock, { type: "text" }>;
+
+/** EditorBlockGraph 内存投影 schema 版本（与 nested 落盘一致，非第二套持久化形态） */
+export const EMAIL_TEMPLATE_SCHEMA_VERSION = "4.0.0" as const;
 
 export type EmailTemplate = {
+  /** EditorBlockGraph 内存投影；落盘/API 真源为 nested 4.0.0，经 templateTreeAdapter 转换 */
   schemaVersion: string;
   emailId?: string;
   templateId: string;
@@ -447,8 +445,7 @@ export type PayloadSlotDefinition = {
   minItems?: number;
   maxItems?: number;
   dataSource?: CollectionDataSource;
-  displayRule?: CollectionDisplayRule;
-  displayRulePreset?: CollectionDisplayRulePreset;
+  itemVisibility?: boolean[];
   /** 场景内置列表变量预设 id；有值时不使用粘贴 JSON 配置数据源 */
   sceneCollectionPresetId?: string;
   scene?: "loyalty-internal-admin" | "loyalty-merchant-admin";
@@ -460,6 +457,10 @@ export type EmailPayload = {
    * 场景级变量目录（名称、标识、类型）；template 仅引用 slotId。
    */
   slots: Record<string, PayloadSlotDefinition>;
+  /**
+   * 变量赋值侧栏展示顺序（创建顺序）；未声明时按 slots 对象登记顺序。
+   */
+  slotOrder?: string[];
   values: Record<string, unknown>;
   /**
    * 已「解除跟随可替换内容」的槽位 id：合并预览时不再用 values 覆盖该槽位对应路径；

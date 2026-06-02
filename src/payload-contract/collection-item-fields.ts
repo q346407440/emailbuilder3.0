@@ -42,7 +42,7 @@ export function countCollectionFieldsInItemPath(
   let fields: BindingCollectionField[] | undefined = itemFields;
   let hops = 0;
   for (const part of parts) {
-    const field = fields?.find((candidate) => candidate.key === part);
+    const field = fields?.find((candidate) => candidate.key === part) as BindingCollectionField | undefined;
     if (!field) break;
     if (field.valueType === "collection") hops += 1;
     fields = field.valueType === "collection" ? field.itemFields : undefined;
@@ -151,7 +151,7 @@ export function collectionItemFieldValueTypeLabel(valueType: string): string {
   if (normalized && isStandardScalarValueType(normalized)) {
     return standardScalarValueTypeLabel(normalized);
   }
-  if (valueType === LEGACY_COLLECTION_ITEM_FIELD_IMAGE || normalized === "url") {
+  if (valueType === LEGACY_COLLECTION_ITEM_FIELD_IMAGE) {
     return standardScalarValueTypeLabel("url");
   }
   if (normalized === "collection" || valueType === "collection") {

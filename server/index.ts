@@ -14,18 +14,17 @@ import {
   validatePayloadAgainstTemplate,
   validateTemplate,
 } from "../src/lib/validate";
-import { validateTokenPresets } from "../src/lib/validateTokenPresets";
-import { mergeTemplatePayload } from "../src/lib/merge";
 import {
-  collectMasterValidationIssues,
-  masterToEmailTemplate,
-  parseBlockMaster,
-  parseSectionMaster,
-} from "../src/lib/masterCatalog";
+  parseTemplateFromDisk,
+  readTemplateGraphFromDiskRaw,
+  serializeTemplateToDisk,
+  validateTemplateFromDisk,
+} from "../src/lib/templateTreeAdapter";
+import type { NestedEmailTemplate } from "../src/template-disk-contract";
 import { isBuiltinCollectionCatalogId } from "../src/payload-contract/collection-data-source";
 import { getBuiltinCatalogItems } from "../src/lib/builtinCollectionCatalog";
 import type { LayoutManifest } from "../src/layout-variant-contract/types";
-import { resolveEmailFilePaths, validateLayoutManifest } from "../src/lib/emailLayoutVariant";
+import { resolveEmailFilePaths } from "../src/lib/emailLayoutVariant";
 import {
   allLayoutTemplatePaths,
   emailBaseDir,
@@ -36,6 +35,7 @@ import {
 } from "./emailLayoutContext";
 import { getSmtpPublicStatus, sendSmtpTestMail } from "./smtpTestMail";
 import {
+  buildBlankLayoutVariantAssets,
   buildNewEmailScaffold,
   deriveEmailKeyFromDisplayName,
 } from "../src/lib/scaffoldNewEmail";
@@ -56,11 +56,14 @@ import {
   resolveSceneCollectionPresetRuntimeValues,
 } from "./sceneCollectionPresetsStore";
 import { listSceneScalarPresetSummaries } from "./sceneScalarPresetsStore";
-import { ensureEmailLayoutManifest } from "./ensureLayoutManifest";
+import { requireLayoutManifest } from "./ensureLayoutManifest";
 import { enrichLayoutManifestCreatedAt, statCreatedAtIso } from "./enrichLayoutManifest";
 import { createDefaultTokenPresets } from "../src/lib/defaultTokenPresets";
 import { isLogicallyDeleted, logicalDeleteTimestamp } from "../src/lib/logicalDelete";
 import { normalizePersistedEmailMeta } from "../src/meta-contract/normalize";
+import { validateSchemaArtifact, type SchemaArtifactId } from "../src/schema-registry";
+import { buildRepeatPreviewModel, previewModelToFlatTemplate } from "../src/repeat-runtime";
+import { applyVisibilityRules } from "../src/lib/visibility";
 import { softDeleteLayoutVariant } from "../src/lib/layoutVariantLogicalDelete";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,8 +72,6 @@ const DATA_ROOT =
   process.env.EMAIL_DATA_ROOT ?? path.join(projectRoot, "data", "emails");
 const TOKEN_PRESET_ROOT =
   process.env.EMAIL_TOKEN_PRESET_ROOT ?? path.join(projectRoot, "data", "token-presets");
-const MASTER_ROOT =
-  process.env.EMAIL_MASTER_ROOT ?? path.join(projectRoot, "data", "masters");
 const PROJECT_ASSETS_ROOT =
   process.env.EMAIL_PROJECT_ASSETS_ROOT ?? path.join(projectRoot, "data", "project-assets");
 const ICON_UPLOAD_DIR = path.join(PROJECT_ASSETS_ROOT, "icons", "uploads");
@@ -236,7 +237,7 @@ type LayoutResolveResult =
   | {
       ok: true;
       base: string;
-      manifest: LayoutManifest | null;
+      manifest: LayoutManifest;
       ctx: ResolvedLayoutContext;
     }
   | { ok: false; message: string; status: 400 | 404 };
@@ -261,19 +262,32 @@ async function resolveLayoutForEmail(
   return { ok: true, base, manifest: resolved.manifest, ctx: resolved.ctx };
 }
 
-async function emailHasTemplateFiles(base: string, manifest: LayoutManifest | null): Promise<boolean> {
-  if (manifest) {
-    for (const { templatePath } of allLayoutTemplatePaths(base, manifest)) {
-      if (await readJson(templatePath)) return true;
-    }
-    return false;
+async function emailHasTemplateFiles(base: string, manifest: LayoutManifest): Promise<boolean> {
+  for (const { templatePath } of allLayoutTemplatePaths(base, manifest)) {
+    if (await readJson(templatePath)) return true;
   }
-  return Boolean(await readJson(path.join(base, "template.json")));
+  return false;
+}
+
+function validateSchemaArtifactShape(
+  artifactId: SchemaArtifactId,
+  raw: unknown,
+  messageLabel: string
+): ValidationIssueResponse | null {
+  const issues = validateSchemaArtifact(artifactId, raw);
+  return issues.length ? { message: messageLabel, details: issues } : null;
 }
 
 function validateTokenPresetsShape(tokenPresets: TokenPresets): ValidationIssueResponse | null {
-  const issues = validateTokenPresets(tokenPresets);
-  return issues.length ? { message: "样式预设校验失败", details: issues } : null;
+  return validateSchemaArtifactShape("tokenPresets", tokenPresets, "样式预设校验失败");
+}
+
+function validatePayloadShapeOnDisk(payload: unknown): ValidationIssueResponse | null {
+  return validateSchemaArtifactShape("payload", payload, "payload.json 形态校验失败");
+}
+
+function validateLayoutManifestOnDisk(manifest: unknown): ValidationIssueResponse | null {
+  return validateSchemaArtifactShape("layoutManifest", manifest, "版式清单校验失败");
 }
 
 type ValidationIssueResponse = {
@@ -284,14 +298,6 @@ type ValidationIssueResponse = {
 function assertResourceIdSafe(id: string, label: string): string | null {
   if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
     return `${label} 仅允许英文字母、数字、下划线与中划线`;
-  }
-  return null;
-}
-
-/** 母版 id 与文件名一致，block 母版使用 `action.button` 等带点号架构名。 */
-function assertMasterIdSafe(id: string): string | null {
-  if (!id || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(id) || id.includes("..") || id.includes("/")) {
-    return "masterId 仅允许英文字母、数字、下划线、中划线与点号";
   }
   return null;
 }
@@ -325,18 +331,14 @@ app.get("/api/v1/emails", async (c) => {
       const base = path.join(DATA_ROOT, emailKey);
       const metaPath = path.join(base, "meta.json");
       const manifest = await readLayoutManifestOptional(readJson, base);
-      const layoutResolved = manifest
-        ? resolveEmailFilePaths(base, manifest, manifest.activeLayoutVariantId)
-        : {
-            templatePath: path.join(base, "template.json"),
-            tokenPresetsPath: path.join(base, "tokenPresets.json"),
-          };
+      if (!manifest) return null;
+      const layoutResolved = resolveEmailFilePaths(base, manifest, manifest.activeLayoutVariantId);
       const templatePath = layoutResolved.templatePath;
       const payloadPath = path.join(base, "payload.json");
       const tokenPresetsPath = layoutResolved.tokenPresetsPath;
       const meta = await readJson<EmailMeta>(metaPath);
       if (meta && isLogicallyDeleted(meta)) return null;
-      const template = await readJson<EmailTemplate>(templatePath);
+      const templateRaw = await readJson<NestedEmailTemplate>(templatePath);
       const [templateMtimeMs, payloadMtimeMs, metaMtimeMs, tokenPresetsMtimeMs] = await Promise.all([
         statMtimeMs(templatePath),
         statMtimeMs(payloadPath),
@@ -363,8 +365,8 @@ app.get("/api/v1/emails", async (c) => {
       return {
         emailKey,
         displayName: meta?.displayName ?? emailKey,
-        templateId: template?.templateId ?? emailKey,
-        templateVersion: template?.templateVersion ?? 1,
+        templateId: templateRaw?.templateId ?? emailKey,
+        templateVersion: templateRaw?.templateVersion ?? 1,
         hasPayload: payloadMtimeMs > 0,
         hasTokenPresets: tokenPresetsMtimeMs > 0,
         hasLayoutVariants: Boolean(manifest),
@@ -466,7 +468,7 @@ app.post("/api/v1/emails", async (c) => {
 
   const layoutDir = path.join(emailDir, "layouts", "default");
   await atomicWriteJson(layoutManifestPath(emailDir), bundle.layoutManifest);
-  await atomicWriteJson(path.join(layoutDir, "template.json"), bundle.template);
+  await atomicWriteJson(path.join(layoutDir, "template.json"), serializeTemplateToDisk(bundle.template));
   await atomicWriteJson(path.join(layoutDir, "tokenPresets.json"), bundle.tokenPresets);
   await atomicWriteJson(path.join(emailDir, "payload.json"), bundle.payload);
   await atomicWriteJson(path.join(emailDir, "meta.json"), bundle.meta);
@@ -549,35 +551,6 @@ app.delete("/api/v1/token-presets/:presetId", async (c) => {
   return c.body(null, 204);
 });
 
-app.get("/api/v1/masters/:kind", async (c) => {
-  const kind = c.req.param("kind");
-  if (kind !== "sections" && kind !== "blocks") {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "母版类型仅允许 sections / blocks" } }, 400);
-  }
-  const dir = path.join(MASTER_ROOT, kind);
-  let entries: string[] = [];
-  try {
-    entries = await fs.readdir(dir).then((names) =>
-      names.filter((name) => name.endsWith(".json") && !name.startsWith("_"))
-    );
-  } catch {
-    return c.json({ items: [] });
-  }
-  const items = await Promise.all(
-    entries.map(async (fileName) => {
-      const masterId = path.basename(fileName, ".json");
-      const master = await readJson<Record<string, unknown>>(path.join(dir, fileName));
-      return {
-        masterId,
-        name: typeof master?.name === "string" ? master.name : masterId,
-        version: typeof master?.version === "string" ? master.version : undefined,
-        master,
-      };
-    })
-  );
-  return c.json({ items: items.filter((item) => item.master) });
-});
-
 app.get("/api/v1/collection-catalogs/:catalogId", async (c) => {
   const catalogId = c.req.param("catalogId");
   if (!isBuiltinCollectionCatalogId(catalogId)) {
@@ -639,68 +612,6 @@ app.post("/api/v1/project-assets/icons/upload", async (c) => {
   await fs.writeFile(path.join(ICON_UPLOAD_DIR, filename), buf);
   const url = `/api/v1/project-assets/icons/uploads/${filename}`;
   return c.json({ assetId, url, filename });
-});
-
-app.get("/api/v1/masters/:kind/:masterId", async (c) => {
-  const kind = c.req.param("kind");
-  const masterId = c.req.param("masterId");
-  if (kind !== "sections" && kind !== "blocks") {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "母版类型仅允许 sections / blocks" } }, 400);
-  }
-  const bad = assertMasterIdSafe(masterId);
-  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
-  const master = await readJson<Record<string, unknown>>(path.join(MASTER_ROOT, kind, `${masterId}.json`));
-  if (!master) return c.json({ error: { code: "NOT_FOUND", message: "母版不存在" } }, 404);
-  return c.json(master);
-});
-
-app.put("/api/v1/masters/:kind/:masterId", async (c) => {
-  const kind = c.req.param("kind");
-  const masterId = c.req.param("masterId");
-  if (kind !== "sections" && kind !== "blocks") {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "母版类型仅允许 sections / blocks" } }, 400);
-  }
-  const bad = assertMasterIdSafe(masterId);
-  if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
-  const filePath = path.join(MASTER_ROOT, kind, `${masterId}.json`);
-  const existing = await readJson<Record<string, unknown>>(filePath);
-  if (!existing) return c.json({ error: { code: "NOT_FOUND", message: "母版不存在" } }, 404);
-
-  let body: Record<string, unknown>;
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
-  }
-  if (body.masterId !== masterId) {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "masterId 与路径不一致" } }, 400);
-  }
-
-  const master =
-    kind === "blocks" ? parseBlockMaster(body) : parseSectionMaster(body);
-  if (!master) {
-    return c.json({ error: { code: "VALIDATION_FAILED", message: "母版 JSON 结构不完整" } }, 422);
-  }
-
-  const issues = collectMasterValidationIssues(master);
-  if (issues.length) {
-    return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "母版校验失败", details: issues } },
-      422
-    );
-  }
-
-  const template = masterToEmailTemplate(master, { templateId: master.masterId });
-  const templateIssues = blockingValidationIssues(validateTemplate(template));
-  if (templateIssues.length) {
-    return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "模板校验失败", details: templateIssues } },
-      422
-    );
-  }
-
-  await atomicWriteJson(filePath, body);
-  return c.body(null, 204);
 });
 
 app.get("/api/v1/scene-collection-presets", (c) => {
@@ -802,8 +713,8 @@ app.get("/api/v1/emails/:emailKey/data-revision", async (c) => {
   const tMs = await statMtimeMs(ctx.templatePath);
   const pMs = await statMtimeMs(path.join(base, "payload.json"));
   const tpMs = await statMtimeMs(ctx.tokenPresetsPath);
-  const mMs = manifest ? await statMtimeMs(layoutManifestPath(base)) : 0;
-  const layoutKey = ctx.layoutVariantId ?? "legacy";
+  const mMs = await statMtimeMs(layoutManifestPath(base));
+  const layoutKey = ctx.layoutVariantId;
   return c.json({ revision: `${layoutKey}:${tMs}:${pMs}:${tpMs}:${mMs}` });
 });
 
@@ -839,10 +750,16 @@ app.put("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
     return c.json({ error: { code: "VALIDATION_FAILED", message: "activeLayoutVariantId 必填" } }, 400);
   }
   const trial = { ...manifest, activeLayoutVariantId: nextId };
-  const manifestIssues = validateLayoutManifest(trial);
-  if (manifestIssues.length) {
+  const manifestShapeIssue = validateLayoutManifestOnDisk(trial);
+  if (manifestShapeIssue) {
     return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: manifestShapeIssue.message,
+          details: manifestShapeIssue.details,
+        },
+      },
       422
     );
   }
@@ -878,16 +795,11 @@ app.post("/api/v1/emails/:emailKey/layout-variants", async (c) => {
   const base = emailBaseDir(DATA_ROOT, emailKey);
   let manifest: LayoutManifest;
   try {
-    manifest = await ensureEmailLayoutManifest(base, emailKey, readJson, atomicWriteJson);
+    manifest = await requireLayoutManifest(base, readJson);
   } catch (e) {
     return c.json(
-      {
-        error: {
-          code: "VALIDATION_FAILED",
-          message: e instanceof Error ? e.message : "无法启用版式变体",
-        },
-      },
-      400
+      { error: { code: "NOT_FOUND", message: e instanceof Error ? e.message : String(e) } },
+      404
     );
   }
 
@@ -914,40 +826,53 @@ app.post("/api/v1/emails/:emailKey/layout-variants", async (c) => {
       ? body.copyFromLayoutVariantId.trim()
       : "";
   const copyFromId =
-    copyFromRaw && manifest.variants.some((v) => v.id === copyFromRaw)
-      ? copyFromRaw
-      : manifest.activeLayoutVariantId;
+    copyFromRaw && manifest.variants.some((v) => v.id === copyFromRaw) ? copyFromRaw : null;
 
-  const sourceCtx = resolveEmailFilePaths(base, manifest, copyFromId);
-  const sourceTemplate = await readJson<EmailTemplate>(sourceCtx.templatePath);
-  if (!sourceTemplate) {
-    return c.json(
-      { error: { code: "NOT_FOUND", message: `源版式「${copyFromId}」的 template.json 不存在` } },
-      404
-    );
-  }
-  let sourceTokenPresets =
-    (await readJson<TokenPresets>(sourceCtx.tokenPresetsPath)) ?? null;
-  if (!sourceTokenPresets) {
-    sourceTokenPresets = createDefaultTokenPresets();
-  }
+  let sourceTemplate: EmailTemplate;
+  let sourceTokenPresets: TokenPresets;
+  let variantDescription: string;
 
-  const templateIssues = blockingValidationIssues(validateTemplate(sourceTemplate));
-  if (templateIssues.length) {
-    return c.json(
-      {
-        error: {
-          code: "VALIDATION_FAILED",
-          message: "源版式模板校验失败，无法复制",
-          details: templateIssues,
+  if (copyFromId) {
+    const sourceCtx = resolveEmailFilePaths(base, manifest, copyFromId);
+    const copiedRaw = await readJson<NestedEmailTemplate>(sourceCtx.templatePath);
+    if (!copiedRaw) {
+      return c.json(
+        { error: { code: "NOT_FOUND", message: `源版式「${copyFromId}」的 template.json 不存在` } },
+        404
+      );
+    }
+    let copiedTokenPresets =
+      (await readJson<TokenPresets>(sourceCtx.tokenPresetsPath)) ?? null;
+    if (!copiedTokenPresets) {
+      copiedTokenPresets = createDefaultTokenPresets();
+    }
+
+    const templateIssues = blockingValidationIssues(validateTemplateFromDisk(copiedRaw));
+    if (templateIssues.length) {
+      return c.json(
+        {
+          error: {
+            code: "VALIDATION_FAILED",
+            message: "源版式模板校验失败，无法复制",
+            details: templateIssues,
+          },
         },
-      },
-      422
-    );
-  }
-  const tokenIssue = validateTokenPresetsShape(sourceTokenPresets);
-  if (tokenIssue) {
-    return c.json({ error: { code: "VALIDATION_FAILED", ...tokenIssue } }, 422);
+        422
+      );
+    }
+    const tokenIssue = validateTokenPresetsShape(copiedTokenPresets);
+    if (tokenIssue) {
+      return c.json({ error: { code: "VALIDATION_FAILED", ...tokenIssue } }, 422);
+    }
+
+    sourceTemplate = readTemplateGraphFromDiskRaw(copiedRaw);
+    sourceTokenPresets = copiedTokenPresets;
+    variantDescription = `复制自版式「${copyFromId}」`;
+  } else {
+    const blank = buildBlankLayoutVariantAssets(emailKey, newId);
+    sourceTemplate = blank.template;
+    sourceTokenPresets = blank.tokenPresets;
+    variantDescription = "空白版式";
   }
 
   const destDir = layoutVariantDir(base, newId);
@@ -969,7 +894,7 @@ app.post("/api/v1/emails/:emailKey/layout-variants", async (c) => {
       {
         id: newId,
         label,
-        description: `复制自版式「${copyFromId}」`,
+        description: variantDescription,
         createdAt: new Date().toISOString(),
       },
       { makeActive: true }
@@ -986,15 +911,21 @@ app.post("/api/v1/emails/:emailKey/layout-variants", async (c) => {
     );
   }
 
-  const manifestIssues = validateLayoutManifest(nextManifest);
-  if (manifestIssues.length) {
+  const manifestShapeIssue = validateLayoutManifestOnDisk(nextManifest);
+  if (manifestShapeIssue) {
     return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: manifestShapeIssue.message,
+          details: manifestShapeIssue.details,
+        },
+      },
       422
     );
   }
 
-  await atomicWriteJson(path.join(destDir, "template.json"), sourceTemplate);
+  await atomicWriteJson(path.join(destDir, "template.json"), serializeTemplateToDisk(sourceTemplate));
   await atomicWriteJson(path.join(destDir, "tokenPresets.json"), sourceTokenPresets);
   await atomicWriteJson(layoutManifestPath(base), nextManifest);
 
@@ -1064,10 +995,16 @@ app.patch("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c)
     };
   }
 
-  const manifestIssues = validateLayoutManifest(nextManifest);
-  if (manifestIssues.length) {
+  const manifestShapeIssue = validateLayoutManifestOnDisk(nextManifest);
+  if (manifestShapeIssue) {
     return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: manifestShapeIssue.message,
+          details: manifestShapeIssue.details,
+        },
+      },
       422
     );
   }
@@ -1110,10 +1047,16 @@ app.delete("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c
     );
   }
 
-  const manifestIssues = validateLayoutManifest(nextManifest);
-  if (manifestIssues.length) {
+  const manifestShapeIssue = validateLayoutManifestOnDisk(nextManifest);
+  if (manifestShapeIssue) {
     return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "版式清单校验失败", details: manifestIssues } },
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: manifestShapeIssue.message,
+          details: manifestShapeIssue.details,
+        },
+      },
       422
     );
   }
@@ -1136,9 +1079,9 @@ app.get("/api/v1/emails/:emailKey/template", async (c) => {
   if (!resolved.ok) {
     return c.json({ error: { code: "VALIDATION_FAILED", message: resolved.message } }, resolved.status);
   }
-  const t = await readJson<EmailTemplate>(resolved.ctx.templatePath);
+  const t = await readJson<NestedEmailTemplate>(resolved.ctx.templatePath);
   if (!t) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
-  const blocking = blockingValidationIssues(validateTemplate(t));
+  const blocking = blockingValidationIssues(validateTemplateFromDisk(t));
   if (blocking.length) {
     return c.json(
       {
@@ -1225,13 +1168,13 @@ app.put("/api/v1/emails/:emailKey/template", async (c) => {
   const emailKey = c.req.param("emailKey");
   const bad = assertEmailKeySafe(emailKey);
   if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
-  let body: EmailTemplate;
+  let body: NestedEmailTemplate;
   try {
     body = await c.req.json();
   } catch {
     return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
   }
-  const blocking = blockingValidationIssues(validateTemplate(body));
+  const blocking = blockingValidationIssues(validateTemplateFromDisk(body));
   if (blocking.length) {
     return c.json(
       { error: { code: "VALIDATION_FAILED", message: "校验失败", details: blocking } },
@@ -1243,7 +1186,9 @@ app.put("/api/v1/emails/:emailKey/template", async (c) => {
   if (!resolved.ok) {
     return c.json({ error: { code: "VALIDATION_FAILED", message: resolved.message } }, resolved.status);
   }
-  await atomicWriteJson(resolved.ctx.templatePath, body);
+  const graph = readTemplateGraphFromDiskRaw(body);
+  const disk = serializeTemplateToDisk(graph);
+  await atomicWriteJson(resolved.ctx.templatePath, disk);
   scheduleEmailsChanged("api_write", emailKey);
   return c.body(null, 204);
 });
@@ -1254,6 +1199,12 @@ app.put("/api/v1/emails/:emailKey/payload", async (c) => {
   if (bad) return c.json({ error: { code: "VALIDATION_FAILED", message: bad } }, 400);
   const base = emailBaseDir(DATA_ROOT, emailKey);
   const manifest = await readLayoutManifestOptional(readJson, base);
+  if (!manifest) {
+    return c.json(
+      { error: { code: "NOT_FOUND", message: "layout-manifest.json 不存在" } },
+      404
+    );
+  }
 
   let body: EmailPayload;
   try {
@@ -1262,27 +1213,36 @@ app.put("/api/v1/emails/:emailKey/payload", async (c) => {
     return c.json({ error: { code: "VALIDATION_FAILED", message: "JSON 无效" } }, 400);
   }
 
+  const payloadShapeIssue = validatePayloadShapeOnDisk(body);
+  if (payloadShapeIssue) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: payloadShapeIssue.message,
+          details: payloadShapeIssue.details,
+        },
+      },
+      422
+    );
+  }
+
   const payloadIssues: Array<{ path: string; reason: string }> = [];
-  if (manifest) {
-    for (const { layoutVariantId, templatePath } of allLayoutTemplatePaths(base, manifest)) {
-      const diskT = await readJson<EmailTemplate>(templatePath);
-      if (!diskT) {
-        return c.json(
-          { error: { code: "NOT_FOUND", message: `版式「${layoutVariantId}」的 template.json 不存在` } },
-          404
-        );
-      }
-      for (const issue of validatePayloadAgainstTemplate(diskT, body)) {
-        payloadIssues.push({
-          path: `layout:${layoutVariantId}/${issue.path}`,
-          reason: issue.reason,
-        });
-      }
+  for (const { layoutVariantId, templatePath } of allLayoutTemplatePaths(base, manifest)) {
+    const diskRaw = await readJson<NestedEmailTemplate>(templatePath);
+    if (!diskRaw) {
+      return c.json(
+        { error: { code: "NOT_FOUND", message: `版式「${layoutVariantId}」的 template.json 不存在` } },
+        404
+      );
     }
-  } else {
-    const diskT = await readJson<EmailTemplate>(path.join(base, "template.json"));
-    if (!diskT) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
-    payloadIssues.push(...validatePayloadAgainstTemplate(diskT, body));
+    const diskT = readTemplateGraphFromDiskRaw(diskRaw);
+    for (const issue of validatePayloadAgainstTemplate(diskT, body)) {
+      payloadIssues.push({
+        path: `layout:${layoutVariantId}/${issue.path}`,
+        reason: issue.reason,
+      });
+    }
   }
 
   if (payloadIssues.length) {
@@ -1325,7 +1285,12 @@ app.get("/api/v1/emails/:emailKey/meta", async (c) => {
   const metaPath = path.join(DATA_ROOT, emailKey, "meta.json");
   const meta = await readJson<EmailMeta>(metaPath);
   if (!meta) return c.json({ error: { code: "NOT_FOUND", message: "meta.json 不存在" } }, 404);
-  return c.json(normalizePersistedEmailMeta(meta as Record<string, unknown>) as EmailMeta);
+  const normalized = normalizePersistedEmailMeta(meta as Record<string, unknown>);
+  const metaIssue = validateSchemaArtifactShape("meta", normalized, "meta.json 校验失败");
+  if (metaIssue) {
+    return c.json({ error: { code: "VALIDATION_FAILED", ...metaIssue } }, 422);
+  }
+  return c.json(normalized as EmailMeta);
 });
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -1373,13 +1338,26 @@ app.put("/api/v1/emails/:emailKey/meta", async (c) => {
 
   const emailDir = emailBaseDir(DATA_ROOT, emailKey);
   const manifest = await readLayoutManifestOptional(readJson, emailDir);
-  if (!(await emailHasTemplateFiles(emailDir, manifest))) {
+  if (!manifest || !(await emailHasTemplateFiles(emailDir, manifest))) {
     return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
   }
 
   const prevMeta =
     (await readJson<Record<string, unknown>>(path.join(emailDir, "meta.json"))) ?? {};
   const merged = normalizePersistedEmailMeta(deepMergeMeta(prevMeta, body));
+  const metaIssues = validateSchemaArtifact("meta", merged);
+  if (metaIssues.length > 0) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: metaIssues[0]?.reason ?? "meta.json 校验失败",
+          details: metaIssues,
+        },
+      },
+      422
+    );
+  }
   merged.updatedAt = new Date().toISOString();
   await atomicWriteJson(path.join(emailDir, "meta.json"), merged);
   scheduleEmailsChanged("api_write", emailKey);
@@ -1393,7 +1371,7 @@ app.delete("/api/v1/emails/:emailKey", async (c) => {
 
   const emailDir = emailBaseDir(DATA_ROOT, emailKey);
   const manifest = await readLayoutManifestOptional(readJson, emailDir);
-  if (!(await emailHasTemplateFiles(emailDir, manifest))) {
+  if (!manifest || !(await emailHasTemplateFiles(emailDir, manifest))) {
     return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
   }
 
@@ -1421,14 +1399,18 @@ app.get("/api/v1/emails/:emailKey/merged", async (c) => {
   if (!resolved.ok) {
     return c.json({ error: { code: "VALIDATION_FAILED", message: resolved.message } }, resolved.status);
   }
-  const t = await readJson<EmailTemplate>(resolved.ctx.templatePath);
-  if (!t) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
-  const p =
+  const tRaw = await readJson<NestedEmailTemplate>(resolved.ctx.templatePath);
+  if (!tRaw) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
+  const t = readTemplateGraphFromDiskRaw(tRaw);
+  const p: EmailPayload =
     (await readJson<EmailPayload>(path.join(resolved.base, "payload.json"))) ?? {
       schemaVersion: "1.0.0",
+      slots: {},
       values: {},
     };
-  const merged = mergeTemplatePayload(t, p);
+  const afterVisibility = applyVisibilityRules(t, p);
+  const previewModel = buildRepeatPreviewModel(afterVisibility, p);
+  const merged = previewModelToFlatTemplate(previewModel, afterVisibility);
   return c.json({ merged });
 });
 
@@ -1483,9 +1465,6 @@ void fs.mkdir(DATA_ROOT, { recursive: true }).catch(() => {
 });
 void fs.mkdir(TOKEN_PRESET_ROOT, { recursive: true }).catch(() => {
   /* 样式预设目录初始化失败时保留现状，接口按需兜底 */
-});
-void fs.mkdir(MASTER_ROOT, { recursive: true }).catch(() => {
-  /* 母版目录初始化失败时保留现状，接口按需兜底 */
 });
 void fs.mkdir(ICON_UPLOAD_DIR, { recursive: true }).catch(() => {
   /* 图标上传目录初始化失败时保留现状 */

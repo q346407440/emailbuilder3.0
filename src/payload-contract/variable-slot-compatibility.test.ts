@@ -9,7 +9,6 @@ import {
   filterSlotsForVariablePicker,
   inferBindingValueTypeRequirement,
   inferVariablePickerPurpose,
-  slotValueTypeMatchesBindingRequirement,
   slotValueTypeMatchesPickerPurpose,
   validateVariableBindingFieldCompatibility,
   VARIABLE_SLOT_BINDING_RULES,
@@ -20,7 +19,14 @@ const textBlock = (): EmailBlock => ({
   type: "text",
   parentId: "root",
   children: [],
-  props: {},
+  props: {
+    textBody: { paragraphs: [{ runs: [{ text: "x" }] }] },
+    bold: false,
+    italic: false,
+    decoration: "none",
+    color: "#111111",
+    fontSize: "14px",
+  },
 });
 
 describe("VARIABLE_SLOT_BINDING_RULES", () => {
@@ -107,23 +113,36 @@ describe("variable-slot-compatibility", () => {
 describe("updateExternalVariableSlotValueType", () => {
   it("同步 payload.slots 与模板绑定 valueType", () => {
     const template: EmailTemplate = {
-      schemaVersion: "1.0.0",
+      schemaVersion: "4.0.0",
+      templateId: "t",
+      templateVersion: 1,
       rootBlockId: "root",
       blocks: {
         root: {
           id: "root",
           type: "emailRoot",
+          parentId: null,
           children: ["t"],
-          props: {},
+          props: {
+            backgroundColor: "#ffffff",
+            pageInline: { padding: { top: 0, right: 0, bottom: 0, left: 0 } },
+          },
         },
         t: {
           id: "t",
           type: "text",
           parentId: "root",
           children: [],
-          props: { text: "hi" },
+          props: {
+            textBody: { paragraphs: [{ runs: [{ text: "hi" }] }] },
+            bold: false,
+            italic: false,
+            decoration: "none",
+            color: "#111111",
+            fontSize: "14px",
+          },
           bindings: {
-            "props.text": {
+            "props.textBody.paragraphs.0.runs.0.text": {
               mode: "variable",
               allowExternal: true,
               slotId: "qty",
@@ -132,6 +151,7 @@ describe("updateExternalVariableSlotValueType", () => {
           },
         },
       },
+      blockMeta: {},
     };
     const payload: EmailPayload = {
       schemaVersion: "1.0.0",
@@ -140,6 +160,6 @@ describe("updateExternalVariableSlotValueType", () => {
     };
     const next = updateExternalVariableSlotValueType(template, payload, "qty", "number");
     assert.equal(next.payload.slots.qty?.valueType, "number");
-    assert.equal(next.template.blocks.t.bindings?.["props.text"]?.valueType, "number");
+    assert.equal(next.template.blocks.t.bindings?.["props.textBody.paragraphs.0.runs.0.text"]?.valueType, "number");
   });
 });

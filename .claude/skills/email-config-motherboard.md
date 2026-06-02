@@ -13,6 +13,7 @@ description: >-
 | 主题 | 路径 |
 |------|------|
 | 三层 JSON 形态与校验 | **`src/lib/validate.ts`**、**`src/types/email.ts`** |
+| **template 落盘 nested 4.0.0** | **`src/template-disk-contract/`**、**`src/lib/templateTreeAdapter.ts`** |
 | 某 `blockMeta.blockType` 下允许的路径 | **`src/block-contract/`**（`registry.ts`、`by-type/*.ts`）；入口 **`validateTemplateBlockContracts`** |
 | binding 路径 → `fieldKind` / mode | **`src/lib/blockFieldClassification.ts`**、`validateTemplateBindings` |
 | token 标准键与 `$themeRef` | **`src/token-preset-contract/`** |
@@ -42,7 +43,7 @@ description: >-
 
 | 层 | 文件 | 一句话 |
 |----|------|--------|
-| 结构 | `template.json` | 完整 block 树 + bindings；可编辑项由 Inspector 直接改结构字段 |
+| 结构 | `template.json` | **nested 4.0.0** 嵌套 `root` 树 + 节点 `blockMeta`；`bindings` / `repeat` / `$themeRef` 在节点上 |
 | 样式预设 | `tokenPresets.json` | 档位与 token；标准键见 **`email-token-preset-standard-scope`** |
 | 变量 | `payload.json` | **`slots`** 目录 + **`values`** 取值；template 仅 bindings/repeat（**禁止** binding `defaultValue`） |
 | 元数据 | `meta.json` | 展示与 **`defaultStylePresetSelection`** 等 |
@@ -57,7 +58,7 @@ description: >-
 
 1. **读图**：`emailRoot` 是否足够承载外壳；仅在有真实语义模块时加中间 **`layout`**（禁止无意义 `page/main` 壳）。  
 2. **自上而下拆模块**：顺序、剪影比例、间距节奏；识别可复用 section/block 母版。  
-3. **写盘**：同步 **`template.json`**、**`tokenPresets.json`**、**`payload.json`**（**`slots` + `values`**）、场景 **`meta.json`**。变量分工见 **`docs/邮件变量与绑定真源.md`**。  
+3. **写盘**：同步 **`template.json`**、**`tokenPresets.json`**、**`payload.json`**（**`slots` + `values`**）、场景 **`meta.json`**。变量分工见技能 **`easy-email-payload-contract`**。  
 4. **`npm run validate:all`**。  
 5. **浏览器**：**`easy-email-frontend-chrome-verify`**（先 Network 资源，再结构，再视觉；画布滚到底）。
 

@@ -1,4 +1,12 @@
-export type { SceneCollectionPreset, SceneCollectionPresetFile } from "./types";
+export type {
+  SceneCollectionPreset,
+  SceneCollectionPresetFile,
+  SceneCollectionPresetValidationIssue,
+} from "./types";
+export {
+  SCENE_COLLECTION_PRESET_SCHEMA_VERSION,
+  validateSceneCollectionPresetFile,
+} from "./types";
 /** Node 专用：请从 `./loadFromDisk` 导入，勿经本入口（避免 Vite 客户端打入 node:fs） */
 export { parseSceneCollectionPresetFile, isPayloadVariableScene } from "./parsePreset";
 export {

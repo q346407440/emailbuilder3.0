@@ -37,7 +37,7 @@ function product(
 }
 
 /**
- * 10 条 SPU；SKU 数量依次为 5、4、3、2、1（循环两轮）。
+ * 12 条 SPU（含相似品/搭配品演示）；SKU 数量依次为 5、4、3、2、1（循环两轮）。
  * 列表投影取「销量最高 SKU」作为主推图/价；排序按 SKU 最高售价。
  */
 export const BUILTIN_PRODUCTS_MOCK_RAW: BuiltinProductMock[] = [
@@ -359,6 +359,30 @@ export const BUILTIN_PRODUCTS_MOCK_RAW: BuiltinProductMock[] = [
       originalPrice: "$49.00",
       inventoryQuantity: 95,
       totalSales: 670,
+    }),
+  ]),
+  product("mock-similar-product", "相似品", "演示", [
+    sku("mock-similar-product", 0, {
+      title: "标准款",
+      sku: "MOCK-SIM",
+      imageSrc: pexelsProductImage(1181410),
+      imageAlt: "相似品演示商品",
+      salePrice: "$49.00",
+      originalPrice: "$59.00",
+      inventoryQuantity: 50,
+      totalSales: 800,
+    }),
+  ]),
+  product("mock-complement-product", "搭配品", "演示", [
+    sku("mock-complement-product", 0, {
+      title: "标准款",
+      sku: "MOCK-CMP",
+      imageSrc: pexelsProductImage(1181421),
+      imageAlt: "搭配品演示商品",
+      salePrice: "$29.00",
+      originalPrice: "$39.00",
+      inventoryQuantity: 60,
+      totalSales: 750,
     }),
   ]),
 ];

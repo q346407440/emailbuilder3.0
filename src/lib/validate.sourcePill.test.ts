@@ -5,7 +5,7 @@ import { validateTemplateBindings } from "./validate";
 
 function makeTemplate(blocks: EmailTemplate["blocks"]): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test",
     templateVersion: 1,
     rootBlockId: "root",

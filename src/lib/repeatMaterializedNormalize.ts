@@ -269,16 +269,31 @@ function resolveChildRepeatBindTargets(
     return { childHostId, childPrototypeChildIds };
   }
 
+  const rowUnderCurrentHost = repeatRowTemplateChildId(template, childHostId);
+  const resolvedRowUnderHost = rowUnderCurrentHost
+    ? resolveMaterializedRowToPrototypeId(rowUnderCurrentHost, prototypeSet, template)
+    : undefined;
+  const resolvedProtoChildId = resolveMaterializedRowToPrototypeId(
+    childPrototypeChildIds[0]!,
+    prototypeSet,
+    template
+  );
+  if (resolvedRowUnderHost && resolvedRowUnderHost === resolvedProtoChildId) {
+    return { childHostId, childPrototypeChildIds };
+  }
+
   const protoId = childPrototypeChildIds[0]!;
   const protoBlock = template.blocks[protoId];
 
   if (protoBlock && isRepeatHostBlock(protoBlock)) {
-    childHostId = protoId;
-    const rowTemplateId = repeatRowTemplateChildId(template, protoId);
-    if (rowTemplateId) {
-      childPrototypeChildIds = [
-        resolveMaterializedRowToPrototypeId(rowTemplateId, prototypeSet, template),
-      ];
+    if (childHostId !== protoId && resolvedProtoChildId === protoId) {
+      childHostId = protoId;
+      const rowTemplateId = repeatRowTemplateChildId(template, protoId);
+      if (rowTemplateId) {
+        childPrototypeChildIds = [
+          resolveMaterializedRowToPrototypeId(rowTemplateId, prototypeSet, template),
+        ];
+      }
     }
   }
 

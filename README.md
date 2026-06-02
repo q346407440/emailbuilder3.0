@@ -1,6 +1,6 @@
 # Easy-Email
 
-邮件模板与编辑相关的本地优先项目：用 **规范化 JSON（block 树）** 描述邮件，配合 **模板 + 样式预设 + 变量赋值**，按目录隔离存储，便于前端编辑与本地 Agent 批量产出模板。
+邮件模板与编辑相关的本地优先项目：用 **nested 4.0.0 JSON（`root` 嵌套 block 树）** 描述邮件结构，配合 **样式预设 + 变量赋值**，按目录隔离存储，便于前端编辑与本地 Agent 批量产出模板。
 
 ---
 
@@ -16,9 +16,11 @@
 | [email-template-restore-guide](./.cursor/skills/email-template-restore-guide/SKILL.md) | 按图还原流程与模块壳/token |
 | [email-template-restore-check](./.cursor/skills/email-template-restore-check/SKILL.md) | 还原自检清单 |
 
+**落盘 artifact 版本索引**：[`src/schema-registry/`](./src/schema-registry/)（引用各 `*-contract` 常量；`npm run validate:all` 经 registry 校验 meta / tokenPresets / layoutManifest 等）。
+
 完整技能表见 [CLAUDE.md](./CLAUDE.md)。`docs/project-plan.md` 仅为历史备忘，**不是**契约。
 
-**结构批量迁移**：`npm run migrate:text-body -- --write`、`npm run validate:all（非法 wrapperStyle 字段）`、`npm run migrate:content-align-hug-neutral:write` 等见 `package.json`；交付前 **`npm run validate:all`**。
+**结构批量迁移**：`npm run migrate:text-body -- --write`、`npm run validate:all`、`npm run migrate:content-align-hug-neutral:write` 等见 `package.json`；交付前 **`npm run validate:all`**。
 
 ---
 

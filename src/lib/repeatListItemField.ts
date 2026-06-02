@@ -1,8 +1,26 @@
 import type { BindingCollectionField, EmailPayload, EmailTemplate } from "../types/email";
 import { findCollectionFieldByPath, scalarCollectionFields } from "../payload-contract/collection-item-fields";
-import { resolveRepeatContextForBlock, type ResolvedRepeatContext } from "./repeatRegion";
+import { resolveRepeatContextForRef } from "../repeat-runtime/repeatVirtualResolver";
+import type { ResolvedRepeatContext } from "./repeatRegion";
 
 export { collectionItemFieldValueTypeLabel } from "../payload-contract/collection-item-fields";
+
+function formatScalarPreviewValue(value: unknown): string {
+  if (value === undefined || value === null || value === "") return "—";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (!t) return "—";
+    return t.length > 160 ? `${t.slice(0, 157)}…` : t;
+  }
+  try {
+    const s = JSON.stringify(value);
+    return s.length > 160 ? `${s.slice(0, 157)}…` : s;
+  } catch {
+    return String(value);
+  }
+}
 
 /** 数组变量表格「首项示例」：项数 + 首字段第 1 项预览 */
 export function formatCollectionSlotListSummary(
@@ -32,20 +50,55 @@ export function formatCollectionFirstItemFieldExample(
   const first = raw[0];
   if (!first || typeof first !== "object" || Array.isArray(first)) return "—";
   const value = (first as Record<string, unknown>)[fieldKey];
-  if (value === undefined || value === null || value === "") return "—";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "number") return String(value);
-  if (typeof value === "string") {
-    const t = value.trim();
-    if (!t) return "—";
-    return t.length > 160 ? `${t.slice(0, 157)}…` : t;
+  return formatScalarPreviewValue(value);
+}
+
+/** 父项第 1 行内子列表（itemPath）的首项示例：子数组项数 + 子列表首字段预览 */
+export function formatRepeatNestedItemPathListSummary(
+  payload: EmailPayload | null,
+  slotId: string,
+  itemPath: string,
+  itemFields: BindingCollectionField[]
+): string {
+  const raw = payload?.values?.[slotId];
+  if (!Array.isArray(raw) || raw.length === 0) return "—";
+  const firstParent = raw[0];
+  if (!firstParent || typeof firstParent !== "object" || Array.isArray(firstParent)) return "—";
+  const nested = (firstParent as Record<string, unknown>)[itemPath];
+  if (!Array.isArray(nested)) return "—";
+  const rows = nested.filter(
+    (item) => item && typeof item === "object" && !Array.isArray(item)
+  ) as Record<string, unknown>[];
+  const count = rows.length;
+  if (count === 0) return "0 项";
+  const scalarFields = scalarCollectionFields(itemFields);
+  const primaryKey =
+    scalarFields.find((f) => f.valueType === "string")?.key ?? scalarFields[0]?.key;
+  if (!primaryKey) return `${count} 项`;
+  const preview = formatScalarPreviewValue(rows[0]?.[primaryKey]);
+  if (preview === "—") return `${count} 项`;
+  return `${count} 项 · ${preview}`;
+}
+
+/** 列表绑定向导：按顶层槽或父项子列表（itemPath）生成「首项示例」 */
+export function formatRepeatCollectionCandidateListSummary(
+  payload: EmailPayload | null,
+  candidate: {
+    slotId: string;
+    itemPath?: string;
+    itemFields: BindingCollectionField[];
   }
-  try {
-    const s = JSON.stringify(value);
-    return s.length > 160 ? `${s.slice(0, 157)}…` : s;
-  } catch {
-    return String(value);
+): string {
+  const itemPath = candidate.itemPath?.trim();
+  if (itemPath) {
+    return formatRepeatNestedItemPathListSummary(
+      payload,
+      candidate.slotId,
+      itemPath,
+      candidate.itemFields
+    );
   }
+  return formatCollectionSlotListSummary(payload, candidate.slotId, candidate.itemFields);
 }
 
 /** 用户尝试将列表行内字段改为字面量时的提示（须先解除 repeat 宿主绑定） */
@@ -104,7 +157,7 @@ function resolveRepeatListItemFieldBindingFromBlockBinding(
     return null;
   }
 
-  const ctx = resolveRepeatContextForBlock(template, blockId);
+  const ctx = resolveRepeatContextForRef(template, { kind: "physical", blockId });
   if (!ctx || ctx.relation === "host") return null;
   if (spec.slotId !== ctx.repeat.slotId) return null;
 
@@ -117,7 +170,7 @@ function resolveRepeatListItemFieldBindingFromFieldMappings(
   blockId: string,
   bindPath: string
 ): RepeatListItemFieldContext | null {
-  const ctx = resolveRepeatContextForBlock(template, blockId);
+  const ctx = resolveRepeatContextForRef(template, { kind: "physical", blockId });
   if (!ctx || ctx.relation === "host") return null;
 
   const mapping = ctx.repeat.fieldMappings?.find(
@@ -209,5 +262,5 @@ export function filterRepeatItemFieldsForBindPath(
   const scalarFields = scalarCollectionFields(itemFields);
   if (wantsImage) return scalarFields.filter((f) => f.valueType === "image");
   if (wantsUrl) return scalarFields.filter((f) => f.valueType === "url");
-  return scalarFields.filter((f) => f.valueType === "string" || f.valueType === "color");
+  return scalarFields.filter((f) => f.valueType === "string");
 }

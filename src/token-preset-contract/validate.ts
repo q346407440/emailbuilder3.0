@@ -5,6 +5,7 @@ import {
 } from "../lib/spacingPxCap";
 import { validateOptionalDeletedAtField } from "../lib/logicalDelete";
 import type { TokenPresets } from "../types/tokenPreset";
+import { TOKEN_PRESET_SCHEMA_VERSION } from "./version";
 import {
   TOKEN_PRESET_FAMILY_ORDER,
   TOKEN_PRESET_SCALE_ORDER,
@@ -86,8 +87,11 @@ export function validateTokenPresets(
   if (!isPlainObject(tokenPresets)) {
     return [{ path: "tokenPresets", reason: "样式预设必须为对象" }];
   }
-  if (tokenPresets.schemaVersion !== "1.0.0") {
-    issues.push({ path: "tokenPresets.schemaVersion", reason: "样式预设版本必须为 1.0.0" });
+  if (tokenPresets.schemaVersion !== TOKEN_PRESET_SCHEMA_VERSION) {
+    issues.push({
+      path: "tokenPresets.schemaVersion",
+      reason: `样式预设版本必须为 ${TOKEN_PRESET_SCHEMA_VERSION}`,
+    });
   }
   const deletedAtIssue = validateOptionalDeletedAtField(tokenPresets.deletedAt, "tokenPresets.deletedAt");
   if (deletedAtIssue) issues.push(deletedAtIssue);

@@ -1,4 +1,4 @@
-import type { BindingSpec, EmailPayload, EmailTemplate, RepeatRegionBinding } from "../types/email";
+import type { BindingCollectionField, BindingSpec, EmailPayload, EmailTemplate, RepeatRegionBinding } from "../types/email";
 import type { ExternalSlotDefinition } from "./types";
 import { isSlotValueType } from "./value-types";
 
@@ -109,7 +109,7 @@ export function buildExternalSlotRegistry(
         mode: "variable",
         valueType: block.visibility.valueType,
         allowExternal: true,
-        itemFields: block.visibility.itemFields,
+        itemFields: block.visibility.itemFields as BindingCollectionField[] | undefined,
         minItems: block.visibility.minItems,
         maxItems: block.visibility.maxItems,
         label: block.visibility.label,

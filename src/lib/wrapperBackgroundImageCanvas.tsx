@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEventHandler, type ReactElement, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEventHandler, type ReactElement, type ReactNode } from "react";
 import { emailPresentationTableProps, emailPresentationTdBase } from "./emailPresentationPrimitives";
 import { EMAIL_PRESENTATION_TD_ANTI_STRUT_STYLE } from "./emailPresentationLayout";
 import { wrapperBackgroundImageTdPresentationStyle } from "./wrapperBackgroundImagePresentation";
@@ -119,9 +119,9 @@ export function renderWrapperBackgroundImageCanvasShell(
       <tbody>
         <tr>
           <td
-            background={src}
             align={overlayHorizontalAlign}
             valign={overlayVerticalValign}
+            {...(src ? ({ background: src } as Record<string, string>) : {})}
             style={{
               ...emailPresentationTdBase(),
               ...EMAIL_PRESENTATION_TD_ANTI_STRUT_STYLE,

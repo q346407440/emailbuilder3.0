@@ -24,7 +24,7 @@ function minimalTextTemplate(textBody: TextBlock["props"]["textBody"]): EmailTem
     },
   };
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "t",
     templateVersion: 1,
     rootBlockId: "root",

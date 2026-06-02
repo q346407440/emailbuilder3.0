@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
-import { collectionItemFieldValueTypeLabel, formatCollectionSlotListSummary } from "../lib/repeatListItemField";
+import type { EmailBlock, EmailPayload, EmailTemplate, RepeatRegionBinding } from "../types/email";
+import { formatRepeatCollectionCandidateListSummary } from "../lib/repeatListItemField";
 import { CollectionFieldPickerTable } from "./CollectionFieldPickerTable";
-import { repeatMappingTargetLabel } from "../lib/repeatMappableContentBindPaths";
 import {
-  buildCollectionFieldPickerRows,
+  buildRepeatListScalarFieldPickerRows,
   collectionSampleFromPayloadValues,
-  formatSourceFieldExample,
-  readCatalogSourceValue,
+  type CollectionJsonSample,
 } from "../lib/collectionFieldMapping";
 import {
-  defaultExpandedCollectionGroupPaths,
-  flattenNestedCollectionFieldsPreview,
+  collectionSampleFromNestedRepeatPayload,
+  listRepeatFieldMappingScalarFields,
+} from "../lib/repeatNestedFieldMapping";
+import {
+  countNestedCollectionsInItemFields,
   hasNestedCollectionInItemFields,
+  listNestedCollectionFieldsInItemFields,
 } from "../lib/collectionFieldMappingTree";
 import {
   defaultExpandedRepeatTargetGroups,
@@ -21,74 +23,22 @@ import {
   flattenRepeatTargetFieldsForNav,
   repeatTargetGroupHasChildMapping,
 } from "../lib/repeatTargetFieldMappingTree";
-import {
-  childRepeatPrototypeDisabledKeysForParent,
-  defaultExpandedRepeatPrototypePickerBranches,
-  flattenRepeatPrototypePickerRows,
-  repeatPrototypePickerBranchKeysToBlock,
-  visibleRepeatPrototypePickerRows,
-  type ChildRepeatPrototypeOption,
-  type ChildRepeatPrototypePickerRow,
-  type NestedCollectionFieldOption,
-  type RepeatLoopScope,
-} from "../lib/repeatNestedBinding";
-import {
-  parentScalarItemFieldsFromItemFields,
-  repeatPrototypeOptionsToPickerOptions,
-  repeatPrototypePickerCanonicalHint,
-  type RepeatPrototypePickerOption,
-} from "../lib/repeatNestedBindingUi";
 import { Field } from "./ui/Field";
-import { ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ui/ShopFormControls";
+import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerRadioCell } from "./ui/SelectablePickerRadioCell";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 import { PickerTreeTable } from "./ui/PickerTreeTable";
 
-const LOOP_SCOPE_OPTIONS: Array<{ value: RepeatLoopScope; label: string }> = [
-  { value: "parentOnly", label: "只循环父级列表" },
-  { value: "parentAndChild", label: "父级与子级都循环" },
-  { value: "childOnly", label: "只循环子级列表" },
-];
-
-type WizardStepId =
-  | "parentSlot"
-  | "scope"
-  | "parentTemplate"
-  | "child"
-  | "parentMap"
-  | "childMap";
+// 单层绑定向导：列表变量 → 字段映射（嵌套通过选中内层容器再绑定，不在此弹窗多层配置）。
+type WizardStepId = "parentSlot" | "parentMap";
 
 type WizardStep = { id: WizardStepId; title: string };
 
-function buildWizardSteps(args: {
-  showLoopScope: boolean;
-  loopScope: RepeatLoopScope;
-  showParentSection: boolean;
-  hideParentTemplateStep: boolean;
-  showChildSection: boolean;
-  showParentMapping: boolean;
-  showChildMapping: boolean;
-}): WizardStep[] {
-  const steps: WizardStep[] = [{ id: "parentSlot", title: "列表变量" }];
-  if (args.showLoopScope) {
-    steps.push({ id: "scope", title: "循环范围" });
-  }
-  if (args.showParentSection && !args.hideParentTemplateStep) {
-    steps.push({
-      id: "parentTemplate",
-      title: args.loopScope === "childOnly" ? "父级变量" : "父级行模板",
-    });
-  }
-  if (args.showParentMapping) {
-    steps.push({ id: "parentMap", title: "父级字段映射" });
-  }
-  if (args.showChildSection) {
-    steps.push({ id: "child", title: "子级列表" });
-  }
-  if (args.showChildMapping) {
-    steps.push({ id: "childMap", title: "子级字段映射" });
-  }
-  return steps;
+function buildWizardSteps(): WizardStep[] {
+  return [
+    { id: "parentSlot", title: "列表变量" },
+    { id: "parentMap", title: "字段映射" },
+  ];
 }
 
 function WizardStepNav({
@@ -133,15 +83,8 @@ export type RepeatCollectionCandidate = {
   minItems?: number;
   maxItems?: number;
   description?: string;
-};
-
-export type RepeatPrototypeOption = {
-  key: string;
-  hostId: string;
-  prototypeChildIds: string[];
-  label: string;
-  description: string;
-  source: "container" | "leaf-self" | "leaf-parent" | "global";
+  /** 父项 repeat 展示名（itemPath 子列表行用于 tag 提示） */
+  parentSlotLabel?: string;
 };
 
 export type RepeatTargetFieldOption = {
@@ -151,192 +94,81 @@ export type RepeatTargetFieldOption = {
   label: string;
 };
 
-function mappedFieldLabel(
-  itemFields: RepeatCollectionCandidate["itemFields"],
-  sourceKey: string | undefined
-): string {
-  if (!sourceKey) return "不映射";
-  const field = itemFields.find((f) => f.key === sourceKey);
-  if (!field) return "不映射";
-  return field.label?.trim() || field.key;
-}
-
 export type RepeatRegionBindModalProps = {
   visible: boolean;
-  canvasMode: boolean;
+  /** 复制体/行内字段「查看绑定」：直达字段映射且不可编辑 */
+  viewOnly?: boolean;
   template: EmailTemplate;
   payload: EmailPayload;
   hasCurrentRepeat: boolean;
   collectionCandidates: RepeatCollectionCandidate[];
-  prototypeOptions: RepeatPrototypeOption[];
-  rowTemplateLocked?: boolean;
-  /** 父级列表 repeat 宿主（父级行模板树表上下文） */
-  parentListHostId?: string;
-  /** 父级列表变量已在外层确定，向导内仅回显不可换槽 */
-  parentListSlotLocked?: boolean;
-  /** 父级列表 itemFields 是否含子列表，用于展示「循环范围」 */
-  showLoopScope?: boolean;
-  loopScope?: RepeatLoopScope;
-  scopePreview?: string;
-  nestedChildListLabel?: string;
-  /** 父级列表项下可选的子级 collection（itemPath） */
-  nestedCollectionOptions?: NestedCollectionFieldOption[];
-  /** 父级行模板根（用于子级行模板树表） */
+  /** 行模板根（字段映射左侧树范围）= 选中容器自身 */
   parentPrototypeChildIds?: string[];
-  childPrototypeOptions?: ChildRepeatPrototypeOption[];
-  childItemPath?: string;
-  childPrototypeOptionKey?: string;
-  childPrototypeChildIds?: string[];
-  anchorItemIndex?: number;
+  /** 画布已确定的行模板展示名 */
+  parentRowTemplateLabel?: string;
   parentTargetFieldOptions: RepeatTargetFieldOption[];
-  childTargetFieldOptions?: RepeatTargetFieldOption[];
-  /** 简化模式：父级行模板由外层自动确定，向导中不再展示该步骤 */
-  hideParentTemplateStep?: boolean;
   repeatSlotId: string;
-  repeatPrototypeOptionKey: string;
   parentMappingDraft: Record<string, string>;
-  childMappingDraft?: Record<string, string>;
   repeatCandidate: RepeatCollectionCandidate | undefined;
-  selectedPrototypeOption: RepeatPrototypeOption | undefined;
+  /** 嵌套 itemPath 绑定时，外层 repeat 配置（供 parent. 字段映射） */
+  enclosingParentRepeat?: RepeatRegionBinding | null;
   onClose: () => void;
   onApply: () => void;
   onRemove?: () => void;
-  onLoopScopeChange?: (scope: RepeatLoopScope) => void;
-  onChildItemPathChange?: (path: string) => void;
-  onChildPrototypeOptionKeyChange?: (key: string) => void;
-  onAnchorItemIndexChange?: (index: number) => void;
-  onRepeatPrototypeOptionKeyChange: (key: string) => void;
   onParentMappingDraftChange: (draft: Record<string, string>) => void;
-  onChildMappingDraftChange?: (draft: Record<string, string>) => void;
-  onSlotOrPrototypeChange: (slotId: string, prototypeKey: string) => void;
+  onSlotChange: (slotId: string) => void;
 };
 
 export function RepeatRegionBindModal({
   visible,
-  canvasMode,
+  viewOnly = false,
   template,
   payload,
   hasCurrentRepeat,
   collectionCandidates,
-  prototypeOptions,
-  rowTemplateLocked = false,
-  parentListHostId = "",
-  parentListSlotLocked = false,
-  showLoopScope = false,
-  loopScope = "parentOnly",
-  scopePreview = "",
-  nestedChildListLabel = "子级列表",
-  nestedCollectionOptions = [],
   parentPrototypeChildIds = [],
-  childPrototypeOptions = [],
-  childItemPath = "",
-  childPrototypeOptionKey = "",
-  childPrototypeChildIds = [],
-  anchorItemIndex = 0,
+  parentRowTemplateLabel,
   parentTargetFieldOptions,
-  childTargetFieldOptions = [],
-  hideParentTemplateStep = false,
   repeatSlotId,
-  repeatPrototypeOptionKey,
   parentMappingDraft,
-  childMappingDraft = {},
   repeatCandidate,
-  selectedPrototypeOption,
+  enclosingParentRepeat = null,
   onClose,
   onApply,
   onRemove,
-  onLoopScopeChange,
-  onChildItemPathChange,
-  onChildPrototypeOptionKeyChange,
-  onAnchorItemIndexChange,
-  onRepeatPrototypeOptionKeyChange,
   onParentMappingDraftChange,
-  onChildMappingDraftChange,
-  onSlotOrPrototypeChange,
+  onSlotChange,
 }: RepeatRegionBindModalProps) {
-  const itemFields = repeatCandidate?.itemFields ?? [];
-  const parentScalarFields = parentScalarItemFieldsFromItemFields(itemFields);
-  const showParentSection = loopScope !== "childOnly";
-  const showChildSection = loopScope === "parentAndChild" || loopScope === "childOnly";
-  const showParentMapping = showParentSection && loopScope !== "childOnly";
-  const showChildMapping = showChildSection && childTargetFieldOptions.length > 0;
-  const wizardMode = true;
-  const wizardSteps = useMemo(
+  const mappingScalarFields = useMemo(
     () =>
-      buildWizardSteps({
-        showLoopScope,
-        loopScope,
-        showParentSection,
-        hideParentTemplateStep,
-        showChildSection,
-        showParentMapping,
-        showChildMapping,
-      }),
-    [
-      showLoopScope,
-      loopScope,
-      showParentSection,
-      hideParentTemplateStep,
-      showChildSection,
-      showParentMapping,
-      showChildMapping,
-    ]
+      repeatCandidate
+        ? listRepeatFieldMappingScalarFields(
+            {
+              mode: "collection",
+              slotId: repeatCandidate.slotId,
+              prototypeChildIds: [],
+              itemFields: repeatCandidate.itemFields,
+              itemPath: repeatCandidate.itemPath,
+              fieldMappings: [],
+            },
+            enclosingParentRepeat
+          )
+        : [],
+    [repeatCandidate, enclosingParentRepeat]
   );
+  const wizardSteps = useMemo(() => buildWizardSteps(), []);
   const [wizardStepIndex, setWizardStepIndex] = useState(0);
   const currentWizardStep = wizardSteps[wizardStepIndex];
 
   useEffect(() => {
-    if (visible) setWizardStepIndex(0);
-  }, [visible]);
-
-  useEffect(() => {
-    if (wizardStepIndex >= wizardSteps.length) {
-      setWizardStepIndex(Math.max(0, wizardSteps.length - 1));
-    }
-  }, [wizardStepIndex, wizardSteps.length]);
-
-  useEffect(() => {
-    if (!visible || !showChildSection) return;
-    const only = nestedCollectionOptions[0];
-    if (nestedCollectionOptions.length === 1 && only && childItemPath !== only.path) {
-      onChildItemPathChange?.(only.path);
-    }
-  }, [visible, showChildSection, nestedCollectionOptions, childItemPath, onChildItemPathChange]);
-
-  useEffect(() => {
-    if (!visible || !showChildSection || !onChildPrototypeOptionKeyChange) return;
-    const only = childPrototypeOptions[0];
-    if (childPrototypeOptions.length === 1 && only && childPrototypeOptionKey !== only.key) {
-      onChildPrototypeOptionKeyChange(only.key);
-    }
-  }, [
-    visible,
-    showChildSection,
-    childPrototypeOptions,
-    childPrototypeOptionKey,
-    onChildPrototypeOptionKeyChange,
-  ]);
-
-  const selectedChildNested = nestedCollectionOptions.find((f) => f.path === childItemPath);
-  const childMappingItemFields = selectedChildNested?.itemFields ?? [];
+    if (!visible) return;
+    // 已绑定编辑 / 行内「查看绑定」：直达字段映射；首次绑定从步骤 1 选列表变量。
+    const startOnFieldMapping = viewOnly || hasCurrentRepeat;
+    setWizardStepIndex(startOnFieldMapping ? wizardSteps.length - 1 : 0);
+  }, [visible, viewOnly, hasCurrentRepeat, wizardSteps.length]);
 
   const validateWizardStep = (stepId: WizardStepId | undefined): string | null => {
-    if (!stepId) return null;
-    if (stepId === "parentSlot") {
-      if (!repeatSlotId) return "请选择父级列表变量。";
-    }
-    if (stepId === "parentTemplate") {
-      if (!repeatSlotId) return "请选择父级列表变量。";
-      if (showParentSection && !repeatPrototypeOptionKey) return "请选择父级行模板。";
-    }
-    if (stepId === "child") {
-      if (nestedCollectionOptions.length > 0 && !childItemPath.trim()) {
-        return "请选择要循环的子级列表。";
-      }
-      if (childPrototypeOptions.length > 0 && !childPrototypeOptionKey) {
-        return "请选择子级行模板。";
-      }
-    }
+    if (stepId === "parentSlot" && !repeatSlotId) return "请选择列表变量。";
     return null;
   };
 
@@ -350,271 +182,63 @@ export function RepeatRegionBindModal({
   };
 
   const isLastWizardStep = wizardStepIndex >= wizardSteps.length - 1;
-  const modalTitle = wizardMode && currentWizardStep
-    ? `绑定列表重复 · ${currentWizardStep.title}`
-    : "绑定列表重复";
+  const modalTitle = viewOnly
+    ? "查看列表绑定 · 字段映射"
+    : currentWizardStep
+      ? `绑定列表重复 · ${currentWizardStep.title}`
+      : "绑定列表重复";
 
-  const scopePreviewBlock =
-    showLoopScope && scopePreview ? (
-      <div className="repeat-region-bind-modal__scope-preview" role="status">
-        {scopePreview}
-      </div>
-    ) : null;
-
-  const scopeStepContent =
-    showLoopScope && onLoopScopeChange ? (
-      <Field label="循环范围">
-        <div className="repeat-region-bind-modal__scope-options" role="radiogroup" aria-label="循环范围">
-          {LOOP_SCOPE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={`repeat-region-bind-modal__scope-option${
-                loopScope === opt.value ? " repeat-region-bind-modal__scope-option--active" : ""
-              }`}
-              aria-checked={loopScope === opt.value}
-              role="radio"
-              onClick={() => onLoopScopeChange(opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </Field>
-    ) : null;
-
-  const parentSlotEchoCandidate =
-    repeatCandidate ??
-    collectionCandidates.find((c) => c.key === repeatSlotId) ??
-    collectionCandidates[0];
   const parentSlotStep = (
-    <Field label="父级列表变量" className="inspector-field--modal-table">
-      {parentListSlotLocked ? (
-        <p className="repeat-region-bind-modal__section-hint inspector__muted">
-          列表变量在进入绑定时已确定，此处仅回显结构，不可更换为其他列表。
-        </p>
-      ) : null}
-      {!parentSlotEchoCandidate ? (
+    <Field label="列表变量" className="inspector-field--modal-table">
+      {collectionCandidates.length === 0 ? (
         <p className="text-body-var-pill-modal__empty">当前没有可用的列表变量。</p>
       ) : (
-        <CollectionSlotPickerTable
-          candidates={
-            parentListSlotLocked ? [parentSlotEchoCandidate] : collectionCandidates
-          }
-          payload={payload}
-          selectedSlotId={parentSlotEchoCandidate.key}
-          onSelectSlotId={(slotId) => onSlotOrPrototypeChange(slotId, repeatPrototypeOptionKey)}
-          readOnly={parentListSlotLocked}
-        />
-      )}
-    </Field>
-  );
-
-  const parentPickerOptions = useMemo(
-    () => repeatPrototypeOptionsToPickerOptions(template, prototypeOptions),
-    [template, prototypeOptions]
-  );
-  const parentPickerContextRootIds = useMemo(() => {
-    if (parentListHostId.trim()) return [parentListHostId];
-    const hostId = prototypeOptions[0]?.hostId;
-    return hostId ? [hostId] : [];
-  }, [parentListHostId, prototypeOptions]);
-
-  const childPrototypeDisabledKeys = useMemo(
-    () => childRepeatPrototypeDisabledKeysForParent(selectedPrototypeOption, childPrototypeOptions),
-    [selectedPrototypeOption, childPrototypeOptions]
-  );
-
-  useEffect(() => {
-    if (!visible || !onChildPrototypeOptionKeyChange) return;
-    if (!childPrototypeOptionKey || !childPrototypeDisabledKeys.has(childPrototypeOptionKey)) return;
-    const firstEnabled = childPrototypeOptions.find((opt) => !childPrototypeDisabledKeys.has(opt.key));
-    if (firstEnabled) onChildPrototypeOptionKeyChange(firstEnabled.key);
-  }, [
-    visible,
-    childPrototypeOptionKey,
-    childPrototypeDisabledKeys,
-    childPrototypeOptions,
-    onChildPrototypeOptionKeyChange,
-  ]);
-
-  const parentRowTemplateStep =
-    showParentSection && parentPickerContextRootIds.length > 0 && parentPickerOptions.length > 0 ? (
-      <Field
-        label={canvasMode ? "父级重复范围" : "父级行模板（每条数据渲染成一行）"}
-        className="inspector-field--modal-table"
-      >
-        <p className="repeat-region-bind-modal__section-hint inspector__muted">
-          仅可选择父级循环容器下的第一层子块作为行模板；行模板内部子块会随行自动复制，无需单独选择。
-        </p>
-        <RepeatPrototypePickerTable
-          template={template}
-          contextRootIds={parentPickerContextRootIds}
-          contextLabelSuffix="父级列表循环容器"
-          options={parentPickerOptions}
-          selectedOptionKey={repeatPrototypeOptionKey}
-          onSelectOptionKey={(key) => {
-            onRepeatPrototypeOptionKeyChange(key);
-            onSlotOrPrototypeChange(repeatSlotId, key);
-          }}
-          readOnly={rowTemplateLocked}
-          ariaLabel="可选父级行模板"
-        />
-        {rowTemplateLocked ? (
-          <p className="repeat-region-bind-modal__row-template-lock-hint">
-            父级行模板已在列表宿主绑定；请选中父级宿主容器后再更换。
-          </p>
-        ) : null}
-      </Field>
-    ) : showParentSection ? (
-      <Field label={canvasMode ? "父级重复范围" : "父级行模板（每条数据渲染成一行）"}>
-        <p className="repeat-region-bind-modal__empty-hint">当前没有可选的父级行模板。</p>
-      </Field>
-    ) : null;
-
-  const childPickerCandidates = useMemo((): RepeatCollectionCandidate[] => {
-    if (!repeatCandidate) return [];
-    return [
-      {
-        key: repeatCandidate.key,
-        slotId: repeatCandidate.slotId,
-        label: repeatCandidate.label,
-        itemFields: repeatCandidate.itemFields,
-        minItems: repeatCandidate.minItems,
-        maxItems: repeatCandidate.maxItems,
-        description: repeatCandidate.description,
-      },
-    ];
-  }, [repeatCandidate]);
-
-  const childCollectionStep = (
-    <Field label="子级列表变量" className="inspector-field--modal-table">
-      {!repeatCandidate ? (
-        <p className="repeat-region-bind-modal__empty-hint">请先在「父级列表」步骤选择父级列表变量。</p>
-      ) : !hasNestedCollectionInItemFields(repeatCandidate.itemFields) ? (
-        <p className="repeat-region-bind-modal__empty-hint">
-          当前父级列表项下没有可循环的子列表。请更换父级变量或调整循环范围。
-        </p>
-      ) : (
-        <CollectionSlotPickerTable
-          candidates={childPickerCandidates}
-          payload={payload}
-          selectedSlotId={repeatSlotId}
-          onSelectSlotId={() => {}}
-          nestedCollectionSelection={{
-            selectedPath: childItemPath,
-            onSelectPath: (path) => onChildItemPathChange?.(path),
-          }}
-        />
-      )}
-    </Field>
-  );
-
-  const childRowTemplateStep = (
-    <>
-      {loopScope === "childOnly" && onAnchorItemIndexChange ? (
-        <Field label="子级数据来源">
-          <div className="repeat-region-bind-modal__anchor-row">
-            <span className="repeat-region-bind-modal__anchor-label">锚定父级列表中的某一项</span>
-            <ShopSelect
-              value={String(anchorItemIndex)}
-              onChange={(value) => onAnchorItemIndexChange(Number(value))}
-            >
-              <ShopSelect.Option value="0">父级列表第 1 项</ShopSelect.Option>
-              <ShopSelect.Option value="1">父级列表第 2 项</ShopSelect.Option>
-              <ShopSelect.Option value="2">父级列表第 3 项</ShopSelect.Option>
-            </ShopSelect>
-          </div>
-        </Field>
-      ) : loopScope === "parentAndChild" ? (
         <>
           <p className="repeat-region-bind-modal__section-hint inspector__muted">
-            循环上下文：当前父级项（继承父级列表循环）
+            选择一个列表变量作为当前容器的循环数据源；若当前容器在某列表循环行内，可直接选「父项的子列表」实现嵌套复制。
           </p>
-          {selectedChildNested ? (
-            <p className="repeat-region-bind-modal__child-bind-summary" role="status">
-              子级循环宿主：
-              {childPrototypeOptions.find((o) => o.key === childPrototypeOptionKey)?.label ??
-                "（请选择行模板）"}
-              · 行模板：
-              {childPrototypeOptions.find((o) => o.key === childPrototypeOptionKey)
-                ?.prototypeChildIds
-                .map((cid) => template.blockMeta?.[cid]?.name?.trim() || cid)
-                .join("、") || "—"}
-              · 变量路径：{childItemPath || "—"}
-            </p>
-          ) : null}
-        </>
-      ) : null}
-      {onChildPrototypeOptionKeyChange && childPrototypeOptions.length > 0 ? (
-        <Field label="子级行模板" className="inspector-field--modal-table">
-          <p className="repeat-region-bind-modal__section-hint inspector__muted">
-            在父级行模板下的区块树中点选；单块仅复制该块，layout/grid 则复制该容器及其子级。循环容器由所选行自动确定。
-          </p>
-          <RepeatPrototypePickerTable
-            template={template}
-            contextRootIds={parentPrototypeChildIds}
-            contextLabelSuffix="父级行模板"
-            options={childPrototypeOptions}
-            selectedOptionKey={childPrototypeOptionKey}
-            onSelectOptionKey={onChildPrototypeOptionKeyChange}
-            disabledOptionKeys={childPrototypeDisabledKeys}
-            ariaLabel="可选子级行模板"
+          <CollectionSlotPickerTable
+            candidates={collectionCandidates}
+            payload={payload}
+            selectedSlotId={repeatSlotId}
+            onSelectSlotId={onSlotChange}
           />
-          {childPrototypeDisabledKeys.size > 0 ? (
-            <p className="repeat-region-bind-modal__row-template-lock-hint">
-              与父级行模板相同的选项已置灰，不可再选为子级行模板。
-            </p>
-          ) : null}
-        </Field>
-      ) : null}
-    </>
+        </>
+      )}
+    </Field>
   );
 
   const parentMappingStep =
-    showParentMapping && repeatCandidate && parentTargetFieldOptions.length > 0 ? (
-      <FieldMappingSplitPanel
-        visible={visible}
-        template={template}
-        payload={payload}
-        repeatCandidate={repeatCandidate}
-        itemFields={parentScalarFields}
-        prototypeChildIds={selectedPrototypeOption?.prototypeChildIds ?? []}
-        targetFieldOptions={parentTargetFieldOptions}
-        mappingDraft={parentMappingDraft}
-        onMappingDraftChange={onParentMappingDraftChange}
-        mappingAriaLabel="父级列表项字段映射"
-      />
-    ) : (
-      <p className="repeat-region-bind-modal__empty-hint">
-        行模板内没有可映射的父级业务字段，将沿用模板已有变量绑定。
-      </p>
-    );
-
-  const childMappingStep =
-    showChildMapping && repeatCandidate && onChildMappingDraftChange ? (
+    repeatCandidate && parentTargetFieldOptions.length > 0 ? (
       <>
-        {loopScope === "parentAndChild" ? (
-          <p className="repeat-region-bind-modal__section-hint inspector__muted">
-            已选「父级与子级都循环」时，请完成子级字段映射；SKU 等子列表字段仅在此步骤配置。
+        {parentRowTemplateLabel ? (
+          <p className="repeat-region-bind-modal__section-hint inspector__muted" role="status">
+            当前行模板：{parentRowTemplateLabel}（画布选中区块，不在此弹窗中更换）
+          </p>
+        ) : null}
+        {viewOnly ? (
+          <p className="repeat-region-bind-modal__section-hint inspector__muted" role="status">
+            列表变量：{repeatCandidate.label}（{repeatCandidate.slotId}）· 只读查看，修改请在列表宿主上点击「编辑绑定」。
           </p>
         ) : null}
         <FieldMappingSplitPanel
-        visible={visible}
-        template={template}
-        payload={payload}
-        repeatCandidate={repeatCandidate}
-        itemFields={childMappingItemFields}
-        prototypeChildIds={childPrototypeChildIds}
-        targetFieldOptions={childTargetFieldOptions}
-        mappingDraft={childMappingDraft}
-        onMappingDraftChange={onChildMappingDraftChange}
-        mappingAriaLabel="子级列表项字段映射"
+          visible={visible}
+          template={template}
+          payload={payload}
+          repeatCandidate={repeatCandidate}
+          itemFields={mappingScalarFields}
+          enclosingParentRepeat={enclosingParentRepeat}
+          prototypeChildIds={parentPrototypeChildIds}
+          targetFieldOptions={parentTargetFieldOptions}
+          mappingDraft={parentMappingDraft}
+          onMappingDraftChange={onParentMappingDraftChange}
+          mappingAriaLabel="列表项字段映射"
+          readOnly={viewOnly}
         />
       </>
     ) : (
       <p className="repeat-region-bind-modal__empty-hint">
-        子级行模板内没有可映射的业务字段，将沿用模板已有变量绑定。
+        行模板内没有可映射的业务字段，将沿用模板已有变量绑定。
       </p>
     );
 
@@ -622,21 +246,8 @@ export function RepeatRegionBindModal({
     switch (currentWizardStep?.id) {
       case "parentSlot":
         return parentSlotStep;
-      case "scope":
-        return scopeStepContent;
-      case "parentTemplate":
-        return parentRowTemplateStep;
-      case "child":
-        return (
-          <>
-            {childCollectionStep}
-            {childRowTemplateStep}
-          </>
-        );
       case "parentMap":
         return parentMappingStep;
-      case "childMap":
-        return childMappingStep;
       default:
         return null;
     }
@@ -650,73 +261,87 @@ export function RepeatRegionBindModal({
       destroyOnClose
       maskClosable={false}
       keyboard
-      wrapClassName={`text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap repeat-region-bind-modal-wrap${
-        wizardMode ? " repeat-region-bind-modal-wrap--wizard" : ""
+      wrapClassName={`text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap repeat-region-bind-modal-wrap repeat-region-bind-modal-wrap--wizard${
+        viewOnly ? " repeat-region-bind-modal-wrap--view-only" : ""
       }`}
       bodyStyle={{ paddingTop: 16, paddingRight: 24, paddingBottom: 24, paddingLeft: 24 }}
       onCancel={onClose}
       footer={
         <div className="repeat-region-bind-modal__footer">
-          <div className="repeat-region-bind-modal__footer-start">
-            {hasCurrentRepeat && onRemove ? (
-              <ShopSecondaryButton
-                htmlType="button"
-                onClick={onRemove}
-                title="将物化为静态预览行，并清除列表循环"
-              >
-                解除列表绑定
-              </ShopSecondaryButton>
-            ) : null}
-          </div>
+          {!viewOnly ? (
+            <div className="repeat-region-bind-modal__footer-start">
+              {hasCurrentRepeat && onRemove ? (
+                <ShopSecondaryButton
+                  htmlType="button"
+                  onClick={onRemove}
+                  title="选择解除方式：保留全部展开行，或只保留行模板"
+                >
+                  解除列表绑定
+                </ShopSecondaryButton>
+              ) : null}
+            </div>
+          ) : null}
           <div className="shop-section-modal__footer-actions repeat-region-bind-modal__footer-actions">
-            <ShopSecondaryButton htmlType="button" onClick={onClose}>
-              取消
-            </ShopSecondaryButton>
-            {wizardMode && wizardStepIndex > 0 ? (
-              <ShopSecondaryButton
-                htmlType="button"
-                onClick={() => setWizardStepIndex((i) => Math.max(0, i - 1))}
-              >
-                上一步
-              </ShopSecondaryButton>
-            ) : null}
-            {wizardMode && !isLastWizardStep ? (
-              <ShopPrimaryButton htmlType="button" onClick={goNextWizardStep}>
-                下一步
+            {viewOnly ? (
+              <ShopPrimaryButton htmlType="button" onClick={onClose}>
+                关闭
               </ShopPrimaryButton>
             ) : (
-              <ShopPrimaryButton
-                htmlType="button"
-                onClick={() => {
-                  if (wizardMode) {
-                    const err = validateWizardStep(currentWizardStep?.id);
-                    if (err) {
-                      window.alert(err);
-                      return;
-                    }
-                  }
-                  onApply();
-                }}
-              >
-                应用
-              </ShopPrimaryButton>
+              <>
+                <ShopSecondaryButton htmlType="button" onClick={onClose}>
+                  取消
+                </ShopSecondaryButton>
+                {wizardStepIndex > 0 ? (
+                  <ShopSecondaryButton
+                    htmlType="button"
+                    onClick={() => setWizardStepIndex((i) => Math.max(0, i - 1))}
+                  >
+                    上一步
+                  </ShopSecondaryButton>
+                ) : null}
+                {!isLastWizardStep ? (
+                  <ShopPrimaryButton htmlType="button" onClick={goNextWizardStep}>
+                    下一步
+                  </ShopPrimaryButton>
+                ) : (
+                  <ShopPrimaryButton
+                    htmlType="button"
+                    onClick={() => {
+                      const err = validateWizardStep(currentWizardStep?.id);
+                      if (err) {
+                        window.alert(err);
+                        return;
+                      }
+                      onApply();
+                    }}
+                  >
+                    应用
+                  </ShopPrimaryButton>
+                )}
+              </>
             )}
           </div>
         </div>
       }
     >
       <div
-        className={`text-body-inline-var-modal repeat-region-bind-modal${
-          wizardMode ? " repeat-region-bind-modal--wizard" : ""
+        className={`text-body-inline-var-modal repeat-region-bind-modal repeat-region-bind-modal--wizard${
+          viewOnly ? " repeat-region-bind-modal--view-only" : ""
         }`}
       >
-        {scopePreviewBlock}
-        <>
-          <WizardStepNav steps={wizardSteps} currentIndex={wizardStepIndex} />
-          <div className="repeat-region-bind-modal__wizard-body">{renderWizardStepBody()}</div>
-        </>
+        {viewOnly ? null : <WizardStepNav steps={wizardSteps} currentIndex={wizardStepIndex} />}
+        <div className="repeat-region-bind-modal__wizard-body">{renderWizardStepBody()}</div>
       </div>
     </ShopSectionModal>
+  );
+}
+
+/** 字段映射分栏列头（左右小标题，与区块树顶栏风格对齐） */
+function MappingSplitColumnHead({ title }: { title: string }) {
+  return (
+    <div className="repeat-region-bind-modal__mapping-col-head">
+      <span className="repeat-region-bind-modal__mapping-col-title">{title}</span>
+    </div>
   );
 }
 
@@ -726,21 +351,25 @@ function FieldMappingSplitPanel({
   payload,
   repeatCandidate,
   itemFields,
+  enclosingParentRepeat,
   prototypeChildIds,
   targetFieldOptions,
   mappingDraft,
   onMappingDraftChange,
+  readOnly = false,
 }: {
   visible: boolean;
   template: EmailTemplate;
   payload: EmailPayload;
   repeatCandidate: RepeatCollectionCandidate;
   itemFields: RepeatCollectionCandidate["itemFields"];
+  enclosingParentRepeat: RepeatRegionBinding | null;
   prototypeChildIds: string[];
   targetFieldOptions: RepeatTargetFieldOption[];
   mappingDraft: Record<string, string>;
   onMappingDraftChange: (draft: Record<string, string>) => void;
   mappingAriaLabel?: string;
+  readOnly?: boolean;
 }) {
   const navEntries = useMemo(
     () => flattenRepeatTargetFieldsForNav(template, prototypeChildIds, targetFieldOptions),
@@ -791,88 +420,100 @@ function FieldMappingSplitPanel({
 
   return (
     <div className="repeat-region-bind-modal__mapping-split">
-      <nav className="repeat-region-bind-modal__mapping-tabs" aria-label="模板字段">
-        {visibleNavEntries.map((entry) => {
-          if (entry.kind === "group") {
-            const isExpanded = expandedGroups.has(entry.key);
-            const mapped = repeatTargetGroupHasChildMapping(entry.key, navEntries, mappingDraft);
+      <div className="repeat-region-bind-modal__mapping-col repeat-region-bind-modal__mapping-col--targets">
+        <MappingSplitColumnHead title="行模板可映射项" />
+        <nav className="repeat-region-bind-modal__mapping-tabs" aria-label="行模板可映射项">
+          {visibleNavEntries.map((entry) => {
+            if (entry.kind === "group") {
+              const isExpanded = expandedGroups.has(entry.key);
+              const mapped = repeatTargetGroupHasChildMapping(entry.key, navEntries, mappingDraft);
+              const isContainer = entry.tier === "container";
+              return (
+                <div
+                  key={entry.key}
+                  className={`repeat-region-bind-modal__mapping-tab-row${
+                    isContainer
+                      ? " repeat-region-bind-modal__mapping-tab-row--block"
+                      : " repeat-region-bind-modal__mapping-tab-row--content-block"
+                  }`}
+                  style={{ ["--mapping-depth" as string]: String(entry.depth) }}
+                >
+                  <button
+                    type="button"
+                    className="repeat-region-bind-modal__mapping-expand"
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? "折叠子级" : "展开子级"}
+                    onClick={() => toggleGroup(entry.key)}
+                  >
+                    {isExpanded ? "▼" : "▶"}
+                  </button>
+                  <button
+                    type="button"
+                    className={`repeat-region-bind-modal__mapping-tab repeat-region-bind-modal__mapping-tab--group${
+                      isContainer
+                        ? " repeat-region-bind-modal__mapping-tab--block"
+                        : " repeat-region-bind-modal__mapping-tab--content-block"
+                    }`}
+                    title={entry.label}
+                    onClick={() => toggleGroup(entry.key)}
+                  >
+                    <span className="repeat-region-bind-modal__mapping-tab-label">{entry.label}</span>
+                    {mapped ? (
+                      <span className="repeat-region-bind-modal__mapping-tab-dot" aria-hidden />
+                    ) : null}
+                  </button>
+                </div>
+              );
+            }
+
+            const isActive = entry.key === activeTarget.key;
+            const mapped = Boolean(mappingDraft[entry.key]?.trim());
             return (
               <div
                 key={entry.key}
-                className="repeat-region-bind-modal__mapping-tab-row"
+                className="repeat-region-bind-modal__mapping-tab-row repeat-region-bind-modal__mapping-tab-row--config"
                 style={{ ["--mapping-depth" as string]: String(entry.depth) }}
               >
+                <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
                 <button
                   type="button"
-                  className="repeat-region-bind-modal__mapping-expand"
-                  aria-expanded={isExpanded}
-                  aria-label={isExpanded ? "折叠子字段" : "展开子字段"}
-                  onClick={() => toggleGroup(entry.key)}
-                >
-                  {isExpanded ? "▼" : "▶"}
-                </button>
-                <button
-                  type="button"
-                  className="repeat-region-bind-modal__mapping-tab repeat-region-bind-modal__mapping-tab--group"
-                  title={entry.label}
-                  onClick={() => toggleGroup(entry.key)}
+                  className={`repeat-region-bind-modal__mapping-tab repeat-region-bind-modal__mapping-tab--config${
+                    isActive ? " repeat-region-bind-modal__mapping-tab--active" : ""
+                  }`}
+                  title={entry.bindPath}
+                  onClick={() => setActiveTargetKey(entry.key)}
                 >
                   <span className="repeat-region-bind-modal__mapping-tab-label">{entry.label}</span>
                   {mapped ? (
                     <span className="repeat-region-bind-modal__mapping-tab-dot" aria-hidden />
                   ) : null}
+                  <span className="repeat-region-bind-modal__mapping-kind-tag repeat-region-bind-modal__mapping-kind-tag--config">
+                    配置项
+                  </span>
                 </button>
               </div>
             );
-          }
-
-          const isActive = entry.key === activeTarget.key;
-          const mapped = Boolean(mappingDraft[entry.key]?.trim());
-          return (
-            <div
-              key={entry.key}
-              className="repeat-region-bind-modal__mapping-tab-row"
-              style={{ ["--mapping-depth" as string]: String(entry.depth) }}
-            >
-              <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
-              <button
-                type="button"
-                className={`repeat-region-bind-modal__mapping-tab${
-                  isActive ? " repeat-region-bind-modal__mapping-tab--active" : ""
-                }`}
-                title={`${entry.label}\n${entry.bindPath}`}
-                onClick={() => setActiveTargetKey(entry.key)}
-              >
-                <span className="repeat-region-bind-modal__mapping-tab-label">{entry.label}</span>
-                {mapped ? (
-                  <span className="repeat-region-bind-modal__mapping-tab-dot" aria-hidden />
-                ) : null}
-              </button>
-            </div>
-          );
-        })}
-      </nav>
-      <div className="repeat-region-bind-modal__mapping-panel">
-        <div className="repeat-region-bind-modal__mapping-panel-head">
-          <span className="repeat-region-bind-modal__mapping-panel-target">
-            {repeatMappingTargetLabel(template, activeTarget.blockId, activeTarget.bindPath)}
-          </span>
-          <span className="repeat-region-bind-modal__mapping-panel-current">
-            当前映射：{mappedFieldLabel(itemFields, mappedKey)}
-          </span>
+          })}
+        </nav>
+      </div>
+      <div className="repeat-region-bind-modal__mapping-col repeat-region-bind-modal__mapping-col--source">
+        <MappingSplitColumnHead title="变量数据源" />
+        <div className="repeat-region-bind-modal__mapping-panel">
+          <ItemFieldMappingPickerTable
+            payload={payload}
+            repeatCandidate={repeatCandidate}
+            enclosingParentRepeat={enclosingParentRepeat}
+            itemFields={itemFields}
+            mappedKey={mappedKey}
+            readOnly={readOnly}
+            onSelectSource={(sourceKey) =>
+              onMappingDraftChange({
+                ...mappingDraft,
+                [activeTarget.key]: sourceKey,
+              })
+            }
+          />
         </div>
-        <ItemFieldMappingPickerTable
-          payload={payload}
-          slotId={repeatCandidate.slotId}
-          itemFields={itemFields}
-          mappedKey={mappedKey}
-          onSelectSource={(sourceKey) =>
-            onMappingDraftChange({
-              ...mappingDraft,
-              [activeTarget.key]: sourceKey,
-            })
-          }
-        />
       </div>
     </div>
   );
@@ -891,20 +532,6 @@ function formatSlotNestedGroupExample(
   if (!Array.isArray(nested)) return "—";
   const count = nested.filter((item) => item && typeof item === "object" && !Array.isArray(item)).length;
   return count === 0 ? "0 项" : `${count} 项`;
-}
-
-function formatSlotFieldPathExample(
-  payload: EmailPayload,
-  slotId: string,
-  path: string
-): string {
-  const raw = payload.values?.[slotId];
-  if (!Array.isArray(raw) || raw.length === 0) return "—";
-  const first = raw[0];
-  if (!first || typeof first !== "object" || Array.isArray(first)) return "—";
-  const row = first as Record<string, unknown>;
-  const value = path.includes(".") ? readCatalogSourceValue(row, path) : row[path];
-  return formatSourceFieldExample(value);
 }
 
 function CollectionSlotPickerTable({
@@ -927,58 +554,8 @@ function CollectionSlotPickerTable({
   /** 仅展示已选列表（无单选、不可切换槽） */
   readOnly?: boolean;
 }) {
-  const [expandedSlotIds, setExpandedSlotIds] = useState<Set<string>>(() => new Set());
-  const [expandedGroupsBySlot, setExpandedGroupsBySlot] = useState<Record<string, Set<string>>>({});
   const pickNestedChild = Boolean(nestedCollectionSelection);
   const slotReadOnly = readOnly && !pickNestedChild;
-
-  useEffect(() => {
-    const selected = candidates.find((c) => c.key === selectedSlotId) ?? candidates[0];
-    if (!selected || !hasNestedCollectionInItemFields(selected.itemFields)) return;
-    const slotKey = selected.key;
-    setExpandedSlotIds((prev) => {
-      if (prev.has(slotKey)) return prev;
-      const next = new Set(prev);
-      next.add(slotKey);
-      return next;
-    });
-    setExpandedGroupsBySlot((prev) => {
-      const groupPaths = new Set(defaultExpandedCollectionGroupPaths(selected.itemFields));
-      if (nestedCollectionSelection?.selectedPath) {
-        groupPaths.add(nestedCollectionSelection.selectedPath);
-      }
-      if (prev[slotKey]) return prev;
-      return { ...prev, [slotKey]: groupPaths };
-    });
-  }, [selectedSlotId, candidates, nestedCollectionSelection?.selectedPath]);
-
-  const groupsForSlot = (slotId: string, itemFields: RepeatCollectionCandidate["itemFields"]) =>
-    expandedGroupsBySlot[slotId] ?? defaultExpandedCollectionGroupPaths(itemFields);
-
-  const toggleSlotSchema = (slotId: string, itemFields: RepeatCollectionCandidate["itemFields"]) => {
-    setExpandedSlotIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(slotId)) {
-        next.delete(slotId);
-        return next;
-      }
-      next.add(slotId);
-      setExpandedGroupsBySlot((groups) => ({
-        ...groups,
-        [slotId]: defaultExpandedCollectionGroupPaths(itemFields),
-      }));
-      return next;
-    });
-  };
-
-  const toggleSlotGroup = (slotId: string, groupKey: string) => {
-    setExpandedGroupsBySlot((prev) => {
-      const current = new Set(prev[slotId] ?? []);
-      if (current.has(groupKey)) current.delete(groupKey);
-      else current.add(groupKey);
-      return { ...prev, [slotId]: current };
-    });
-  };
 
   const radioGroupName = pickNestedChild
     ? "repeat-region-nested-child-collection"
@@ -1015,17 +592,11 @@ function CollectionSlotPickerTable({
       ]}
       body={candidates.flatMap((candidate) => {
             const selected = candidate.key === selectedSlotId;
-            const example = formatCollectionSlotListSummary(
-              payload,
-              candidate.slotId,
-              candidate.itemFields
-            );
-            const hasNested = hasNestedCollectionInItemFields(candidate.itemFields);
-            const schemaExpanded = expandedSlotIds.has(candidate.key);
-            const groupExpanded = groupsForSlot(candidate.key, candidate.itemFields);
-            const previewEntries = hasNested
-              ? flattenNestedCollectionFieldsPreview(candidate.itemFields, groupExpanded)
-              : [];
+            const isParentNested = Boolean(candidate.itemPath?.trim());
+            const example = formatRepeatCollectionCandidateListSummary(payload, candidate);
+            const hasNested =
+              !isParentNested && hasNestedCollectionInItemFields(candidate.itemFields);
+            const nestedCount = countNestedCollectionsInItemFields(candidate.itemFields);
 
             const mainRow = (
               <tr
@@ -1057,23 +628,8 @@ function CollectionSlotPickerTable({
                 tabIndex={pickNestedChild || slotReadOnly ? undefined : 0}
                 role={pickNestedChild || slotReadOnly ? undefined : "radio"}
                 aria-checked={pickNestedChild || slotReadOnly ? undefined : selected}
-                aria-expanded={hasNested ? schemaExpanded : undefined}
               >
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-                  {hasNested ? (
-                    <button
-                      type="button"
-                      className="repeat-region-bind-modal__mapping-expand"
-                      aria-expanded={schemaExpanded}
-                      aria-label={schemaExpanded ? "折叠子列表结构" : "展开子列表结构"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSlotSchema(candidate.key, candidate.itemFields);
-                      }}
-                    >
-                      {schemaExpanded ? "▼" : "▶"}
-                    </button>
-                  ) : null}
                   {pickNestedChild || slotReadOnly ? (
                     <span
                       className="repeat-region-bind-modal__mapping-expand-placeholder"
@@ -1089,13 +645,42 @@ function CollectionSlotPickerTable({
                   )}
                 </td>
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
-                  {candidate.label}
+                  <span title={isParentNested ? candidate.description : undefined}>
+                    {candidate.label}
+                  </span>
                 </td>
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-                  <code>{candidate.slotId}</code>
+                  {isParentNested ? (
+                    <span className="repeat-region-bind-modal__slot-id-stack">
+                      <code>{candidate.itemPath}</code>
+                      <span
+                        className="repeat-region-bind-modal__slot-id-parent inspector__muted"
+                        title={`父列表变量 ${candidate.slotId}`}
+                      >
+                        ← {candidate.parentSlotLabel ?? candidate.slotId}
+                      </span>
+                    </span>
+                  ) : (
+                    <code>{candidate.slotId}</code>
+                  )}
                 </td>
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">
-                  列表
+                  <span className="repeat-region-bind-modal__slot-type-label">列表</span>
+                  {isParentNested ? (
+                    <span
+                      className="repeat-region-bind-modal__parent-nested-tag"
+                      title={
+                        candidate.description ??
+                        `父列表「${candidate.parentSlotLabel ?? candidate.slotId}」下的子列表列`
+                      }
+                    >
+                      父项子列表
+                    </span>
+                  ) : !pickNestedChild && nestedCount > 0 ? (
+                    <span className="repeat-region-bind-modal__slot-nested-count-tag">
+                      含 {nestedCount} 个子列表
+                    </span>
+                  ) : null}
                 </td>
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value" title={example}>
                   {example}
@@ -1103,382 +688,117 @@ function CollectionSlotPickerTable({
               </tr>
             );
 
-            if (!hasNested || !schemaExpanded) {
+            if (!pickNestedChild || !hasNested) {
               return [mainRow];
             }
 
-            const detailRows = previewEntries.map((entry) => {
-              if (entry.kind === "group") {
-                const isGroupOpen = groupExpanded.has(entry.path);
-                const pathSelected =
-                  pickNestedChild && nestedCollectionSelection?.selectedPath === entry.path;
-                const groupLabel = entry.field.label?.trim() || entry.path;
+            const childSubListRows = listNestedCollectionFieldsInItemFields(candidate.itemFields).map(
+              (field) => {
+                const path = field.key;
+                const pathSelected = nestedCollectionSelection?.selectedPath === path;
+                const groupLabel = field.label?.trim() || path;
                 return (
                   <tr
-                    key={`${candidate.key}:group:${entry.path}`}
-                    className={`text-body-var-pill-modal__row text-body-var-pill-modal__row--group${
+                    key={`${candidate.key}:nested:${path}`}
+                    className={`text-body-var-pill-modal__row text-body-var-pill-modal__row--group text-body-var-pill-modal__row--indented${
                       pathSelected ? " text-body-var-pill-modal__row--selected" : ""
                     }`}
-                    style={{ ["--picker-depth" as string]: String(entry.depth) }}
-                    onClick={
-                      pickNestedChild
-                        ? () => nestedCollectionSelection?.onSelectPath(entry.path)
-                        : undefined
-                    }
-                    onKeyDown={
-                      pickNestedChild
-                        ? (e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              nestedCollectionSelection?.onSelectPath(entry.path);
-                            }
-                          }
-                        : undefined
-                    }
-                    tabIndex={pickNestedChild ? 0 : undefined}
-                    role={pickNestedChild ? "radio" : undefined}
-                    aria-checked={pickNestedChild ? pathSelected : undefined}
+                    style={{ ["--picker-depth" as string]: "1" }}
+                    onClick={() => nestedCollectionSelection?.onSelectPath(path)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        nestedCollectionSelection?.onSelectPath(path);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="radio"
+                    aria-checked={pathSelected}
                   >
                     <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-                      <button
-                        type="button"
-                        className="repeat-region-bind-modal__mapping-expand"
-                        aria-expanded={isGroupOpen}
-                        aria-label={isGroupOpen ? "折叠子字段" : "展开子字段"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSlotGroup(candidate.key, entry.path);
-                        }}
-                      >
-                        {isGroupOpen ? "▼" : "▶"}
-                      </button>
-                      {pickNestedChild ? (
-                        <SelectablePickerRadioCell
-                          name={radioGroupName}
-                          checked={Boolean(pathSelected)}
-                          label={`选择 ${groupLabel}`}
-                          onChange={() => nestedCollectionSelection?.onSelectPath(entry.path)}
-                        />
-                      ) : null}
+                      <span
+                        className="repeat-region-bind-modal__mapping-expand-placeholder"
+                        aria-hidden
+                      />
+                      <SelectablePickerRadioCell
+                        name={radioGroupName}
+                        checked={Boolean(pathSelected)}
+                        label={`选择 ${groupLabel}`}
+                        onChange={() => nestedCollectionSelection?.onSelectPath(path)}
+                      />
                     </td>
                     <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
-                      {entry.field.label?.trim() || entry.path}
+                      {groupLabel}
                     </td>
                     <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-                      <code>{entry.path}</code>
+                      <code>{path}</code>
                     </td>
                     <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">
-                      列表
+                      <span className="repeat-region-bind-modal__nested-type-tag">子列表</span>
                     </td>
                     <td
                       className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value"
-                      title={formatSlotNestedGroupExample(payload, candidate.slotId, entry.path)}
+                      title={formatSlotNestedGroupExample(payload, candidate.slotId, path)}
                     >
-                      {formatSlotNestedGroupExample(payload, candidate.slotId, entry.path)}
+                      {formatSlotNestedGroupExample(payload, candidate.slotId, path)}
                     </td>
                   </tr>
                 );
               }
+            );
 
-              return (
-                <tr
-                  key={`${candidate.key}:leaf:${entry.path}`}
-                  className="text-body-var-pill-modal__row text-body-var-pill-modal__row--nested"
-                  style={{ ["--picker-depth" as string]: String(entry.depth) }}
-                >
-                  <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-                    <span
-                      className="repeat-region-bind-modal__mapping-expand-placeholder"
-                      aria-hidden
-                    />
-                  </td>
-                  <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
-                    {entry.field.label?.trim() || entry.path}
-                  </td>
-                  <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-                    <code>{entry.path}</code>
-                  </td>
-                  <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">
-                    {collectionItemFieldValueTypeLabel(entry.field.valueType)}
-                  </td>
-                  <td
-                    className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value"
-                    title={formatSlotFieldPathExample(payload, candidate.slotId, entry.path)}
-                  >
-                    {formatSlotFieldPathExample(payload, candidate.slotId, entry.path)}
-                  </td>
-                </tr>
-              );
-            });
-
-            return [mainRow, ...detailRows];
+            return [mainRow, ...childSubListRows];
           })}
-    />
-  );
-}
-
-function RepeatPrototypePickerTable({
-  template,
-  contextRootIds,
-  contextLabelSuffix,
-  options,
-  selectedOptionKey,
-  onSelectOptionKey,
-  disabledOptionKeys,
-  readOnly = false,
-  ariaLabel,
-}: {
-  template: EmailTemplate;
-  contextRootIds: string[];
-  contextLabelSuffix: string;
-  options: RepeatPrototypePickerOption[] | ChildRepeatPrototypeOption[];
-  selectedOptionKey: string;
-  onSelectOptionKey: (key: string) => void;
-  /** 与父级行模板等价的 optionKey：置灰且不可选（仅子级行模板步骤传入） */
-  disabledOptionKeys?: ReadonlySet<string>;
-  readOnly?: boolean;
-  ariaLabel: string;
-}) {
-  const allRows = useMemo(
-    () => flattenRepeatPrototypePickerRows(template, contextRootIds, contextLabelSuffix, options),
-    [template, contextRootIds, contextLabelSuffix, options]
-  );
-  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(() =>
-    defaultExpandedRepeatPrototypePickerBranches(allRows, template)
-  );
-
-  useEffect(() => {
-    setExpandedBranches(defaultExpandedRepeatPrototypePickerBranches(allRows, template));
-  }, [allRows, template]);
-
-  useEffect(() => {
-    const selected = options.find((opt) => opt.key === selectedOptionKey);
-    const anchorId = selected?.prototypeChildIds[selected.prototypeChildIds.length - 1];
-    if (!anchorId) return;
-    const ancestorKeys = repeatPrototypePickerBranchKeysToBlock(
-      template,
-      contextRootIds,
-      anchorId
-    );
-    if (ancestorKeys.length === 0) return;
-    setExpandedBranches((prev) => {
-      const next = new Set(prev);
-      ancestorKeys.forEach((key) => next.add(key));
-      return next;
-    });
-  }, [template, contextRootIds, options, selectedOptionKey]);
-
-  const visibleRows = useMemo(
-    () => visibleRepeatPrototypePickerRows(allRows, expandedBranches),
-    [allRows, expandedBranches]
-  );
-
-  const toggleBranch = (rowKey: string) => {
-    setExpandedBranches((prev) => {
-      const next = new Set(prev);
-      if (next.has(rowKey)) next.delete(rowKey);
-      else next.add(rowKey);
-      return next;
-    });
-  };
-  const treeRowClass = (depth: number, extra = "") =>
-    `text-body-var-pill-modal__row${depth > 0 ? " text-body-var-pill-modal__row--nested" : ""}${extra}`;
-
-  function renderRepeatPrototypePickerRow(row: ChildRepeatPrototypePickerRow) {
-    if (row.kind === "context") {
-      return (
-        <tr
-          key={row.rowKey}
-          className="text-body-var-pill-modal__row text-body-var-pill-modal__row--context"
-          style={{ ["--picker-depth" as string]: String(row.depth) }}
-        >
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-            <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
-          </td>
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label" colSpan={4}>
-            {row.label}
-          </td>
-        </tr>
-      );
-    }
-
-    if (row.kind === "block") {
-      const isExpanded = !row.expandable || expandedBranches.has(row.branchKey);
-      return (
-        <tr
-          key={row.rowKey}
-          className={treeRowClass(row.depth, " text-body-var-pill-modal__row--group")}
-          style={{ ["--picker-depth" as string]: String(row.depth) }}
-        >
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-            {row.expandable ? (
-              <button
-                type="button"
-                className="repeat-region-bind-modal__mapping-expand"
-                aria-expanded={isExpanded}
-                aria-label={isExpanded ? "折叠子区块" : "展开子区块"}
-                onClick={() => toggleBranch(row.branchKey)}
-              >
-                {isExpanded ? "▼" : "▶"}
-              </button>
-            ) : (
-              <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
-            )}
-          </td>
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
-            {row.label}
-            {repeatPrototypePickerCanonicalHint(template, row.blockId) ? (
-              <span className="repeat-region-bind-modal__prototype-hint inspector__muted">
-                {repeatPrototypePickerCanonicalHint(template, row.blockId)}
-              </span>
-            ) : null}
-          </td>
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-            <code className="repeat-region-bind-modal__block-id-ellipsis" title={row.blockId}>
-              {row.blockId}
-            </code>
-          </td>
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">{row.typeLabel}</td>
-          <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value inspector__muted">
-            不可单独选择（随行模板自动复制）
-          </td>
-        </tr>
-      );
-    }
-
-    const selected = row.optionKey === selectedOptionKey;
-    const disabled = Boolean(disabledOptionKeys?.has(row.optionKey));
-    const selectable = !readOnly && !disabled;
-    const collapseKey = row.branchKey;
-    const isExpanded = !collapseKey || expandedBranches.has(collapseKey);
-    const hint = disabled
-      ? "该行模板已在父级步骤选用，不可再选为子级行模板。"
-      : `循环写在「${row.hostLabel}」；${row.modeLabel}。${row.description}`;
-
-    return (
-      <tr
-        key={row.rowKey}
-        className={treeRowClass(
-          row.depth,
-          `${selected ? " text-body-var-pill-modal__row--selected" : ""}${
-            readOnly ? " text-body-var-pill-modal__row--readonly" : ""
-          }${disabled ? " text-body-var-pill-modal__row--disabled" : ""}`
-        )}
-        style={{ ["--picker-depth" as string]: String(row.depth) }}
-        onClick={selectable ? () => onSelectOptionKey(row.optionKey) : undefined}
-        onKeyDown={
-          selectable
-            ? (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectOptionKey(row.optionKey);
-                }
-              }
-            : undefined
-        }
-        tabIndex={selectable ? 0 : -1}
-        role="radio"
-        aria-checked={selected}
-        aria-disabled={disabled || undefined}
-        title={row.label}
-      >
-        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-          {row.expandable && collapseKey ? (
-            <button
-              type="button"
-              className="repeat-region-bind-modal__mapping-expand"
-              aria-expanded={isExpanded}
-              aria-label={isExpanded ? "折叠子区块" : "展开子区块"}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleBranch(collapseKey);
-              }}
-            >
-              {isExpanded ? "▼" : "▶"}
-            </button>
-          ) : (
-            <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
-          )}
-          <SelectablePickerRadioCell
-            name={`repeat-region-prototype-${ariaLabel}`}
-            checked={selected}
-            disabled={readOnly || disabled}
-            label={`选择 ${row.label}，${row.modeLabel}`}
-            onChange={() => onSelectOptionKey(row.optionKey)}
-          />
-        </td>
-        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
-          {row.label}
-          {repeatPrototypePickerCanonicalHint(template, row.blockId) ? (
-            <span className="repeat-region-bind-modal__prototype-hint inspector__muted">
-              {repeatPrototypePickerCanonicalHint(template, row.blockId)}
-            </span>
-          ) : null}
-        </td>
-        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--id">
-          <code className="repeat-region-bind-modal__block-id-ellipsis" title={row.blockId}>
-            {row.blockId}
-          </code>
-        </td>
-        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--type">{row.typeLabel}</td>
-        <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--value" title={hint}>
-          {row.modeLabel} · 循环容器：{row.hostLabel}
-        </td>
-      </tr>
-    );
-  }
-
-  return (
-    <PickerTreeTable
-      className="repeat-region-bind-modal__slot-picker-wrap"
-      role="radiogroup"
-      ariaLabel={ariaLabel}
-      ariaReadonly={readOnly}
-      columns={[
-        {
-          key: "radio",
-          className: "text-body-var-pill-modal__th text-body-var-pill-modal__th--radio",
-          title: <span className="text-body-var-pill-modal__sr-only">选择</span>,
-        },
-        { key: "name", className: "text-body-var-pill-modal__th", title: "名称" },
-        { key: "id", className: "text-body-var-pill-modal__th", title: "标识" },
-        {
-          key: "type",
-          className: "text-body-var-pill-modal__th text-body-var-pill-modal__th--type",
-          title: "类型",
-        },
-        { key: "desc", className: "text-body-var-pill-modal__th", title: "说明" },
-      ]}
-      body={visibleRows.map((row) => renderRepeatPrototypePickerRow(row))}
     />
   );
 }
 
 function ItemFieldMappingPickerTable({
   payload,
-  slotId,
+  repeatCandidate,
+  enclosingParentRepeat,
   itemFields,
   mappedKey,
   onSelectSource,
+  readOnly = false,
 }: {
   payload: EmailPayload;
-  slotId: string;
+  repeatCandidate: RepeatCollectionCandidate;
+  enclosingParentRepeat: RepeatRegionBinding | null;
   itemFields: RepeatCollectionCandidate["itemFields"];
   mappedKey: string | undefined;
   onSelectSource: (sourceKey: string) => void;
+  readOnly?: boolean;
 }) {
   const options = useMemo(() => {
-    const sample = collectionSampleFromPayloadValues(payload, slotId, itemFields);
-    return buildCollectionFieldPickerRows(sample, itemFields);
-  }, [payload, slotId, itemFields]);
+    const repeatBinding: RepeatRegionBinding = {
+      mode: "collection",
+      slotId: repeatCandidate.slotId,
+      prototypeChildIds: [],
+      itemFields: repeatCandidate.itemFields,
+      itemPath: repeatCandidate.itemPath,
+      fieldMappings: [],
+    };
+    const sample: CollectionJsonSample | null = repeatCandidate.itemPath?.trim()
+      ? collectionSampleFromNestedRepeatPayload(
+          payload,
+          repeatBinding,
+          itemFields,
+          [],
+          enclosingParentRepeat
+        )
+      : collectionSampleFromPayloadValues(payload, repeatCandidate.slotId, itemFields);
+    return buildRepeatListScalarFieldPickerRows(sample, itemFields);
+  }, [payload, repeatCandidate, enclosingParentRepeat, itemFields]);
 
   return (
     <CollectionFieldPickerTable
       ariaLabel="映射到列表项字段"
-      name={`repeat-field-map-${slotId}`}
+      name={`repeat-field-map-${repeatCandidate.key}`}
       options={options}
       mappedKey={mappedKey}
       onSelect={onSelectSource}
+      readOnly={readOnly}
     />
   );
 }

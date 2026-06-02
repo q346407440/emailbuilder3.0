@@ -19,7 +19,7 @@ type Params = {
   onPersistError?: (message: string) => void;
 };
 
-/** 仅在手动保存时写入磁盘，避免自动落盘覆盖用户后续编辑。 */
+/** 模板/样式预设等默认手动保存；变量目录创建与删除通过 persist*Catalog 立即落盘。 */
 export function useEmailDiskPersist({
   emailKey,
   layoutVariantId = null,
@@ -60,6 +60,8 @@ export function useEmailDiskPersist({
     template?: EmailTemplate;
     /** 覆盖当前内存快照（用于 setState 后立刻落盘） */
     payload?: EmailPayload;
+    /** 变量目录增删等须立即落盘：跳过与 baseline 相同则跳过的短路 */
+    force?: boolean;
   };
 
   const runPersist = useCallback(
@@ -71,7 +73,7 @@ export function useEmailDiskPersist({
         if (!key || !t || !p) return false;
 
         const snap = JSON.stringify({ template: t, payload: p });
-        if (snap === baselineJsonRef.current) return true;
+        if (!options?.force && snap === baselineJsonRef.current) return true;
 
         const issues = [...validateTemplate(t), ...validatePayloadAgainstTemplate(t, p)];
         if (issues.length > 0) {
@@ -132,18 +134,18 @@ export function useEmailDiskPersist({
     return runPersist();
   }, [runPersist]);
 
-  /** 新建变量后立即写入 payload.json（与邮件场景绑定，多版式共用） */
+  /** 新建变量：立即写入 payload.json（成功后才应更新编辑器内存） */
   const persistPayloadSlotCatalog = useCallback(
     async (nextPayload: EmailPayload): Promise<boolean> => {
-      return runPersist({ payloadOnly: true, payload: nextPayload });
+      return runPersist({ payloadOnly: true, payload: nextPayload, force: true });
     },
     [runPersist]
   );
 
-  /** 删除变量等会同时变更 template + payload 的场景，立即双写入库 */
+  /** 删除变量：立即写入 template.json + payload.json（成功后才应更新编辑器内存） */
   const persistTemplatePayloadCatalog = useCallback(
     async (nextTemplate: EmailTemplate, nextPayload: EmailPayload): Promise<boolean> => {
-      return runPersist({ template: nextTemplate, payload: nextPayload });
+      return runPersist({ template: nextTemplate, payload: nextPayload, force: true });
     },
     [runPersist]
   );

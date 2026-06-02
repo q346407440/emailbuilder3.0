@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
-import type { BindingSpec, EmailBlock, EmailPayload, EmailTemplate, FieldKind, FieldSource } from "../types/email";
+import type { BindingSpec, EmailBlock, EmailPayload, EmailTemplate, FieldSource } from "../types/email";
 import type { ExpandedTheme } from "../types/theme";
 import type { TokenPresets } from "../types/tokenPreset";
 import { getFieldSource } from "../hooks/useFieldSource";
@@ -24,6 +24,17 @@ import {
 } from "../lib/themeTokenCandidates";
 import { tokenPresetFieldLabelZh } from "../lib/tokenPresetFieldLabels";
 import { computeInspectorFieldSourcePopoverStyle } from "./inspectorFieldSourcePopoverLayout";
+import { FieldSourcePill } from "./fieldSource/FieldSourcePill";
+import { FieldSourceMenuOption } from "./fieldSource/FieldSourceMenuOption";
+import {
+  type ContentCapsuleMode,
+  FIELD_SOURCE_MODE_LABEL,
+  fieldSourcePopoverMetaLine,
+  resolveFieldSourcePillDisplay,
+  themePresetOptionDescription,
+  themePresetPickHint,
+  themePresetSectionTitle,
+} from "../lib/fieldSourceUiCopy";
 import { collectPayloadVariableSlots, type ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import {
   bindingRequirementLabel,
@@ -31,7 +42,7 @@ import {
   inferBindingValueTypeRequirement,
   inferVariablePickerPurpose,
   slotValueTypeMatchesBindingRequirement,
-} from "../lib/variableSlotCompatibility";
+} from "../payload-contract/variable-slot-compatibility";
 import type { TextBodyContentMode } from "../lib/textBodyContentMode";
 import { readInspectorDisplayValue } from "../lib/inspectorBindingDisplay";
 import { applyTextBodyWholeVariableFromSlot } from "../lib/textBodyVariableEdit";
@@ -55,16 +66,18 @@ type Props = {
   bindPath: string;
   onUpdate: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onTemplateChange: (nextTemplate: EmailTemplate) => void;
-  /** 聚合态展示：覆盖胶囊文案（如正文「文中变量」） */
+  /** 聚合态展示：覆盖胶囊文案（如正文「正文变量」） */
   pillLabelOverride?: string;
   /** 聚合态展示：覆盖胶囊样式类后缀（literal / variable / inline-variable） */
   pillClassSuffixOverride?: string;
-  /** 正文聚合：「字面量」烘焙全文（覆盖单 bindPath detach） */
+  /** 正文聚合：「手动填写」烘焙全文（覆盖单 bindPath detach） */
   onAggregateLiteralize?: () => void;
   /** 正文三态聚合（literal / inlineVariable / wholeVariable） */
   aggregateTextBodyMode?: TextBodyContentMode;
   /** 绑定弹窗预览文案（正文聚合时传全文） */
   bindModalPreviewText?: string;
+  /** 置灰只读：repeat 行内的可绑定内容字段由列表项映射决定，禁止在此手动改源/改值 */
+  disabled?: boolean;
 };
 
 type SourceOption = {
@@ -75,42 +88,6 @@ type SourceOption = {
   active: boolean;
   action?: () => void;
 };
-
-const SOURCE_LABEL: Record<FieldSource, string> = {
-  literal: "自由",
-  theme: "样式令牌",
-  variable: "标量变量",
-  inlineVariable: "文中变量",
-};
-
-const SOURCE_CLASS: Record<FieldSource, string> = {
-  literal: "literal",
-  theme: "theme",
-  variable: "variable",
-  inlineVariable: "inline-variable",
-};
-
-function fieldKindLabel(kind: FieldKind): string {
-  if (kind === "style") return "样式字段";
-  if (kind === "content") return "内容字段";
-  return "结构字段";
-}
-
-function sourceHelp(source: FieldSource): string {
-  if (source === "theme") return "跟随样式预设。";
-  if (source === "variable") return "跟随变量。";
-  if (source === "inlineVariable") return "正文中使用变量占位。";
-  return "使用当前输入值。";
-}
-
-function disabledThemeReason(kind: FieldKind): string {
-  if (kind === "content") return "内容字段暂不支持跟随样式预设。";
-  if (kind === "structural") return "该字段暂不支持来源切换。";
-  return "当前不可用。";
-}
-
-/** 内容字段胶囊在 UI 上的态（与正文聚合态对齐；listItem 为列表重复行模板内字段映射） */
-type ContentCapsuleMode = "literal" | "variable" | "inlineVariable" | "listItem";
 
 function deriveContentCapsuleMode(
   state: ReturnType<typeof getFieldSource>,
@@ -185,8 +162,8 @@ function eventTouchesInspectorFieldSourcePopover(event: Event): boolean {
 /**
  * Inspector 字段标题右侧的「来源胶囊」。
  *
- * 统一表达：自由编辑、跟随样式预设（仅样式字段）、跟随 payload 变量（仅内容字段）、已解除跟随。
- * 样式字段不出现「设为变量」项（不支持）；菜单通过 portal 挂到 body，并按视口上下翻转，避免被侧栏裁剪。
+ * 统一表达：手动填写、样式预设（仅样式字段）、业务变量（仅内容字段）、已解除跟随。
+ * 文案与样式见 `fieldSourceUiCopy` 与 `fieldSource/*` 子组件；菜单通过 portal 挂到 body，并按视口上下翻转。
  */
 export function InspectorFieldSource({
   template,
@@ -203,6 +180,7 @@ export function InspectorFieldSource({
   onAggregateLiteralize,
   aggregateTextBodyMode,
   bindModalPreviewText,
+  disabled = false,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [bindModalOpen, setBindModalOpen] = useState(false);
@@ -227,7 +205,6 @@ export function InspectorFieldSource({
     [template, block.id, bindPath]
   );
   const currentLiteral = readTemplateFieldOnly(block, bindPath);
-  const bindingRequirement = inferBindingValueTypeRequirement(block, bindPath, currentLiteral);
   const pickerPurpose = inferVariablePickerPurpose(block, bindPath, currentLiteral);
   const catalogSlots = useMemo(
     () => collectPayloadVariableSlots(template, payload),
@@ -398,10 +375,10 @@ export function InspectorFieldSource({
 
   const bindModalTitle =
     contentCapsuleMode === "variable"
-      ? "切换绑定"
+      ? "切换业务变量"
       : contentCapsuleMode === "inlineVariable"
-        ? "整个绑定标量变量"
-        : "绑定标量变量";
+        ? "整段绑定业务变量"
+        : `绑定${FIELD_SOURCE_MODE_LABEL.variable}`;
 
   const runOptionAction = useCallback((option: SourceOption) => {
     if (!option.enabled || !option.action) return;
@@ -448,18 +425,18 @@ export function InspectorFieldSource({
 
     items.push({
       source: "literal",
-      label: "字面量",
+      label: FIELD_SOURCE_MODE_LABEL.manual,
       description: isListItemField
-        ? "列表行内字段不能直接改为字面量，请先解除列表绑定。"
-        : state.source === "literal"
-          ? "当前使用输入值。"
+        ? "列表行内字段须先解除列表绑定，才能改为手动填写。"
+        : state.source === "literal" && !state.detached
+          ? "直接在此输入固定值。"
           : state.source === "inlineVariable"
             ? canBake
-              ? "改为固定文本。"
-              : "请稍后重试。"
+              ? "将正文改为手动填写的固定文本。"
+              : "预览数据未就绪，请稍后重试。"
             : canBake
-              ? "改为固定值。"
-              : "请稍后重试。",
+              ? "解除跟随，改为在此输入固定值。"
+              : "预览数据未就绪，请稍后重试。",
       active: state.source === "literal" || state.detached,
       enabled:
         isListItemField ||
@@ -507,26 +484,23 @@ export function InspectorFieldSource({
                 : undefined,
     });
 
-    if (state.fieldKind === "style") {
+    if (state.fieldKind === "style" && state.source === "theme" && state.detached) {
       items.push({
         source: "theme",
-        label: state.detached && state.source === "theme" ? "恢复跟随预设" : "跟随样式预设",
-        description: disabledThemeReason(state.fieldKind),
-        active: state.source === "theme" && !state.detached,
-        enabled: state.source === "theme" ? state.detached : false,
-        action:
-          state.source === "theme" && state.detached
-            ? () =>
-                onTemplateChangeRef.current(restoreThemeFieldBranch(templateRef.current, block.id, bindPath))
-            : undefined,
+        label: `恢复${FIELD_SOURCE_MODE_LABEL.theme}`,
+        description: "恢复为跟随全局样式预设。",
+        active: false,
+        enabled: true,
+        action: () =>
+          onTemplateChangeRef.current(restoreThemeFieldBranch(templateRef.current, block.id, bindPath)),
       });
     }
 
     if (contentCapsuleMode === "listItem" && repeatListItemCtx) {
       items.push({
         source: "variable",
-        label: "切换列表字段",
-        description: `切换到「${repeatListItemCtx.collectionLabel}」中的其他字段。`,
+        label: `切换${FIELD_SOURCE_MODE_LABEL.listItem}`,
+        description: `在「${repeatListItemCtx.collectionLabel}」中选择其他列。`,
         active: false,
         enabled: listItemFieldCandidates.length > 1,
         action: () => {
@@ -537,16 +511,16 @@ export function InspectorFieldSource({
     } else if (contentCapsuleMode) {
       const bindLabel =
         contentCapsuleMode === "variable"
-          ? "切换绑定"
+          ? "切换业务变量"
           : contentCapsuleMode === "inlineVariable"
-            ? "整个绑定标量变量"
-            : "绑定标量变量";
+            ? "整段绑定业务变量"
+            : `绑定${FIELD_SOURCE_MODE_LABEL.variable}`;
       const bindDescription =
         contentCapsuleMode === "variable"
-          ? "选择其他变量。"
+          ? "选择其他业务变量。"
           : contentCapsuleMode === "inlineVariable"
-            ? "将正文改为跟随一个变量。"
-            : "绑定或新建变量。";
+            ? "将整段正文改为跟随一个业务变量。"
+            : "从变量库选择或新建业务变量。";
       items.push({
         source: "variable",
         label: bindLabel,
@@ -561,8 +535,8 @@ export function InspectorFieldSource({
     } else if (state.fieldKind === "style" && state.source === "variable" && state.detached) {
       items.push({
         source: "variable",
-        label: "恢复跟随变量",
-        description: "恢复到 payload 变量值。",
+        label: `恢复${FIELD_SOURCE_MODE_LABEL.variable}`,
+        description: "恢复为跟随业务变量取值。",
         active: false,
         enabled: true,
         action: () =>
@@ -608,7 +582,7 @@ export function InspectorFieldSource({
     const pop = popoverRef.current;
     if (!pill || !pop) return;
     const tr = pill.getBoundingClientRect();
-    const pw = pop.offsetWidth || 240;
+    const pw = pop.offsetWidth || 272;
     const ph = pop.offsetHeight;
     setPopoverStyle(computeInspectorFieldSourcePopoverStyle(tr, pw, ph));
   }, []);
@@ -637,24 +611,17 @@ export function InspectorFieldSource({
 
   if (state.fieldKind === "structural") return null;
 
-  const badgeText =
-    pillLabelOverride ??
-    (contentCapsuleMode === "listItem" && repeatListItemCtx
-      ? `列表项 · ${repeatListItemCtx.itemFieldLabel}`
-      : state.detached
-        ? "自由"
-        : SOURCE_LABEL[state.source]);
-  const pillClassSuffix =
-    pillClassSuffixOverride ??
-    (contentCapsuleMode === "listItem" ? "list-item" : SOURCE_CLASS[state.source]);
-  const badgeTitle =
-    contentCapsuleMode === "listItem" && repeatListItemCtx
-      ? `${fieldKindLabel(state.fieldKind)}：跟随列表「${repeatListItemCtx.collectionLabel}」中的字段「${repeatListItemCtx.itemFieldKey}」。`
-      : `${fieldKindLabel(state.fieldKind)}：${
-          state.detached ? "已解除跟随，当前使用输入值。" : sourceHelp(state.source)
-        }`;
+  const pillDisplay = resolveFieldSourcePillDisplay({
+    state,
+    contentCapsuleMode,
+    listItemFieldLabel: repeatListItemCtx?.itemFieldLabel,
+    pillLabelOverride,
+    pillClassSuffixOverride,
+  });
 
   const themeFollowing = state.source === "theme" && !state.detached;
+  const showThemePresetSection =
+    state.fieldKind === "style" && themeTokenCandidates.length > 0;
 
   const popoverNode =
     open && typeof document !== "undefined" ? (
@@ -665,45 +632,29 @@ export function InspectorFieldSource({
         role="menu"
         data-inspector-field-source-popover=""
       >
-        <span className="inspector-field-source__meta">
-          {fieldKindLabel(state.fieldKind)}
-          {state.detached ? " · 已解除跟随" : ""}
-        </span>
-        {options.map((option) => (
-          <button
-            key={option.source}
-            type="button"
-            className={`inspector-field-source__option${
-              option.active ? " inspector-field-source__option--active" : ""
-            }`}
-            role="menuitem"
-            disabled={!option.enabled || !option.action}
-            onPointerDown={(event) => {
-              if (!option.enabled || !option.action) return;
-              event.preventDefault();
-              runOptionAction(option);
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== "Enter" && event.key !== " ") return;
-              event.preventDefault();
-              runOptionAction(option);
-            }}
-          >
-            <span className="inspector-field-source__option-title">{option.label}</span>
-            {option.description ? (
-              <span className="inspector-field-source__option-desc">{option.description}</span>
-            ) : null}
-          </button>
-        ))}
-        {state.fieldKind === "style" && themeTokenCandidates.length > 0 ? (
+        <span className="inspector-field-source__meta">{fieldSourcePopoverMetaLine(state)}</span>
+        <div className="inspector-field-source__section" role="group" aria-label="取值方式">
+          <span className="inspector-field-source__section-title">取值方式</span>
+          {options.map((option) => (
+            <FieldSourceMenuOption
+              key={option.source}
+              label={option.label}
+              description={option.description}
+              active={option.active}
+              disabled={!option.enabled || !option.action}
+              onSelect={() => runOptionAction(option)}
+            />
+          ))}
+        </div>
+        {showThemePresetSection ? (
           <div
-            className="inspector-field-source__theme-section"
-            role="radiogroup"
-            aria-label="跟随样式预设参数"
+            className="inspector-field-source__section inspector-field-source__theme-section"
+            role="group"
+            aria-label={themePresetSectionTitle()}
           >
-            <span className="inspector-field-source__theme-section-title">跟随样式预设参数</span>
+            <span className="inspector-field-source__section-title">{themePresetSectionTitle()}</span>
             {themeFollowing && !activeThemeTokenPath ? (
-              <span className="inspector-field-source__theme-section-hint">请选择要跟随的预设参数</span>
+              <span className="inspector-field-source__theme-section-hint">{themePresetPickHint()}</span>
             ) : null}
             {themeTokenCandidates.map((tokenPath) => {
               const { family, scale } = parseTokenPathForLabel(tokenPath);
@@ -716,34 +667,14 @@ export function InspectorFieldSource({
               );
               const selected = themeFollowing && activeThemeTokenPath === tokenPath;
               return (
-                <button
+                <FieldSourceMenuOption
                   key={tokenPath}
-                  type="button"
-                  name={`theme-token-${block.id}-${bindPath}`}
-                  className={`inspector-field-source__token-option${
-                    selected ? " inspector-field-source__token-option--selected" : ""
-                  }`}
-                  role="radio"
-                  aria-checked={selected}
-                  onPointerDown={(event) => {
-                    event.preventDefault();
-                    applyThemeToken(tokenPath);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key !== "Enter" && event.key !== " ") return;
-                    event.preventDefault();
-                    applyThemeToken(tokenPath);
-                  }}
-                >
-                  <span className="inspector-field-source__radio" aria-hidden="true" />
-                  <span className="inspector-field-source__token-option-body">
-                    <span className="inspector-field-source__option-title">{label}</span>
-                    <span className="inspector-field-source__option-desc">
-                      {tokenPath}
-                      {preview ? ` · 当前预设值 ${preview}` : ""}
-                    </span>
-                  </span>
-                </button>
+                  label={label}
+                  description={themePresetOptionDescription(preview)}
+                  active={selected}
+                  disabled={false}
+                  onSelect={() => applyThemeToken(tokenPath)}
+                />
               );
             })}
           </div>
@@ -752,20 +683,20 @@ export function InspectorFieldSource({
     ) : null;
 
   return (
-    <span ref={rootRef} className="inspector-field-source" role="group" aria-label="字段来源">
-      <button
-        type="button"
-        className={`inspector-field-source__pill inspector-field-source__pill--${pillClassSuffix}${
-          state.detached ? " inspector-field-source__pill--detached" : ""
-        }`}
-        title={badgeTitle}
-        aria-expanded={open}
-        onClick={() => setOpen((prev) => !prev)}
-      >
-        <span className="inspector-field-source__dot" aria-hidden="true" />
-        <span className="inspector-field-source__text">{badgeText}</span>
-      </button>
-      {popoverNode ? createPortal(popoverNode, document.body) : null}
+    <span
+      ref={rootRef}
+      className="inspector-field-source"
+      role="group"
+      aria-label="字段取值方式"
+      aria-disabled={disabled || undefined}
+      style={disabled ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+    >
+      <FieldSourcePill
+        display={pillDisplay}
+        open={disabled ? false : open}
+        onToggle={disabled ? () => {} : () => setOpen((prev) => !prev)}
+      />
+      {!disabled && popoverNode ? createPortal(popoverNode, document.body) : null}
       {contentCapsuleMode === "listItem" && repeatListItemCtx ? (
         <RepeatListItemFieldPickerModal
           visible={listItemModalOpen}

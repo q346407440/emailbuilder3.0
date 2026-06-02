@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import type { TokenPresets } from "../types/tokenPreset";
 import { logicalDeleteConfirmOptions } from "../lib/logicalDeleteConfirm";
 import { tokenPresetFieldLabelZh, tokenPresetFamilyTitleZh, tokenPresetScaleTitleKnown } from "../lib/tokenPresetFieldLabels";
-import { sortTokenPresetFamilies, sortTokenPresetScales } from "../lib/tokenPresetStandardOrder";
+import { sortTokenPresetFamilies, sortTokenPresetScales } from "../token-preset-contract/standard-keys";
 import { tokenPresetFieldUsesShopUnitInput } from "../lib/tokenPresetFieldInput";
 import { ColorField } from "./ui/ColorField";
 import { Field } from "./ui/Field";
 import { InspectorPanelSection } from "./ui/InspectorPanelSection";
-import { ShopInput, ShopSelect, ShopUnitInput } from "./ui/ShopFormControls";
+import { ShopInput, ShopUnitInput } from "./ui/ShopFormControls";
 import { useConfirmDialog } from "./ui/ConfirmDialogProvider";
 
 type Props = {

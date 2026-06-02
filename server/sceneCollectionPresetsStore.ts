@@ -3,6 +3,7 @@ import type { PayloadVariableScene } from "../src/lib/payloadVariableScene";
 import {
   buildPayloadSlotDefFromScenePreset,
   resolveScenePresetCollectionValues,
+  resolveScenePresetFixedLength,
 } from "../src/payload-contract/scene-collection-presets/buildPresetCollection";
 import {
   loadSceneCollectionPresetsFromDisk,
@@ -74,7 +75,10 @@ export function listSceneCollectionPresetSummaries(
       label: p.label,
       description: p.description,
       dataSourceKind: p.dataSourceKind === "builtin" ? "builtin" : "custom",
-      seedRowCount: p.seedValues.length,
+      seedRowCount:
+        p.dataSourceKind === "builtin" && p.seedValues.length === 0
+          ? resolveScenePresetFixedLength(p)
+          : p.seedValues.length,
       builtinCatalog: p.builtinCatalog,
     }));
 }

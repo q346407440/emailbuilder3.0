@@ -15,7 +15,9 @@ description: >-
 | token 标准键 | **`src/token-preset-contract/`** |
 | 禁止持久化 / 渲染默认 / 底图语义 | **`src/render-defaults-contract/`**（**`rules.ts`** 为规则目录） |
 | 值级与编排校验 | **`src/lib/validate.ts`** |
-| 迁移脚本名 | **`package.json`** → `scripts` |
+| **template 落盘 nested 4.0.0** | **`src/template-disk-contract/`**、**`src/lib/templateTreeAdapter.ts`**；禁止 flat wire（`isForbiddenFlatDiskWire`） |
+| **落盘 JSON schema 索引** | **`src/schema-registry/`**（artifact 版本引用各 `*-contract`；`npm run validate:schema-registry`） |
+| 迁移脚本名 | **`package.json`** → `scripts`（registry 可索引 `migrateScripts`） |
 
 skills **只**保留流程与交付检查语义；**禁止**在 skills 内维护第二份完整字段表。
 
@@ -33,7 +35,7 @@ skills **只**保留流程与交付检查语义；**禁止**在 skills 内维护
 - [ ] **`type: "icon"`** 仅 `src` / `color` / `size`（或契约允许项）；无废弃来源字段（迁移脚本见 **`package.json`** `migrate:icon-url-only`）。
 - [ ] **禁止字段**：`wrapperStyle.selfAlign`、`backgroundContentAlign`、`overlayInset` 等 → **`validate.ts`** + **`render-defaults-contract`**；可用 **`npx tsx scripts/strip-forbidden-wrapper-fields.ts --write`** 清理 **strip 已实现的 wrapper 项**。  
 - [ ] **`layout.props.crossAlign`**：**由 `validate.ts` 拒绝**；须手工删除并改为子块 **`contentAlign`** 或嵌套 **`layout`**；**不**在 `strip-forbidden-wrapper-fields` 中处理。
-- [ ] 无「页面主容器」无意义中间 layout（见 **`validate.ts`** / **`email-config-motherboard`**）；相关迁移见 **`package.json`**（如 `migrate:flatten-root`）。
+- [ ] 无「页面主容器」无意义中间 layout（见 **`validate.ts`** / **`email-config-motherboard`**）。
 - [ ] **`emailRoot.props`**：`gapMode` / `gap`（`gap` 非空）；根 **`direction` / `contentAlign`** 不写（见 **`render-defaults-contract`**）。
 - [ ] 除 **`emailRoot`** 外：双轴 **`wrapperStyle.contentAlign`**（**禁止非法 `wrapperStyle` 字段）。
 - [ ] **`border` / `borderRadius`** 两级 mode 对象；无字符串短写（迁移见 **`package.json`** `migrate:border-mode`）。
@@ -41,5 +43,5 @@ skills **只**保留流程与交付检查语义；**禁止**在 skills 内维护
 - [ ] Inspector 与 JSON 能力对齐（新增字段时同步三处）。
 - [ ] 无「读旧字段兜底」的分支代码。
 - [ ] skills 无与 **`block-contract`** / **`render-defaults-contract`** 冲突的第二份键表。
-- [ ] **变量真源**（见 **`docs/邮件变量与绑定真源.md`**）：`payload.slots` + `payload.values`；template binding **无** `defaultValue`；collection **无** 叶子 binding 上的 itemFields/整表 defaultValue；列表用 **repeat**。
+- [ ] **变量真源**（技能 **`easy-email-payload-contract`** · **`src/payload-contract/`**）：`payload.slots` + `payload.values`；template binding **无** `defaultValue`；collection **无** 叶子 binding 上的 itemFields/整表 defaultValue；列表用 **repeat**（**`src/repeat-binding-contract/`**）。
 - [ ] 存量清理（若回退旧形态）：`migrate:static-collection-to-repeat:write`、`migrate:prune-collection-binding-meta:write`、`migrate:prune-scalar-binding-default-value:write`、`migrate:payload-slots:write`。

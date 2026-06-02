@@ -14,7 +14,9 @@
 | [email-token-preset-standard-scope](../.cursor/skills/email-token-preset-standard-scope/SKILL.md) | 样式预设标准键索引 |
 | 其余技能 | 见 [CLAUDE.md](../CLAUDE.md) 技能表 |
 
-**实现真源（机器校验）**：`src/block-contract/`、`src/lib/validate.ts`、`src/types/email.ts`、`src/payload-contract/`、`src/render-defaults-contract/`、`src/token-preset-contract/`、`src/visibility-contract/`、`src/lib/validateTokenPresets.ts`、`server/index.ts`。
+**实现真源（机器校验）**：`src/block-contract/`、`src/schema-registry/`、`src/lib/validate.ts`、`src/types/email.ts`、`src/payload-contract/`、`src/repeat-binding-contract/`、`src/repeat-runtime/`、`src/render-defaults-contract/`、`src/token-preset-contract/`、`src/visibility-contract/`、`src/lib/validateTokenPresets.ts`、`server/index.ts`。
+
+索引技能：**`easy-email-payload-contract`**（变量 slots/values 分工）、**`easy-email-repeat-binding`**（列表 repeat 绑定）。
 
 ## 本目录其他文件
 
@@ -23,7 +25,6 @@
 | [源头驱动的契约式开发.md](./源头驱动的契约式开发.md) | 方法论：四层模型、五条主张、与 skills/rules 的关系 |
 | [变更先改源头执行规范.md](./变更先改源头执行规范.md) | 操作层：8 步流程、分场景指引、完成标准与评审 |
 | [AI Coding 硬约束落地清单.md](./AI%20Coding%20硬约束落地清单.md) | 工程约束 P0/P1/P2 检查项与成熟度判断 |
-| [邮件变量与绑定真源.md](./邮件变量与绑定真源.md) | **payload.slots / values** 与 template bindings、repeat 的分工（禁止双写） |
 | [project-plan.md](./project-plan.md) | 项目规划与历史对话备忘（**非** API/JSON 契约） |
 
 Agent 默认执行摘要见 Cursor rule：**`.cursor/rules/easy-email-source-first-contract.mdc`**（`alwaysApply`）。

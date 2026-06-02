@@ -111,7 +111,7 @@ function resolveValue(value: unknown, path: string, relativePath: string, state:
   return value;
 }
 
-function resolveBlock(block: EmailBlock, state: ResolveState): EmailBlock {
+export function resolveBlockTheme(block: EmailBlock, state: ResolveState): EmailBlock {
   const next = structuredClone(block) as EmailBlock;
   const blockState: ResolveState = { ...state, block };
   if (next.props) {
@@ -136,7 +136,7 @@ export function resolveThemeInTemplate(
   const state: ResolveState = { theme: effectiveTheme, issues };
   const next = structuredClone(template) as EmailTemplate;
   next.blocks = Object.fromEntries(
-    Object.entries(template.blocks).map(([id, block]) => [id, resolveBlock(block, state)])
+    Object.entries(template.blocks).map(([id, block]) => [id, resolveBlockTheme(block, state)])
   );
 
   if (issues.length > 0) {

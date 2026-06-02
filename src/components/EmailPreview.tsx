@@ -15,9 +15,7 @@ import type {
   WrapperStyle,
 } from "../types/email";
 import { resolveIconPreviewColor, resolveIconPreviewSrc } from "../lib/iconBlock";
-import { IMAGE_BACKGROUND_FALLBACK_COLOR } from "../lib/imageBackgroundFallback";
-import { EMAIL_ROOT_FIXED_WIDTH, EMAIL_CANVAS_WORKSPACE_BACKGROUND } from "../render-defaults-contract/values";
-import { BUTTON_INNER_PADDING } from "../lib/buttonInnerPadding";
+import { EMAIL_ROOT_FIXED_WIDTH, EMAIL_CANVAS_WORKSPACE_BACKGROUND, BUTTON_INNER_PADDING } from "../render-defaults-contract/values";
 import { IconGlyph } from "./IconGlyph";
 import { EMAIL_CANVAS_TEXT_FONT_FAMILY } from "../render-defaults-contract/values";
 import {
@@ -45,8 +43,8 @@ import {
   gridMatrixSlotContentAlignCss,
   layoutPreviewHugOuterShellBoxStyle,
 } from "../lib/emailPresentationLayout";
-import { normalizeWrapperContentAlign } from "../lib/wrapperContentAlign";
-import { sourceBlockIdFromRepeatClone } from "../lib/repeatRegion";
+import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
+import { isRepeatExpansionGroupSelected, previewModelToFlatTemplate } from "../repeat-runtime";
 import {
   FIXED_TEXT_LINE_HEIGHT,
   projectLayoutContentAlign,
@@ -58,7 +56,6 @@ import {
   wrapperStyleToCss,
 } from "../lib/wrapperStyleToCss";
 import { renderTextBodyToHtml } from "../lib/textBodyFormat";
-import { normalizeCssLengthPx } from "../lib/wrapperBackgroundImage";
 import {
   renderWrapperBackgroundImageCanvasShell,
 } from "../lib/wrapperBackgroundImageCanvas";
@@ -83,12 +80,27 @@ import {
 } from "../lib/emailPresentationPrimitives";
 
 type Props = {
-  template: EmailTemplate;
+  previewModel: RepeatPreviewModel;
+  sourceTemplate: EmailTemplate;
   /** 与左侧树一致：`null` 表示画布（emailRoot）选中 */
-  selectedBlockId: string | null;
-  /** 画布点击命中后，回写选中区块 id（emailRoot 使用 null） */
-  onSelectBlock: (id: string | null) => void;
+  selectedBlockRef: VirtualBlockRef | null;
+  onSelectBlock: (ref: VirtualBlockRef | null) => void;
 };
+
+function findRefByPreviewBlockId(
+  model: RepeatPreviewModel,
+  blockId: string
+): VirtualBlockRef | null {
+  const visit = (node: (typeof model)["root"]): VirtualBlockRef | null => {
+    if (node.block.id === blockId) return node.ref;
+    for (const child of node.children) {
+      const found = visit(child);
+      if (found) return found;
+    }
+    return null;
+  };
+  return visit(model.root);
+}
 
 /** 画布内链接仅作视觉还原，禁止跳转/新开页，避免误触影响区块选中 */
 const stopCanvasLinkNavigation: MouseEventHandler<HTMLAnchorElement> = (e) => {
@@ -135,16 +147,6 @@ function tdBase(): CSSProperties {
   return emailPresentationTdBase();
 }
 
-function slotAlignFromWrapperContentAlign(
-  contentAlign: WrapperContentAlign | undefined
-): { align: "left" | "center" | "right"; valign: ReturnType<typeof tableValignFromContentVertical> } {
-  const ca = normalizeWrapperContentAlign(contentAlign);
-  return {
-    align: tableAlignFromContentHorizontal(ca.horizontal),
-    valign: tableValignFromContentVertical(ca.vertical),
-  };
-}
-
 function layoutChildSlotAlign(
   parentDirection: "vertical" | "horizontal",
   parentContentAlign: WrapperContentAlign | undefined
@@ -184,21 +186,30 @@ function canvasPreviewBlockDataProps(
 ): Record<string, string> {
   return {
     ...deliveryExportBoxModeDataAttrs(wrapperStyle),
-    "data-email-preview-block": sourceBlockIdFromRepeatClone(blockId),
+    "data-email-preview-block": blockId,
   };
 }
 
-/** 画布选中 emailRoot 时为内层内容区容器加框（宽度取 props.width，缺省同 EMAIL_ROOT_FIXED_WIDTH）；子 block 按 id 匹配 */
+type CanvasSelectionContext = {
+  previewModel: RepeatPreviewModel;
+  selectedBlockRef: VirtualBlockRef | null;
+};
+
+/** 画布选中：emailRoot 内层；repeat-item 按展开组（同复制体全部高亮） */
 function selectionClassName(
-  selectedBlockId: string | null,
+  ctx: CanvasSelectionContext,
   nodeId: string,
   variant: "email-root-inner" | "node"
 ): string | undefined {
-  const selected =
-    variant === "email-root-inner"
-      ? selectedBlockId === null
-      : selectedBlockId === nodeId || selectedBlockId === sourceBlockIdFromRepeatClone(nodeId);
-  return selected ? "email-preview-selected" : undefined;
+  if (variant === "email-root-inner") {
+    return ctx.selectedBlockRef === null ? "email-preview-selected" : undefined;
+  }
+  if (!ctx.selectedBlockRef) return undefined;
+  const nodeRef = findRefByPreviewBlockId(ctx.previewModel, nodeId);
+  if (!nodeRef) return undefined;
+  return isRepeatExpansionGroupSelected(ctx.selectedBlockRef, nodeRef)
+    ? "email-preview-selected"
+    : undefined;
 }
 
 /** 横排 layout / 底图叠放：内层行表是否满宽及子槽位列宽（fill 子块吃剩余宽）。 */
@@ -267,10 +278,10 @@ function renderBackgroundImageOverlayChildren(opts: {
   wrapperStyle?: WrapperStyle;
   contentAlign?: { horizontal?: unknown; vertical?: unknown };
   template: EmailTemplate;
-  selectedBlockId: string | null;
+  canvasSelection: CanvasSelectionContext;
   onSelectBlock: (id: string | null) => void;
 }): ReactElement {
-  const { childIds, layoutProps, wrapperStyle, contentAlign, template, selectedBlockId, onSelectBlock } = opts;
+  const { childIds, layoutProps, wrapperStyle, contentAlign, template, canvasSelection, onSelectBlock } = opts;
   const gapMode = normalizeLayoutGapMode(layoutProps?.gapMode);
   const gapFixed = (layoutProps?.gap as string) ?? "8px";
   const gapAuto = gapMode === "auto";
@@ -319,7 +330,7 @@ function renderBackgroundImageOverlayChildren(opts: {
                 <BlockView
                   id={cid}
                   template={template}
-                  selectedBlockId={selectedBlockId}
+                  canvasSelection={canvasSelection}
                   onSelectBlock={onSelectBlock}
                 />
               ),
@@ -348,7 +359,7 @@ function renderBackgroundImageOverlayChildren(opts: {
       <BlockView
         id={cid}
         template={template}
-        selectedBlockId={selectedBlockId}
+        canvasSelection={canvasSelection}
         onSelectBlock={onSelectBlock}
       />
     ),
@@ -362,7 +373,7 @@ function renderWrapperBackgroundImagePreview(opts: {
   childIds: string[];
   layoutProps?: LayoutBlockProps;
   template: EmailTemplate;
-  selectedBlockId: string | null;
+  canvasSelection: CanvasSelectionContext;
   onSelectBlock: (id: string | null) => void;
   overlayPadding?: unknown;
   selectTargetId?: string | null;
@@ -376,7 +387,7 @@ function renderWrapperBackgroundImagePreview(opts: {
     childIds,
     layoutProps,
     template,
-    selectedBlockId,
+    canvasSelection,
     onSelectBlock,
     overlayPadding,
     selectionKind = "node",
@@ -399,7 +410,7 @@ function renderWrapperBackgroundImagePreview(opts: {
     wrapperStyle?.contentAlign as WrapperContentAlign | undefined
   );
 
-  const nodeSel = selectionClassName(selectedBlockId, blockId, selectionKind);
+  const nodeSel = selectionClassName(canvasSelection, blockId, selectionKind);
 
   const selectBlock =
     (targetId: string | null): MouseEventHandler<HTMLElement> =>
@@ -424,7 +435,7 @@ function renderWrapperBackgroundImagePreview(opts: {
       wrapperStyle,
       contentAlign: wrapperContentAlign,
       template,
-      selectedBlockId,
+      canvasSelection,
       onSelectBlock,
     }),
   });
@@ -433,11 +444,11 @@ function renderWrapperBackgroundImagePreview(opts: {
 type BlockViewProps = {
   id: string;
   template: EmailTemplate;
-  selectedBlockId: string | null;
+  canvasSelection: CanvasSelectionContext;
   onSelectBlock: (id: string | null) => void;
 };
 
-function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewProps) {
+function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewProps) {
   const b = template.blocks[id];
   if (!b) return null;
   const gridRef = useRef<HTMLTableElement | null>(null);
@@ -544,7 +555,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
     const rootGapMode = normalizeLayoutGapMode(props.gapMode);
     const rootGapFixed = (props.gap as string) ?? "0";
     const rootGapAuto = rootGapMode === "auto";
-    const innerSel = selectionClassName(selectedBlockId, id, "email-root-inner");
+    const innerSel = selectionClassName(canvasSelection, id, "email-root-inner");
     const rootBgImg = b.wrapperStyle?.backgroundImage;
     const hasRootBackgroundImage =
       rootBgImg && typeof rootBgImg.src === "string" && rootBgImg.src.trim().length > 0;
@@ -561,7 +572,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
           childIds: b.children,
           layoutProps: props as LayoutBlockProps,
           template,
-          selectedBlockId,
+          canvasSelection,
           onSelectBlock,
           overlayPadding: props.padding,
           selectTargetId: null,
@@ -629,7 +640,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
                     <BlockView
                       id={cid}
                       template={template}
-                      selectedBlockId={selectedBlockId}
+                      canvasSelection={canvasSelection}
                       onSelectBlock={onSelectBlock}
                     />
                   </td>
@@ -642,7 +653,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
     );
   }
 
-  const nodeSel = selectionClassName(selectedBlockId, id, "node");
+  const nodeSel = selectionClassName(canvasSelection, id, "node");
 
   if (b.type === "layout") {
     const props = b.props;
@@ -665,13 +676,12 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
         childIds: b.children,
         layoutProps: props,
         template,
-        selectedBlockId,
+        canvasSelection,
         onSelectBlock,
       });
     }
 
     const isRow = direction === "row";
-    const layoutSlotAlign = slotAlignFromWrapperContentAlign(wrapperContentAlign);
     const gapPx = layoutRenderedFixedGapPx({ gapModeAuto: gapAuto, gapPx: parseGapPx(gapFixed) });
     const hasFillWidthChild = isRow
       ? b.children.some((cid) => (template.blocks[cid]?.wrapperStyle?.widthMode ?? "fill") === "fill")
@@ -736,7 +746,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
                   <BlockView
                     id={cid}
                     template={template}
-                    selectedBlockId={selectedBlockId}
+                    canvasSelection={canvasSelection}
                     onSelectBlock={onSelectBlock}
                   />
                 ),
@@ -804,7 +814,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
         <BlockView
           id={cid}
           template={template}
-          selectedBlockId={selectedBlockId}
+          canvasSelection={canvasSelection}
           onSelectBlock={onSelectBlock}
         />
       ),
@@ -941,7 +951,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
       childIds: b.children,
       layoutProps: b.props,
       template,
-      selectedBlockId,
+      canvasSelection,
       onSelectBlock,
       enableHugIntrinsicHeight: true,
     });
@@ -1195,7 +1205,7 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
                         <BlockView
                           id={cid}
                           template={template}
-                          selectedBlockId={selectedBlockId}
+                          canvasSelection={canvasSelection}
                           onSelectBlock={onSelectBlock}
                         />
                       </td>
@@ -1284,10 +1294,27 @@ function BlockView({ id, template, selectedBlockId, onSelectBlock }: BlockViewPr
 }
 
 /** 选中联动滚动画布见 `src/editor-canvas-contract`（`EMAIL_CANVAS_AUTO_SCROLL_ON_BLOCK_SELECT: false`） */
-export function EmailPreview({ template, selectedBlockId, onSelectBlock }: Props) {
+export function EmailPreview({
+  previewModel,
+  sourceTemplate,
+  selectedBlockRef,
+  onSelectBlock,
+}: Props) {
+  const template = previewModelToFlatTemplate(previewModel, sourceTemplate);
+  const canvasSelection: CanvasSelectionContext = { previewModel, selectedBlockRef };
   const rootBlockId = template.rootBlockId;
   const root = template.blocks[rootBlockId];
   if (!root) return <div>缺少根节点</div>;
+
+  const handleSelectBlock = (blockKey: string | null) => {
+    if (blockKey === null) {
+      onSelectBlock(null);
+      return;
+    }
+    const ref = findRefByPreviewBlockId(previewModel, blockKey);
+    onSelectBlock(ref ?? { kind: "physical", blockId: blockKey });
+  };
+
   return (
     <div
       className="email-preview-canvas-workspace"
@@ -1302,8 +1329,8 @@ export function EmailPreview({ template, selectedBlockId, onSelectBlock }: Props
         <BlockView
           id={rootBlockId}
           template={template}
-          selectedBlockId={selectedBlockId}
-          onSelectBlock={onSelectBlock}
+          canvasSelection={canvasSelection}
+          onSelectBlock={handleSelectBlock}
         />
       </div>
     </div>

@@ -7,7 +7,6 @@ import {
   TEXT_BODY_VAR_PILL_BIND_ATTR,
   TEXT_BODY_VAR_PILL_CLASS,
   TEXT_BODY_VAR_PILL_INNER_LINK_CLASS,
-  TEXT_BODY_VAR_PILL_TEXT_CLASS,
 } from "./textBodyEditorFormat";
 import type { TextBody } from "../types/email";
 

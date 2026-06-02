@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import type { EmailBlock, EmailTemplate } from "../types/email";
 import { collectExternalVariableSlots, collectScalarExternalVariableSlots } from "./payloadSlots";
 import type { EmailPayload } from "../types/email";
+import { MINIMAL_TEXT_PROPS } from "./testFixtures/emailTemplate";
 
 function block(
   id: string,
@@ -16,13 +17,8 @@ function block(
     parentId,
     children,
     props: {
-      content: "<p>x</p>",
+      ...MINIMAL_TEXT_PROPS,
       textBody: { paragraphs: [{ runs: [{ text: "x" }] }] },
-      fontSize: "14px",
-      color: "#111",
-      bold: false,
-      italic: false,
-      decoration: "none",
     },
     ...(bindings ? { bindings } : {}),
   };
@@ -31,7 +27,7 @@ function block(
 describe("collectExternalVariableSlots", () => {
   it("按区块树文档顺序排序变量槽", () => {
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -71,7 +67,7 @@ describe("collectExternalVariableSlots", () => {
 
   it("多区块绑定时 primaryBlockId 为最近公共父级", () => {
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -111,7 +107,7 @@ describe("collectExternalVariableSlots", () => {
 
   it("汇总数组变量槽位的编辑元信息", () => {
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -148,7 +144,7 @@ describe("collectExternalVariableSlots", () => {
 
   it("汇总 interpolate 中声明的原子变量槽", () => {
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -188,7 +184,7 @@ describe("collectExternalVariableSlots", () => {
 describe("collectScalarExternalVariableSlots", () => {
   it("payload 中仍有值但模板无绑定的标量槽仍出现在列表", () => {
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",

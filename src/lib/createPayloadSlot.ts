@@ -5,6 +5,10 @@ import {
   resolveScenePresetCollectionValues,
 } from "../payload-contract/scene-collection-presets/buildPresetCollection";
 import { isPayloadSlotIdTaken, registerPayloadSlot } from "./payloadSlotRegister";
+import {
+  proposeScenePresetInstanceSlotId,
+  scenePresetInstanceLabel,
+} from "./scenePresetInstanceSlot";
 import { SLOT_ID_PATTERN } from "../payload-contract/value-types";
 import {
   parseScalarInitialValue,
@@ -79,34 +83,38 @@ export function createCollectionPayloadSlot(
   const def: PayloadSlotDefinition = {
     label,
     valueType: "collection",
-    itemFields: [],
     dataSource: { type: "custom" },
   };
 
   return {
-    payload: registerPayloadSlot(payload, slotId, def, []),
+    payload: registerPayloadSlot(payload, slotId, def),
   };
 }
 
-/** 从场景内置列表预设登记 collection 槽，并写入预览/mock 行数据 */
+/** 从场景内置列表预设登记 collection 槽，并写入预览/mock 行数据（同 preset 可多次实例化） */
 export function createCollectionPayloadSlotFromPreset(
   payload: EmailPayload,
   preset: SceneCollectionPreset
 ): { payload: EmailPayload; slotId: string } | { error: string } {
-  if (isPayloadSlotIdTaken(payload, preset.slotId)) {
-    return { error: `变量「${preset.label}」（${preset.slotId}）已存在，请勿重复创建。` };
+  const slotId = proposeScenePresetInstanceSlotId(payload, preset.slotId);
+  if (!slotId) {
+    return {
+      error: `无法为「${preset.label}」分配变量标识，请删除部分同名场景变量后重试。`,
+    };
   }
 
   const def = buildPayloadSlotDefFromScenePreset(preset);
-  let next = registerPayloadSlot(payload, preset.slotId, def, []);
-  const values = resolveScenePresetCollectionValues(preset, next, preset.slotId);
+  def.label = scenePresetInstanceLabel(preset.label, preset.slotId, slotId);
+
+  let next = registerPayloadSlot(payload, slotId, def, []);
+  const values = resolveScenePresetCollectionValues(preset, next, slotId);
   next = {
     ...next,
-    values: { ...next.values, [preset.slotId]: values },
+    values: { ...next.values, [slotId]: values },
   };
 
   return {
-    slotId: preset.slotId,
+    slotId,
     payload: next,
   };
 }

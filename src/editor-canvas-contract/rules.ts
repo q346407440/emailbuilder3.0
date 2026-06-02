@@ -15,7 +15,7 @@ export const EDITOR_CANVAS_RULES: readonly EditorCanvasRule[] = [
     title: "画布区禁止横向滚动",
     summary: "`.canvas-scroll` 使用 overflow-x:hidden；纵向仍 auto 以查看长邮件。",
     valueKey: "EMAIL_CANVAS_SCROLL_OVERFLOW_X",
-    implementation: "src/app.css（.canvas-scroll）、src/App.tsx、src/pages/LibraryPage.tsx",
+    implementation: "src/app.css（.canvas-scroll）、src/App.tsx",
   },
 ] as const;
 

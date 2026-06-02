@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailTemplate } from "../types/email";
+import { MINIMAL_TEXT_PROPS } from "./testFixtures/emailTemplate";
 import { REMOVED_REL_PARENT_ALIGN_KEY } from "../render-defaults-contract/forbiddenWrapperStyleKeys";
 import { normalizeEmailRootBlock } from "./normalizeEmailRoot";
 import { validateTemplate } from "./validate";
 
 function buildTemplate(rootProps: Record<string, unknown>): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "root-font-test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -35,15 +36,10 @@ function buildTemplate(rootProps: Record<string, unknown>): EmailTemplate {
           contentAlign: { horizontal: "center", vertical: "top" },
         },
         props: {
-          content: "<p>Hello</p>",
+          ...MINIMAL_TEXT_PROPS,
           textBody: {
             paragraphs: [{ runs: [{ text: "Hello" }] }],
           },
-          fontSize: "14px",
-          color: "#222222",
-          bold: false,
-          italic: false,
-          decoration: "none",
         },
         bindings: {},
       },

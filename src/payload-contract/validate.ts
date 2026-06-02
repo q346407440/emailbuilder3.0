@@ -14,19 +14,18 @@ import {
 } from "./collection-data-source";
 import type { CollectionDataSource } from "./collection-data-source";
 import {
-  isBuiltinCollectionExtractKind,
-  isBuiltinCollectionExtractMatchField,
-} from "./collection-builtin-extract";
-import {
   canDeclareCollectionItemFieldType,
   COLLECTION_ITEM_FIELDS_NESTING_ERROR,
   findCollectionFieldByPath,
 } from "./collection-item-fields";
-import { isBuiltinCollectionSortId } from "./collection-builtin-sort";
 import {
-  isBuiltinProductRangeMode,
-  isBuiltinProductRowGranularity,
-} from "./collection-builtin-catalog-config";
+  isBuiltinDerivedSortStrategy,
+  isSortPolicyObject,
+  normalizeBuiltinSortPolicy,
+  sortPolicyTargetSlotId,
+} from "./collection-builtin-sort-policy";
+import { isBuiltinCollectionSortId } from "./collection-builtin-sort";
+import { isBuiltinProductRangeMode } from "./collection-builtin-catalog-config";
 import { PAYLOAD_SCHEMA_VERSION } from "./types";
 import {
   COLLECTION_ITEM_FIELD_TYPE_SET,
@@ -79,13 +78,36 @@ function validateCollectionDataSource(
         )
       );
     }
-    if (ds.sort !== undefined && !isBuiltinCollectionSortId(ds.sort)) {
-      issues.push(
-        issue(
-          `${path}.sort`,
-          `sort 仅支持 catalogOrder / nameAsc / nameDesc / salesVolumeDesc / conversionDesc / priceDesc / priceAsc（兼容 salesDesc / salesAsc）`
-        )
-      );
+    if (ds.sort !== undefined) {
+      if (typeof ds.sort === "string") {
+        if (!isBuiltinCollectionSortId(ds.sort)) {
+          issues.push(
+            issue(
+              `${path}.sort`,
+              "sort 须为合法常规策略字符串，或 { strategy } 对象"
+            )
+          );
+        }
+      } else if (isSortPolicyObject(ds.sort)) {
+        const strategy = String(ds.sort.strategy ?? "");
+        if (isBuiltinDerivedSortStrategy(strategy)) {
+          issues.push(
+            issue(
+              `${path}.sort.strategy`,
+              "相似品/搭配品排序已移除，请改用常规排序（如 catalogOrder、nameAsc 等）"
+            )
+          );
+        } else if (!isBuiltinCollectionSortId(strategy)) {
+          issues.push(
+            issue(
+              `${path}.sort.strategy`,
+              "sort.strategy 须为常规排序 id"
+            )
+          );
+        }
+      } else {
+        issues.push(issue(`${path}.sort`, "sort 须为字符串或策略对象"));
+      }
     }
     if ((ds as { listSource?: unknown }).listSource !== undefined) {
       issues.push(
@@ -96,50 +118,13 @@ function validateCollectionDataSource(
       );
     }
 
-    const extract = (ds as { extract?: unknown }).extract;
-    if (extract !== undefined) {
-      if (!extract || typeof extract !== "object") {
-        issues.push(issue(`${path}.extract`, "extract 必须为对象"));
-      } else {
-        const ex = extract as { kind?: string; fromSlotId?: string; matchField?: string };
-        if (ex.kind === "productSkus") {
-          issues.push(
-            issue(
-              `${path}.extract.kind`,
-              "productSkus 已废弃；子列表请用 itemFields 嵌套，并在列表绑定中选择子列表路径"
-            )
-          );
-        } else if (!ex.kind || !isBuiltinCollectionExtractKind(ex.kind)) {
-          issues.push(
-            issue(`${path}.extract.kind`, "extract.kind 仅支持 none / similarTo / complement")
-          );
-        } else if (ex.kind === "similarTo" || ex.kind === "complement") {
-          if (typeof ex.fromSlotId !== "string" || !SLOT_ID_PATTERN.test(ex.fromSlotId)) {
-            issues.push(
-              issue(`${path}.extract.fromSlotId`, `${ex.kind} 须声明合法 fromSlotId`)
-            );
-          }
-          const anchorIdx = (ex as { anchorItemIndex?: unknown }).anchorItemIndex;
-          if (
-            anchorIdx !== undefined &&
-            (typeof anchorIdx !== "number" || !Number.isFinite(anchorIdx) || anchorIdx < 1)
-          ) {
-            issues.push(
-              issue(`${path}.extract.anchorItemIndex`, "anchorItemIndex 须为 ≥1 的整数")
-            );
-          }
-          if (
-            ex.matchField !== undefined &&
-            !isBuiltinCollectionExtractMatchField(ex.matchField)
-          ) {
-            issues.push(
-              issue(`${path}.extract.matchField`, "matchField 仅支持 href / name")
-            );
-          }
-        } else if (ex.kind === "none" && Object.keys(extract as object).length > 1) {
-          issues.push(issue(`${path}.extract`, "kind 为 none 时不应携带其它字段"));
-        }
-      }
+    if ((ds as { extract?: unknown }).extract !== undefined) {
+      issues.push(
+        issue(
+          `${path}.extract`,
+          "extract 已废弃并禁止持久化；请删除该字段，改用 sort: { strategy, targetSlotId }"
+        )
+      );
     }
 
     if (ds.catalog === "products" && (ds as { productConfig?: unknown }).productConfig !== undefined) {
@@ -147,10 +132,37 @@ function validateCollectionDataSource(
       if (!pc || typeof pc !== "object") {
         issues.push(issue(`${path}.productConfig`, "productConfig 须为对象"));
       } else {
-        if (!isBuiltinProductRowGranularity(String(pc.rowGranularity ?? ""))) {
+        const rowGranularity = String(pc.rowGranularity ?? "spu");
+        if (rowGranularity === "sku") {
           issues.push(
-            issue(`${path}.productConfig.rowGranularity`, "rowGranularity 仅支持 spu / sku")
+            issue(
+              `${path}.productConfig.rowGranularity`,
+              "列表行粒度 sku 已废弃；商品列表固定为 SPU，SKU 由模板嵌套 repeat 控制"
+            )
           );
+        } else if (pc.rowGranularity !== undefined && rowGranularity !== "spu") {
+          issues.push(
+            issue(`${path}.productConfig.rowGranularity`, "rowGranularity 仅支持 spu（可省略，默认 spu）")
+          );
+        }
+        if ((pc.productSelectionScope as unknown) !== undefined) {
+          const scope = String(pc.productSelectionScope);
+          if (scope !== "full" && scope !== "spuOnly") {
+            issues.push(
+              issue(`${path}.productConfig.productSelectionScope`, "productSelectionScope 仅支持 full / spuOnly")
+            );
+          }
+        }
+        if ((pc.skuSelection as unknown) !== undefined) {
+          const skuSel = pc.skuSelection;
+          if (
+            !Array.isArray(skuSel) ||
+            skuSel.some((k) => typeof k !== "string" || !String(k).includes("::"))
+          ) {
+            issues.push(
+              issue(`${path}.productConfig.skuSelection`, "skuSelection 须为 spuId::skuId 格式的字符串数组")
+            );
+          }
         }
         if (!isBuiltinProductRangeMode(String(pc.rangeMode ?? ""))) {
           issues.push(
@@ -179,95 +191,42 @@ function validateCollectionDataSource(
   return issues;
 }
 
-function validateCollectionDisplayRule(path: string, rawRule: unknown): PayloadContractIssue[] {
+function validateCollectionItemVisibility(path: string, raw: unknown): PayloadContractIssue[] {
   const issues: PayloadContractIssue[] = [];
-  if (rawRule === undefined) return issues;
-  if (!rawRule || typeof rawRule !== "object" || Array.isArray(rawRule)) {
-    issues.push(issue(path, "displayRule 必须为对象"));
+  if (raw === undefined) return issues;
+  if (!Array.isArray(raw)) {
+    issues.push(issue(path, "itemVisibility 须为布尔数组"));
     return issues;
   }
-  const rule = rawRule as {
-    keyField?: unknown;
-    includeValues?: unknown;
-    excludeValues?: unknown;
-  };
-  if (rule.keyField !== undefined) {
-    if (typeof rule.keyField !== "string" || !SLOT_ID_PATTERN.test(rule.keyField.trim())) {
-      issues.push(issue(`${path}.keyField`, "keyField 须为字母开头的字段标识符"));
+  for (let i = 0; i < raw.length; i++) {
+    if (typeof raw[i] !== "boolean") {
+      issues.push(issue(`${path}[${i}]`, "itemVisibility 每项须为 boolean"));
     }
-  }
-  if (rule.includeValues !== undefined) {
-    if (
-      !Array.isArray(rule.includeValues) ||
-      rule.includeValues.some((v) => typeof v !== "string" || !v.trim())
-    ) {
-      issues.push(issue(`${path}.includeValues`, "includeValues 须为非空字符串数组"));
-    }
-  }
-  if (rule.excludeValues !== undefined) {
-    if (
-      !Array.isArray(rule.excludeValues) ||
-      rule.excludeValues.some((v) => typeof v !== "string" || !v.trim())
-    ) {
-      issues.push(issue(`${path}.excludeValues`, "excludeValues 须为非空字符串数组"));
-    }
-  }
-  const hasAnyRule =
-    (typeof rule.keyField === "string" && rule.keyField.trim()) ||
-    (Array.isArray(rule.includeValues) && rule.includeValues.length > 0) ||
-    (Array.isArray(rule.excludeValues) && rule.excludeValues.length > 0);
-  if (!hasAnyRule) {
-    issues.push(issue(path, "displayRule 至少配置一项（keyField/include/exclude）"));
   }
   return issues;
 }
 
-function validateCollectionDisplayRulePreset(path: string, rawPreset: unknown): PayloadContractIssue[] {
+function validateDeprecatedCollectionDisplayFields(
+  path: string,
+  slot: PayloadSlotDefinition
+): PayloadContractIssue[] {
   const issues: PayloadContractIssue[] = [];
-  if (rawPreset === undefined) return issues;
-  if (!rawPreset || typeof rawPreset !== "object" || Array.isArray(rawPreset)) {
-    issues.push(issue(path, "displayRulePreset 必须为对象"));
-    return issues;
-  }
-  const preset = rawPreset as {
-    keyField?: unknown;
-    includeValues?: unknown;
-    options?: unknown;
+  const legacy = slot as PayloadSlotDefinition & {
+    displayRule?: unknown;
+    displayRulePreset?: unknown;
   };
-  if (typeof preset.keyField !== "string" || !SLOT_ID_PATTERN.test(preset.keyField.trim())) {
-    issues.push(issue(`${path}.keyField`, "keyField 须为字母开头的字段标识符"));
+  if (legacy.displayRule !== undefined) {
+    issues.push(
+      issue(`${path}.displayRule`, "displayRule 已废弃，请改用 itemVisibility（按行下标控制是否展示）")
+    );
   }
-  if (
-    !Array.isArray(preset.includeValues) ||
-    preset.includeValues.length === 0 ||
-    preset.includeValues.some((v) => typeof v !== "string" || !v.trim())
-  ) {
-    issues.push(issue(`${path}.includeValues`, "includeValues 须为非空字符串数组"));
-  }
-  if (preset.options !== undefined) {
-    if (!Array.isArray(preset.options) || preset.options.length === 0) {
-      issues.push(issue(`${path}.options`, "options 若声明须为非空数组"));
-    } else {
-      const seen = new Set<string>();
-      for (let i = 0; i < preset.options.length; i++) {
-        const opt = preset.options[i] as { value?: unknown; label?: unknown };
-        if (!opt || typeof opt !== "object") {
-          issues.push(issue(`${path}.options[${i}]`, "选项须为对象"));
-          continue;
-        }
-        const value = typeof opt.value === "string" ? opt.value.trim() : "";
-        const label = typeof opt.label === "string" ? opt.label.trim() : "";
-        if (!value) issues.push(issue(`${path}.options[${i}].value`, "value 须为非空字符串"));
-        if (!label) issues.push(issue(`${path}.options[${i}].label`, "label 须为非空字符串"));
-        if (value) {
-          if (seen.has(value)) {
-            issues.push(issue(`${path}.options[${i}].value`, "value 不可重复"));
-          } else {
-            seen.add(value);
-          }
-        }
-      }
-    }
+  if (legacy.displayRulePreset !== undefined) {
+    issues.push(
+      issue(
+        `${path}.displayRulePreset`,
+        "displayRulePreset 已废弃，请改用 payload.slots 上的 itemVisibility"
+      )
+    );
   }
   return issues;
 }
@@ -488,6 +447,30 @@ export function validatePayloadShape(payload: unknown): PayloadContractIssue[] {
   if (!p.values || typeof p.values !== "object" || Array.isArray(p.values)) {
     issues.push(issue("values", "payload.values 必须为对象"));
   }
+  if (p.slotOrder !== undefined) {
+    if (!Array.isArray(p.slotOrder)) {
+      issues.push(issue("slotOrder", "slotOrder 必须为字符串数组"));
+    } else {
+      const slotKeys =
+        p.slots && typeof p.slots === "object" && !Array.isArray(p.slots)
+          ? (p.slots as Record<string, unknown>)
+          : {};
+      const seen = new Set<string>();
+      p.slotOrder.forEach((id, i) => {
+        if (typeof id !== "string" || !id.trim()) {
+          issues.push(issue(`slotOrder[${i}]`, "须为非空字符串"));
+          return;
+        }
+        if (seen.has(id)) {
+          issues.push(issue(`slotOrder[${i}]`, `slotId「${id}」在 slotOrder 中重复`));
+        }
+        seen.add(id);
+        if (!Object.prototype.hasOwnProperty.call(slotKeys, id)) {
+          issues.push(issue(`slotOrder[${i}]`, `slotId「${id}」不在 payload.slots 中`));
+        }
+      });
+    }
+  }
   if (p.detachedVariableSlotIds !== undefined) {
     if (!Array.isArray(p.detachedVariableSlotIds)) {
       issues.push(issue("detachedVariableSlotIds", "detachedVariableSlotIds 必须为字符串数组"));
@@ -501,14 +484,14 @@ export function validatePayloadShape(payload: unknown): PayloadContractIssue[] {
   }
   if (p.slots && typeof p.slots === "object" && !Array.isArray(p.slots)) {
     issues.push(
-      ...validatePayloadBuiltinExtractDependencies(p.slots as Record<string, PayloadSlotDefinition>)
+      ...validatePayloadBuiltinSortDependencies(p.slots as Record<string, PayloadSlotDefinition>)
     );
   }
   return issues;
 }
 
-/** 内置列表 extract 跨槽引用与依赖环 */
-function validatePayloadBuiltinExtractDependencies(
+/** 内置列表 sort 派生策略跨槽引用与依赖环 */
+function validatePayloadBuiltinSortDependencies(
   slots: Record<string, PayloadSlotDefinition>
 ): PayloadContractIssue[] {
   const issues: PayloadContractIssue[] = [];
@@ -519,27 +502,32 @@ function validatePayloadBuiltinExtractDependencies(
     const ds = def.dataSource;
     if (ds?.type !== "remote" || ds.provider !== "builtin") continue;
 
-    let fromId: string | undefined;
-    let fromPath: string | undefined;
+    const policy = normalizeBuiltinSortPolicy(ds.sort);
+    const fromId = sortPolicyTargetSlotId(policy);
+    const fromPath = `slots.${slotId}.dataSource.sort.targetSlotId`;
 
-    if (ds.extract?.kind === "similarTo") {
-      fromId = ds.extract.fromSlotId;
-      fromPath = `slots.${slotId}.dataSource.extract.fromSlotId`;
-    } else {
-      continue;
-    }
+    if (!fromId) continue;
 
     if (fromId === slotId) {
-      issues.push(issue(fromPath!, "不能依赖自身"));
+      issues.push(issue(fromPath, "不能依赖自身"));
       continue;
     }
     const fromDef = slots[fromId];
     if (!fromDef) {
-      issues.push(issue(fromPath!, `fromSlotId「${fromId}」在 payload.slots 中不存在`));
+      issues.push(issue(fromPath, `targetSlotId「${fromId}」在 payload.slots 中不存在`));
       continue;
     }
     if (fromDef.valueType !== "collection") {
-      issues.push(issue(fromPath!, `fromSlotId「${fromId}」须为 collection 槽`));
+      issues.push(issue(fromPath, `targetSlotId「${fromId}」须为 collection 槽`));
+      continue;
+    }
+    const fromDs = fromDef.dataSource;
+    if (
+      fromDs?.type !== "remote" ||
+      fromDs.provider !== "builtin" ||
+      fromDs.catalog !== "products"
+    ) {
+      issues.push(issue(fromPath, `targetSlotId「${fromId}」须为内置商品列表槽`));
     }
     edges.set(slotId, fromId);
   }
@@ -549,12 +537,7 @@ function validatePayloadBuiltinExtractDependencies(
     let cur: string | undefined = start;
     while (cur && edges.has(cur)) {
       if (seen.has(cur)) {
-        issues.push(
-          issue(
-            `slots.${start}.dataSource`,
-            "extract 依赖链存在环"
-          )
-        );
+        issues.push(issue(`slots.${start}.dataSource`, "派生列表依赖链存在环"));
         break;
       }
       seen.add(cur);
@@ -639,29 +622,12 @@ export function validatePayloadSlotDefinition(
       );
     }
     issues.push(...validateCollectionDataSource(`${path}.dataSource`, slot.dataSource));
-    issues.push(...validateCollectionDisplayRule(`${path}.displayRule`, slot.displayRule));
-    issues.push(
-      ...validateCollectionDisplayRulePreset(`${path}.displayRulePreset`, slot.displayRulePreset)
-    );
-    if (slot.displayRule !== undefined && !slot.sceneCollectionPresetId) {
-      issues.push(
-        issue(`${path}.displayRule`, "displayRule 仅内置场景变量可声明（需 sceneCollectionPresetId）")
-      );
-    }
-    if (slot.displayRulePreset !== undefined && !slot.sceneCollectionPresetId) {
-      issues.push(
-        issue(
-          `${path}.displayRulePreset`,
-          "displayRulePreset 仅内置场景变量可声明（需 sceneCollectionPresetId）"
-        )
-      );
-    }
+    issues.push(...validateCollectionItemVisibility(`${path}.itemVisibility`, slot.itemVisibility));
+    issues.push(...validateDeprecatedCollectionDisplayFields(path, slot));
   } else if (slot.dataSource !== undefined) {
     issues.push(issue(`${path}.dataSource`, "仅 collection 槽可声明 dataSource"));
-  } else if (slot.displayRule !== undefined) {
-    issues.push(issue(`${path}.displayRule`, "仅 collection 槽可声明 displayRule"));
-  } else if (slot.displayRulePreset !== undefined) {
-    issues.push(issue(`${path}.displayRulePreset`, "仅 collection 槽可声明 displayRulePreset"));
+  } else if (slot.itemVisibility !== undefined) {
+    issues.push(issue(`${path}.itemVisibility`, "仅 collection 槽可声明 itemVisibility"));
   }
   if (slot.description !== undefined && typeof slot.description !== "string") {
     issues.push(issue(`${path}.description`, "description 若声明必须为字符串"));

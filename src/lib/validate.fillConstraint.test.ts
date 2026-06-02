@@ -11,7 +11,7 @@ function buildTemplateForFillConstraint(opts: {
   childHeightMode: WrapperHeightMode;
 }): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test-template",
     templateVersion: 1,
     rootBlockId: "root",

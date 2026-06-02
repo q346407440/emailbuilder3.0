@@ -1,11 +1,6 @@
+import type { VirtualBlockRef } from "../repeat-binding-contract";
 import type { EmailTemplate } from "../types/email";
-import {
-  isRepeatCloneBlockId,
-  isRepeatHostBlock,
-  REPEAT_CLONE_ID_MARK,
-  repeatCloneItemIndex,
-  sourceBlockIdFromRepeatClone,
-} from "./repeatRegion";
+import { isRepeatHostBlock } from "./repeatHostBlock";
 
 /** 单模板内列表重复组上限；按宿主出现顺序循环取色 */
 export const REPEAT_REGION_TREE_TAG_COLOR_COUNT = 10;
@@ -57,13 +52,18 @@ export type RepeatTreeHostInfo = {
   prototypeChildIds: string[];
 };
 
-function repeatCloneHostBlockId(cloneBlockId: string): string | null {
-  if (!isRepeatCloneBlockId(cloneBlockId)) return null;
-  const markIndex = cloneBlockId.indexOf(REPEAT_CLONE_ID_MARK);
-  const afterMark = cloneBlockId.slice(markIndex + REPEAT_CLONE_ID_MARK.length);
-  const lastUnderscore = afterMark.lastIndexOf("_");
-  if (lastUnderscore < 0) return null;
-  return afterMark.slice(0, lastUnderscore);
+/** 去掉名称末尾已存在的「（第 N 项）」后缀，避免虚拟预览与物化行重复拼接 */
+const REPEAT_ITEM_DISPLAY_SUFFIX_RE = /(?:（第 \d+ 项）)+$/u;
+
+export function stripRepeatItemDisplaySuffix(name: string): string {
+  return name.replace(REPEAT_ITEM_DISPLAY_SUFFIX_RE, "").trim();
+}
+
+/** 列表重复展开行在区块树/预览中的展示名（第 1 项不加后缀） */
+export function formatRepeatItemDisplayName(baseName: string, itemIndex: number): string {
+  const base = stripRepeatItemDisplaySuffix(baseName);
+  if (itemIndex <= 0 || !base) return base;
+  return `${base}（第 ${itemIndex + 1} 项）`;
 }
 
 function parseMaterializedRepeatRowBlockId(
@@ -101,8 +101,8 @@ function hostInfoFor(
 }
 
 /**
- * 为区块树构建列表重复 tag 索引（宿主 / 行模板 / 展开克隆或物化行）。
- * 同一 repeat 宿主共用 colorIndex（0–9 循环）。
+ * 为区块树构建列表重复 tag 索引（宿主 / 行模板 / 物化行）。
+ * 虚拟 repeat-item 由 BlockTree 按 VirtualBlockRef 直接标注。
  */
 export function buildRepeatRegionTreeTagIndex(template: EmailTemplate): RepeatRegionTreeTagIndex {
   const byBlockId = new Map<string, RepeatTreeBlockTag>();
@@ -139,27 +139,8 @@ export function buildRepeatRegionTreeTagIndex(template: EmailTemplate): RepeatRe
     }
   }
 
-  const hostById = new Map(hosts.map((h) => [h.hostId, h]));
-
   for (const blockId of Object.keys(template.blocks)) {
     if (byBlockId.has(blockId)) continue;
-
-    if (isRepeatCloneBlockId(blockId)) {
-      const hostId = repeatCloneHostBlockId(blockId);
-      const host = hostId ? hostById.get(hostId) : undefined;
-      if (!host) continue;
-      const itemIndex = repeatCloneItemIndex(blockId) ?? undefined;
-      byBlockId.set(blockId, {
-        groupKey: host.hostId,
-        role: "repeat-item",
-        colorIndex: host.colorIndex,
-        slotId: host.slotId,
-        slotLabel: host.slotLabel,
-        prototypeChildIds: host.prototypeChildIds,
-        itemIndex,
-      });
-      continue;
-    }
 
     const materialized = parseMaterializedRepeatRowBlockId(blockId, prototypeIdSet);
     if (!materialized) continue;
@@ -188,7 +169,6 @@ export function repeatTreeTagPalette(colorIndex: number): RepeatTreeTagPalette {
   ]!;
 }
 
-/** Inspector / 树共用：按宿主 blockId 取分组色 */
 export function repeatColorIndexForHost(template: EmailTemplate, hostId: string): number {
   return buildRepeatRegionTreeTagIndex(template).hosts.find((h) => h.hostId === hostId)?.colorIndex ?? 0;
 }
@@ -204,7 +184,6 @@ export function repeatTreeTagRoleLabel(role: RepeatTreeTagRole): string {
   }
 }
 
-/** 悬停说明：数组槽、行模板区块名、重复项序号 */
 export function repeatTreeTagTitle(template: EmailTemplate, tag: RepeatTreeBlockTag): string {
   const prototypeNames = tag.prototypeChildIds
     .map((id) => blockDisplayName(template, id))
@@ -222,13 +201,44 @@ export function repeatTreeTagTitle(template: EmailTemplate, tag: RepeatTreeBlock
   return lines.join("\n");
 }
 
-/** 选中行时左侧色条（含行模板子树内区块，便于辨认所属组） */
+/** 选中行时左侧色条（含行模板子树内区块） */
+/** 虚拟 repeat-item 是否为该列表组的一行复制根（行模板 / self-repeat 宿主），非子树内普通块 */
+export function isRepeatItemCloneRoot(
+  ref: VirtualBlockRef,
+  tagIndex: RepeatRegionTreeTagIndex
+): boolean {
+  if (ref.kind !== "repeat-item") return false;
+  const host = tagIndex.hosts.find((h) => h.hostId === ref.hostId);
+  if (!host) return false;
+  return host.prototypeChildIds.includes(ref.prototypeRootId);
+}
+
+/**
+ * 区块树行右侧 pill：宿主/行模板原样；repeat-item 仅在复制根展示（第 1 项标「列表」，其余标「重复」）。
+ */
+export function repeatTreeRowDisplayTag(
+  ref: VirtualBlockRef,
+  directTag: RepeatTreeBlockTag | null,
+  tagIndex: RepeatRegionTreeTagIndex
+): RepeatTreeBlockTag | null {
+  if (!directTag) return null;
+  if (directTag.role === "host" || directTag.role === "prototype") {
+    return directTag;
+  }
+  if (directTag.role !== "repeat-item") return null;
+  if (!isRepeatItemCloneRoot(ref, tagIndex)) return null;
+  if (directTag.itemIndex === 0) {
+    return { ...directTag, role: "host" };
+  }
+  return directTag;
+}
+
 export function repeatTreeTagForBlock(
   index: RepeatRegionTreeTagIndex,
   template: EmailTemplate,
   blockId: string
 ): RepeatTreeBlockTag | null {
-  const direct = index.byBlockId.get(blockId) ?? index.byBlockId.get(sourceBlockIdFromRepeatClone(blockId));
+  const direct = index.byBlockId.get(blockId);
   if (direct) return direct;
 
   let currentId: string | null = blockId;
@@ -236,17 +246,6 @@ export function repeatTreeTagForBlock(
     const tag = index.byBlockId.get(currentId);
     if (tag?.role === "prototype" || tag?.role === "repeat-item") {
       return tag;
-    }
-    if (isRepeatCloneBlockId(currentId)) {
-      const hostId = repeatCloneHostBlockId(currentId);
-      const hostTag = hostId ? index.byBlockId.get(hostId) : null;
-      if (hostTag) {
-        return {
-          ...hostTag,
-          role: "repeat-item",
-          itemIndex: repeatCloneItemIndex(currentId) ?? undefined,
-        };
-      }
     }
     currentId = template.blocks[currentId]?.parentId ?? null;
   }

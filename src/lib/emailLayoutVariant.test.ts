@@ -28,20 +28,19 @@ describe("emailLayoutVariant", () => {
     assert.equal(r.layoutVariantId, "card");
   });
 
+  it("resolveLayoutVariantId 无 manifest 时报错", () => {
+    const r = resolveLayoutVariantId(null, undefined);
+    assert.ok(r.error?.includes("layout-manifest"));
+    assert.equal(r.layoutVariantId, null);
+  });
+
   it("resolveEmailFilePaths points under layouts/", () => {
     const base = "/data/emails/member-welcome";
     const ctx = resolveEmailFilePaths(base, manifest, "centered");
-    assert.equal(ctx.mode, "layout-variants");
+    assert.equal(ctx.layoutVariantId, "centered");
     assert.equal(
       ctx.templatePath,
       path.join(base, "layouts", "centered", "template.json")
     );
-  });
-
-  it("legacy mode uses root template.json", () => {
-    const base = "/data/emails/other";
-    const ctx = resolveEmailFilePaths(base, null, null);
-    assert.equal(ctx.mode, "legacy");
-    assert.equal(ctx.templatePath, path.join(base, "template.json"));
   });
 });

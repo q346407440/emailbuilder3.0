@@ -3,22 +3,47 @@ import { describe, it } from "node:test";
 import {
   buildCollectionFieldPickerOptions,
   buildCollectionFieldPickerRows,
+  buildRepeatListScalarFieldPickerRows,
   buildDefaultCollectionFieldMap,
   echoCustomJsonPaste,
+  inferCollectionItemFieldsFromFirstRow,
   listCatalogSourceFieldKeysForPicker,
   normalizeCollectionItemsWithFieldMap,
   parseCollectionJsonTextWithFieldMap,
   readCatalogSourceValue,
   collectionSampleFromPayloadValues,
 } from "./collectionFieldMapping";
+import { parentScalarItemFieldsFromItemFields } from "./repeatNestedBindingUi";
 import {
   canBindTargetPathToSourceKey,
+  countNestedCollectionsInItemFields,
   flattenNestedCollectionFieldsPreview,
   hasNestedCollectionInItemFields,
   validateCollectionFieldMapDepth,
 } from "./collectionFieldMappingTree";
 
 describe("collectionFieldMapping", () => {
+  it("inferCollectionItemFieldsFromFirstRow 推断 SPU+skus 含 number 子字段", () => {
+    const fields = inferCollectionItemFieldsFromFirstRow({
+      name: "Aura 无线耳机",
+      imageSrc: "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg",
+      salePrice: "$79.00",
+      skus: [
+        {
+          title: "曜石黑",
+          href: "https://example.com/products/aura-earbuds?variant=1",
+          inventoryQuantity: 86,
+          totalSales: 1240,
+        },
+      ],
+    });
+    assert.ok(fields.some((f) => f.key === "name" && f.valueType === "string"));
+    assert.ok(fields.some((f) => f.key === "imageSrc" && f.valueType === "url"));
+    const skus = fields.find((f) => f.key === "skus" && f.valueType === "collection");
+    assert.ok(skus?.itemFields?.some((c) => c.key === "inventoryQuantity" && c.valueType === "number"));
+    assert.ok(skus?.itemFields?.some((c) => c.key === "totalSales" && c.valueType === "number"));
+  });
+
   it("echoCustomJsonPaste 从列表值回显 JSON", () => {
     const items = [{ title: "A", iconSrc: "https://example.com/a.png" }];
     const echoed = echoCustomJsonPaste(items);
@@ -96,11 +121,16 @@ describe("collectionFieldMapping", () => {
       },
     ];
     assert.equal(hasNestedCollectionInItemFields(itemFields), true);
+    assert.equal(countNestedCollectionsInItemFields(itemFields), 1);
     const expanded = new Set(["skus"]);
     const entries = flattenNestedCollectionFieldsPreview(itemFields, expanded);
     assert.equal(entries.some((e) => e.kind === "group" && e.path === "skus"), true);
     assert.equal(entries.some((e) => e.kind === "leaf" && e.path === "skus.imageSrc"), true);
     assert.equal(entries.some((e) => e.path === "name"), false);
+    const skusGroup = entries.find((e) => e.kind === "group" && e.path === "skus");
+    const skuLeaf = entries.find((e) => e.kind === "leaf" && e.path === "skus.imageSrc");
+    assert.equal(skusGroup?.depth, 1);
+    assert.equal(skuLeaf?.depth, 2);
   });
 
   it("无样本时仍按 itemFields 展示子 collection 树", () => {
@@ -120,6 +150,44 @@ describe("collectionFieldMapping", () => {
     assert.ok(childIdx > groupIdx);
     assert.equal(rows[childIdx]?.depth, 1);
     assert.equal(rows[childIdx]?.groupKey, "skus");
+  });
+
+  it("buildRepeatListScalarFieldPickerRows 不含子列表分组与 skus.xxx", () => {
+    const itemFields = [
+      { key: "imageSrc", label: "商品图", valueType: "url" as const },
+      { key: "name", label: "商品名", valueType: "string" as const },
+      {
+        key: "skus",
+        label: "规格列表",
+        valueType: "collection" as const,
+        itemFields: [{ key: "title", label: "规格名", valueType: "string" as const }],
+      },
+    ];
+    const sample = collectionSampleFromPayloadValues(
+      {
+        schemaVersion: "1.0.0",
+        slots: {},
+        values: {
+          picked: [
+            {
+              name: "Aura",
+              imageSrc: "https://example.com/spu.jpg",
+              skus: [{ title: "黑", imageSrc: "https://example.com/sku.jpg" }],
+            },
+          ],
+        },
+      },
+      "picked",
+      itemFields
+    );
+    assert.ok(sample);
+    const scalarFields = parentScalarItemFieldsFromItemFields(itemFields);
+    const rows = buildRepeatListScalarFieldPickerRows(sample, scalarFields);
+    assert.ok(!rows.some((r) => r.kind === "group"));
+    assert.ok(!rows.some((r) => r.key.includes(".")));
+    assert.ok(rows.some((r) => r.key === "name"));
+    assert.ok(rows.some((r) => r.key === "imageSrc"));
+    assert.equal(rows.some((r) => r.key === "skus"), false);
   });
 
   it("buildCollectionFieldPickerRows 将 skus.xxx 挂在 SKU 列表分组下", () => {

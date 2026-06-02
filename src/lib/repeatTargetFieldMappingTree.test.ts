@@ -70,7 +70,7 @@ function miniTemplate(): EmailTemplate {
       skuImage: { name: "SKU 规格图" },
     },
     rootBlockId: "row",
-  } as EmailTemplate;
+  } as unknown as EmailTemplate;
 }
 
 describe("repeatTargetFieldMappingTree", () => {
@@ -104,23 +104,32 @@ describe("repeatTargetFieldMappingTree", () => {
     ];
     const entries = flattenRepeatTargetFieldsForNav(template, ["row"], targets);
     assert.ok(!entries.some((e) => e.kind === "group" && e.label === "行模板"));
-    assert.ok(entries.some((e) => e.kind === "group" && e.label === "主推商品"));
-    assert.ok(entries.some((e) => e.kind === "group" && e.label === "SKU 区"));
+    assert.ok(entries.some((e) => e.kind === "group" && e.label === "主推商品 · 布局"));
+    assert.ok(entries.some((e) => e.kind === "group" && e.label === "SKU 区 · 布局"));
     const topDepth = Math.min(...entries.map((e) => e.depth));
     assert.equal(topDepth, 0);
-    assert.ok(entries.some((e) => e.kind === "group" && e.label === "SKU 规格图"));
-    const skuGroup = entries.find((e) => e.kind === "group" && e.label === "SKU 规格图");
+    assert.ok(entries.some((e) => e.kind === "group" && e.label === "SKU 规格图 · 图片"));
+    const skuContentGroup = entries.find(
+      (e) => e.kind === "group" && e.tier === "contentBlock" && e.label === "SKU 规格图 · 图片"
+    );
     const skuSrc = entries.find(
       (e) => e.kind === "leaf" && e.key === "skuImage:wrapperStyle.backgroundImage.src"
     );
-    assert.ok(skuGroup && skuSrc);
-    assert.equal(skuSrc.depth, skuGroup.depth + 1);
+    assert.ok(skuContentGroup && skuSrc);
+    assert.equal(skuSrc.depth, skuContentGroup.depth + 1);
+    assert.equal(skuSrc.label, "图片地址");
     assert.equal(
-      repeatTargetGroupHasChildMapping(skuGroup.key, entries, {
+      repeatTargetGroupHasChildMapping(skuContentGroup.key, entries, {
         [skuSrc.key]: "imageSrc",
       }),
       true
     );
+    const titleLeaves = entries.filter(
+      (e): e is Extract<typeof e, { kind: "leaf" }> =>
+        e.kind === "leaf" && e.blockId === "productName"
+    );
+    assert.equal(titleLeaves.length, 1);
+    assert.equal(titleLeaves[0]?.label, "正文");
   });
 
   it("行模板根无子区块时仍展示根下可映射字段", () => {

@@ -1,10 +1,9 @@
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
 import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  normalizeBuiltinCollectionExtract,
-  type BuiltinCollectionExtract,
-} from "../payload-contract/collection-builtin-extract";
-import type { BuiltinCollectionSortId } from "../payload-contract/collection-builtin-sort";
+  readSortPolicyFromBuiltinDataSource,
+  writeSortPolicyToDataSource,
+  type NormalizedBuiltinSortPolicy,
+} from "../payload-contract/collection-builtin-sort-policy";
 import type { EmailPayload } from "../types/email";
 import {
   patchPayloadCollectionSlot,
@@ -38,49 +37,41 @@ function refreshBuiltinCollectionSlotValues(
 }
 
 function normalizeBuiltinDataSourcePatch(
-  ds: CollectionDataSource & { type: "remote"; provider: "builtin" }
+  ds: CollectionDataSource & { type: "remote"; provider: "builtin" },
+  sortPolicy: NormalizedBuiltinSortPolicy
 ): CollectionDataSource {
-  const extract = normalizeBuiltinCollectionExtract(ds.extract);
   return {
     ...ds,
-    extract: extract.kind === "similarTo" ? extract : undefined,
+    sort: writeSortPolicyToDataSource(sortPolicy),
   };
 }
 
-/** 更新已提交 payload 上 builtin 列表槽的排序 */
-export function patchPayloadBuiltinCollectionSort(
+/** 更新已提交 payload 上 builtin 列表槽的排序/派生策略 */
+export function patchPayloadBuiltinCollectionSortPolicy(
   payload: EmailPayload,
   slotId: string,
-  sort: BuiltinCollectionSortId
+  sortPolicy: NormalizedBuiltinSortPolicy
 ): EmailPayload {
   if (!isBuiltinCollectionSlot(payload, slotId)) return payload;
   const entry = payload.slots[slotId]!;
   const ds = entry.dataSource!;
   if (ds.type !== "remote" || ds.provider !== "builtin") return payload;
-  return refreshBuiltinCollectionSlotValues(payload, slotId, { ...ds, sort });
-}
-
-/** 更新 extract（相似品等衍生） */
-export function patchPayloadBuiltinCollectionExtract(
-  payload: EmailPayload,
-  slotId: string,
-  extract: BuiltinCollectionExtract
-): EmailPayload {
-  if (!isBuiltinCollectionSlot(payload, slotId)) return payload;
-  const entry = payload.slots[slotId]!;
-  const ds = entry.dataSource!;
-  if (ds.type !== "remote" || ds.provider !== "builtin") return payload;
-  const normalized = normalizeBuiltinCollectionExtract(extract);
   return refreshBuiltinCollectionSlotValues(
     payload,
     slotId,
-    normalizeBuiltinDataSourcePatch({
-      ...ds,
-      extract: normalized.kind === "similarTo" ? normalized : undefined,
-    })
+    normalizeBuiltinDataSourcePatch(ds, sortPolicy)
   );
 }
 
 export function isPayloadBuiltinCollectionSlot(payload: EmailPayload, slotId: string): boolean {
   return isBuiltinCollectionSlot(payload, slotId);
+}
+
+export function readCommittedBuiltinSortPolicy(
+  payload: EmailPayload,
+  slotId: string
+): NormalizedBuiltinSortPolicy | null {
+  const ds = payload.slots[slotId]?.dataSource;
+  if (ds?.type !== "remote" || ds.provider !== "builtin") return null;
+  return readSortPolicyFromBuiltinDataSource(ds);
 }

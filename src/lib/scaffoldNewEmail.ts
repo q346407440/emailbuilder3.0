@@ -1,8 +1,9 @@
 import type { LayoutManifest } from "../layout-variant-contract/types";
-import type { EmailMeta, EmailPayload, EmailTemplate } from "../types/email";
+import type { EmailPayload, EmailTemplate } from "../types/email";
 import { EMAIL_TEMPLATE_SCHEMA_VERSION } from "../types/email";
 import type { TokenPresets } from "../types/tokenPreset";
 import { PAYLOAD_SCHEMA_VERSION } from "../payload-contract/types";
+import { META_SCHEMA_VERSION, type EmailMeta } from "../meta-contract";
 import { assertEmailKeySafe } from "./validate";
 
 export type NewEmailScaffold = {
@@ -43,29 +44,62 @@ export function deriveEmailKeyFromDisplayName(
   return `${base}-${Date.now().toString(36)}`;
 }
 
-export function buildNewEmailScaffold(emailKey: string, displayName: string): NewEmailScaffold {
-  const now = new Date().toISOString();
-  const rootId = `${emailKey}-root`;
-  const rowId = `${emailKey}-row`;
-  const textId = `${emailKey}-text`;
+function layoutVariantBlockIdPrefix(emailKey: string, layoutVariantId: string): string {
+  return layoutVariantId === "default" ? emailKey : `${emailKey}-${layoutVariantId}`;
+}
 
-  const layoutManifest: LayoutManifest = {
+function buildDefaultTokenPresets(): TokenPresets {
+  return {
     schemaVersion: "1.0.0",
-    activeLayoutVariantId: "default",
-    variants: [
-      {
-        id: "default",
+    activePresetId: "default",
+    presets: {
+      default: {
         label: "默认",
-        description: "新建模板的默认版式",
-        createdAt: now,
+        description: "新建模板默认样式档位",
+        tokens: {
+          colors: {
+            primary: "#111111",
+            secondary: "#666666",
+            surface: "#FFFFFF",
+          },
+          spacing: {
+            section: "16px",
+            gap: "8px",
+            pageInline: "16px",
+          },
+          typography: {
+            display: "24px",
+            h1: "20px",
+            body: "14px",
+            caption: "12px",
+          },
+          radius: {
+            panel: "0",
+            cta: "0",
+          },
+        },
       },
-    ],
+    },
+    scopeSelections: {},
   };
+}
+
+/** 空白版式的 template 与 tokenPresets（与新建邮件 default 版式同源，block id 按版式区分）。 */
+export function buildBlankLayoutVariantAssets(
+  emailKey: string,
+  layoutVariantId: string
+): { template: EmailTemplate; tokenPresets: TokenPresets } {
+  const idPrefix = layoutVariantBlockIdPrefix(emailKey, layoutVariantId);
+  const rootId = `${idPrefix}-root`;
+  const rowId = `${idPrefix}-row`;
+  const textId = `${idPrefix}-text`;
+  const templateId =
+    layoutVariantId === "default" ? emailKey : `${emailKey}-${layoutVariantId}`;
 
   const template: EmailTemplate = {
     schemaVersion: EMAIL_TEMPLATE_SCHEMA_VERSION,
     emailId: emailKey,
-    templateId: emailKey,
+    templateId,
     templateVersion: 1,
     locale: "zh-CN",
     rootBlockId: rootId,
@@ -161,38 +195,24 @@ export function buildNewEmailScaffold(emailKey: string, displayName: string): Ne
     },
   };
 
-  const tokenPresets: TokenPresets = {
+  return { template, tokenPresets: buildDefaultTokenPresets() };
+}
+
+export function buildNewEmailScaffold(emailKey: string, displayName: string): NewEmailScaffold {
+  const now = new Date().toISOString();
+  const { template, tokenPresets } = buildBlankLayoutVariantAssets(emailKey, "default");
+
+  const layoutManifest: LayoutManifest = {
     schemaVersion: "1.0.0",
-    activePresetId: "default",
-    presets: {
-      default: {
+    activeLayoutVariantId: "default",
+    variants: [
+      {
+        id: "default",
         label: "默认",
-        description: "新建模板默认样式档位",
-        tokens: {
-          colors: {
-            primary: "#111111",
-            secondary: "#666666",
-            surface: "#FFFFFF",
-          },
-          spacing: {
-            section: "16px",
-            gap: "8px",
-            pageInline: "16px",
-          },
-          typography: {
-            display: "24px",
-            h1: "20px",
-            body: "14px",
-            caption: "12px",
-          },
-          radius: {
-            panel: "0",
-            cta: "0",
-          },
-        },
+        description: "新建模板的默认版式",
+        createdAt: now,
       },
-    },
-    scopeSelections: {},
+    ],
   };
 
   const payload: EmailPayload = {
@@ -202,6 +222,7 @@ export function buildNewEmailScaffold(emailKey: string, displayName: string): Ne
   };
 
   const meta: EmailMeta = {
+    schemaVersion: META_SCHEMA_VERSION,
     displayName: displayName.trim(),
     description: "",
     source: "human",

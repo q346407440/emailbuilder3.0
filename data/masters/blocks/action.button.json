@@ -1,4 +1,5 @@
 {
+  "schemaVersion": "4.0.0",
   "masterId": "action.button",
   "name": "按钮",
   "version": "1.0.0",
@@ -7,133 +8,124 @@
   "blockType": "action.button",
   "sampleBlockId": "__sample_button__",
   "catalogRootBlockId": "__catalog_root__",
-  "blocks": {
-    "__catalog_root__": {
-      "id": "__catalog_root__",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "__sample_button__"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "backgroundColor": "#FFFFFF",
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "__sample_button__": {
-      "id": "__sample_button__",
-      "type": "button",
-      "parentId": "__catalog_root__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "text": "按钮",
-        "link": "https://example.com",
-        "buttonStyle": {
-          "widthMode": "hug",
-          "backgroundColor": {
-            "$themeRef": "colors.surface"
-          },
-          "textColor": {
-            "$themeRef": "colors.primary"
-          },
-          "fontSize": {
-            "$themeRef": "tokens.typography.body"
-          },
-          "border": {
-            "mode": "unified",
-            "width": "1px",
-            "style": "solid",
-            "color": {
-              "$themeRef": "colors.primary"
-            }
-          },
-          "borderRadius": {
-            "mode": "unified",
-            "radius": {
-              "$themeRef": "tokens.radius.cta"
-            }
-          },
-          "bold": false,
-          "italic": false
-        }
-      },
-      "bindings": {
-        "props.buttonStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.textColor": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.border.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        }
-      }
-    }
-  },
-  "blockMeta": {
-    "__catalog_root__": {
+  "root": {
+    "id": "__catalog_root__",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "预览根"
     },
-    "__sample_button__": {
-      "blockType": "action.button",
-      "name": "按钮"
-    }
+    "props": {
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "__sample_button__",
+        "type": "button",
+        "blockMeta": {
+          "blockType": "action.button",
+          "name": "按钮"
+        },
+        "props": {
+          "text": "按钮",
+          "link": "https://example.com",
+          "buttonStyle": {
+            "widthMode": "hug",
+            "backgroundColor": {
+              "$themeRef": "colors.surface"
+            },
+            "textColor": {
+              "$themeRef": "colors.primary"
+            },
+            "fontSize": {
+              "$themeRef": "tokens.typography.body"
+            },
+            "border": {
+              "mode": "unified",
+              "width": "1px",
+              "style": "solid",
+              "color": {
+                "$themeRef": "colors.primary"
+              }
+            },
+            "borderRadius": {
+              "mode": "unified",
+              "radius": {
+                "$themeRef": "tokens.radius.cta"
+              }
+            },
+            "bold": false,
+            "italic": false
+          }
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "hug",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "bindings": {
+          "props.buttonStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "props.buttonStyle.textColor": {
+            "slotId": "colors.primary",
+            "mode": "theme",
+            "tokenPath": "colors.primary",
+            "fieldKind": "style"
+          },
+          "props.buttonStyle.fontSize": {
+            "slotId": "tokens.typography.body",
+            "mode": "theme",
+            "tokenPath": "tokens.typography.body",
+            "fieldKind": "style"
+          },
+          "props.buttonStyle.border.color": {
+            "slotId": "colors.primary",
+            "mode": "theme",
+            "tokenPath": "colors.primary",
+            "fieldKind": "style"
+          },
+          "props.buttonStyle.borderRadius.radius": {
+            "slotId": "tokens.radius.cta",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.cta",
+            "fieldKind": "style"
+          }
+        }
+      }
+    ]
   }
 }

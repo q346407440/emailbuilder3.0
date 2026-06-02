@@ -12,10 +12,10 @@ import {
   normalizeBuiltinAlbumListConfig,
   normalizeBuiltinProductListConfig,
 } from "../collection-builtin-catalog-config";
-import { normalizeBuiltinCollectionExtract } from "../collection-builtin-extract";
-import { normalizeBuiltinCollectionSortId } from "../collection-builtin-sort";
+import { isBuiltinCollectionSortId, normalizeBuiltinCollectionSortId } from "../collection-builtin-sort";
 import { SLOT_ID_PATTERN } from "../value-types";
 import type { SceneCollectionPreset, SceneCollectionPresetFile } from "./types";
+import { SCENE_COLLECTION_PRESET_SCHEMA_VERSION, validateSceneCollectionPresetFile } from "./types";
 
 const SCENE_IDS = new Set(PAYLOAD_VARIABLE_SCENE_OPTIONS.map((o) => o.value));
 
@@ -60,29 +60,6 @@ function parseItemField(raw: unknown, path: string): BindingCollectionField | nu
   };
 }
 
-function parseDisplayRulePreset(
-  raw: unknown
-): SceneCollectionPresetFile["displayRulePreset"] | undefined | null {
-  if (!isRecord(raw)) return undefined;
-  const keyField = typeof raw.keyField === "string" ? raw.keyField.trim() : "";
-  const includeRaw = Array.isArray(raw.includeValues) ? raw.includeValues : [];
-  const includeValues = includeRaw
-    .map((v) => (typeof v === "string" ? v.trim() : ""))
-    .filter(Boolean);
-  const optionsRaw = Array.isArray(raw.options) ? raw.options : [];
-  const options = optionsRaw
-    .map((opt) => {
-      if (!isRecord(opt)) return null;
-      const value = typeof opt.value === "string" ? opt.value.trim() : "";
-      const label = typeof opt.label === "string" ? opt.label.trim() : "";
-      if (!value || !label) return null;
-      return { value, label };
-    })
-    .filter((opt): opt is { value: string; label: string } => Boolean(opt));
-  if (!keyField || includeValues.length === 0) return null;
-  return { keyField, includeValues, ...(options.length > 0 ? { options } : {}) };
-}
-
 /** 将磁盘 JSON 解析为场景内置列表预设；失败返回错误信息 */
 export function parseSceneCollectionPresetFile(
   scene: string,
@@ -94,6 +71,11 @@ export function parseSceneCollectionPresetFile(
   }
   if (!isRecord(raw)) {
     return { error: `${filePath}：根节点须为对象` };
+  }
+
+  const shapeIssues = validateSceneCollectionPresetFile(raw);
+  if (shapeIssues.length > 0) {
+    return { error: `${filePath}：${shapeIssues[0]!.path}: ${shapeIssues[0]!.reason}` };
   }
 
   const presetId = typeof raw.presetId === "string" ? raw.presetId.trim() : "";
@@ -142,14 +124,14 @@ export function parseSceneCollectionPresetFile(
   }
 
   const seedValues = raw.seedValues.filter((row) => isRecord(row)) as Record<string, unknown>[];
-  const displayRulePreset = parseDisplayRulePreset(raw.displayRulePreset);
-  if (displayRulePreset === null) {
+  if (raw.displayRulePreset !== undefined) {
     return {
-      error: `${filePath}：displayRulePreset 非法（需包含 keyField 与非空 includeValues）`,
+      error: `${filePath}：displayRulePreset 已废弃，请删除；列表显隐改由 payload.slots.itemVisibility 配置`,
     };
   }
 
   const file: SceneCollectionPresetFile = {
+    schemaVersion: SCENE_COLLECTION_PRESET_SCHEMA_VERSION,
     presetId,
     slotId,
     label,
@@ -172,17 +154,14 @@ export function parseSceneCollectionPresetFile(
               : undefined
           )
         : undefined,
-    sort: normalizeBuiltinCollectionSortId(
-      typeof raw.sort === "string" ? raw.sort : undefined
-    ),
-    extract: normalizeBuiltinCollectionExtract(
-      isRecord(raw.extract) ? (raw.extract as SceneCollectionPresetFile["extract"]) : undefined
-    ),
+    sort:
+      typeof raw.sort === "string" && isBuiltinCollectionSortId(raw.sort)
+        ? normalizeBuiltinCollectionSortId(raw.sort)
+        : undefined,
     fixedLength: typeof raw.fixedLength === "number" ? raw.fixedLength : undefined,
     itemFields,
     minItems: typeof raw.minItems === "number" ? raw.minItems : undefined,
     maxItems: typeof raw.maxItems === "number" ? raw.maxItems : undefined,
-    displayRulePreset,
     seedValues,
   };
 

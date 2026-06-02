@@ -26,8 +26,7 @@ import {
   resolveIntegrationExpandedTheme,
   type IntegrationTokenPresetSelection,
 } from "../lib/integrationStylePreset";
-import { mergeTemplatePayload } from "../lib/merge";
-import { expandRepeatRegions } from "../lib/repeatRegion";
+import { buildRepeatPreviewModel, previewModelToFlatTemplate } from "../repeat-runtime";
 import { resolveThemeInTemplate } from "../lib/resolveThemeInTemplate";
 import { isThemeRef } from "../types/themeRef";
 import { validatePayloadAgainstTemplate } from "../lib/validate";
@@ -251,7 +250,7 @@ export function ExternalApiIntegrationPage() {
     const layoutLabel =
       layoutManifest?.variants.find((v) => v.id === layoutVariantId)?.label ??
       layoutVariantId ??
-      "（单版式 / legacy）";
+      "（未选择版式）";
     return {
       layout: layoutLabel,
       token: integrationTokenPresetLabel(tokenPresetSelection, globalTokenPresets),
@@ -295,16 +294,13 @@ export function ExternalApiIntegrationPage() {
   const handleCreateLayout = useCallback(
     async (label: string) => {
       if (!emailKey) return;
-      const created = await api.createLayoutVariant(emailKey, {
-        label,
-        copyFromLayoutVariantId: layoutVariantId,
-      });
+      const created = await api.createLayoutVariant(emailKey, { label });
       setLayoutManifest(created.manifest);
       await loadScene(emailKey, created.layoutVariantId, readSearchParams().get("tokenPreset"), globalTokenPresets);
       setLayoutVariantId(created.layoutVariantId);
-      syncIntegrationUrl(emailKey, created.layoutVariantId, readSearchParams().get("tokenPreset"));
+      syncIntegrationUrl(emailKey, created.layoutVariantId, readSearchParams().get("tokenPreset") ?? "");
     },
-    [emailKey, globalTokenPresets, layoutVariantId, loadScene]
+    [emailKey, globalTokenPresets, loadScene]
   );
 
   const handleRenameLayout = useCallback(
@@ -381,8 +377,8 @@ export function ExternalApiIntegrationPage() {
     if (!values) return;
     const nextPayload: EmailPayload = { ...payload, values };
     try {
-      const expanded = expandRepeatRegions(template, nextPayload);
-      let merged = mergeTemplatePayload(expanded, nextPayload);
+      const previewModel = buildRepeatPreviewModel(template, nextPayload);
+      let merged = previewModelToFlatTemplate(previewModel, template);
       const designTokens = resolveIntegrationExpandedTheme(
         localTokenPresets,
         globalTokenPresets,
@@ -460,7 +456,6 @@ export function ExternalApiIntegrationPage() {
         <TopbarLayoutVariantSelect
           manifest={layoutManifest}
           value={layoutVariantId}
-          legacySingleFile={Boolean(template && !layoutManifest)}
           disabled={loading}
           onSelect={handleSelectLayout}
           onCreate={handleCreateLayout}

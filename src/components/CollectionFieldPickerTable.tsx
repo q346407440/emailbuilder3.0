@@ -36,6 +36,7 @@ export function CollectionFieldPickerTable({
   ariaLabel,
   name,
   activeTargetPath,
+  readOnly = false,
 }: {
   options: CollectionFieldPickerOption[];
   mappedKey: string | undefined;
@@ -44,6 +45,8 @@ export function CollectionFieldPickerTable({
   name?: string;
   /** 左侧当前选中的目标路径；仅允许映射同层级的源字段 */
   activeTargetPath?: string;
+  /** 只读查看已选映射，不可切换源字段 */
+  readOnly?: boolean;
 }) {
   const groupKeys = useMemo(() => listGroupKeysFromOptions(options), [options]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(groupKeys));
@@ -65,9 +68,12 @@ export function CollectionFieldPickerTable({
 
   return (
     <div
-      className="text-body-var-pill-modal__table-wrap repeat-region-bind-modal__table-viewport repeat-region-bind-modal__mapping-options-wrap"
-      role="radiogroup"
-      aria-label={ariaLabel}
+      className={`text-body-var-pill-modal__table-wrap repeat-region-bind-modal__table-viewport repeat-region-bind-modal__mapping-options-wrap${
+        readOnly ? " repeat-region-bind-modal__mapping-options-wrap--readonly" : ""
+      }`}
+      role={readOnly ? "group" : "radiogroup"}
+      aria-readonly={readOnly || undefined}
+      aria-label={readOnly ? `${ariaLabel}（只读）` : ariaLabel}
     >
       <table className="text-body-var-pill-modal__table">
         <thead>
@@ -131,13 +137,19 @@ export function CollectionFieldPickerTable({
 
             const selected = (mappedKey ?? "") === opt.key;
             const isNone = opt.kind === "none" || !opt.key;
-            const selectable = isSourceOptionSelectable(opt, activeTargetPath);
+            const selectable = !readOnly && isSourceOptionSelectable(opt, activeTargetPath);
             return (
               <tr
                 key={opt.key || "__none__"}
-                className={`text-body-var-pill-modal__row${selected ? " text-body-var-pill-modal__row--selected" : ""}${
-                  (opt.depth ?? 0) > 0 ? " text-body-var-pill-modal__row--nested" : ""
-                }${selectable ? "" : " text-body-var-pill-modal__row--disabled"}`}
+                className={`text-body-var-pill-modal__row${
+                  selected
+                    ? readOnly
+                      ? " text-body-var-pill-modal__row--context"
+                      : " text-body-var-pill-modal__row--selected"
+                    : ""
+                }${(opt.depth ?? 0) > 0 ? " text-body-var-pill-modal__row--nested" : ""}${
+                  selectable ? "" : " text-body-var-pill-modal__row--disabled"
+                }`}
                 style={{ ["--picker-depth" as string]: String(opt.depth ?? 0) }}
                 onClick={() => {
                   if (selectable) onSelect(opt.key);
@@ -149,27 +161,40 @@ export function CollectionFieldPickerTable({
                     onSelect(opt.key);
                   }
                 }}
-                tabIndex={selectable ? 0 : -1}
-                role="radio"
-                aria-checked={selected}
+                tabIndex={selectable ? 0 : undefined}
+                role={readOnly ? undefined : "radio"}
+                aria-checked={readOnly ? undefined : selected}
                 aria-disabled={selectable ? undefined : true}
               >
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--radio">
-                  {isNone ? null : (opt.depth ?? 0) > 0 ? (
+                  {!isNone && (opt.depth ?? 0) > 0 ? (
+                    <span
+                      className="repeat-region-bind-modal__mapping-expand-placeholder"
+                      aria-hidden
+                    />
+                  ) : !isNone && readOnly ? (
                     <span
                       className="repeat-region-bind-modal__mapping-expand-placeholder"
                       aria-hidden
                     />
                   ) : null}
-                  <SelectablePickerRadioCell
-                    name={name}
-                    checked={selected}
-                    disabled={!selectable}
-                    label={opt.label}
-                    onChange={() => {
-                      if (selectable) onSelect(opt.key);
-                    }}
-                  />
+                  {readOnly ? (
+                    selected ? (
+                      <span className="repeat-region-bind-modal__readonly-map-mark" aria-hidden>
+                        ●
+                      </span>
+                    ) : null
+                  ) : (
+                    <SelectablePickerRadioCell
+                      name={name}
+                      checked={selected}
+                      disabled={!selectable}
+                      label={isNone ? "不映射" : opt.label}
+                      onChange={() => {
+                        if (selectable) onSelect(opt.key);
+                      }}
+                    />
+                  )}
                 </td>
                 <td className="text-body-var-pill-modal__td text-body-var-pill-modal__td--label">
                   {isNone ? <span className="inspector__muted">不映射</span> : opt.label}

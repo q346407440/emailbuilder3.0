@@ -1,20 +1,18 @@
 import type { BindingSpec, EmailBlock, EmailPayload, EmailTemplate, TextBlock } from "../types/email";
 import { isSlotValueType } from "../payload-contract/value-types";
-import { getAtPath, setAtPath } from "./paths";
+import { setAtPath } from "./paths";
 import { readTemplateFieldOnly, setTemplateFieldOnly } from "./themeBindingEdit";
 import {
   getTextBodyContentMode,
   getWholeTextBodyVariableBindPath,
-  type TextBodyContentMode,
 } from "./textBodyContentMode";
 import { normalizeTextBody, textBodyToPlainString } from "./textBodyFormat";
 import { applyVariableBinding } from "./variableBindingEdit";
 import type { TextBody } from "../types/email";
 import { inferScalarPayloadValueType, registerPayloadSlot } from "./payloadSlotRegister";
-import { detachInlineVariableBinding, detachVariableSlot } from "./variableBindingEdit";
+import { detachInlineVariableBinding } from "./variableBindingEdit";
 
 const TEXT_RUN_TEXT_BIND_RE = /^props\.textBody\.paragraphs\.(\d+)\.runs\.(\d+)\.text$/;
-const TEXT_RUN_LINK_BIND_RE = /^props\.textBody\.paragraphs\.(\d+)\.runs\.(\d+)\.link$/;
 
 function readMergedField(merged: EmailTemplate, blockId: string, bindPath: string): unknown {
   const b = merged.blocks[blockId];

@@ -6,7 +6,7 @@ import { validateTemplate } from "../lib/validate";
 
 function minimalTemplate(block: EmailBlock): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "t",
     templateVersion: 1,
     rootBlockId: "root",
@@ -80,7 +80,7 @@ test("text.props.textBody.version 报错", () => {
         italic: false,
         decoration: "none",
       },
-    }),
+    } as EmailBlock),
     "props.textBody.version"
   );
 });
@@ -105,7 +105,7 @@ test("text.props.content 与 bindings.props.content 报错", () => {
       decoration: "none",
     },
     bindings: { "props.content": { fieldKind: "content", mode: "variable", slotId: "x" } },
-  };
+  } as unknown as EmailBlock;
   const issues = validateForbiddenLegacyProps(minimalTemplate(block));
   assert.ok(issues.some((i) => i.path.endsWith("props.content")));
   assert.ok(issues.some((i) => i.path.endsWith("bindings.props.content")));

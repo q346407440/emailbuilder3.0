@@ -18,6 +18,7 @@ description: >-
 | **`src/render-defaults-contract/validate.ts`** | `validateRenderDefaultsForbiddenFields`；**`stripForbiddenRenderDefaultsFromTemplate`**（仅剥离本文件实现的 **wrapperStyle 子集**） |
 | **`src/render-defaults-contract/types.ts`** | `RenderRuleKind`：`forbiddenInJson` / `injectedAtRender` / `specialSemantic` |
 | **`src/lib/validate.ts`** | 另含大量**非** render-defaults 包的禁止项与必填（二者同时满足） |
+| **template 形态** | 校验/剥离消费 **EditorBlockGraph**（adapter 展开 nested 后）；落盘见 **`src/template-disk-contract/`** |
 
 维护顺序：**先改 `rules.ts`（及 `values.ts` 若涉及）→ 再改 `validate.ts` / 渲染实现**（与 `rules.ts` 的 `implementation` 字段指向一致）→ **`npm run validate:all`**。
 

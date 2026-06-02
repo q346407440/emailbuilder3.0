@@ -1,204 +1,182 @@
 {
-  "schemaVersion": "3.0.0",
+  "schemaVersion": "4.0.0",
   "emailId": "yaml_golden_minimal",
   "templateId": "yaml_golden_minimal",
   "templateVersion": 1,
   "locale": "zh-CN",
-  "rootBlockId": "bgm-root",
-  "blockMeta": {
-    "bgm-h1": {
-      "blockType": "content.text",
-      "name": "标题"
-    },
-    "bgm-body": {
-      "blockType": "content.text",
-      "name": "正文"
-    },
-    "bgm-btn": {
-      "blockType": "action.button",
-      "name": "主按钮"
-    },
-    "bgm-page": {
-      "blockType": "layout.container",
-      "name": "主内容区"
-    },
-    "bgm-root": {
+  "root": {
+    "id": "bgm-root",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "画布根节点"
-    }
-  },
-  "blocks": {
-    "bgm-h1": {
-      "id": "bgm-h1",
-      "type": "text",
-      "parentId": "bgm-page",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "fontSize": "22px",
-        "color": "#111111",
-        "bold": true,
-        "italic": false,
-        "decoration": "none",
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "YAML Golden"
-                }
-              ]
-            }
-          ]
-        }
-      },
-      "bindings": {}
     },
-    "bgm-body": {
-      "id": "bgm-body",
-      "type": "text",
-      "parentId": "bgm-page",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug"
+    "props": {
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
       },
-      "props": {
-        "fontSize": "14px",
-        "color": "#444444",
-        "bold": false,
-        "italic": false,
-        "decoration": "none",
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "由 YAML 展开器生成。"
-                }
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#ffffff",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
       },
-      "bindings": {}
+      "gapMode": "fixed",
+      "gap": "0"
     },
-    "bgm-btn": {
-      "id": "bgm-btn",
-      "type": "button",
-      "parentId": "bgm-page",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "bgm-page",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "主内容区"
         },
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "text": "查看",
-        "link": "https://example.com",
-        "buttonStyle": {
+        "props": {
+          "gap": "16px",
+          "direction": "vertical"
+        },
+        "wrapperStyle": {
           "border": {
             "mode": "unified",
             "width": "0",
             "style": "solid",
             "color": "rgba(0,0,0,0)"
           },
-          "widthMode": "hug",
-          "backgroundColor": "#111111",
-          "textColor": "#ffffff",
+          "widthMode": "fill",
+          "heightMode": "hug",
           "borderRadius": {
             "mode": "unified",
             "radius": "0"
           },
-          "bold": true,
-          "italic": false
-        }
-      },
-      "bindings": {}
-    },
-    "bgm-page": {
-      "id": "bgm-page",
-      "type": "layout",
-      "parentId": "bgm-root",
-      "children": [
-        "bgm-h1",
-        "bgm-body",
-        "bgm-btn"
-      ],
-      "wrapperStyle": {
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
+          "backgroundColor": "#ffffff",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "24px",
+            "bottom": "24px",
+            "left": "24px"
+          },
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          }
         },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": "#ffffff",
-        "padding": {
-          "mode": "separate",
-          "top": "24px",
-          "right": "24px",
-          "bottom": "24px",
-          "left": "24px"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "gap": "16px",
-        "direction": "vertical"
-      },
-      "bindings": {}
-    },
-    "bgm-root": {
-      "id": "bgm-root",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "bgm-page"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "backgroundColor": "#ffffff",
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    }
+        "children": [
+          {
+            "id": "bgm-h1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "标题"
+            },
+            "props": {
+              "fontSize": "22px",
+              "color": "#111111",
+              "bold": true,
+              "italic": false,
+              "decoration": "none",
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "YAML Golden"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug"
+            }
+          },
+          {
+            "id": "bgm-body",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "正文"
+            },
+            "props": {
+              "fontSize": "14px",
+              "color": "#444444",
+              "bold": false,
+              "italic": false,
+              "decoration": "none",
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "由 YAML 展开器生成。"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug"
+            }
+          },
+          {
+            "id": "bgm-btn",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "主按钮"
+            },
+            "props": {
+              "text": "查看",
+              "link": "https://example.com",
+              "buttonStyle": {
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "widthMode": "hug",
+                "backgroundColor": "#111111",
+                "textColor": "#ffffff",
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                },
+                "bold": true,
+                "italic": false
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug"
+            }
+          }
+        ]
+      }
+    ]
   }
 }

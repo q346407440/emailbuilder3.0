@@ -42,6 +42,6 @@ export function integrationTokenPresetLabel(
 ): string {
   if (selection === "local") return "本邮件版式 tokenPresets.json";
   const doc = globalTokenPresets[selection];
-  const name = doc?.presets?.[doc.activePresetId]?.name;
+  const name = doc?.presets?.[doc.activePresetId]?.label;
   return name ? `公共预设：${name}（${selection}）` : `公共预设：${selection}`;
 }

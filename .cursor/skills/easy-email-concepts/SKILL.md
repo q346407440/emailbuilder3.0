@@ -23,7 +23,9 @@ description: >-
 | 禁止写进 template 的渲染默认、底图 padding 语义 | `src/render-defaults-contract/`（`rules.ts` 为规则目录） |
 | token 标准 12 键、`$themeRef` 路径 | `src/token-preset-contract/`（`standard-keys.ts`、`theme-ref-paths.ts`） |
 | payload 槽枚举与对照校验 | `src/payload-contract/` |
-| 列表重复绑定、物化、重绑、fieldMappings | `src/lib/repeatRegion.ts`、`repeatMaterializedNormalize.ts`、`repeatNestedBinding.ts`（技能 **`easy-email-repeat-binding`**） |
+| 列表 repeat 绑定规则（Step 1） | **`src/repeat-binding-contract/`**；虚拟预览 **`src/repeat-runtime/`**；物化/绑定 **`repeatRegion.ts`**（技能 **`easy-email-repeat-binding`**） |
+| **template 落盘 nested 4.0.0** | **`src/template-disk-contract/`**；读写转换 **`src/lib/templateTreeAdapter.ts`** |
+| **落盘 JSON schema 索引** | **`src/schema-registry/`**（版本常量引用各 `*-contract`） |
 | visibility 运算符合法性 | `src/visibility-contract/` |
 | tokenPresets 外壳校验 | `src/lib/validateTokenPresets.ts` · `src/token-preset-contract/validate.ts` |
 | 容器内边距 `SpacingValue`（`unified` 单边 / `separate` 四边） | `src/lib/validate.ts` · `validateSpacingValue`；批量审计 `npm run normalize:spacing-unified` |
@@ -34,15 +36,15 @@ description: >-
 
 ## 三层落盘（口语 → 文件）
 
-**单版式（legacy）**：`template.json` + `tokenPresets.json` 在 `data/emails/<emailKey>/` 根目录；`payload.json` 在场景根。
+**标准结构（必需）**：`payload.json` 在场景根；**须**有 `layout-manifest.json`；每个版式在 `layouts/<layoutVariantId>/` 含 **template + tokenPresets**。仅一个版式时通常 id 为 **`default`**。
 
 | 层 | 文件 | 一句话 |
 |----|--------|--------|
-| 结构 | `template.json` | 完整 block 树 + bindings |
-| 样式预设 | `tokenPresets.json` | 档位与 token 值、`$themeRef` 解析 |
-| 变量 | `payload.json` | **场景级共享**：**`slots`** 目录 + **`values`** 取值；template 仅 bindings/repeat 关系 |
+| 结构 | `layouts/<id>/template.json` | **nested 4.0.0**：顶层 `root` 嵌套树 + 节点内联 `blockMeta`；`bindings` / `repeat` / `$themeRef` 仍在节点上 |
+| 样式预设 | 同版式 `tokenPresets.json` | 档位与 token 值、`$themeRef` 解析 |
+| 变量 | 场景根 `payload.json` | **场景级共享**：**`slots`** 目录 + **`values`** 取值；template 仅 bindings/repeat 关系 |
 
-**多版式（layoutVariant）**：`payload.json` 仍在场景根；每个版式 `layouts/<layoutVariantId>/` 含 **template + tokenPresets**；清单 → `layout-manifest.json`。路径解析真源 **`src/lib/emailLayoutVariant.ts`**；迁移 **`npm run migrate:layout-variants:write`**。
+版式清单 → `layout-manifest.json`。路径解析真源 **`src/lib/emailLayoutVariant.ts`**。
 
 **已移除**：`configSchema.json` 与顶栏「配置项」视图；可编辑项由 **底层 Block Inspector**、**变量赋值**、**样式预设** 承担。
 
@@ -67,12 +69,12 @@ description: >-
 
 | 用户说法 | 优先落点 |
 |----------|----------|
-| 改结构 / 区块树 | 当前版式 `layouts/<id>/template.json` 或 legacy 根 `template.json` |
+| 改结构 / 区块树 | 当前版式 `layouts/<layoutVariantId>/template.json`（nested 4.0.0） |
 | 同场景换大版式 / 第二套结构 | 新建 `layouts/<layoutVariantId>/`（template + tokenPresets）+ 更新 `layout-manifest.json`；**勿**复制第二份 `payload.json` |
 | 改某 block 字段 / 宽高 / 对齐 | **底层 Block** Inspector + `template.json` |
 | 换主题档 / 字号节奏 / 圆角体系 | `tokenPresets.json` + `$themeRef` |
 | 默认打开哪套预设 | `meta.json` → `defaultStylePresetSelection` |
-| 业务数据 / 槽目录与取值 | **`payload.slots` + `payload.values`**（**`src/payload-contract/`**）；template 只写 slotId 绑定，见 **`docs/邮件变量与绑定真源.md`** |
+| 业务数据 / 槽目录与取值 | **`payload.slots` + `payload.values`**（**`src/payload-contract/`**）；template 只写 slotId 绑定（技能 **`easy-email-payload-contract`**） |
 | 列表绑定 / 解除 / 父级+子级循环 / 物化重绑 | 技能 **`easy-email-repeat-binding`**；勿在 template 长期写物化 `*-1` id |
 | 标准 token 键范围与绑法 | **`email-token-preset-standard-scope`** + `standard-keys.ts` |
 | 已废弃「意图层」/ configSchema 口语 | 译为 template + Inspector / payload / tokenPresets；无独立意图 JSON |
@@ -89,7 +91,7 @@ description: >-
 - **列表行**：**`repeat` + 行模板 `slotPath: "0.<key>"`**；**禁止**静态多行 `1.xxx`、`2.xxx`。
 - **编辑器 meta**：**`template.meta.easyEmailBindingUi`** 仅主题解除跟随快照；空对象应删。
 
-详表与迁移脚本：**`docs/邮件变量与绑定真源.md`** · 技能 **`easy-email-payload-contract`**。
+详表与迁移脚本：技能 **`easy-email-payload-contract`** · **`src/payload-contract/`**。
 
 ## 相关技能
 

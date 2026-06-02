@@ -1,4 +1,5 @@
 import type { BindingSpec, EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
+import { removePayloadSlotFromOrder } from "./payloadSlotOrder";
 import { readTemplateFieldOnly, setTemplateFieldOnly } from "./themeBindingEdit";
 import { getAtPath, setAtPath } from "./paths";
 
@@ -228,7 +229,7 @@ export function removeExternalVariableSlot(
   p.detachedVariableSlotIds = (p.detachedVariableSlotIds ?? []).filter((id) => id !== slotId);
   if (p.detachedVariableSlotIds.length === 0) delete p.detachedVariableSlotIds;
 
-  return { template: t, payload: p };
+  return { template: t, payload: removePayloadSlotFromOrder(p, slotId) };
 }
 
 export function variableBindingSpec(

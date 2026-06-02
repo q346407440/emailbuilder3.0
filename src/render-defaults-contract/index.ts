@@ -18,7 +18,6 @@ export {
   RENDER_DEFAULT_VALUES,
   projectBackgroundContentAlign,
   projectLayoutContentAlign,
-  projectLayoutInnerStackContentAlign,
   projectTextContentAlign,
 } from "./values";
 export {

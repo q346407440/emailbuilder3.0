@@ -1,1277 +1,244 @@
 {
-  "schemaVersion": "3.0.0",
+  "schemaVersion": "4.0.0",
   "emailId": "coupon_available",
   "templateId": "coupon_available",
   "templateVersion": 1,
   "locale": "en-US",
-  "rootBlockId": "ca-root",
-  "blockMeta": {
-    "ca-mod-logo": {
-      "blockType": "layout.container",
-      "name": "模块 · 店铺 Logo"
-    },
-    "ca-logo-row": {
-      "blockType": "layout.container",
-      "name": "Logo 行"
-    },
-    "ca-logo-img": {
-      "blockType": "content.image",
-      "name": "店铺 Logo"
-    },
-    "ca-mod-hero": {
-      "blockType": "layout.container",
-      "name": "模块 · 优惠券主标题"
-    },
-    "ca-hero-title": {
-      "blockType": "content.text",
-      "name": "优惠券主标题"
-    },
-    "ca-hero-sub": {
-      "blockType": "content.text",
-      "name": "优惠券副标题"
-    },
-    "ca-mod-coupon": {
-      "blockType": "layout.container",
-      "name": "模块 · 优惠券卡"
-    },
-    "ca-coupon-split": {
-      "blockType": "layout.container",
-      "name": "优惠券左右分栏"
-    },
-    "ca-coupon-left": {
-      "blockType": "layout.container",
-      "name": "优惠左侧"
-    },
-    "ca-gift-badge-row": {
-      "blockType": "layout.container",
-      "name": "邀请礼徽章行"
-    },
-    "ca-gift-icon": {
-      "blockType": "content.icon",
-      "name": "礼物图标"
-    },
-    "ca-gift-badge-text": {
-      "blockType": "content.text",
-      "name": "邀请礼标签"
-    },
-    "ca-discount-text": {
-      "blockType": "content.text",
-      "name": "折扣力度"
-    },
-    "ca-expiry-row": {
-      "blockType": "layout.container",
-      "name": "过期说明行"
-    },
-    "ca-expiry-icon": {
-      "blockType": "content.icon",
-      "name": "时钟图标"
-    },
-    "ca-expiry-text": {
-      "blockType": "content.text",
-      "name": "过期说明"
-    },
-    "ca-coupon-divider": {
-      "blockType": "layout.container",
-      "name": "优惠券竖分隔"
-    },
-    "ca-coupon-right": {
-      "blockType": "layout.container",
-      "name": "优惠码右侧"
-    },
-    "ca-code-label": {
-      "blockType": "content.text",
-      "name": "优惠码标签"
-    },
-    "ca-code-value": {
-      "blockType": "content.text",
-      "name": "优惠码"
-    },
-    "ca-copy-btn": {
-      "blockType": "action.button",
-      "name": "复制按钮"
-    },
-    "ca-mod-picked": {
-      "blockType": "layout.container",
-      "name": "模块 · 精选商品"
-    },
-    "ca-picked-cell-1": {
-      "blockType": "layout.container",
-      "name": "商品卡 1"
-    },
-    "ca-picked-cell-1-img-wrap": {
-      "blockType": "layout.container",
-      "name": "商品图 1"
-    },
-    "ca-picked-cell-1-badge": {
-      "blockType": "content.text",
-      "name": "商品角标 1"
-    },
-    "ca-picked-cell-1-name": {
-      "blockType": "content.text",
-      "name": "商品名 1"
-    },
-    "ca-picked-cell-1-price-row": {
-      "blockType": "layout.container",
-      "name": "商品价格行 1"
-    },
-    "ca-picked-cell-1-sale": {
-      "blockType": "content.text",
-      "name": "现价 1"
-    },
-    "ca-picked-cell-1-original": {
-      "blockType": "content.text",
-      "name": "原价 1"
-    },
-    "ca-picked-grid": {
-      "blockType": "layout.grid",
-      "name": "精选商品栅格"
-    },
-    "ca-mod-cta": {
-      "blockType": "layout.container",
-      "name": "模块 · 购物主按钮"
-    },
-    "ca-shop-btn": {
-      "blockType": "action.button",
-      "name": "购物主按钮"
-    },
-    "ca-mod-footer": {
-      "blockType": "layout.container",
-      "name": "模块 · 页脚说明"
-    },
-    "ca-account-para": {
-      "blockType": "content.text",
-      "name": "账户说明"
-    },
-    "ca-contact-para": {
-      "blockType": "content.text",
-      "name": "联系说明"
-    },
-    "ca-root": {
+  "root": {
+    "id": "ca-root",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "画布根节点"
-    }
-  },
-  "blocks": {
-    "ca-mod-logo": {
-      "id": "ca-mod-logo",
-      "type": "layout",
-      "parentId": "ca-root",
-      "children": [
-        "ca-logo-row"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": "#FFFFFF",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
+    },
+    "props": {
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
       },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
+      "backgroundColor": {
+        "$themeRef": "colors.surface"
       },
-      "bindings": {
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "bindings": {
+      "props.backgroundColor": {
+        "slotId": "colors.surface",
+        "mode": "theme",
+        "tokenPath": "colors.surface",
+        "fieldKind": "style"
       }
     },
-    "ca-logo-row": {
-      "id": "ca-logo-row",
-      "type": "layout",
-      "parentId": "ca-mod-logo",
-      "children": [
-        "ca-logo-img"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
+    "children": [
+      {
+        "id": "ca-mod-logo",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 店铺 Logo"
         },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "ca-logo-img": {
-      "id": "ca-logo-img",
-      "type": "image",
-      "parentId": "ca-logo-row",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "160px",
-        "heightMode": "fixed",
-        "height": "40px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundImage": {
-          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
-          "alt": "Store logo",
-          "link": "",
-          "fit": "contain",
-          "position": "left",
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
           "borderRadius": {
             "mode": "unified",
             "radius": "0"
           },
-          "border": {
-            "mode": "unified",
-            "width": "0",
-            "style": "solid",
-            "color": "rgba(0,0,0,0)"
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {},
-      "bindings": {
-        "wrapperStyle.backgroundImage.src": {
-          "slotId": "storeLogoSrc",
-          "mode": "variable",
-          "valueType": "image",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺 Logo 地址"
-        },
-        "wrapperStyle.backgroundImage.alt": {
-          "slotId": "storeLogoAlt",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺 Logo 替代文字"
-        }
-      }
-    },
-    "ca-mod-hero": {
-      "id": "ca-mod-hero",
-      "type": "layout",
-      "parentId": "ca-root",
-      "children": [
-        "ca-hero-title",
-        "ca-hero-sub"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
+        "bindings": {
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
           },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-hero-title": {
-      "id": "ca-hero-title",
-      "type": "text",
-      "parentId": "ca-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "🎉 Your have Coupon code available",
-                  "bold": true
+        "children": [
+          {
+            "id": "ca-logo-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "Logo 行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "children": [
+              {
+                "id": "ca-logo-img",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "店铺 Logo"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "160px",
+                  "heightMode": "fixed",
+                  "height": "40px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+                    "alt": "Store logo",
+                    "link": "",
+                    "fit": "contain",
+                    "position": "left",
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    },
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    }
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "bindings": {
+                  "wrapperStyle.backgroundImage.src": {
+                    "slotId": "storeLogoSrc",
+                    "mode": "variable",
+                    "valueType": "image",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "店铺 Logo 地址"
+                  },
+                  "wrapperStyle.backgroundImage.alt": {
+                    "slotId": "storeLogoAlt",
+                    "mode": "variable",
+                    "valueType": "string",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "店铺 Logo 替代文字"
+                  }
                 }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.display"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
+              }
+            ]
+          }
+        ]
       },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "heroTitleText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "优惠券主标题"
+      {
+        "id": "ca-mod-hero",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 优惠券主标题"
         },
-        "props.fontSize": {
-          "slotId": "tokens.typography.display",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.display",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-hero-sub": {
-      "id": "ca-hero-sub",
-      "type": "text",
-      "parentId": "ca-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Use the code below when you check out."
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "heroSubtitle",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "优惠券副标题"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-mod-coupon": {
-      "id": "ca-mod-coupon",
-      "type": "layout",
-      "parentId": "ca-root",
-      "children": [
-        "ca-coupon-split"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.panel"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
           }
         },
-        "backgroundColor": "#FFF0F3",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-coupon-split": {
-      "id": "ca-coupon-split",
-      "type": "layout",
-      "parentId": "ca-mod-coupon",
-      "children": [
-        "ca-coupon-left",
-        "ca-coupon-divider",
-        "ca-coupon-right"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "ca-coupon-left": {
-      "id": "ca-coupon-left",
-      "type": "layout",
-      "parentId": "ca-coupon-split",
-      "children": [
-        "ca-gift-badge-row",
-        "ca-discount-text",
-        "ca-expiry-row"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": "8px",
-          "right": "8px",
-          "bottom": "8px",
-          "left": "8px"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "10px"
-      },
-      "bindings": {}
-    },
-    "ca-gift-badge-row": {
-      "id": "ca-gift-badge-row",
-      "type": "layout",
-      "parentId": "ca-coupon-left",
-      "children": [
-        "ca-gift-icon",
-        "ca-gift-badge-text"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "9999px"
-        },
-        "backgroundColor": "#FFFFFF",
-        "padding": {
-          "mode": "separate",
-          "top": "6px",
-          "right": "6px",
-          "bottom": "6px",
-          "left": "6px"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "6px"
-      },
-      "bindings": {}
-    },
-    "ca-gift-icon": {
-      "id": "ca-gift-icon",
-      "type": "icon",
-      "parentId": "ca-gift-badge-row",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "color": "#DC2626",
-        "size": "16px",
-        "link": "",
-        "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/gift.svg"
-      },
-      "bindings": {}
-    },
-    "ca-gift-badge-text": {
-      "id": "ca-gift-badge-text",
-      "type": "text",
-      "parentId": "ca-gift-badge-row",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "INVITATION GIFT",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": "#DC2626",
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "invitationGiftLabel",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "邀请礼标签"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-discount-text": {
-      "id": "ca-discount-text",
-      "type": "text",
-      "parentId": "ca-coupon-left",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "10 % OFF",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.display"
-        },
-        "color": "#DC2626",
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "discountAmount",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "折扣力度"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.display",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.display",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-expiry-row": {
-      "id": "ca-expiry-row",
-      "type": "layout",
-      "parentId": "ca-coupon-left",
-      "children": [
-        "ca-expiry-icon",
-        "ca-expiry-text"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "6px"
-      },
-      "bindings": {}
-    },
-    "ca-expiry-icon": {
-      "id": "ca-expiry-icon",
-      "type": "icon",
-      "parentId": "ca-expiry-row",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "color": "#9CA3AF",
-        "size": "14px",
-        "link": "",
-        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/clock.svg"
-      },
-      "bindings": {}
-    },
-    "ca-expiry-text": {
-      "id": "ca-expiry-text",
-      "type": "text",
-      "parentId": "ca-expiry-row",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Expires in 14 days"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "couponExpiryText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "优惠券过期说明"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-coupon-divider": {
-      "id": "ca-coupon-divider",
-      "type": "layout",
-      "parentId": "ca-coupon-split",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "1px",
-        "heightMode": "fill",
-        "backgroundColor": "#F0C4CF",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "ca-coupon-right": {
-      "id": "ca-coupon-right",
-      "type": "layout",
-      "parentId": "ca-coupon-split",
-      "children": [
-        "ca-code-label",
-        "ca-code-value",
-        "ca-copy-btn"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": "12px",
-          "right": "12px",
-          "bottom": "12px",
-          "left": "12px"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "10px"
-      },
-      "bindings": {}
-    },
-    "ca-code-label": {
-      "id": "ca-code-label",
-      "type": "text",
-      "parentId": "ca-coupon-right",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "YOUR CODE"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "couponCodeLabel",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "优惠码标签"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-code-value": {
-      "id": "ca-code-value",
-      "type": "text",
-      "parentId": "ca-coupon-right",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "GTLHGTYY",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.h1"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "couponCodeValue",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "优惠码"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.h1",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.h1",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-copy-btn": {
-      "id": "ca-copy-btn",
-      "type": "button",
-      "parentId": "ca-coupon-right",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "text": "COPY",
-        "link": "https://example.com/shop?coupon=GTLHGTYY",
-        "buttonStyle": {
-          "backgroundColor": "#111111",
-          "textColor": "#FFFFFF",
-          "fontSize": {
-            "$themeRef": "tokens.typography.caption"
-          },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
           "border": {
             "mode": "unified",
             "width": "0",
@@ -1280,808 +247,1010 @@
           },
           "borderRadius": {
             "mode": "unified",
-            "radius": {
-              "$themeRef": "tokens.radius.cta"
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
           },
-          "bold": true,
-          "italic": false,
-          "widthMode": "hug"
-        }
-      },
-      "bindings": {
-        "props.text": {
-          "slotId": "copyButtonText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "复制按钮文案"
-        },
-        "props.link": {
-          "slotId": "couponRedeemUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "优惠券兑换链接"
-        },
-        "props.buttonStyle.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-mod-picked": {
-      "id": "ca-mod-picked",
-      "type": "layout",
-      "parentId": "ca-root",
-      "children": [
-        "ca-picked-grid"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-picked-cell-1": {
-      "id": "ca-picked-cell-1",
-      "type": "layout",
-      "parentId": "ca-picked-grid",
-      "children": [
-        "ca-picked-cell-1-img-wrap",
-        "ca-picked-cell-1-name",
-        "ca-picked-cell-1-price-row"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "8px"
-      },
-      "bindings": {}
-    },
-    "ca-picked-cell-1-img-wrap": {
-      "id": "ca-picked-cell-1-img-wrap",
-      "type": "layout",
-      "parentId": "ca-picked-cell-1",
-      "children": [
-        "ca-picked-cell-1-badge"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "fixed",
-        "height": "140px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.panel"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
           }
         },
-        "backgroundImage": {
-          "src": "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400",
-          "alt": "Everyday Crossbody Bag",
-          "link": "https://example.com/products/crossbody-bag",
-          "fit": "cover",
-          "position": "center",
+        "children": [
+          {
+            "id": "ca-hero-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "优惠券主标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "🎉 Your have Coupon code available",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.display"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "heroTitleText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "优惠券主标题"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.display",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.display",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "ca-hero-sub",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "优惠券副标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Use the code below when you check out."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "heroSubtitle",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "优惠券副标题"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "ca-mod-coupon",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 优惠券卡"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
           "borderRadius": {
             "mode": "unified",
             "radius": {
               "$themeRef": "tokens.radius.panel"
             }
           },
-          "border": {
-            "mode": "unified",
-            "width": "0",
-            "style": "solid",
-            "color": "rgba(0,0,0,0)"
+          "backgroundColor": "#FFF0F3",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "padding": {
-          "mode": "separate",
-          "top": "0",
-          "right": "0",
-          "bottom": "0",
-          "left": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "wrapperStyle.backgroundImage.src": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.imageSrc"
-        },
-        "wrapperStyle.backgroundImage.alt": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.imageAlt"
-        },
-        "wrapperStyle.backgroundImage.link": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.href"
-        },
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.backgroundImage.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-picked-cell-1-badge": {
-      "id": "ca-picked-cell-1-badge",
-      "type": "text",
-      "parentId": "ca-picked-cell-1-img-wrap",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "6px"
-        },
-        "backgroundColor": "#DC2626",
-        "padding": {
-          "mode": "separate",
-          "top": "4px",
-          "right": "8px",
-          "bottom": "4px",
-          "left": "8px"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Hot",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.surface"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.badge"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-picked-cell-1-name": {
-      "id": "ca-picked-cell-1-name",
-      "type": "text",
-      "parentId": "ca-picked-cell-1",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Everyday Crossbody Bag"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.name"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-picked-cell-1-price-row": {
-      "id": "ca-picked-cell-1-price-row",
-      "type": "layout",
-      "parentId": "ca-picked-cell-1",
-      "children": [
-        "ca-picked-cell-1-sale",
-        "ca-picked-cell-1-original"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "6px"
-      },
-      "bindings": {}
-    },
-    "ca-picked-cell-1-sale": {
-      "id": "ca-picked-cell-1-sale",
-      "type": "text",
-      "parentId": "ca-picked-cell-1-price-row",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "$37",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.salePrice"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-picked-cell-1-original": {
-      "id": "ca-picked-cell-1-original",
-      "type": "text",
-      "parentId": "ca-picked-cell-1-price-row",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "$49",
-                  "decoration": "line-through"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "pickedProducts",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.originalPrice"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-picked-grid": {
-      "id": "ca-picked-grid",
-      "type": "grid",
-      "parentId": "ca-mod-picked",
-      "children": [
-        "ca-picked-cell-1"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "columns": 2,
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        },
-        "cellWidthMode": "auto",
-        "cellHeightMode": "content-max"
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      },
-      "repeat": {
-        "mode": "collection",
-        "slotId": "pickedProducts",
-        "prototypeChildIds": [
-          "ca-picked-cell-1"
-        ],
-        "fallbackChildIds": [
-          "ca-picked-cell-1"
-        ],
-        "itemFields": [
-          {
-            "key": "imageSrc",
-            "label": "商品图",
-            "valueType": "image",
-            "required": true
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
           },
-          {
-            "key": "imageAlt",
-            "label": "图片替代文字",
-            "valueType": "string",
-            "required": true
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          {
-            "key": "name",
-            "label": "商品名",
-            "valueType": "string",
-            "required": true
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          {
-            "key": "salePrice",
-            "label": "现价",
-            "valueType": "string",
-            "required": true
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
           },
-          {
-            "key": "originalPrice",
-            "label": "原价",
-            "valueType": "string",
-            "required": true
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
           },
-          {
-            "key": "badge",
-            "label": "角标",
-            "valueType": "string",
-            "required": true
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
           },
-          {
-            "key": "href",
-            "label": "商品链接",
-            "valueType": "url",
-            "required": true
-          }
-        ],
-        "minItems": 4,
-        "maxItems": 4,
-        "label": "精选商品列表",
-        "description": "2×2 商品栅格，固定 4 项。"
-      }
-    },
-    "ca-mod-cta": {
-      "id": "ca-mod-cta",
-      "type": "layout",
-      "parentId": "ca-root",
-      "children": [
-        "ca-shop-btn"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.borderRadius.radius": {
+            "slotId": "tokens.radius.panel",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.panel",
+            "fieldKind": "style"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
+        "children": [
+          {
+            "id": "ca-coupon-split",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "优惠券左右分栏"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "children": [
+              {
+                "id": "ca-coupon-left",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "优惠左侧"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "10px"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "padding": {
+                    "mode": "separate",
+                    "top": "8px",
+                    "right": "8px",
+                    "bottom": "8px",
+                    "left": "8px"
+                  },
+                  "contentAlign": {
+                    "vertical": "top",
+                    "horizontal": "left"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ca-gift-badge-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "邀请礼徽章行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "6px"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "9999px"
+                      },
+                      "backgroundColor": "#FFFFFF",
+                      "padding": {
+                        "mode": "separate",
+                        "top": "6px",
+                        "right": "6px",
+                        "bottom": "6px",
+                        "left": "6px"
+                      },
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "ca-gift-icon",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "礼物图标"
+                        },
+                        "props": {
+                          "color": "#DC2626",
+                          "size": "16px",
+                          "link": "",
+                          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/gift.svg"
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          }
+                        }
+                      },
+                      {
+                        "id": "ca-gift-badge-text",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "邀请礼标签"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "INVITATION GIFT",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.caption"
+                          },
+                          "color": "#DC2626",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "invitationGiftLabel",
+                            "mode": "variable",
+                            "valueType": "string",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "label": "邀请礼标签"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.caption",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.caption",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ca-discount-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "折扣力度"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "10 % OFF",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.display"
+                      },
+                      "color": "#DC2626",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.textBody.paragraphs.0.runs.0.text": {
+                        "slotId": "discountAmount",
+                        "mode": "variable",
+                        "valueType": "string",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "label": "折扣力度"
+                      },
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.display",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.display",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ca-expiry-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "过期说明行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "6px"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "ca-expiry-icon",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "时钟图标"
+                        },
+                        "props": {
+                          "color": "#9CA3AF",
+                          "size": "14px",
+                          "link": "",
+                          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/clock.svg"
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          }
+                        }
+                      },
+                      {
+                        "id": "ca-expiry-text",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "过期说明"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Expires in 14 days"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.caption"
+                          },
+                          "color": {
+                            "$themeRef": "colors.secondary"
+                          },
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "couponExpiryText",
+                            "mode": "variable",
+                            "valueType": "string",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "label": "优惠券过期说明"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.caption",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.caption",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.secondary",
+                            "mode": "theme",
+                            "tokenPath": "colors.secondary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "ca-coupon-divider",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "优惠券竖分隔"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "0"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "1px",
+                  "heightMode": "fill",
+                  "backgroundColor": "#F0C4CF",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "vertical": "top",
+                    "horizontal": "left"
+                  }
+                }
+              },
+              {
+                "id": "ca-coupon-right",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "优惠码右侧"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "10px"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "padding": {
+                    "mode": "separate",
+                    "top": "12px",
+                    "right": "12px",
+                    "bottom": "12px",
+                    "left": "12px"
+                  },
+                  "contentAlign": {
+                    "vertical": "top",
+                    "horizontal": "left"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ca-code-label",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "优惠码标签"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "YOUR CODE"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.caption"
+                      },
+                      "color": {
+                        "$themeRef": "colors.primary"
+                      },
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.textBody.paragraphs.0.runs.0.text": {
+                        "slotId": "couponCodeLabel",
+                        "mode": "variable",
+                        "valueType": "string",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "label": "优惠码标签"
+                      },
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ca-code-value",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "优惠码"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "GTLHGTYY",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.h1"
+                      },
+                      "color": {
+                        "$themeRef": "colors.primary"
+                      },
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.textBody.paragraphs.0.runs.0.text": {
+                        "slotId": "couponCodeValue",
+                        "mode": "variable",
+                        "valueType": "string",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "label": "优惠码"
+                      },
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.h1",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.h1",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ca-copy-btn",
+                    "type": "button",
+                    "blockMeta": {
+                      "blockType": "action.button",
+                      "name": "复制按钮"
+                    },
+                    "props": {
+                      "text": "COPY",
+                      "link": "https://example.com/shop?coupon=GTLHGTYY",
+                      "buttonStyle": {
+                        "backgroundColor": "#111111",
+                        "textColor": "#FFFFFF",
+                        "fontSize": {
+                          "$themeRef": "tokens.typography.caption"
+                        },
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": {
+                            "$themeRef": "tokens.radius.cta"
+                          }
+                        },
+                        "bold": true,
+                        "italic": false,
+                        "widthMode": "hug"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      }
+                    },
+                    "bindings": {
+                      "props.text": {
+                        "slotId": "copyButtonText",
+                        "mode": "variable",
+                        "valueType": "string",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "label": "复制按钮文案"
+                      },
+                      "props.link": {
+                        "slotId": "couponRedeemUrl",
+                        "mode": "variable",
+                        "valueType": "url",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "label": "优惠券兑换链接"
+                      },
+                      "props.buttonStyle.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.borderRadius.radius": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
+      {
+        "id": "ca-mod-picked",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 精选商品"
         },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-shop-btn": {
-      "id": "ca-shop-btn",
-      "type": "button",
-      "parentId": "ca-mod-cta",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "text": "SHOP NOW →",
-        "link": "https://example.com/shop",
-        "buttonStyle": {
-          "backgroundColor": "#DC2626",
-          "textColor": "#FFFFFF",
-          "fontSize": {
-            "$themeRef": "tokens.typography.body"
-          },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
           "border": {
             "mode": "unified",
             "width": "0",
@@ -2090,370 +1259,1095 @@
           },
           "borderRadius": {
             "mode": "unified",
-            "radius": {
-              "$themeRef": "tokens.radius.cta"
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
           },
-          "bold": true,
-          "italic": false,
-          "widthMode": "hug"
-        }
-      },
-      "bindings": {
-        "props.text": {
-          "slotId": "shopCtaText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "购物主按钮文案"
-        },
-        "props.link": {
-          "slotId": "shopCtaUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "购物主按钮链接"
-        },
-        "props.buttonStyle.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-mod-footer": {
-      "id": "ca-mod-footer",
-      "type": "layout",
-      "parentId": "ca-root",
-      "children": [
-        "ca-account-para",
-        "ca-contact-para"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": "#FFFBF5",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
         },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-account-para": {
-      "id": "ca-account-para",
-      "type": "text",
-      "parentId": "ca-mod-footer",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "You need to log into your store account to enjoy member discounts and points redemption benefits. I don't have an account. "
+        "children": [
+          {
+            "id": "ca-picked-grid",
+            "type": "grid",
+            "blockMeta": {
+              "blockType": "layout.grid",
+              "name": "精选商品栅格"
+            },
+            "props": {
+              "columns": 2,
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              },
+              "cellWidthMode": "auto",
+              "cellHeightMode": "content-max"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "padding": {
+                "mode": "unified",
+                "unified": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "ca-picked-cell-1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "商品卡 1"
                 },
-                {
-                  "text": "Create an account",
-                  "link": "https://example.com/register",
-                  "decoration": "underline"
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
                 },
-                {
-                  "text": " If you agree to join the membership during Checkout, we have created an account for you. "
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "vertical": "top",
+                    "horizontal": "left"
+                  }
                 },
-                {
-                  "text": "Reset password",
-                  "link": "https://example.com/reset-password",
-                  "decoration": "underline"
-                }
-              ]
+                "repeat": {
+                  "mode": "collection",
+                  "slotId": "pickedProducts",
+                  "prototypeChildIds": [
+                    "ca-picked-cell-1"
+                  ],
+                  "fallbackChildIds": [
+                    "ca-picked-cell-1"
+                  ],
+                  "itemFields": [
+                    {
+                      "key": "imageSrc",
+                      "label": "商品图",
+                      "valueType": "image",
+                      "required": true
+                    },
+                    {
+                      "key": "imageAlt",
+                      "label": "图片替代文字",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "name",
+                      "label": "商品名",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "salePrice",
+                      "label": "现价",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "originalPrice",
+                      "label": "原价",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "badge",
+                      "label": "角标",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "href",
+                      "label": "商品链接",
+                      "valueType": "url",
+                      "required": true
+                    }
+                  ],
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "label": "精选商品列表",
+                  "description": "2×2 商品栅格，固定 4 项。"
+                },
+                "children": [
+                  {
+                    "id": "ca-picked-cell-1-img-wrap",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "商品图 1"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "0"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "140px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": {
+                          "$themeRef": "tokens.radius.panel"
+                        }
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400",
+                        "alt": "Everyday Crossbody Bag",
+                        "link": "https://example.com/products/crossbody-bag",
+                        "fit": "cover",
+                        "position": "center",
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": {
+                            "$themeRef": "tokens.radius.panel"
+                          }
+                        },
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        }
+                      },
+                      "padding": {
+                        "mode": "separate",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "contentAlign": {
+                        "vertical": "top",
+                        "horizontal": "left"
+                      }
+                    },
+                    "bindings": {
+                      "wrapperStyle.backgroundImage.src": {
+                        "slotId": "pickedProducts",
+                        "mode": "variable",
+                        "valueType": "collection",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "slotPath": "0.imageSrc"
+                      },
+                      "wrapperStyle.backgroundImage.alt": {
+                        "slotId": "pickedProducts",
+                        "mode": "variable",
+                        "valueType": "collection",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "slotPath": "0.imageAlt"
+                      },
+                      "wrapperStyle.backgroundImage.link": {
+                        "slotId": "pickedProducts",
+                        "mode": "variable",
+                        "valueType": "collection",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "slotPath": "0.href"
+                      },
+                      "wrapperStyle.borderRadius.radius": {
+                        "slotId": "tokens.radius.panel",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.panel",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.backgroundImage.borderRadius.radius": {
+                        "slotId": "tokens.radius.panel",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.panel",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "ca-picked-cell-1-badge",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "商品角标 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Hot",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.caption"
+                          },
+                          "color": {
+                            "$themeRef": "colors.surface"
+                          },
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "6px"
+                          },
+                          "backgroundColor": "#DC2626",
+                          "padding": {
+                            "mode": "separate",
+                            "top": "4px",
+                            "right": "8px",
+                            "bottom": "4px",
+                            "left": "8px"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "pickedProducts",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.badge"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.caption",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.caption",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.surface",
+                            "mode": "theme",
+                            "tokenPath": "colors.surface",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ca-picked-cell-1-name",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "商品名 1"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Everyday Crossbody Bag"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": {
+                        "$themeRef": "colors.primary"
+                      },
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.textBody.paragraphs.0.runs.0.text": {
+                        "slotId": "pickedProducts",
+                        "mode": "variable",
+                        "valueType": "collection",
+                        "allowExternal": true,
+                        "fieldKind": "content",
+                        "slotPath": "0.name"
+                      },
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ca-picked-cell-1-price-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "商品价格行 1"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "6px"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "ca-picked-cell-1-sale",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "现价 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "$37",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": {
+                            "$themeRef": "colors.primary"
+                          },
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "pickedProducts",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.salePrice"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "ca-picked-cell-1-original",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "原价 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "$49",
+                                    "decoration": "line-through"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": {
+                            "$themeRef": "colors.secondary"
+                          },
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "pickedProducts",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.originalPrice"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.secondary",
+                            "mode": "theme",
+                            "tokenPath": "colors.secondary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ca-mod-cta",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 购物主按钮"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
-          ]
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
         },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
         },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "createAccountUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "注册账户链接"
-        },
-        "props.textBody.paragraphs.0.runs.3.link": {
-          "slotId": "resetPasswordUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "重置密码链接"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "ca-contact-para": {
-      "id": "ca-contact-para",
-      "type": "text",
-      "parentId": "ca-mod-footer",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+        "children": [
+          {
+            "id": "ca-shop-btn",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "购物主按钮"
+            },
+            "props": {
+              "text": "SHOP NOW →",
+              "link": "https://example.com/shop",
+              "buttonStyle": {
+                "backgroundColor": "#DC2626",
+                "textColor": "#FFFFFF",
+                "fontSize": {
+                  "$themeRef": "tokens.typography.body"
                 },
-                {
-                  "text": "zyzshop1",
-                  "link": "https://example.com/store",
-                  "decoration": "underline"
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
                 },
-                {
-                  "text": " Team at "
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": {
+                    "$themeRef": "tokens.radius.cta"
+                  }
                 },
-                {
-                  "text": "lintingting516@gmail.com",
-                  "link": "mailto:lintingting516@gmail.com",
-                  "decoration": "underline"
-                }
-              ]
+                "bold": true,
+                "italic": false,
+                "widthMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "props.text": {
+                "slotId": "shopCtaText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "购物主按钮文案"
+              },
+              "props.link": {
+                "slotId": "shopCtaUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "购物主按钮链接"
+              },
+              "props.buttonStyle.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.radius": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
+          }
+        ]
       },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.text": {
-          "slotId": "storeName",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺名称"
+      {
+        "id": "ca-mod-footer",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 页脚说明"
         },
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "storeUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺链接"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "props.textBody.paragraphs.0.runs.3.text": {
-          "slotId": "supportEmail",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "客服邮箱"
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": "#FFFBF5",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
         },
-        "props.textBody.paragraphs.0.runs.3.link": {
-          "slotId": "supportEmailMailto",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "客服邮箱 mailto 链接"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
         },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
+        "children": [
+          {
+            "id": "ca-account-para",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "账户说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "You need to log into your store account to enjoy member discounts and points redemption benefits. I don't have an account. "
+                      },
+                      {
+                        "text": "Create an account",
+                        "link": "https://example.com/register",
+                        "decoration": "underline"
+                      },
+                      {
+                        "text": " If you agree to join the membership during Checkout, we have created an account for you. "
+                      },
+                      {
+                        "text": "Reset password",
+                        "link": "https://example.com/reset-password",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "createAccountUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "注册账户链接"
+              },
+              "props.textBody.paragraphs.0.runs.3.link": {
+                "slotId": "resetPasswordUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "重置密码链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "ca-contact-para",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "联系说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+                      },
+                      {
+                        "text": "zyzshop1",
+                        "link": "https://example.com/store",
+                        "decoration": "underline"
+                      },
+                      {
+                        "text": " Team at "
+                      },
+                      {
+                        "text": "lintingting516@gmail.com",
+                        "link": "mailto:lintingting516@gmail.com",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.text": {
+                "slotId": "storeName",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺名称"
+              },
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "storeUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺链接"
+              },
+              "props.textBody.paragraphs.0.runs.3.text": {
+                "slotId": "supportEmail",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "客服邮箱"
+              },
+              "props.textBody.paragraphs.0.runs.3.link": {
+                "slotId": "supportEmailMailto",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "客服邮箱 mailto 链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
       }
-    },
-    "ca-root": {
-      "id": "ca-root",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "ca-mod-logo",
-        "ca-mod-hero",
-        "ca-mod-coupon",
-        "ca-mod-picked",
-        "ca-mod-cta",
-        "ca-mod-footer"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "props.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    }
+    ]
   }
 }

@@ -1,17 +1,21 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailTemplate } from "../types/email";
-import { applyRepeatRegionBinding, expandRepeatRegions } from "./repeatRegion";
+import { applyRepeatRegionBinding } from "./repeatRegion";
 import {
   buildRepeatRegionTreeTagIndex,
+  formatRepeatItemDisplayName,
   REPEAT_REGION_TREE_TAG_COLOR_COUNT,
+  isRepeatItemCloneRoot,
+  repeatTreeRowDisplayTag,
   repeatTreeTagForBlock,
   repeatTreeTagRoleLabel,
+  stripRepeatItemDisplaySuffix,
 } from "./repeatRegionTreeTags";
 
 function templateWithHeadingAndList(): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "tag-test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -104,6 +108,16 @@ function templateWithHeadingAndList(): EmailTemplate {
 }
 
 describe("repeatRegionTreeTags", () => {
+  it("formatRepeatItemDisplayName 避免重复拼接第 N 项后缀", () => {
+    assert.equal(formatRepeatItemDisplayName("商品行", 0), "商品行");
+    assert.equal(formatRepeatItemDisplayName("商品行", 1), "商品行（第 2 项）");
+    assert.equal(
+      formatRepeatItemDisplayName("商品行（第 2 项）", 1),
+      "商品行（第 2 项）"
+    );
+    assert.equal(stripRepeatItemDisplaySuffix("商品行（第 2 项）（第 2 项）"), "商品行");
+  });
+
   it("标记宿主、行模板；展开后为克隆行打重复项 tag", () => {
     const bound = applyRepeatRegionBinding(templateWithHeadingAndList(), "list", {
       slotId: "products",
@@ -118,17 +132,7 @@ describe("repeatRegionTreeTags", () => {
     assert.equal(diskIndex.byBlockId.get("row")?.role, "prototype");
     assert.equal(diskIndex.byBlockId.get("heading"), undefined);
     assert.equal(repeatTreeTagRoleLabel("host"), "列表");
-
-    const expanded = expandRepeatRegions(bound, {
-      schemaVersion: "1.0.0",
-      slots: {},
-      values: { products: [{ title: "A" }, { title: "B" }] },
-    });
-    const expandedIndex = buildRepeatRegionTreeTagIndex(expanded);
-    const cloneId = expanded.blocks.list.children.find((id) => id.includes("__repeatClone__"));
-    assert.ok(cloneId);
-    assert.equal(expandedIndex.byBlockId.get(cloneId!)?.role, "repeat-item");
-    assert.equal(expandedIndex.byBlockId.get(cloneId!)?.colorIndex, diskIndex.byBlockId.get("list")?.colorIndex);
+    assert.equal(diskIndex.byBlockId.get("list")?.colorIndex, 0);
   });
 
   it("多组 repeat 宿主分配不同 colorIndex（最多 10 色循环）", () => {
@@ -171,5 +175,48 @@ describe("repeatRegionTreeTags", () => {
     const index = buildRepeatRegionTreeTagIndex(bound);
     const inherited = repeatTreeTagForBlock(index, bound, "row");
     assert.equal(inherited?.role, "prototype");
+  });
+
+  it("repeatTreeRowDisplayTag：复制根第 1 项为列表，其余为重复；子树内块不展示 pill", () => {
+    const bound = applyRepeatRegionBinding(templateWithHeadingAndList(), "list", {
+      slotId: "products",
+      prototypeChildIds: ["row"],
+      itemFields: [{ key: "title", label: "名称", valueType: "string" }],
+    });
+    const index = buildRepeatRegionTreeTagIndex(bound);
+    const hostTag = index.byBlockId.get("list")!;
+
+    const row0: import("../repeat-binding-contract").VirtualBlockRef = {
+      kind: "repeat-item",
+      hostId: "list",
+      prototypeRootId: "row",
+      itemIndex: 0,
+      contextStack: [],
+    };
+    const row1: import("../repeat-binding-contract").VirtualBlockRef = {
+      ...row0,
+      itemIndex: 1,
+    };
+    const row0Inner: import("../repeat-binding-contract").VirtualBlockRef = {
+      kind: "repeat-item",
+      hostId: "list",
+      prototypeRootId: "heading",
+      itemIndex: 0,
+      contextStack: [],
+    };
+
+    assert.ok(isRepeatItemCloneRoot(row0, index));
+    assert.ok(!isRepeatItemCloneRoot(row0Inner, index));
+
+    const tag0 = repeatTreeRowDisplayTag(row0, { ...hostTag, role: "repeat-item", itemIndex: 0 }, index);
+    const tag1 = repeatTreeRowDisplayTag(row1, { ...hostTag, role: "repeat-item", itemIndex: 1 }, index);
+    assert.equal(tag0?.role, "host");
+    assert.equal(repeatTreeTagRoleLabel(tag0!.role), "列表");
+    assert.equal(tag1?.role, "repeat-item");
+    assert.equal(repeatTreeTagRoleLabel(tag1!.role), "重复");
+    assert.equal(
+      repeatTreeRowDisplayTag(row0Inner, { ...hostTag, role: "repeat-item", itemIndex: 0 }, index),
+      null
+    );
   });
 });

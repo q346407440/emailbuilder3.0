@@ -22,24 +22,29 @@ export async function resolveEmailLayoutContext(
   emailBaseDir: string,
   layoutQuery: string | undefined
 ): Promise<
-  | { ok: true; manifest: LayoutManifest | null; ctx: ResolvedLayoutContext }
+  | { ok: true; manifest: LayoutManifest; ctx: ResolvedLayoutContext }
   | { ok: false; message: string; status: 400 | 404 }
 > {
   const manifest = await readLayoutManifestOptional(readJson, emailBaseDir);
+  if (!manifest) {
+    return {
+      ok: false,
+      message: "layout-manifest.json 不存在，须使用 layouts/<id>/ 版式结构",
+      status: 404,
+    };
+  }
   const { layoutVariantId, error } = resolveLayoutVariantId(manifest, layoutQuery);
-  if (error) {
-    return { ok: false, message: error, status: 400 };
+  if (error || !layoutVariantId) {
+    return { ok: false, message: error ?? "版式 id 无效", status: 400 };
   }
   const ctx = resolveEmailFilePaths(emailBaseDir, manifest, layoutVariantId);
-  if (manifest && layoutVariantId) {
-    const hasTpl = await readJson(ctx.templatePath);
-    if (!hasTpl) {
-      return {
-        ok: false,
-        message: `版式「${layoutVariantId}」的 template.json 不存在`,
-        status: 404,
-      };
-    }
+  const hasTpl = await readJson(ctx.templatePath);
+  if (!hasTpl) {
+    return {
+      ok: false,
+      message: `版式「${layoutVariantId}」的 template.json 不存在`,
+      status: 404,
+    };
   }
   return { ok: true, manifest, ctx };
 }

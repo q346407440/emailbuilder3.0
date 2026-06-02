@@ -107,7 +107,7 @@ export function integrationEndpointsForEmail(
     {
       method: "GET",
       path: `${API_V1}/emails/${enc}/template${layout}`,
-      description: "当前版式 template.json（结构真源）",
+      description: "当前版式 template.json（**nested 4.0.0**：`schemaVersion` + `root` 嵌套树；无顶层 `blocks`）",
     },
   ];
 }
@@ -136,7 +136,8 @@ export function integrationApiDemos(
       id: "template",
       group: "版式",
       title: "获取指定版式结构",
-      description: "读取 layouts/<layout>/template.json；layout 省略时使用 manifest 激活版式或 legacy 根目录模板。",
+      description:
+        "读取 layouts/<layout>/template.json（**nested 4.0.0** wire）；layout 省略时使用 manifest 激活版式。",
       method: "GET",
       path: `${API_V1}/emails/${enc}/template${layoutQs}`,
       curl: `curl -s '${origin}${API_V1}/emails/${enc}/template${layoutQs}'`,
@@ -193,7 +194,7 @@ export function integrationApiDemos(
       group: "合并",
       title: "结构合并（不含主题烘焙）",
       description:
-        "仅 mergeTemplatePayload，不展开 repeat、不解析 $themeRef。完整渲染需在己方合并 tokenPresets 后自行 resolve。",
+        "applyVisibilityRules → 虚拟 repeat 展开 → previewModelToFlatTemplate（含 payload 插值）；不解析 $themeRef。完整渲染需在己方合并 tokenPresets 后自行 resolve。",
       method: "GET",
       path: `${API_V1}/emails/${enc}/merged${layoutQs}`,
       curl: `curl -s '${origin}${API_V1}/emails/${enc}/merged${layoutQs}'`,

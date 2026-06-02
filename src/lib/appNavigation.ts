@@ -6,12 +6,7 @@ export const EMAIL_CAMPAIGN_PATH = "/emailCampaign";
 export const EMAIL_CAMPAIGN_CREATE_PATH = "/emailCampaign/create";
 /** 邮件模板编辑器（原根路径 `/`） */
 export const EDITOR_PATH = "/editor";
-export const LIBRARY_PATH = "/library";
 export const INTEGRATION_PATH = "/integration";
-
-export function isLibraryPath(pathname: string): boolean {
-  return pathname === LIBRARY_PATH || pathname.endsWith(LIBRARY_PATH);
-}
 
 export function isIntegrationPath(pathname: string): boolean {
   return pathname === INTEGRATION_PATH || pathname.endsWith(INTEGRATION_PATH);
@@ -23,7 +18,7 @@ export function isEditorPath(pathname: string): boolean {
 
 /** 商家邮件壳层首页：`/` 与 `/emailCampaign` */
 export function isEmailCampaignPath(pathname: string): boolean {
-  if (isEditorPath(pathname) || isLibraryPath(pathname) || isIntegrationPath(pathname)) {
+  if (isEditorPath(pathname) || isIntegrationPath(pathname)) {
     return false;
   }
   return pathname === "/" || pathname === EMAIL_CAMPAIGN_PATH;
@@ -56,11 +51,6 @@ export function useAppPath(): string {
   }, []);
 
   return pathname;
-}
-
-export function useIsLibraryRoute(): boolean {
-  const pathname = useAppPath();
-  return isLibraryPath(pathname);
 }
 
 export function useIsIntegrationRoute(): boolean {
@@ -96,10 +86,6 @@ export function useLegacyEditorQueryRedirect(): void {
   }, []);
 }
 
-export function goToLibrary(): void {
-  navigateApp(LIBRARY_PATH);
-}
-
 export function goToEmailCampaign(): void {
   navigateApp(EMAIL_CAMPAIGN_PATH);
 }
@@ -128,7 +114,7 @@ export function openEmailTemplateEditorInNewTab(
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-/** 当前标签页内进入编辑器（组件库 / 接入页返回等） */
+/** 当前标签页内进入编辑器（接入页返回等） */
 export function goToEmailEditor(): void {
   navigateApp(EDITOR_PATH);
 }

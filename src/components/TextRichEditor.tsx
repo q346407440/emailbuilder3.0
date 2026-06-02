@@ -240,6 +240,8 @@ export function TextRichEditor({
   const selRange = useRef<Range | null>(null);
   const debounceId = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dirtyRef = useRef(false);
+  /** IME 组合输入中：避免 flush / 外层 textBody 回写 innerHTML 打断拼音选字 */
+  const composingRef = useRef(false);
   const linkInputRef = useRef<InputRef>(null);
   const colorTriggerWrapRef = useRef<HTMLDivElement>(null);
   const shakeWrapRef = useRef<HTMLDivElement>(null);
@@ -268,8 +270,14 @@ export function TextRichEditor({
   const pickerColorValue = rgbaToCss(rgbaForPicker(runColorDraft));
 
   useEffect(() => {
+    dirtyRef.current = false;
+    composingRef.current = false;
+  }, [editorKey]);
+
+  useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (composingRef.current || dirtyRef.current) return;
     const html =
       variableRuns.length > 0
         ? renderTextBodyToEditorHtml(textBody, defaults, variableRuns)
@@ -306,6 +314,7 @@ export function TextRichEditor({
   const flush = () => {
     const el = ref.current;
     if (!el) return;
+    if (composingRef.current) return;
     if (!dirtyRef.current) return;
     if (debounceId.current) {
       clearTimeout(debounceId.current);
@@ -320,6 +329,10 @@ export function TextRichEditor({
   };
 
   const scheduleFlush = () => {
+    if (composingRef.current) {
+      dirtyRef.current = true;
+      return;
+    }
     dirtyRef.current = true;
     if (debounceId.current) clearTimeout(debounceId.current);
     debounceId.current = setTimeout(() => {
@@ -768,6 +781,13 @@ export function TextRichEditor({
         role="textbox"
         aria-multiline="true"
         onInput={scheduleFlush}
+        onCompositionStart={() => {
+          composingRef.current = true;
+        }}
+        onCompositionEnd={() => {
+          composingRef.current = false;
+          scheduleFlush();
+        }}
         onBlur={flush}
         onClick={onEditorClick}
         onDoubleClick={onEditorDoubleClick}

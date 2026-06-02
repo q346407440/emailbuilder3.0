@@ -2,7 +2,7 @@ import {
   STANDARD_SCALAR_VALUE_TYPES,
   standardScalarValueTypeLabel,
   type StandardScalarValueType,
-} from "../lib/standardScalarSlotTypes";
+} from "../payload-contract/standard-scalar-types";
 import { ShopSelect } from "./ui/ShopFormControls";
 
 export type StandardScalarValueTypeSelectProps = {

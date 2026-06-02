@@ -6,16 +6,12 @@ import {
   normalizeBuiltinProductListConfig,
 } from "../collection-builtin-catalog-config";
 import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  normalizeBuiltinCollectionExtract,
-} from "../collection-builtin-extract";
-import {
-  DEFAULT_BUILTIN_COLLECTION_SORT,
-  normalizeBuiltinCollectionSortId,
-} from "../collection-builtin-sort";
+  normalizeBuiltinSortPolicy,
+  writeSortPolicyToDataSource,
+} from "../collection-builtin-sort-policy";
 import type { EmailPayload, PayloadSlotDefinition } from "../../types/email";
 import { padOrTrimCollectionValues, resolveCollectionFixedLength } from "../../lib/collectionDataSource";
-import { resolveBuiltinCollectionItems } from "../../lib/resolveBuiltinCollectionItems";
+import { resolveBuiltinCollectionItemsForAnchor } from "../../lib/resolveBuiltinCollectionItems";
 import type { SceneCollectionPreset } from "./types";
 
 export const SCENE_BUILTIN_PRESET_DEFAULT_FIXED_LENGTH = 4;
@@ -33,23 +29,23 @@ export function buildCollectionDataSourceFromScenePreset(
     return { type: "custom" };
   }
   const catalog = preset.builtinCatalog;
-  const sort = normalizeBuiltinCollectionSortId(preset.sort);
-  const extract = normalizeBuiltinCollectionExtract(preset.extract);
-  const base = { type: "remote" as const, provider: "builtin" as const, catalog, sort };
-  const withExtract =
-    extract.kind === "similarTo" || extract.kind === "complement"
-      ? { ...base, extract }
-      : base;
+  const sortPolicy = normalizeBuiltinSortPolicy(preset.sort);
+  const base = {
+    type: "remote" as const,
+    provider: "builtin" as const,
+    catalog,
+    sort: writeSortPolicyToDataSource(sortPolicy),
+  };
   if (catalog === "products") {
     return {
-      ...withExtract,
+      ...base,
       productConfig: normalizeBuiltinProductListConfig(
         preset.productConfig ?? DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG
       ),
     };
   }
   return {
-    ...withExtract,
+    ...base,
     albumConfig: normalizeBuiltinAlbumListConfig(
       preset.albumConfig ?? DEFAULT_BUILTIN_ALBUM_LIST_CONFIG
     ),
@@ -74,13 +70,6 @@ export function buildPayloadSlotDefFromScenePreset(preset: SceneCollectionPreset
     description: preset.description,
     itemFields: preset.itemFields,
     dataSource: buildCollectionDataSourceFromScenePreset(preset),
-    displayRulePreset: preset.displayRulePreset,
-    displayRule: preset.displayRulePreset
-      ? {
-          keyField: preset.displayRulePreset.keyField,
-          includeValues: preset.displayRulePreset.includeValues,
-        }
-      : undefined,
     sceneCollectionPresetId: preset.presetId,
     scene: preset.scene,
   };
@@ -108,12 +97,12 @@ export function resolveScenePresetCollectionValues(
   const dataSource = buildCollectionDataSourceFromScenePreset(preset);
   const ds =
     dataSource.type === "remote" && dataSource.provider === "builtin" ? dataSource : null;
-  const result = resolveBuiltinCollectionItems({
+  const sortPolicy = normalizeBuiltinSortPolicy(preset.sort);
+  const result = resolveBuiltinCollectionItemsForAnchor({
     catalog: preset.builtinCatalog,
     itemFields: preset.itemFields,
     fixedLength,
-    sort: ds?.sort,
-    extract: ds?.extract,
+    sortPolicy,
     productConfig: ds?.productConfig,
     albumConfig: ds?.albumConfig,
     payload,

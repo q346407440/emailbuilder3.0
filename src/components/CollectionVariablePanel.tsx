@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import { isSceneCollectionPresetManagedSlot } from "../lib/sceneCollectionPresetSlot";
 import {
   COLLECTION_FIXED_LENGTH_MAX,
   COLLECTION_FIXED_LENGTH_MIN,
-  clampFixedLength,
+  padOrTrimCollectionValues,
   resolveCollectionFixedLength,
 } from "../lib/collectionDataSource";
 import { resolveEffectiveCollectionItemFields } from "../lib/collectionSlotEffective";
+import { builtinProductListItemFieldsRequireSpuSelectionOnly } from "../lib/loyaltyMerchantSpuTreePresetSeed";
 import {
   applyBuiltinAlbumConfigToDraft,
-  applyBuiltinCollectionExtractToDraft,
-  applyBuiltinCollectionSortToDraft,
+  applyBuiltinCollectionSortPolicyToDraft,
   applyBuiltinProductConfigToDraft,
   draftToCollectionSnapshot,
 } from "../lib/collectionSlotDraft";
@@ -26,30 +26,26 @@ import {
 } from "../payload-contract/collection-builtin-catalog-config";
 import {
   BUILTIN_ALBUM_ITEM_FIELDS,
-  BUILTIN_PRODUCT_SKU_ITEM_FIELDS,
-  BUILTIN_PRODUCT_SPU_ITEM_FIELDS,
 } from "../payload-contract/builtin-collection-item-fields";
 import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  type BuiltinCollectionExtract,
-} from "../payload-contract/collection-builtin-extract";
-import {
-  DEFAULT_BUILTIN_COLLECTION_SORT,
-  type BuiltinCollectionSortId,
-} from "../payload-contract/collection-builtin-sort";
-import { listCollectionSlotIdsForExtract } from "../lib/resolveBuiltinCollectionItems";
+  readSortPolicyFromBuiltinDataSource,
+  type NormalizedBuiltinSortPolicy,
+} from "../payload-contract/collection-builtin-sort-policy";
 import { BuiltinAlbumListConfigFields } from "./BuiltinAlbumListConfigFields";
 import { BuiltinCollectionRulesFields } from "./BuiltinCollectionRulesFields";
 import { BuiltinProductListConfigFields } from "./BuiltinProductListConfigFields";
 import { collectionDataSourceKind, toCollectionItems, type PayloadSlotDraft } from "../lib/payloadSlotDraft";
+import { CollectionFixedLengthField } from "./CollectionFixedLengthField";
 import { CollectionItemFieldsModal } from "./CollectionItemFieldsModal";
-import { CollectionLinkedPreviewTabs } from "./CollectionLinkedPreviewTabs";
-import { CollectionDisplayRuleModal } from "./CollectionDisplayRuleModal";
+import { CollectionItemPreview } from "./collectionItemPreview";
+import { hasNonEmptyCollectionItems } from "../lib/collectionFieldMapping";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { Field } from "./ui/Field";
-import { ShopInput, ShopSecondaryButton } from "./ui/ShopFormControls";
-import { applyCollectionDisplayRule } from "../lib/collectionDisplayRule";
-import type { CollectionDisplayRule } from "../payload-contract/types";
+import { ShopSecondaryButton } from "./ui/ShopFormControls";
+import {
+  normalizeItemVisibility,
+  setCollectionItemVisibilityAt,
+} from "../lib/collectionItemVisibility";
 
 type Props = {
   slot: ExternalVariableSlotInfo;
@@ -61,7 +57,7 @@ type Props = {
   onDraftChange: (draft: PayloadSlotDraft) => void;
   onItemFieldsChange: (itemFields: NonNullable<ExternalVariableSlotInfo["itemFields"]>) => void;
   onFixedLengthChange: (length: number) => void;
-  onOpenDataSourceModal: () => void;
+  onOpenDataSourceModal: (reimport?: boolean) => void;
   layout?: "panel" | "embedded";
   panelSection?: "all" | "config" | "preview";
 };
@@ -93,30 +89,6 @@ function summarizeItemFields(itemFields: NonNullable<ExternalVariableSlotInfo["i
   return `共 ${itemFields.length} 个${names.length > 0 ? `：${head}…` : ""}`;
 }
 
-function countFilledItems(
-  values: unknown,
-  itemFields: NonNullable<ExternalVariableSlotInfo["itemFields"]>
-): number {
-  if (!Array.isArray(values)) return 0;
-  return values.filter((item) => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
-    const row = item as Record<string, unknown>;
-    return itemFields.some((f) => {
-      const v = row[f.key];
-      return v !== undefined && v !== null && String(v).trim() !== "";
-    });
-  }).length;
-}
-
-function summarizeDisplayRule(rule: CollectionDisplayRule | undefined): string {
-  if (!rule) return "未启用（默认展示全部列表项）";
-  const keyField = rule.keyField?.trim() || "type";
-  const parts: string[] = [`匹配字段：${keyField}`];
-  if (rule.includeValues?.length) parts.push(`包含 ${rule.includeValues.length} 项`);
-  if (rule.excludeValues?.length) parts.push(`排除 ${rule.excludeValues.length} 项`);
-  return parts.join(" · ");
-}
-
 export function CollectionVariablePanel({
   slot,
   committedPayload,
@@ -135,7 +107,6 @@ export function CollectionVariablePanel({
   const showConfig = panelSection === "all" || panelSection === "config";
   const showPreview = panelSection === "all" || panelSection === "preview";
   const [itemFieldsModalOpen, setItemFieldsModalOpen] = useState(false);
-  const [displayRuleModalOpen, setDisplayRuleModalOpen] = useState(false);
   const itemFields = resolveEffectiveCollectionItemFields(slot, draft);
   const entry = committedPayload.slots[slot.slotId];
   const effectiveEntry = draft?.slotDefPatch ? { ...entry, ...draft.slotDefPatch } : entry;
@@ -152,23 +123,20 @@ export function CollectionVariablePanel({
     effectiveEntry.dataSource.provider === "builtin"
       ? effectiveEntry.dataSource.catalog
       : "products";
-  const builtinSort =
+  const builtinSortPolicy =
     effectiveEntry?.dataSource?.type === "remote" &&
     effectiveEntry.dataSource.provider === "builtin"
-      ? (effectiveEntry.dataSource.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT)
-      : DEFAULT_BUILTIN_COLLECTION_SORT;
-  const builtinExtract =
-    effectiveEntry?.dataSource?.type === "remote" &&
-    effectiveEntry.dataSource.provider === "builtin"
-      ? (effectiveEntry.dataSource.extract ?? DEFAULT_BUILTIN_COLLECTION_EXTRACT)
-      : DEFAULT_BUILTIN_COLLECTION_EXTRACT;
+      ? readSortPolicyFromBuiltinDataSource(effectiveEntry.dataSource)
+      : ({ kind: "regular", sort: "catalogOrder" } as NormalizedBuiltinSortPolicy);
+  const spuSelectionOnlyPicker = builtinProductListItemFieldsRequireSpuSelectionOnly(itemFields);
   const builtinProductConfig =
     effectiveEntry?.dataSource?.type === "remote" &&
     effectiveEntry.dataSource.provider === "builtin" &&
     effectiveEntry.dataSource.catalog === "products"
-      ? normalizeBuiltinProductListConfig(
-          effectiveEntry.dataSource.productConfig ?? DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG
-        )
+      ? normalizeBuiltinProductListConfig({
+          ...(effectiveEntry.dataSource.productConfig ?? DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG),
+          ...(spuSelectionOnlyPicker ? { productSelectionScope: "spuOnly" as const } : {}),
+        })
       : DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG;
   const builtinAlbumConfig =
     effectiveEntry?.dataSource?.type === "remote" &&
@@ -179,92 +147,30 @@ export function CollectionVariablePanel({
         )
       : DEFAULT_BUILTIN_ALBUM_LIST_CONFIG;
 
-  const previewValuesRaw = previewPayload.values[slot.slotId];
-  const previewValues = applyCollectionDisplayRule(toCollectionItems(previewValuesRaw), effectiveEntry?.displayRule);
-  const filledCount = countFilledItems(previewValues, itemFields);
+  const previewValues = previewPayload.values[slot.slotId];
+  const previewItems = toCollectionItems(previewValues);
+  const hasImportedPreview =
+    dsKind === "custom" && hasNonEmptyCollectionItems(previewItems);
+  const manualFormReady =
+    dsKind === "custom" && itemFields.length > 0 && !scenePresetManaged && !detached;
+  const itemFieldStructureSig = useMemo(
+    () => itemFields.map((f) => `${f.key}:${f.valueType ?? ""}`).join("|"),
+    [itemFields]
+  );
+  const effectiveItemVisibility = normalizeItemVisibility(
+    fixedLength,
+    draft?.slotDefPatch?.itemVisibility ?? effectiveEntry?.itemVisibility
+  );
 
-  const [lengthDraft, setLengthDraft] = useState(String(fixedLength));
-
-  useEffect(() => {
-    setLengthDraft(String(fixedLength));
-  }, [fixedLength, slot.slotId]);
-
-  const commitLength = () => {
-    const n = clampFixedLength(Number(lengthDraft));
-    if (!Number.isFinite(Number(lengthDraft)) || Number(lengthDraft) < COLLECTION_FIXED_LENGTH_MIN) {
-      setLengthDraft(String(fixedLength));
-      return;
-    }
-    setLengthDraft(String(n));
-    onFixedLengthChange(n);
-  };
-
-  const handleSortChange = (sort: BuiltinCollectionSortId) => {
+  const handleSortPolicyChange = (sortPolicy: NormalizedBuiltinSortPolicy) => {
     const current = ensureDraft();
     const snap = draftToCollectionSnapshot(current, itemFields, committedPayload.values[slot.slotId]);
     onDraftChange(
-      applyBuiltinCollectionSortToDraft(
+      applyBuiltinCollectionSortPolicyToDraft(
         current,
         snap,
         itemFields,
-        sort,
-        previewPayload,
-        slot.slotId
-      )
-    );
-  };
-
-  const handleExtractKindChange = (kind: BuiltinCollectionExtract["kind"]) => {
-    const current = ensureDraft();
-    const snap = draftToCollectionSnapshot(current, itemFields, committedPayload.values[slot.slotId]);
-    const anchorOptions = listCollectionSlotIdsForExtract(previewPayload, slot.slotId);
-    const nextExtract: BuiltinCollectionExtract =
-      kind === "similarTo" || kind === "complement"
-        ? {
-            kind,
-            fromSlotId: anchorOptions[0] ?? "",
-            anchorItemIndex: 1,
-            matchField: "href",
-          }
-        : { kind: "none" };
-    onDraftChange(
-      applyBuiltinCollectionExtractToDraft(
-        current,
-        snap,
-        itemFields,
-        nextExtract,
-        previewPayload,
-        slot.slotId
-      )
-    );
-  };
-
-  const handleExtractFromSlotChange = (fromSlotId: string) => {
-    if (builtinExtract.kind !== "similarTo" && builtinExtract.kind !== "complement") return;
-    const current = ensureDraft();
-    const snap = draftToCollectionSnapshot(current, itemFields, committedPayload.values[slot.slotId]);
-    onDraftChange(
-      applyBuiltinCollectionExtractToDraft(
-        current,
-        snap,
-        itemFields,
-        { ...builtinExtract, fromSlotId },
-        previewPayload,
-        slot.slotId
-      )
-    );
-  };
-
-  const handleAnchorItemIndexChange = (anchorItemIndex: number) => {
-    if (builtinExtract.kind !== "similarTo" && builtinExtract.kind !== "complement") return;
-    const current = ensureDraft();
-    const snap = draftToCollectionSnapshot(current, itemFields, committedPayload.values[slot.slotId]);
-    onDraftChange(
-      applyBuiltinCollectionExtractToDraft(
-        current,
-        snap,
-        itemFields,
-        { ...builtinExtract, anchorItemIndex },
+        sortPolicy,
         previewPayload,
         slot.slotId
       )
@@ -274,26 +180,38 @@ export function CollectionVariablePanel({
   const handleProductConfigChange = (productConfig: BuiltinProductListConfig) => {
     const current = ensureDraft();
     const snap = draftToCollectionSnapshot(current, itemFields, committedPayload.values[slot.slotId]);
-    const prevGranularity = snap.productConfig?.rowGranularity ?? "spu";
-    let nextItemFields = itemFields;
-    if (productConfig.rowGranularity !== prevGranularity) {
-      nextItemFields =
-        productConfig.rowGranularity === "sku"
-          ? BUILTIN_PRODUCT_SKU_ITEM_FIELDS
-          : BUILTIN_PRODUCT_SPU_ITEM_FIELDS;
-      onItemFieldsChange(nextItemFields);
-    }
+    const normalizedProductConfig = normalizeBuiltinProductListConfig({
+      ...productConfig,
+      ...(spuSelectionOnlyPicker ? { productSelectionScope: "spuOnly" as const } : {}),
+    });
     onDraftChange(
       applyBuiltinProductConfigToDraft(
         current,
-        { ...snap, productConfig },
-        nextItemFields,
-        productConfig,
+        { ...snap, productConfig: normalizedProductConfig },
+        itemFields,
+        normalizedProductConfig,
         previewPayload,
         slot.slotId
       )
     );
   };
+
+  /**
+   * 手动录入：仅在行字段结构或列表长度变化时补齐空行草稿。
+   * 勿把 previewValues 列入 deps，否则每次键入都会 effect 覆写，导致输入框无法编辑。
+   */
+  useEffect(() => {
+    if (!manualFormReady) return;
+    const rows = toCollectionItems(previewValues);
+    const needsPad =
+      rows.length !== fixedLength ||
+      itemFields.some((field) => rows.some((row) => !(field.key in row)));
+    if (!needsPad) return;
+    const padded = padOrTrimCollectionValues(rows, fixedLength, itemFields);
+    const current = ensureDraft();
+    onDraftChange({ ...current, value: padded });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅结构变化时补齐，不随每次键入触发
+  }, [slot.slotId, manualFormReady, fixedLength, itemFieldStructureSig]);
 
   const handleAlbumConfigChange = (albumConfig: BuiltinAlbumListConfig) => {
     const current = ensureDraft();
@@ -313,21 +231,20 @@ export function CollectionVariablePanel({
     );
   };
 
+  const dataSourceLabel = hasImportedPreview ? "重新导入 JSON" : "从 JSON 导入";
+
   const dataSourceAction = (
-    <InspectorTextAction disabled={detached} onClick={onOpenDataSourceModal}>
-      配置数据源
+    <InspectorTextAction
+      disabled={detached}
+      onClick={() => onOpenDataSourceModal(hasImportedPreview)}
+    >
+      {dataSourceLabel}
     </InspectorTextAction>
   );
 
   const itemFieldsAction = (
     <InspectorTextAction disabled={detached} onClick={() => setItemFieldsModalOpen(true)}>
       {scenePresetManaged ? "查看行字段" : "配置行字段"}
-    </InspectorTextAction>
-  );
-
-  const displayRuleAction = (
-    <InspectorTextAction disabled={detached} onClick={() => setDisplayRuleModalOpen(true)}>
-      配置展示规则
     </InspectorTextAction>
   );
 
@@ -345,11 +262,19 @@ export function CollectionVariablePanel({
         hint={
           dsKind === "builtin"
             ? "内置商品/专辑列表：在上方配置范围与规则；预览由系统 mock 解析。"
-            : "自定义列表：粘贴 JSON 样本并配置字段关联；应用后请在变量详情点「保存变量」。"
+            : hasImportedPreview
+              ? "日常在下方数据预览改值；整批替换请点「重新导入 JSON」，粘贴后点确定即可。保存请点「保存变量」。"
+              : manualFormReady
+                ? "可手动填写，或点「从 JSON 导入」粘贴 JSON 后确定，自动写入行字段与数据预览。"
+                : "先配置行字段后手动填写，或点「从 JSON 导入」一次性写入行字段与数据。"
         }
       >
-        <ShopSecondaryButton htmlType="button" disabled={detached} onClick={onOpenDataSourceModal}>
-          配置数据源…
+        <ShopSecondaryButton
+          htmlType="button"
+          disabled={detached}
+          onClick={() => onOpenDataSourceModal(hasImportedPreview)}
+        >
+          {dataSourceLabel}…
         </ShopSecondaryButton>
       </Field>
     );
@@ -383,13 +308,9 @@ export function CollectionVariablePanel({
             slotId={slot.slotId}
             payload={previewPayload}
             catalog={builtinCatalog}
-            sort={builtinSort}
-            extract={builtinExtract}
+            sortPolicy={builtinSortPolicy}
             disabled={detached}
-            onSortChange={handleSortChange}
-            onExtractKindChange={handleExtractKindChange}
-            onExtractFromSlotChange={handleExtractFromSlotChange}
-            onAnchorItemIndexChange={handleAnchorItemIndexChange}
+            onSortPolicyChange={handleSortPolicyChange}
           />
         </>
       ) : null}
@@ -397,30 +318,18 @@ export function CollectionVariablePanel({
       {showConfig ? previewDataField : null}
 
       {showConfig ? (
-        <Field
-          label="列表长度"
-          {...(panelLayout
-            ? {}
-            : {
-                hint: `邮件版式固定展示项数，范围 ${COLLECTION_FIXED_LENGTH_MIN}–${COLLECTION_FIXED_LENGTH_MAX}。`,
-              })}
-        >
-          <ShopInput
-            type="number"
-            min={COLLECTION_FIXED_LENGTH_MIN}
-            max={COLLECTION_FIXED_LENGTH_MAX}
-            value={lengthDraft}
-            disabled={detached}
-            onChange={(e) => setLengthDraft(e.target.value)}
-            onBlur={commitLength}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                commitLength();
-              }
-            }}
-          />
-        </Field>
+        <CollectionFixedLengthField
+          slotId={slot.slotId}
+          fixedLength={fixedLength}
+          disabled={detached}
+          disabledReason={detached ? "变量已解除外部绑定，恢复绑定后可改列表长度。" : undefined}
+          hint={
+            panelLayout
+              ? undefined
+              : `邮件版式固定展示项数，范围 ${COLLECTION_FIXED_LENGTH_MIN}–${COLLECTION_FIXED_LENGTH_MAX}。`
+          }
+          onCommit={onFixedLengthChange}
+        />
       ) : null}
 
       {showConfig ? (
@@ -459,68 +368,64 @@ export function CollectionVariablePanel({
         </Field>
       ) : null}
 
-      {showConfig && scenePresetManaged ? (
-        <Field
-          label="展示规则"
-          headerExtra={panelLayout ? displayRuleAction : undefined}
-          {...(panelLayout
-            ? {}
-            : {
-                hint: "高级功能：按规则从外部全量列表中筛出可展示子集，避免逐个 block 配显隐。",
-              })}
-        >
-          <p className="inspector__muted collection-variable-panel__item-fields-summary">
-            {summarizeDisplayRule(effectiveEntry?.displayRule)}
-          </p>
-          {panelLayout ? null : (
-            <ShopSecondaryButton
-              htmlType="button"
-              disabled={detached}
-              onClick={() => setDisplayRuleModalOpen(true)}
-            >
-              配置展示规则…
-            </ShopSecondaryButton>
-          )}
-          <CollectionDisplayRuleModal
-            visible={displayRuleModalOpen}
-            slotId={slot.slotId}
-            slotLabel={slot.label}
-            rule={effectiveEntry?.displayRule}
-            itemFields={itemFields}
-            includePresetValues={effectiveEntry?.displayRulePreset?.includeValues}
-            includePresetOptions={effectiveEntry?.displayRulePreset?.options}
-            keyFieldPreset={effectiveEntry?.displayRulePreset?.keyField}
-            scenePresetManaged={scenePresetManaged}
-            disabled={detached}
-            onClose={() => setDisplayRuleModalOpen(false)}
-            onApply={(nextRule) => {
-              const current = ensureDraft();
-              onDraftChange({
-                ...current,
-                slotDefPatch: { ...(current.slotDefPatch ?? {}), displayRule: nextRule },
-              });
-            }}
-          />
-        </Field>
-      ) : null}
-
       {showPreview ? (
         <Field
-          label="关联后预览"
+          label="数据预览"
           {...(panelLayout
             ? {}
             : {
-                hint: scenePresetManaged
-                  ? "只读回显：用于查看当前数据。"
-                  : "只读回显：按列表项切换查看当前数据源关联后的合并结果；修改数据请使用「配置数据源…」。",
+                hint:
+                  manualFormReady
+                    ? hasImportedPreview
+                      ? "切换 Tab 逐条改值；子列表点「编辑」。勾选「不展示」后该行不出现在画布。保存请点「保存变量」。"
+                      : "已按列表长度生成空行，请直接填写；保存请点「保存变量」。"
+                    : "切换查看每条数据；勾选「不展示」后该行不会出现在画布列表。",
               })}
         >
-          <CollectionLinkedPreviewTabs
+          <CollectionItemPreview
             slotId={slot.slotId}
-            itemFields={itemFields}
+            fields={itemFields}
             values={previewValues}
-            fixedLength={fixedLength}
-            filledCount={filledCount}
+            mode={detached || scenePresetManaged || dsKind !== "custom" ? "readonly" : "editable"}
+            tabCount={fixedLength}
+            padToTabCount={manualFormReady || hasImportedPreview}
+            requireNonemptyRow={!manualFormReady}
+            emptyHint={
+              itemFields.length === 0
+                ? "请先配置列表行字段，保存后即可在此逐条填写"
+                : undefined
+            }
+            disabled={detached || scenePresetManaged}
+            itemVisibility={effectiveItemVisibility}
+            visibilityDisabled={detached}
+            onItemHiddenChange={(index, hidden) => {
+              const current = ensureDraft();
+              const nextVisibility = setCollectionItemVisibilityAt(
+                draft?.slotDefPatch?.itemVisibility ?? effectiveEntry?.itemVisibility,
+                fixedLength,
+                index,
+                !hidden
+              );
+              onDraftChange({
+                ...current,
+                slotDefPatch: {
+                  ...(current.slotDefPatch ?? {}),
+                  itemVisibility: nextVisibility,
+                },
+              });
+            }}
+            onFieldChange={(rowIndex, fieldKey, value) => {
+              const current = ensureDraft();
+              const rows = padOrTrimCollectionValues(
+                toCollectionItems(current.value ?? previewValues),
+                fixedLength,
+                itemFields
+              );
+              const next = rows.map((row, index) =>
+                index === rowIndex ? { ...row, [fieldKey]: value } : row
+              );
+              onDraftChange({ ...current, value: next });
+            }}
           />
         </Field>
       ) : null}

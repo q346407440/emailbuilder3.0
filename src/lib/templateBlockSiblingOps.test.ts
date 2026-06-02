@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailTemplate } from "../types/email";
+import { MINIMAL_TEXT_PROPS } from "./testFixtures/emailTemplate";
 import {
   duplicateBlockBelow,
   getBlockSiblingMoveState,
@@ -9,7 +10,7 @@ import {
 
 function baseTemplate(): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -52,16 +53,16 @@ function baseTemplate(): EmailTemplate {
         children: [],
         wrapperStyle: { widthMode: "fill", heightMode: "hug" },
         props: {
+          ...MINIMAL_TEXT_PROPS,
           textBody: { paragraphs: [{ runs: [{ text: "A" }] }] },
-          fontFamily: "Arial",
-          fontSize: "14px",
-          color: "#111111",
-          bold: false,
-          italic: false,
-          decoration: "none",
         },
         bindings: {
-          "props.color": { mode: "theme", tokenPath: "colors.primary", fieldKind: "style" },
+          "props.color": {
+            slotId: "colors.primary",
+            mode: "theme",
+            tokenPath: "colors.primary",
+            fieldKind: "style",
+          },
         },
       },
       b: {
@@ -71,13 +72,8 @@ function baseTemplate(): EmailTemplate {
         children: [],
         wrapperStyle: { widthMode: "fill", heightMode: "hug" },
         props: {
+          ...MINIMAL_TEXT_PROPS,
           textBody: { paragraphs: [{ runs: [{ text: "B" }] }] },
-          fontFamily: "Arial",
-          fontSize: "14px",
-          color: "#111111",
-          bold: false,
-          italic: false,
-          decoration: "none",
         },
         bindings: {},
       },

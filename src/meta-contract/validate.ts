@@ -1,4 +1,5 @@
 import { META_REMOVED_DELIVERY_KEYS, META_REMOVED_ROOT_KEYS } from "./removed-fields";
+import { META_SCHEMA_VERSION } from "./types";
 
 export type MetaValidationIssue = {
   path: string;
@@ -12,6 +13,13 @@ export function validateEmailMeta(meta: unknown): MetaValidationIssue[] {
   }
   const root = meta as Record<string, unknown>;
   const issues: MetaValidationIssue[] = [];
+
+  if (root.schemaVersion !== META_SCHEMA_VERSION) {
+    issues.push({
+      path: "schemaVersion",
+      reason: `meta.schemaVersion 必须为 ${META_SCHEMA_VERSION}`,
+    });
+  }
 
   for (const key of META_REMOVED_ROOT_KEYS) {
     if (key in root) {

@@ -2,7 +2,7 @@
 /**
  * 一键回归校验：
  *  1. 跑 lib 层单测（含 validate / textBody 等）
- *  2. 对 data/emails/<id>/ legacy 或 layouts/<variant>/ template 跑 validateTemplate
+ *  2. 对 data/emails/<id>/layouts/<variant>/template.json 跑 validateTemplate
  *  3. 对同目录 payload.json 跑 validatePayloadAgainstTemplate（版式场景对每个版式 template 校验）
  *  4. 校验 tokenPresets.json
  *  5. 校验 data/token-presets/*.json（公共样式预设）
@@ -29,12 +29,20 @@ import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateTemplate, validatePayloadAgainstTemplate } from "../src/lib/validate.ts";
-import { validateEmailMeta } from "../src/meta-contract/validate.ts";
-import { validateTokenPresets } from "../src/token-preset-contract/validate.ts";
+import {
+  parseTemplateFromDisk,
+  validateTemplateFromDisk,
+  nestedMasterToEditorMaster,
+  parseMasterFromDisk,
+  serializeTemplateToDisk,
+  readTemplateGraphFromDiskRaw,
+} from "../src/lib/templateTreeAdapter.ts";
+import { validateNestedMasterDisk } from "../src/template-disk-contract/index.ts";
+import { masterToEmailTemplate } from "../src/lib/masterCatalog.ts";
+import { validateSchemaArtifact } from "../src/schema-registry/index.ts";
 import {
   allLayoutTemplatePaths,
   isLayoutManifestShape,
-  validateLayoutManifest,
 } from "../src/lib/emailLayoutVariant.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -98,11 +106,23 @@ function runStep(label, args) {
 
 function validateTemplateBundle(tplPath, tokenPath, label) {
   const issues = [];
-  const tpl = JSON.parse(readFileSync(tplPath, "utf8"));
-  issues.push(...validateTemplate(tpl));
+  const raw = JSON.parse(readFileSync(tplPath, "utf8"));
+  issues.push(...validateTemplateFromDisk(raw));
+  let tpl = null;
+  if (issues.filter((i) => i.level !== "warning").length === 0) {
+    try {
+      tpl = parseTemplateFromDisk(raw);
+    } catch (e) {
+      issues.push({
+        path: "",
+        reason: e instanceof Error ? e.message : String(e),
+        level: "error",
+      });
+    }
+  }
   if (statSync(tokenPath, { throwIfNoEntry: false })?.isFile()) {
     const tokenPresets = JSON.parse(readFileSync(tokenPath, "utf8"));
-    issues.push(...validateTokenPresets(tokenPresets));
+    issues.push(...validateSchemaArtifact("tokenPresets", tokenPresets));
   }
   const errors = issues.filter((i) => i.level !== "warning");
   const warnings = issues.filter((i) => i.level === "warning");
@@ -125,7 +145,7 @@ function validateTemplateBundle(tplPath, tokenPath, label) {
 
 function validateMetaFile(metaPath) {
   const meta = JSON.parse(readFileSync(metaPath, "utf8"));
-  const issues = validateEmailMeta(meta);
+  const issues = validateSchemaArtifact("meta", meta);
   if (issues.length === 0) {
     process.stdout.write(`[ok]   ${metaPath}\n`);
     return true;
@@ -139,6 +159,14 @@ function validateMetaFile(metaPath) {
 
 function validatePayloadForTemplates(payloadPath, templates, labelPrefix) {
   const payload = JSON.parse(readFileSync(payloadPath, "utf8"));
+  const shapeIssues = validateSchemaArtifact("payload", payload);
+  if (shapeIssues.length) {
+    process.stdout.write(`[fail] ${labelPrefix} payload\n`);
+    for (const issue of shapeIssues) {
+      process.stdout.write(`        ${issue.path}: ${issue.reason}\n`);
+    }
+    return false;
+  }
   let failed = false;
   for (const { layoutVariantId, template } of templates) {
     const payloadIssues = validatePayloadAgainstTemplate(template, payload);
@@ -183,61 +211,90 @@ function validateAllTemplates(emailKey) {
       manifest = null;
     }
 
-    if (manifest && isLayoutManifestShape(manifest)) {
-      const manifestIssues = validateLayoutManifest(manifest);
-      if (manifestIssues.length) {
-        failed += 1;
-        process.stdout.write(`[fail] ${manifestPath}\n`);
-        for (const issue of manifestIssues) {
-          process.stdout.write(`        ${issue.path}: ${issue.reason}\n`);
-        }
-        continue;
-      }
-      process.stdout.write(`[ok]   ${manifestPath}\n`);
-
-      const templates = [];
-      for (const { layoutVariantId, templatePath } of allLayoutTemplatePaths(dir, manifest)) {
-        const tokenPath = join(dir, "layouts", layoutVariantId, "tokenPresets.json");
-        const bundle = validateTemplateBundle(templatePath, tokenPath, templatePath);
-        if (!bundle.ok) {
-          failed += 1;
-          continue;
-        }
-        templates.push({ layoutVariantId, template: bundle.template });
-      }
-
-      try {
-        if (!validatePayloadForTemplates(payloadPath, templates, dir)) failed += 1;
-      } catch {
-        process.stdout.write(`[skip] ${dir}: 无 payload.json\n`);
-      }
+    if (!manifest || !isLayoutManifestShape(manifest)) {
+      failed += 1;
+      process.stdout.write(`[fail] ${dir}: 缺少 layout-manifest.json\n`);
       continue;
     }
 
-    const tplPath = join(dir, "template.json");
-    try {
-      const bundle = validateTemplateBundle(
-        tplPath,
-        join(dir, "tokenPresets.json"),
-        tplPath
-      );
+    const manifestIssues = validateSchemaArtifact("layoutManifest", manifest);
+    if (manifestIssues.length) {
+      failed += 1;
+      process.stdout.write(`[fail] ${manifestPath}\n`);
+      for (const issue of manifestIssues) {
+        process.stdout.write(`        ${issue.path}: ${issue.reason}\n`);
+      }
+      continue;
+    }
+    process.stdout.write(`[ok]   ${manifestPath}\n`);
+
+    const templates = [];
+    for (const { layoutVariantId, templatePath } of allLayoutTemplatePaths(dir, manifest)) {
+      const tokenPath = join(dir, "layouts", layoutVariantId, "tokenPresets.json");
+      const bundle = validateTemplateBundle(templatePath, tokenPath, templatePath);
       if (!bundle.ok) {
         failed += 1;
         continue;
       }
-      try {
-        if (!validatePayloadForTemplates(payloadPath, [{ layoutVariantId: null, template: bundle.template }], dir)) {
-          failed += 1;
-        }
-      } catch {
-        process.stdout.write(`[skip] ${dir}: 无 payload.json\n`);
-      }
+      templates.push({ layoutVariantId, template: bundle.template });
+    }
+
+    try {
+      if (!validatePayloadForTemplates(payloadPath, templates, dir)) failed += 1;
     } catch {
-      process.stdout.write(`[skip] ${dir}: 无 template.json\n`);
+      process.stdout.write(`[skip] ${dir}: 无 payload.json\n`);
     }
   }
   if (failed > 0) {
     process.stderr.write(`[run-validate-all] ${failed} 个邮件场景校验失败\n`);
+    process.exit(1);
+  }
+}
+
+function validateAllMasters() {
+  const mastersRoot = join(REPO_ROOT, "data", "masters");
+  if (!statSync(mastersRoot, { throwIfNoEntry: false })?.isDirectory()) return;
+  process.stdout.write("\n=== validate data/masters/**/*.json ===\n");
+  let failed = 0;
+  for (const kind of ["blocks"]) {
+    const dir = join(mastersRoot, kind);
+    if (!statSync(dir, { throwIfNoEntry: false })?.isDirectory()) continue;
+    for (const name of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
+      const filePath = join(dir, name);
+      const raw = JSON.parse(readFileSync(filePath, "utf8"));
+      const issues = validateNestedMasterDisk(raw);
+      if (issues.length === 0) {
+        try {
+          const master = parseMasterFromDisk(raw);
+          const flat = nestedMasterToEditorMaster(master);
+          const tplIssues = validateTemplate(
+            masterToEmailTemplate(flat, { templateId: master.masterId })
+          );
+          const errors = tplIssues.filter((i) => i.level !== "warning");
+          if (errors.length === 0) {
+            process.stdout.write(`[ok]   ${filePath}\n`);
+          } else {
+            failed += 1;
+            process.stdout.write(`[fail] ${filePath}\n`);
+            for (const issue of errors) {
+              process.stdout.write(`        ${issue.path}: ${issue.reason}\n`);
+            }
+          }
+        } catch (e) {
+          failed += 1;
+          process.stdout.write(`[fail] ${filePath}\n        ${e instanceof Error ? e.message : String(e)}\n`);
+        }
+      } else {
+        failed += 1;
+        process.stdout.write(`[fail] ${filePath}\n`);
+        for (const issue of issues) {
+          process.stdout.write(`        ${issue.path}: ${issue.reason}\n`);
+        }
+      }
+    }
+  }
+  if (failed > 0) {
+    process.stderr.write(`[run-validate-all] ${failed} 个母版校验失败\n`);
     process.exit(1);
   }
 }
@@ -251,7 +308,7 @@ function validatePublicTokenPresets() {
   for (const name of readdirSync(PUBLIC_TOKEN_PRESETS_DIR).filter((n) => n.endsWith(".json"))) {
     const filePath = join(PUBLIC_TOKEN_PRESETS_DIR, name);
     const tokenPresets = JSON.parse(readFileSync(filePath, "utf8"));
-    const issues = validateTokenPresets(tokenPresets);
+    const issues = validateSchemaArtifact("tokenPresets", tokenPresets);
     if (issues.length === 0) {
       process.stdout.write(`[ok]   ${filePath}\n`);
     } else {
@@ -287,6 +344,7 @@ if (!cli.skipUnit) {
   runStep("npm run test:unit", ["npm", "run", "test:unit"]);
 }
 validateAllTemplates(cli.email);
+validateAllMasters();
 if (!cli.skipPublicPresets) {
   validatePublicTokenPresets();
 }

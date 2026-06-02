@@ -1,9 +1,15 @@
 import type { EmailTemplate } from "../types/email";
-import {
-  repeatMappingBlockDisplayName,
-  repeatMappingFieldShortLabel,
-  repeatMappingTabLabel,
-} from "./repeatMappableContentBindPaths";
+import { blockTypeLabel } from "./blockTypeLabel";
+import { repeatMappingBlockDisplayName, repeatMappingFieldShortLabel } from "./repeatMappableContentBindPaths";
+
+/** 与区块树一致：「区块名 · 类型」 */
+export function repeatMappingBlockTreeLabel(template: EmailTemplate, blockId: string): string {
+  const block = template.blocks[blockId];
+  const name = repeatMappingBlockDisplayName(template, blockId);
+  const typeLabel = blockTypeLabel(block?.type ?? "");
+  if (name && typeLabel) return `${name} · ${typeLabel}`;
+  return name || typeLabel || blockId;
+}
 
 export type RepeatTargetFieldOptionLike = {
   key: string;
@@ -12,8 +18,12 @@ export type RepeatTargetFieldOptionLike = {
   label: string;
 };
 
+/** 分组层级：容器区块 → 可映射内容块 → 配置项（bindPath） */
+export type RepeatTargetFieldGroupTier = "container" | "contentBlock";
+
 export type RepeatTargetFieldGroupEntry = {
   kind: "group";
+  tier: RepeatTargetFieldGroupTier;
   key: string;
   blockId: string;
   depth: number;
@@ -78,8 +88,42 @@ function repeatTargetNavStartBlockIds(
   return starts;
 }
 
+function pushContentBlockGroup(
+  entries: RepeatTargetFieldNavEntry[],
+  template: EmailTemplate,
+  blockId: string,
+  depth: number
+) {
+  entries.push({
+    kind: "group",
+    tier: "contentBlock",
+    key: `content:${blockId}`,
+    blockId,
+    depth,
+    label: repeatMappingBlockTreeLabel(template, blockId),
+  });
+}
+
+function pushConfigItemLeaves(
+  entries: RepeatTargetFieldNavEntry[],
+  blockTargets: ReadonlyArray<RepeatTargetFieldOptionLike>,
+  depth: number
+) {
+  for (const target of blockTargets) {
+    entries.push({
+      kind: "leaf",
+      key: target.key,
+      blockId: target.blockId,
+      bindPath: target.bindPath,
+      depth,
+      label: repeatMappingFieldShortLabel(target.bindPath),
+    });
+  }
+}
+
 /**
- * 字段映射左侧导航：从行模板第二层（根的子区块）起按区块树分层展示。
+ * 字段映射左侧导航：容器区块 → 内容块 → 配置项（bindPath）。
+ * 从行模板第二层（根的子区块）起按区块树分层；单字段也不再压平为「块名即叶子」。
  */
 export function flattenRepeatTargetFieldsForNav(
   template: EmailTemplate,
@@ -96,7 +140,6 @@ export function flattenRepeatTargetFieldsForNav(
   }
 
   const entries: RepeatTargetFieldNavEntry[] = [];
-  const allTargets = targets.map((t) => ({ blockId: t.blockId, bindPath: t.bindPath }));
 
   const visit = (blockId: string, depth: number) => {
     if (!subtreeIds.has(blockId)) return;
@@ -105,63 +148,31 @@ export function flattenRepeatTargetFieldsForNav(
     const blockTargets = byBlock.get(blockId) ?? [];
     const childIds = block.children.filter((id) => subtreeIds.has(id));
     const hasChildBlocks = childIds.length > 0;
-    const multiFields = blockTargets.length > 1;
-    const groupKey = `block:${blockId}`;
-
-    if (hasChildBlocks || multiFields) {
-      entries.push({
-        kind: "group",
-        key: groupKey,
-        blockId,
-        depth,
-        label: repeatMappingBlockDisplayName(template, blockId),
-      });
-      const leafDepth = depth + 1;
-      for (const target of blockTargets) {
-        entries.push({
-          kind: "leaf",
-          key: target.key,
-          blockId: target.blockId,
-          bindPath: target.bindPath,
-          depth: leafDepth,
-          label: multiFields
-            ? repeatMappingFieldShortLabel(target.bindPath)
-            : repeatMappingTabLabel(template, target.blockId, target.bindPath, allTargets),
-        });
-      }
-      for (const childId of childIds) {
-        visit(childId, leafDepth);
-      }
-      return;
-    }
-
-    if (blockTargets.length === 1) {
-      const target = blockTargets[0]!;
-      entries.push({
-        kind: "leaf",
-        key: target.key,
-        blockId: target.blockId,
-        bindPath: target.bindPath,
-        depth,
-        label: repeatMappingTabLabel(template, target.blockId, target.bindPath, allTargets),
-      });
-      for (const childId of childIds) {
-        visit(childId, depth);
-      }
-      return;
-    }
+    const hasMappableFields = blockTargets.length > 0;
 
     if (hasChildBlocks) {
       entries.push({
         kind: "group",
-        key: groupKey,
+        tier: "container",
+        key: `block:${blockId}`,
         blockId,
         depth,
-        label: repeatMappingBlockDisplayName(template, blockId),
+        label: repeatMappingBlockTreeLabel(template, blockId),
       });
-      for (const childId of childIds) {
-        visit(childId, depth + 1);
+      const innerDepth = depth + 1;
+      if (hasMappableFields) {
+        pushContentBlockGroup(entries, template, blockId, innerDepth);
+        pushConfigItemLeaves(entries, blockTargets, innerDepth + 1);
       }
+      for (const childId of childIds) {
+        visit(childId, innerDepth);
+      }
+      return;
+    }
+
+    if (hasMappableFields) {
+      pushContentBlockGroup(entries, template, blockId, depth);
+      pushConfigItemLeaves(entries, blockTargets, depth + 1);
     }
   };
 

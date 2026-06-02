@@ -1,4 +1,5 @@
 {
+  "schemaVersion": "4.0.0",
   "masterId": "content.text",
   "name": "文本",
   "version": "1.0.0",
@@ -7,105 +8,96 @@
   "blockType": "content.text",
   "sampleBlockId": "__sample_text__",
   "catalogRootBlockId": "__catalog_root__",
-  "blocks": {
-    "__catalog_root__": {
-      "id": "__catalog_root__",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "__sample_text__"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "backgroundColor": "#FFFFFF",
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "__sample_text__": {
-      "id": "__sample_text__",
-      "type": "text",
-      "parentId": "__catalog_root__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "示例正文"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    }
-  },
-  "blockMeta": {
-    "__catalog_root__": {
+  "root": {
+    "id": "__catalog_root__",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "预览根"
     },
-    "__sample_text__": {
-      "blockType": "content.text",
-      "name": "文本"
-    }
+    "props": {
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "__sample_text__",
+        "type": "text",
+        "blockMeta": {
+          "blockType": "content.text",
+          "name": "文本"
+        },
+        "props": {
+          "textBody": {
+            "paragraphs": [
+              {
+                "runs": [
+                  {
+                    "text": "示例正文"
+                  }
+                ]
+              }
+            ]
+          },
+          "fontSize": {
+            "$themeRef": "tokens.typography.body"
+          },
+          "color": {
+            "$themeRef": "colors.primary"
+          },
+          "bold": false,
+          "italic": false,
+          "decoration": "none"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "bindings": {
+          "props.fontSize": {
+            "slotId": "tokens.typography.body",
+            "mode": "theme",
+            "tokenPath": "tokens.typography.body",
+            "fieldKind": "style"
+          },
+          "props.color": {
+            "slotId": "colors.primary",
+            "mode": "theme",
+            "tokenPath": "colors.primary",
+            "fieldKind": "style"
+          }
+        }
+      }
+    ]
   }
 }

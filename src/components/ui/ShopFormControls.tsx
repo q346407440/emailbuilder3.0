@@ -7,6 +7,7 @@ import {
   type ChangeEvent,
   type ComponentPropsWithoutRef,
   type ElementRef,
+  type ReactElement,
   type ReactNode,
 } from "react";
 import { Button, Input, Select } from "@shoplazza/sds";
@@ -185,7 +186,12 @@ export const ShopTextArea = forwardRef<
   return <Input.TextArea ref={ref} {...rest} style={{ ...fullWidth, ...style }} />;
 });
 
-function ShopSelectInner<ValueType = unknown>(props: SelectProps<ValueType>) {
+function ShopSelectInner<ValueType = unknown>(
+  props: SelectProps<ValueType> & {
+    popupMatchSelectWidth?: boolean;
+    dropdownRender?: (menu: ReactElement) => ReactElement;
+  }
+) {
   const { style, ...rest } = props;
   return <Select<ValueType> {...rest} style={{ ...fullWidth, ...style }} />;
 }
@@ -194,7 +200,7 @@ function ShopSelectInner<ValueType = unknown>(props: SelectProps<ValueType>) {
 export const ShopSelect = Object.assign(ShopSelectInner, {
   Option: Select.Option,
   OptGroup: Select.OptGroup,
-}) as typeof Select;
+});
 
 type ShopActionButtonProps = Omit<ButtonProps, "type">;
 

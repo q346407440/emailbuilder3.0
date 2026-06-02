@@ -1,4 +1,5 @@
 import type { EmailPayload, PayloadSlotDefinition } from "../types/email";
+import { appendPayloadSlotOrder } from "./payloadSlotOrder";
 
 /** payload.slots 中是否已存在该 slotId */
 export function isPayloadSlotIdTaken(payload: EmailPayload, slotId: string): boolean {
@@ -15,8 +16,9 @@ export function registerPayloadSlot(
   seedValue?: unknown
 ): EmailPayload {
   const id = slotId.trim();
-  const p = structuredClone(payload);
+  let p = structuredClone(payload);
   const existing = p.slots[id];
+  const isNew = !existing;
   p.slots = {
     ...p.slots,
     [id]: existing
@@ -31,6 +33,9 @@ export function registerPayloadSlot(
         }
       : def,
   };
+  if (isNew) {
+    p = appendPayloadSlotOrder(p, id);
+  }
   if (seedValue !== undefined && p.values[id] === undefined) {
     p.values = { ...p.values, [id]: seedValue };
   }

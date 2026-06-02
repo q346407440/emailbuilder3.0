@@ -15,6 +15,7 @@ import { htmlFragmentToTextBody } from "../src/lib/htmlFragmentToTextBody.ts";
 import { normalizeTemplateContentAlignEffectiveness } from "../src/lib/contentAlignConfigurability.ts";
 import { normalizeTemplateBlockDefaults } from "../src/lib/templateBlockDefaults.ts";
 import { normalizeImageBlockToWrapperBackgroundShape } from "../src/lib/imageBlockWrapperBackground.ts";
+import { editorGraphToNested } from "../src/lib/templateTreeAdapter.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -630,8 +631,8 @@ export function yamlFixtureToTemplate(doc) {
     throw new Error("根节点 kind 必须为 emailRoot");
   }
 
-  const template = {
-    schemaVersion: "3.0.0",
+  const flat = {
+    schemaVersion: "4.0.0",
     emailId: typeof emailId === "string" && emailId.trim() ? emailId : templateId,
     templateId,
     templateVersion,
@@ -641,24 +642,23 @@ export function yamlFixtureToTemplate(doc) {
     blocks,
   };
 
-  normalizeTemplateBlockDefaults(template);
-  const aligned = template;
+  normalizeTemplateBlockDefaults(flat);
 
   const rootWidth =
-    typeof aligned.blocks[rootId]?.props?.width === "string"
-      ? aligned.blocks[rootId].props.width
+    typeof flat.blocks[rootId]?.props?.width === "string"
+      ? flat.blocks[rootId].props.width
       : "600px";
-  for (const [bid, blk] of Object.entries(aligned.blocks)) {
+  for (const [bid, blk] of Object.entries(flat.blocks)) {
     if (blk.type === "image") {
-      aligned.blocks[bid] = normalizeImageBlockToWrapperBackgroundShape(blk, rootWidth);
+      flat.blocks[bid] = normalizeImageBlockToWrapperBackgroundShape(blk, rootWidth);
     }
   }
 
-  for (const [id, block] of Object.entries(aligned.blocks)) {
+  for (const [id, block] of Object.entries(flat.blocks)) {
     validateGeneratedBlockShape(block, `template.blocks.${id}`);
   }
 
-  return aligned;
+  return editorGraphToNested(flat);
 }
 
 function validateWithTsx(jsonPath, options = {}) {
@@ -666,8 +666,10 @@ function validateWithTsx(jsonPath, options = {}) {
   const abs = resolve(jsonPath);
   const code = `
 import { readFileSync } from 'node:fs';
+import { parseTemplateFromDisk } from './src/lib/templateTreeAdapter.ts';
 import { validateTemplate } from './src/lib/validate.ts';
-const t = JSON.parse(readFileSync(${JSON.stringify(abs)}, 'utf8'));
+const raw = JSON.parse(readFileSync(${JSON.stringify(abs)}, 'utf8'));
+const t = parseTemplateFromDisk(raw);
 const issues = validateTemplate(t);
 if (issues.length) {
   console.error(JSON.stringify(issues, null, 2));

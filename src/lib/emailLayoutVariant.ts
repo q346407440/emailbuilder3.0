@@ -11,11 +11,8 @@ import {
 export const LAYOUT_MANIFEST_FILE = "layout-manifest.json";
 export const LAYOUTS_DIR = "layouts";
 
-export type EmailStorageMode = "legacy" | "layout-variants";
-
 export type ResolvedLayoutContext = {
-  mode: EmailStorageMode;
-  layoutVariantId: string | null;
+  layoutVariantId: string;
   templatePath: string;
   tokenPresetsPath: string;
 };
@@ -82,16 +79,16 @@ export function validateLayoutManifest(manifest: LayoutManifest): Array<{ path: 
   return issues;
 }
 
-/** 解析本次请求使用的版式 id；legacy 模式返回 null */
+/** 解析本次请求使用的版式 id；须已有 layout-manifest.json */
 export function resolveLayoutVariantId(
   manifest: LayoutManifest | null,
   layoutQuery: string | undefined | null
 ): { layoutVariantId: string | null; error: string | null } {
   if (!manifest) {
-    if (layoutQuery) {
-      return { layoutVariantId: null, error: "本场景未启用版式变体，不可指定 layout 参数" };
-    }
-    return { layoutVariantId: null, error: null };
+    return {
+      layoutVariantId: null,
+      error: "本场景缺少 layout-manifest.json，须使用 layouts/<id>/ 版式结构",
+    };
   }
   const { layoutVariantId, error } = resolveEffectiveLayoutVariantId(manifest, layoutQuery);
   const bad = assertLayoutVariantIdSafe(layoutVariantId);
@@ -101,20 +98,11 @@ export function resolveLayoutVariantId(
 
 export function resolveEmailFilePaths(
   emailBaseDir: string,
-  manifest: LayoutManifest | null,
-  layoutVariantId: string | null
+  _manifest: LayoutManifest,
+  layoutVariantId: string
 ): ResolvedLayoutContext {
-  if (!manifest || !layoutVariantId) {
-    return {
-      mode: "legacy",
-      layoutVariantId: null,
-      templatePath: path.join(emailBaseDir, "template.json"),
-      tokenPresetsPath: path.join(emailBaseDir, "tokenPresets.json"),
-    };
-  }
   const variantBase = layoutVariantDir(emailBaseDir, layoutVariantId);
   return {
-    mode: "layout-variants",
     layoutVariantId,
     templatePath: path.join(variantBase, "template.json"),
     tokenPresetsPath: path.join(variantBase, "tokenPresets.json"),
@@ -122,7 +110,7 @@ export function resolveEmailFilePaths(
 }
 
 /**
- * 枚举仓库 data/emails 下全部 template.json（含各场景 layouts/*；无 manifest 时含 legacy 根路径）。
+ * 枚举仓库 data/emails 下全部 template.json（layouts/<id>/ 路径）。
  * 供迁移脚本与批量校验使用；前端 bundle 不引用本函数。
  */
 export function enumerateAllEmailTemplatePaths(emailsRoot: string): string[] {
@@ -137,21 +125,17 @@ export function enumerateAllEmailTemplatePaths(emailsRoot: string): string[] {
       continue;
     }
     const manifestFile = layoutManifestPath(base);
-    if (fs.existsSync(manifestFile)) {
-      try {
-        const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")) as LayoutManifest;
-        if (isLayoutManifestShape(manifest)) {
-          for (const { templatePath } of allLayoutTemplatePaths(base, manifest)) {
-            if (fs.existsSync(templatePath)) paths.push(templatePath);
-          }
+    if (!fs.existsSync(manifestFile)) continue;
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")) as LayoutManifest;
+      if (isLayoutManifestShape(manifest)) {
+        for (const { templatePath } of allLayoutTemplatePaths(base, manifest)) {
+          if (fs.existsSync(templatePath)) paths.push(templatePath);
         }
-      } catch {
-        /* ignore */
       }
-      continue;
+    } catch {
+      /* ignore */
     }
-    const legacy = path.join(base, "template.json");
-    if (fs.existsSync(legacy)) paths.push(legacy);
   }
   return paths.sort();
 }

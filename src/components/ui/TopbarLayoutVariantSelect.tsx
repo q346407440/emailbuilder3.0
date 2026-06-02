@@ -14,8 +14,6 @@ type TopbarLayoutVariantSelectProps = {
   value: string | null;
   disabled?: boolean;
   busy?: boolean;
-  /** legacy 单文件存储：尚无 layout-manifest，仅允许「新建」以启用多版式 */
-  legacySingleFile?: boolean;
   onSelect: (layoutVariantId: string) => void;
   onCreate: (label: string) => Promise<void>;
   onRename: (label: string) => Promise<void>;
@@ -28,7 +26,6 @@ export function TopbarLayoutVariantSelect({
   value,
   disabled,
   busy,
-  legacySingleFile,
   onSelect,
   onCreate,
   onRename,
@@ -52,7 +49,7 @@ export function TopbarLayoutVariantSelect({
     return options.find((v) => v.id === activeId) ?? options[0] ?? null;
   }, [manifest, options, value]);
 
-  const canDeleteLayout = options.length > 1 && Boolean(currentVariant) && !legacySingleFile;
+  const canDeleteLayout = options.length > 1 && Boolean(currentVariant);
 
   const handlePick = useCallback(
     (raw: unknown) => {
@@ -130,12 +127,10 @@ export function TopbarLayoutVariantSelect({
     }
   };
 
-  if (!manifest && !legacySingleFile) return null;
+  if (!manifest) return null;
 
-  const selectDisabled = disabled || busy || legacySingleFile;
-  const selectValue = legacySingleFile
-    ? "__legacy__"
-    : (value ?? manifest?.activeLayoutVariantId);
+  const selectDisabled = disabled || busy;
+  const selectValue = value ?? manifest.activeLayoutVariantId;
 
   const resourceActions = [
     {
@@ -147,7 +142,7 @@ export function TopbarLayoutVariantSelect({
     {
       id: "rename",
       label: "重命名",
-      disabled: disabled || busy || !currentVariant || legacySingleFile,
+      disabled: disabled || busy || !currentVariant,
       onClick: openRename,
     },
     {
@@ -182,15 +177,11 @@ export function TopbarLayoutVariantSelect({
             />
           )}
         >
-          {legacySingleFile ? (
-            <ShopSelect.Option value="__legacy__">默认（单文件存储）</ShopSelect.Option>
-          ) : (
-            options.map((v) => (
-              <ShopSelect.Option key={v.id} value={v.id}>
-                {v.label?.trim() || v.id}
-              </ShopSelect.Option>
-            ))
-          )}
+          {options.map((v) => (
+            <ShopSelect.Option key={v.id} value={v.id}>
+              {v.label?.trim() || v.id}
+            </ShopSelect.Option>
+          ))}
         </ShopSelect>
       </TopbarResourceField>
 
@@ -224,8 +215,7 @@ export function TopbarLayoutVariantSelect({
               onPressEnter={() => void submitCreate()}
             />
             <span className="topbar__create-hint">
-              将复制当前版式的 template 与 tokenPresets 到新目录 layouts/&lt;id&gt;/；单文件场景会先迁移为
-              default 版式再创建新版式。
+              将创建空白版式（最小画布 + 默认样式预设）；单文件场景会先迁移为 default 版式再创建新版式。
             </span>
             {draftError ? <span className="topbar__rename-error">{draftError}</span> : null}
           </div>

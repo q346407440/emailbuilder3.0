@@ -44,12 +44,29 @@ export function hasNestedCollectionInItemFields(
   return itemFields.some((field) => isCollectionField(field));
 }
 
-/** 列表变量表：仅展示子列表分组及其子字段（不含顶层标量行） */
+/** itemFields 中的子列表（collection 列）条目，用于绑定向导「选子级列表」扁平展示 */
+export function listNestedCollectionFieldsInItemFields(
+  itemFields: BindingCollectionField[]
+): Extract<BindingCollectionField, { valueType: "collection" }>[] {
+  return itemFields.filter((field): field is Extract<BindingCollectionField, { valueType: "collection" }> =>
+    isCollectionField(field)
+  );
+}
+
+export function countNestedCollectionsInItemFields(itemFields: BindingCollectionField[]): number {
+  return listNestedCollectionFieldsInItemFields(itemFields).length;
+}
+
+/**
+ * 列表变量表：仅展示子列表分组及其子字段（不含顶层标量行）。
+ * @param depthOffset 相对父级列表行的缩进层级（绑定向导内默认为 1：父级行 0，子列表 1，子字段 2）
+ */
 export function flattenNestedCollectionFieldsPreview(
   itemFields: BindingCollectionField[],
-  expandedGroupPaths: ReadonlySet<string>
+  expandedGroupPaths: ReadonlySet<string>,
+  depthOffset = 1
 ): CollectionFieldMappingNavEntry[] {
-  return flattenItemFieldsForFieldMap(itemFields, expandedGroupPaths).filter(
+  return flattenItemFieldsForFieldMap(itemFields, expandedGroupPaths, depthOffset).filter(
     (entry) => entry.kind === "group" || entry.parentCollectionPath != null
   );
 }
@@ -57,12 +74,13 @@ export function flattenNestedCollectionFieldsPreview(
 /** 左侧字段关联导航：collection 为可折叠分组，子列为 leaf */
 export function flattenItemFieldsForFieldMap(
   itemFields: BindingCollectionField[],
-  expandedGroupPaths: ReadonlySet<string>
+  expandedGroupPaths: ReadonlySet<string>,
+  depthOffset = 0
 ): CollectionFieldMappingNavEntry[] {
   const out: CollectionFieldMappingNavEntry[] = [];
   itemFields.forEach((field) => {
     if (isCollectionField(field)) {
-      out.push({ kind: "group", path: field.key, field, depth: 0 });
+      out.push({ kind: "group", path: field.key, field, depth: depthOffset });
       if (expandedGroupPaths.has(field.key)) {
         (field.itemFields ?? []).forEach((child) => {
           if (child.valueType === "collection") return;
@@ -70,14 +88,14 @@ export function flattenItemFieldsForFieldMap(
             kind: "leaf",
             path: collectionFieldMappingPath(field.key, child.key),
             field: child,
-            depth: 1,
+            depth: depthOffset + 1,
             parentCollectionPath: field.key,
           });
         });
       }
       return;
     }
-    out.push({ kind: "leaf", path: field.key, field, depth: 0 });
+    out.push({ kind: "leaf", path: field.key, field, depth: depthOffset });
   });
   return out;
 }

@@ -6,7 +6,7 @@ import { validateRenderDefaultsForbiddenFields } from "../render-defaults-contra
 
 function layoutRowTemplate(direction: "horizontal" | "vertical"): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     emailId: "t",
     templateId: "t",
     templateVersion: 1,

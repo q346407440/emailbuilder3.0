@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailTemplate } from "../types/email";
+import { minimalEmailTemplate, minimalTextBlock } from "./testFixtures/emailTemplate";
 import {
   computeGridRowHeightsWithFillStretch,
   gridDataRowUsesFillStretch,
@@ -11,12 +12,7 @@ import {
 } from "./gridContentMaxHeight";
 
 function miniTemplate(blocks: EmailTemplate["blocks"]): EmailTemplate {
-  return {
-    rootBlockId: "root",
-    blocks,
-    bindings: {},
-    blockMeta: {},
-  };
+  return minimalEmailTemplate({ blocks });
 }
 
 describe("gridContentMaxHeight", () => {
@@ -33,23 +29,17 @@ describe("gridContentMaxHeight", () => {
 
   it("gridRowHasFillHeightChild 检测行内 fill 高子块", () => {
     const t = miniTemplate({
-      a: { id: "a", type: "text", parentId: "g", children: [], wrapperStyle: { heightMode: "fill" } },
-      b: { id: "b", type: "text", parentId: "g", children: [], wrapperStyle: { heightMode: "hug" } },
-    } as EmailTemplate["blocks"]);
+      a: minimalTextBlock({ id: "a", parentId: "g", wrapperStyle: { heightMode: "fill" } }),
+      b: minimalTextBlock({ id: "b", parentId: "g", wrapperStyle: { heightMode: "hug" } }),
+    });
     assert.equal(gridRowHasFillHeightChild(t, ["a"]), true);
     assert.equal(gridRowHasFillHeightChild(t, ["b"]), false);
   });
 
   it("gridDataRowUsesFillStretch：定高栅格 + fill 子块 + content-max 为 true", () => {
     const t = miniTemplate({
-      dot: {
-        id: "dot",
-        type: "text",
-        parentId: "g",
-        children: [],
-        wrapperStyle: { heightMode: "fill" },
-      },
-    } as EmailTemplate["blocks"]);
+      dot: minimalTextBlock({ id: "dot", parentId: "g", wrapperStyle: { heightMode: "fill" } }),
+    });
     assert.equal(
       gridDataRowUsesFillStretch(t, ["dot"], { heightMode: "fixed", height: "72px" }, "content-max"),
       true
@@ -96,14 +86,8 @@ describe("gridContentMaxHeight", () => {
 
   it("gridMatrixHasFillStretchRow 任一行含 fill 拉伸即为 true", () => {
     const t = miniTemplate({
-      dot: {
-        id: "dot",
-        type: "text",
-        parentId: "g",
-        children: [],
-        wrapperStyle: { heightMode: "fill" },
-      },
-    } as EmailTemplate["blocks"]);
+      dot: minimalTextBlock({ id: "dot", parentId: "g", wrapperStyle: { heightMode: "fill" } }),
+    });
     assert.equal(
       gridMatrixHasFillStretchRow(t, [["dot"]], { heightMode: "fixed", height: "72px" }, "content-max"),
       true

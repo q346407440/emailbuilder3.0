@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
-import { filterSlotsForVariablePicker } from "../lib/variableSlotCompatibility";
+import { filterSlotsForVariablePicker } from "../payload-contract/variable-slot-compatibility";
 import { PayloadVariablePickerModal } from "./PayloadVariablePickerModal";
 
 export type TextBodyInlineVariableMode = "bind" | "create";

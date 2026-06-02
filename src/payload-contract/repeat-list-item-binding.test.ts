@@ -9,12 +9,13 @@ import {
   stripLeadingCollectionIndex,
 } from "./repeat-list-item-binding";
 import { validateVariableBindingFieldCompatibility } from "./variable-slot-compatibility";
+import { parseTemplateFromDisk } from "../lib/templateTreeAdapter";
 
 const TEXT_RUN_BIND = "props.textBody.paragraphs.0.runs.0.text";
 
 function tpl(blocks: EmailTemplate["blocks"]): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     emailId: "t",
     templateId: "t",
     templateVersion: 1,
@@ -194,9 +195,11 @@ describe("repeat-list-item-binding", () => {
   });
 
   it("member-welcome centered：列表行内绑定不再误报不兼容", () => {
-    const template = JSON.parse(
-      readFileSync("data/emails/member-welcome/layouts/centered/template.json", "utf8")
-    ) as EmailTemplate;
+    const template = parseTemplateFromDisk(
+      JSON.parse(
+        readFileSync("data/emails/member-welcome/layouts/centered/template.json", "utf8")
+      )
+    );
     const incompat = validateTemplate(template).filter((i) => i.reason?.includes("不兼容"));
     assert.equal(incompat.length, 0);
   });

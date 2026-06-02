@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { validatePayloadAgainstTemplate, validateTemplate } from "./validate";
-import { expandRepeatRegions } from "./repeatRegion";
+import { buildRepeatPreviewModel, previewModelToFlatTemplate, refToStableKey } from "../repeat-runtime";
 import { evaluateVisibilityRule } from "../visibility-contract";
 import { applyVisibilityRules } from "./visibility";
 
 function baseTemplate(): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "visibility-test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -174,18 +174,22 @@ describe("visibility", () => {
 
   it("可见性优先于 repeat，数组为空时不展开重复子树", () => {
     const template = baseTemplate();
-    const empty = expandRepeatRegions(
-      applyVisibilityRules(template, payload({ points: 0, products: [] })),
-      payload({ points: 0, products: [] })
+    const emptyPayload = payload({ points: 0, products: [] });
+    const emptyModel = buildRepeatPreviewModel(
+      applyVisibilityRules(template, emptyPayload),
+      emptyPayload
     );
-    assert.equal(empty.blocks.list, undefined);
-    assert.equal(Object.keys(empty.blocks).some((id) => id.includes("__repeatClone__")), false);
+    const emptyFlat = previewModelToFlatTemplate(emptyModel, template);
+    assert.equal(emptyFlat.blocks[refToStableKey({ kind: "physical", blockId: "list" })], undefined);
 
-    const withItems = expandRepeatRegions(
-      applyVisibilityRules(template, payload({ points: 0, products: [{ title: "A" }] })),
-      payload({ points: 0, products: [{ title: "A" }] })
+    const withPayload = payload({ points: 0, products: [{ title: "A" }] });
+    const withModel = buildRepeatPreviewModel(
+      applyVisibilityRules(template, withPayload),
+      withPayload
     );
-    assert.deepEqual(withItems.blocks.list.children, ["row__repeatClone__list_0"]);
+    const withFlat = previewModelToFlatTemplate(withModel, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    assert.equal(withFlat.blocks[listKey]?.children?.length, 1);
   });
 
   it("校验按 valueType 限制可见性运算符", () => {

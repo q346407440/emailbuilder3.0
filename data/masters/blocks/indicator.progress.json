@@ -1,4 +1,5 @@
 {
+  "schemaVersion": "4.0.0",
   "masterId": "indicator.progress",
   "name": "进度条",
   "version": "1.0.0",
@@ -7,107 +8,98 @@
   "blockType": "indicator.progress",
   "sampleBlockId": "__sample_progress__",
   "catalogRootBlockId": "__catalog_root__",
-  "blocks": {
-    "__catalog_root__": {
-      "id": "__catalog_root__",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "__sample_progress__"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "backgroundColor": "#FFFFFF",
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "__sample_progress__": {
-      "id": "__sample_progress__",
-      "type": "progress",
-      "parentId": "__catalog_root__",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "trackColor": {
-          "$themeRef": "colors.surface"
-        },
-        "fillColor": {
-          "$themeRef": "colors.primary"
-        },
-        "value": 20,
-        "max": 100,
-        "barWidthMode": "fill",
-        "barHeight": "10px",
-        "barBorderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.cta"
-          }
-        }
-      },
-      "bindings": {
-        "props.trackColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "props.fillColor": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        },
-        "props.barBorderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        }
-      }
-    }
-  },
-  "blockMeta": {
-    "__catalog_root__": {
+  "root": {
+    "id": "__catalog_root__",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "预览根"
     },
-    "__sample_progress__": {
-      "blockType": "indicator.progress",
-      "name": "进度条"
-    }
+    "props": {
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "__sample_progress__",
+        "type": "progress",
+        "blockMeta": {
+          "blockType": "indicator.progress",
+          "name": "进度条"
+        },
+        "props": {
+          "trackColor": {
+            "$themeRef": "colors.surface"
+          },
+          "fillColor": {
+            "$themeRef": "colors.primary"
+          },
+          "value": 20,
+          "max": 100,
+          "barWidthMode": "fill",
+          "barHeight": "10px",
+          "barBorderRadius": {
+            "mode": "unified",
+            "radius": {
+              "$themeRef": "tokens.radius.cta"
+            }
+          }
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "bindings": {
+          "props.trackColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "props.fillColor": {
+            "slotId": "colors.primary",
+            "mode": "theme",
+            "tokenPath": "colors.primary",
+            "fieldKind": "style"
+          },
+          "props.barBorderRadius.radius": {
+            "slotId": "tokens.radius.cta",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.cta",
+            "fieldKind": "style"
+          }
+        }
+      }
+    ]
   }
 }

@@ -5,7 +5,7 @@ import type { TextBodyVariableRunMeta } from "../lib/textBodyEditorFormat";
 import {
   filterSlotsForVariablePicker,
   slotValueTypeLabelForPicker,
-} from "../lib/variableSlotCompatibility";
+} from "../payload-contract/variable-slot-compatibility";
 import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";

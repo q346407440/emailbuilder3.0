@@ -11,6 +11,7 @@ import type { BindingCollectionField } from "../types/email";
 import type { BuiltinProductMock, BuiltinProductSkuMock } from "./builtinProductMockTypes";
 import { BUILTIN_PRODUCTS_MOCK_RAW } from "./builtinProductsMockData";
 import { listCatalogSourceFieldKeysForPicker, readCatalogSourceValue } from "./collectionFieldMapping";
+import { coerceCollectionFieldValue } from "./collectionDataSource";
 
 /** 主推等场景下一行内展开的 SKU 槽位数（与 mock 最多 5 个 SKU 对齐） */
 export const BUILTIN_PRODUCT_SKU_SLOT_COUNT = 5;
@@ -335,7 +336,7 @@ export function projectBuiltinCatalogItemsFromRows(
   itemFields: BindingCollectionField[],
   limit: number,
   sort: BuiltinCollectionSortId = DEFAULT_BUILTIN_COLLECTION_SORT,
-  catalog: BuiltinCollectionCatalogId = "builtinProducts"
+  catalog: BuiltinCollectionCatalogId = "products"
 ): Record<string, unknown>[] {
   const order = new Map(rows.map((r, i) => [String(r.id ?? i), i]));
   const catalogMatched = sortBuiltinCatalogRows(catalog, sort).filter((r) =>
@@ -388,14 +389,23 @@ export function projectRowsToItemFields(
           ];
         }
         let value = pickCatalogValue(row, field.key);
-        if (field.required && !String(value ?? "").trim()) {
+        const scalarEmpty =
+          field.valueType === "number"
+            ? value === undefined ||
+              value === null ||
+              (typeof value === "string" && !value.trim()) ||
+              (typeof value === "number" && !Number.isFinite(value))
+            : !String(value ?? "").trim();
+        if (field.required && scalarEmpty) {
           if (field.valueType === "url" || field.valueType === "image") {
             value = "https://example.com/products/placeholder";
+          } else if (field.valueType === "number") {
+            value = 0;
           } else {
             value = "—";
           }
         }
-        return [field.key, value];
+        return [field.key, coerceCollectionFieldValue(value, field)];
       })
     )
   );
@@ -424,6 +434,22 @@ function anchorTokens(
  * 相似品排除：仅在 **SPU（商品）级** 比对锚点，不按 SKU 维度匹配。
  * mock 与后续真实推荐接口均应以商品 handle/href/name 为粒度，而非单个规格 SKU。
  */
+/** Step 2 mock：派生策略验收用特殊商品名 */
+export const MOCK_DERIVED_SIMILAR_PRODUCT_TITLE = "相似品";
+export const MOCK_DERIVED_COMPLEMENT_PRODUCT_TITLE = "搭配品";
+
+function promoteMockDerivedProduct(
+  pool: Record<string, unknown>[],
+  productTitle: string
+): Record<string, unknown>[] {
+  const idx = pool.findIndex(
+    (row) => String(row.title ?? row.name ?? "").trim() === productTitle
+  );
+  if (idx <= 0) return pool;
+  const promoted = pool[idx]!;
+  return [promoted, ...pool.slice(0, idx), ...pool.slice(idx + 1)];
+}
+
 function catalogRowMatchesAnchor(
   catalogRow: Record<string, unknown>,
   anchorRow: Record<string, unknown>,
@@ -458,10 +484,11 @@ export function projectBuiltinCatalogSimilarTo(
   const filtered = sorted.filter((row) => !catalogRowMatchesAnchor(row, anchorRow, matchField));
   // 锚点命中 catalog 时务必用 filtered；仅当未排除任何行（锚点不在目录）才退回 sorted
   const pool = filtered.length < sorted.length ? filtered : sorted;
-  return projectRowsToItemFields(pool.slice(0, limit), itemFields);
+  const withSimilar = promoteMockDerivedProduct(pool, MOCK_DERIVED_SIMILAR_PRODUCT_TITLE);
+  return projectRowsToItemFields(withSimilar.slice(0, limit), itemFields);
 }
 
-/** 搭配品：排除锚点 SPU 后取前 limit 条（SPU 级） */
+/** 搭配品：排除锚点 SPU 后取前 limit 条；mock 时将「搭配品」置顶 */
 export function projectBuiltinCatalogComplement(
   catalog: BuiltinCollectionCatalogId,
   itemFields: BindingCollectionField[],
@@ -470,14 +497,15 @@ export function projectBuiltinCatalogComplement(
   anchorRow: Record<string, unknown> | null,
   matchField: "href" | "name" = "href"
 ): Record<string, unknown>[] {
-  return projectBuiltinCatalogSimilarTo(
-    catalog,
-    itemFields,
-    limit,
-    sort,
-    anchorRow,
-    matchField
-  );
+  const sorted = sortBuiltinCatalogRows(catalog, sort);
+  if (!anchorRow || !Object.keys(anchorRow).length) {
+    const pool = promoteMockDerivedProduct(sorted, MOCK_DERIVED_COMPLEMENT_PRODUCT_TITLE);
+    return projectRowsToItemFields(pool.slice(0, limit), itemFields);
+  }
+  const filtered = sorted.filter((row) => !catalogRowMatchesAnchor(row, anchorRow, matchField));
+  const pool = filtered.length < sorted.length ? filtered : sorted;
+  const withComplement = promoteMockDerivedProduct(pool, MOCK_DERIVED_COMPLEMENT_PRODUCT_TITLE);
+  return projectRowsToItemFields(withComplement.slice(0, limit), itemFields);
 }
 
 function findCatalogRowForAnchor(
@@ -500,10 +528,15 @@ function sortSkuRows(
 ): BuiltinProductSkuMock[] {
   const list = [...skus];
   if (sort === "catalogOrder") return list;
-  if (sort === "salesDesc" || sort === "salesAsc") {
+  const normalizedSort = normalizeBuiltinCollectionSortId(sort);
+  if (normalizedSort === "salesVolumeDesc") {
+    list.sort((a, b) => (b.totalSales ?? 0) - (a.totalSales ?? 0));
+    return list;
+  }
+  if (normalizedSort === "priceDesc" || normalizedSort === "priceAsc") {
     list.sort((a, b) => {
-      const diff = (b.totalSales ?? 0) - (a.totalSales ?? 0);
-      return sort === "salesDesc" ? diff : -diff;
+      const diff = parsePriceLike(a.salePrice) - parsePriceLike(b.salePrice);
+      return normalizedSort === "priceDesc" ? -diff : diff;
     });
     return list;
   }
@@ -542,14 +575,23 @@ function projectSkuRowsToItemFields(
         if (value === undefined || value === null || !String(value).trim()) {
           value = pickCatalogValue(row, field.key);
         }
-        if (field.required && !String(value ?? "").trim()) {
+        const scalarEmpty =
+          field.valueType === "number"
+            ? value === undefined ||
+              value === null ||
+              (typeof value === "string" && !String(value).trim()) ||
+              (typeof value === "number" && !Number.isFinite(value))
+            : !String(value ?? "").trim();
+        if (field.required && scalarEmpty) {
           if (field.valueType === "url" || field.valueType === "image") {
             value = "https://example.com/products/placeholder";
+          } else if (field.valueType === "number") {
+            value = 0;
           } else {
             value = "—";
           }
         }
-        return [field.key, value];
+        return [field.key, coerceCollectionFieldValue(value, field)];
       })
     );
   });

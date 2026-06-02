@@ -11,6 +11,7 @@ description: >-
 
 | 关注点 | 真源 |
 |--------|------|
+| **template 落盘 nested 4.0.0** | **`src/template-disk-contract/`**、**`src/lib/templateTreeAdapter.ts`** |
 | 允许哪些 JSON 路径 | **`src/block-contract/`** |
 | 必填 / 枚举 / 废弃 | **`src/lib/validate.ts`** |
 | 禁止持久化 / 底图 padding 语义 | **`src/render-defaults-contract/`** |
@@ -108,7 +109,7 @@ description: >-
 ### 15. 左对齐文案栈误用横向 `layout`
 
 **现象**：标题+说明应上下却左右并排。  
-**做法**：图标+短文案一行用 **`horizontal`**；**标题+多行说明**包进子 **`layout` + `direction: vertical`**；列表型勿误用双列 **`grid`**。存量可试 **`node scripts/fix-layout-stack-direction.mjs --write`**（见脚本 `--help`）。
+**做法**：图标+短文案一行用 **`horizontal`**；**标题+多行说明**包进子 **`layout` + `direction: vertical`**；列表型勿误用双列 **`grid`**。存量模板须手工改 `direction` / 嵌套结构（一次性迁移脚本已移除）。
 
 ### 16. 堆叠模块壳各自绑 `tokens.radius.panel` + 根级 `gap`（缝上「耳朵」/ 深色更明显）
 

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataSourceKind": "builtin",
+  "builtinCatalog": "products",
+  "fixedLength": 10,
+  "minItems": 10,
+  "maxItems": 10,
+  "productConfig": {
+    "rowGranularity": "spu",
+    "rangeMode": "allProducts",
+    "productSelectionScope": "spuOnly"
+  },
+  "seedValues": [],
+  "presetId": "loyalty-merchant-similar-spu-list",
+  "slotId": "loyaltyMerchantSimilarSpuList",
+  "label": "相似品列表",
+  "description": "双层 SPU 树：通过「选择商品」确定主 SPU，每条下由 mock 生成相似 SPU 子列表（5→4→3→2→1 循环）",
+  "itemFields": [
+    {
+      "key": "imageSrc",
+      "label": "商品图",
+      "valueType": "url",
+      "required": true
+    },
+    {
+      "key": "imageAlt",
+      "label": "图片替代文字",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "name",
+      "label": "商品名",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "salePrice",
+      "label": "现价",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "originalPrice",
+      "label": "原价",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "badge",
+      "label": "角标",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "href",
+      "label": "商品链接",
+      "valueType": "url",
+      "required": true
+    },
+    {
+      "key": "similarSpus",
+      "label": "相似品",
+      "valueType": "collection",
+      "itemFields": [
+        {
+          "key": "imageSrc",
+          "label": "商品图",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "imageAlt",
+          "label": "图片替代文字",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "name",
+          "label": "商品名",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "salePrice",
+          "label": "现价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "originalPrice",
+          "label": "原价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "badge",
+          "label": "角标",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "href",
+          "label": "商品链接",
+          "valueType": "url",
+          "required": true
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 5
+    }
+  ]
+}

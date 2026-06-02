@@ -5,7 +5,7 @@ import type { EmailTemplate } from "../types/email";
 
 function minimalTemplate(blockPadding: unknown): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     emailId: "spacing_test",
     templateId: "spacing_test",
     templateVersion: 1,

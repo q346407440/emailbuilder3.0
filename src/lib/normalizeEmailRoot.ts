@@ -7,6 +7,7 @@ import type {
   SpacingValue,
   WrapperStyle,
 } from "../types/email";
+import type { ThemeRef } from "../types/themeRef";
 import { isThemeRef } from "../types/themeRef";
 
 import { EMAIL_ROOT_FIXED_WIDTH } from "../render-defaults-contract/values";
@@ -52,7 +53,7 @@ function normalizeRootBorder(value: unknown): BorderValue {
   return { mode: "unified", width, style, color };
 }
 
-function normalizeSpacingSide(value: unknown): string {
+function normalizeSpacingSide(value: unknown): string | ThemeRef {
   if (isThemeRef(value)) return value;
   if (typeof value === "string" && value.trim()) return value.trim();
   return "0";

@@ -18,6 +18,7 @@ export type ShopSectionModalProps = Omit<ModalProps, "footer" | "title" | "child
   title: ReactNode;
   children: ReactNode;
   footer: ReactNode;
+  width?: number | string;
 };
 
 export function ShopSectionModal({
@@ -27,11 +28,13 @@ export function ShopSectionModal({
   className,
   wrapClassName,
   bodyStyle,
+  width,
   ...rest
 }: ShopSectionModalProps) {
   return (
     <Modal
       {...rest}
+      {...(width !== undefined ? ({ width } as Partial<ModalProps>) : {})}
       title={title}
       footer={<div className="shop-section-modal__footer-slot">{footer}</div>}
       wrapClassName={joinClassNames("shop-section-modal-wrap", wrapClassName)}

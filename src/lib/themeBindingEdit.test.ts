@@ -12,8 +12,10 @@ import {
 } from "./themeBindingEdit";
 import { getInspectFieldBindMode } from "./inspectFieldBindMode";
 import type { EmailPayload, EmailTemplate } from "../types/email";
+import type { TokenPresets } from "../types/tokenPreset";
 import type { LayoutManifest } from "../layout-variant-contract/types";
 import { resolveEmailFilePaths } from "./emailLayoutVariant";
+import { parseTemplateFromDisk } from "./templateTreeAdapter";
 
 function loadMemberWelcomeCardFixture(): {
   template: EmailTemplate;
@@ -25,7 +27,9 @@ function loadMemberWelcomeCardFixture(): {
     fs.readFileSync(path.join(rootDir, "layout-manifest.json"), "utf8")
   ) as LayoutManifest;
   const paths = resolveEmailFilePaths(rootDir, manifest, "card");
-  const template = JSON.parse(fs.readFileSync(paths.templatePath, "utf8")) as EmailTemplate;
+  const template = parseTemplateFromDisk(
+    JSON.parse(fs.readFileSync(paths.templatePath, "utf8"))
+  );
   const tokenPresets = JSON.parse(fs.readFileSync(paths.tokenPresetsPath, "utf8"));
   const payload = JSON.parse(fs.readFileSync(path.join(rootDir, "payload.json"), "utf8")) as EmailPayload;
   return { template, tokenPresets, payload };
@@ -34,7 +38,7 @@ function loadMemberWelcomeCardFixture(): {
 describe("detachThemeFieldBranch", () => {
   it("member-welcome 问候卡片背景色可解除样式令牌并烘焙字面量", () => {
     const { template, tokenPresets, payload } = loadMemberWelcomeCardFixture();
-    const theme = resolveDesignTokens(tokenPresets);
+    const theme = resolveDesignTokens(tokenPresets as TokenPresets);
     const mergedBase = mergeTemplatePayload(template, payload);
     const { template: merged } = resolveThemeInTemplate(mergedBase, theme);
     assert.ok(merged);

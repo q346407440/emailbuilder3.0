@@ -1,4 +1,4 @@
-import type { BindingSpec } from "../types/email";
+import type { BindingCollectionField, BindingSpec } from "../types/email";
 import type { PayloadContractIssue, SlotValueType } from "../payload-contract/types";
 import { isSlotValueType } from "../payload-contract/value-types";
 import { validateExternalVariableBindingSpec } from "../payload-contract/validate";
@@ -15,7 +15,7 @@ function visibilityToBindingSpec(visibility: VisibilityRule): BindingSpec {
     mode: "variable",
     valueType: visibility.valueType,
     allowExternal: true,
-    itemFields: visibility.itemFields,
+    itemFields: visibility.itemFields as BindingCollectionField[] | undefined,
     minItems: visibility.minItems,
     maxItems: visibility.maxItems,
     label: visibility.label,

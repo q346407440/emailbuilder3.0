@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { EmailTemplate } from "../types/email";
+import type { EmailTemplate, EmailBlock } from "../types/email";
 import {
   buildContentAlignInspectorHint,
   collectContentAlignEffectivenessIssues,
@@ -17,7 +17,7 @@ function layoutBlock(
   direction: "vertical" | "horizontal",
   children: string[],
   wrapperExtra: Record<string, unknown> = {}
-) {
+): EmailBlock {
   return {
     id,
     type: "layout" as const,
@@ -29,9 +29,9 @@ function layoutBlock(
       heightMode: "hug",
       ...wrapperExtra,
     },
-    props: { direction, gapMode: "fixed", gap: "8px" },
+    props: { direction, gapMode: "fixed" as const, gap: "8px" },
     bindings: {},
-  };
+  } as EmailBlock;
 }
 
 describe("contentAlignConfigurability", () => {
@@ -192,8 +192,8 @@ describe("contentAlignConfigurability", () => {
     const horizontalBlock = {
       ...inner,
       props: { ...inner.props, direction: "horizontal" as const },
-    };
-    const { wrapperStyle, changed, changes } = normalizeBlockWrapperContentAlign(
+    } as unknown as EmailBlock;
+    const { wrapperStyle, changed } = normalizeBlockWrapperContentAlign(
       { ...template, blocks: { inner: horizontalBlock } },
       "inner",
       horizontalBlock
@@ -222,7 +222,7 @@ describe("contentAlignConfigurability", () => {
     const verticalBlock = {
       ...inner,
       props: { ...inner.props, direction: "vertical" as const },
-    };
+    } as unknown as EmailBlock;
     const template = { blocks: { inner: verticalBlock } } as unknown as EmailTemplate;
     const { wrapperStyle, changed } = normalizeBlockWrapperContentAlign(
       template,
@@ -311,7 +311,7 @@ describe("contentAlignConfigurability", () => {
       },
       props: { direction: "vertical", gapMode: "fixed", gap: "8px" },
       bindings: {},
-    };
+    } as unknown as EmailBlock;
     const template = { blocks: { img } } as unknown as EmailTemplate;
     const p = resolveContentAlignInspectorPresentation(template, img);
     assert.equal(p.visibility.showHorizontal, true);
@@ -379,7 +379,7 @@ describe("contentAlignConfigurability", () => {
       },
       props: {},
       bindings: {},
-    };
+    } as unknown as EmailBlock;
     const template = { blocks: { t: text } } as unknown as EmailTemplate;
     const ctx = resolveContentAlignInspectorContext(template, text);
     const h = resolveContentAlignAxisConfigurability("horizontal", ctx);
@@ -399,7 +399,7 @@ describe("contentAlignConfigurability", () => {
       },
       props: {},
       bindings: {},
-    };
+    } as unknown as EmailBlock;
     const template = { blocks: { t: text } } as unknown as EmailTemplate;
     const ctx = resolveContentAlignInspectorContext(template, text);
     const v = resolveContentAlignAxisConfigurability("vertical", ctx);
@@ -424,9 +424,9 @@ describe("contentAlignConfigurability", () => {
         decoration: "none",
       },
       bindings: {},
-    };
+    } as unknown as EmailBlock;
     const template = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "x",
       templateVersion: 1,
       rootBlockId: "root",

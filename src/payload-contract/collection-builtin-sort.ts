@@ -1,4 +1,4 @@
-/** 内置 catalog 列表的排序策略（仅 provider=builtin 且 extract=none 时可选） */
+/** 内置 catalog 列表的常规排序策略（派生 similarTo/complement 见 sort 策略对象） */
 export const BUILTIN_COLLECTION_SORT_IDS = [
   "catalogOrder",
   "nameAsc",
@@ -7,10 +7,6 @@ export const BUILTIN_COLLECTION_SORT_IDS = [
   "conversionDesc",
   "priceDesc",
   "priceAsc",
-  /** @deprecated 兼容旧数据，等同 priceDesc */
-  "salesDesc",
-  /** @deprecated 兼容旧数据，等同 priceAsc */
-  "salesAsc",
 ] as const;
 
 export type BuiltinCollectionSortId = (typeof BUILTIN_COLLECTION_SORT_IDS)[number];
@@ -44,8 +40,6 @@ export function normalizeBuiltinCollectionSortId(
   sort: BuiltinCollectionSortId | undefined
 ): BuiltinCollectionSortId {
   if (!sort) return DEFAULT_BUILTIN_COLLECTION_SORT;
-  if (sort === "salesDesc") return "priceDesc";
-  if (sort === "salesAsc") return "priceAsc";
   return sort;
 }
 

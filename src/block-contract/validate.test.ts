@@ -10,7 +10,7 @@ import type { EmailBlock, EmailTemplate } from "../types/email";
 
 function minimalTemplate(block: EmailBlock): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "t",
     templateVersion: 1,
     rootBlockId: "root",
@@ -83,7 +83,7 @@ describe("block-contract", () => {
       bindings: {},
     };
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -224,7 +224,7 @@ describe("block-contract", () => {
   });
 
   it("emailRoot 壳层不允许 repeat（列表重复仅 layout/grid）", () => {
-    const root: EmailBlock = {
+    const root = {
       id: "root",
       type: "emailRoot",
       parentId: null,
@@ -249,9 +249,9 @@ describe("block-contract", () => {
         itemFields: [],
         fieldMappings: [],
       },
-    } as EmailBlock;
+    } as unknown as EmailBlock;
     const template: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",

@@ -2,7 +2,7 @@ import type { TokenPresetFamily, TokenPresetStandardKey } from "./types";
 
 /**
  * 样式预设标准 12 键 — 机器真源（与 `email-token-preset-standard-scope` 技能对齐）。
- * 样例：`data/emails/on-cart-abandon-2/tokenPresets.json`、`data/token-presets/public-neutral-saas.json`。
+ * 样例：`data/emails/coupon-available/layouts/default/tokenPresets.json`、`data/token-presets/public-neutral-saas.json`。
  */
 
 export const TOKEN_PRESET_FAMILY_ORDER = [

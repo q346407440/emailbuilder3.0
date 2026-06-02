@@ -7,7 +7,7 @@ import {
 } from "./builtinCollectionCatalog";
 import { BUILTIN_PRODUCTS_MOCK_RAW } from "./builtinProductsMockData";
 
-const EXPECTED_SKU_COUNTS = [5, 4, 3, 2, 1, 5, 4, 3, 2, 1];
+const EXPECTED_SKU_COUNTS = [5, 4, 3, 2, 1, 5, 4, 3, 2, 1, 1, 1];
 
 function httpGetStatus(url: string): Promise<number> {
   return new Promise((resolve) => {
@@ -24,8 +24,8 @@ function httpGetStatus(url: string): Promise<number> {
 }
 
 describe("BUILTIN_PRODUCTS_MOCK_RAW", () => {
-  it("10 条 SPU，SKU 数量为 5-4-3-2-1 两轮", () => {
-    assert.equal(BUILTIN_PRODUCTS_MOCK_RAW.length, 10);
+  it("12 条 SPU（含相似品/搭配品演示），SKU 数量为 5-4-3-2-1 两轮 + 2", () => {
+    assert.equal(BUILTIN_PRODUCTS_MOCK_RAW.length, 12);
     const counts = BUILTIN_PRODUCTS_MOCK_RAW.map((p) => p.skus.length);
     assert.deepEqual(counts, EXPECTED_SKU_COUNTS);
   });
@@ -75,7 +75,7 @@ describe("BUILTIN_PRODUCTS_MOCK_RAW", () => {
         urls.add(variant.imageSrc);
       }
     }
-    assert.equal(urls.size, 30);
+    assert.equal(urls.size, 32);
     for (const url of urls) {
       const status = await httpGetStatus(url);
       assert.equal(status, 200, `图片不可访问: ${url} (status ${status})`);

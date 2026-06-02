@@ -63,7 +63,7 @@ function buildG3FillWrapScenario(direction: "vertical" | "horizontal"): EmailTem
     bindings: {},
   };
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     emailId: "test",
     rootBlockId: "root",
     blocks: {

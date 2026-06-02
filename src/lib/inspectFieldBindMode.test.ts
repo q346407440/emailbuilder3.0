@@ -11,6 +11,7 @@ import { mergeTemplatePayload } from "./merge";
 import { resolveThemeInTemplate } from "./resolveThemeInTemplate";
 import { detachThemeFieldBranch, hasThemeRefInTemplateField, restoreThemeFieldBranch } from "./themeBindingEdit";
 import { isThemeRef } from "../types/themeRef";
+import { parseTemplateFromDisk } from "./templateTreeAdapter";
 
 function containsThemeRef(value: unknown): boolean {
   if (isThemeRef(value)) return true;
@@ -25,7 +26,7 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
 
   it("仅有 $themeRef 且无解除 meta → themeFollow", () => {
     const template = {
-      schemaVersion: "3.0.0" as const,
+      schemaVersion: "4.0.0" as const,
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -69,7 +70,7 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
   it("meta 已记录解除但字面量仍含 $themeRef → themeDetached（避免永远 themeFollow）", () => {
     const pk = pathKeyFor(blockId, bindPath);
     const template = {
-      schemaVersion: "3.0.0" as const,
+      schemaVersion: "4.0.0" as const,
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -131,7 +132,9 @@ describe("template43 v2 主视觉块：解除主题圆角", () => {
       t.skip("当前工作区未包含 template43 v2 fixture");
       return;
     }
-    const raw = JSON.parse(fs.readFileSync(path.join(root, "template.json"), "utf8"));
+    const raw = parseTemplateFromDisk(
+      JSON.parse(fs.readFileSync(path.join(root, "template.json"), "utf8"))
+    );
     const tokenPresetsPath = path.join(root, "tokenPresets.json");
     let expanded = BASELINE_EXPANDED_THEME;
     if (fs.existsSync(tokenPresetsPath)) {

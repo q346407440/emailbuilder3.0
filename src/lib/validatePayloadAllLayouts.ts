@@ -1,5 +1,6 @@
 import type { LayoutManifest } from "../layout-variant-contract/types";
 import type { EmailPayload, EmailTemplate } from "../types/email";
+import { listVisibleLayoutVariants } from "./layoutVariantLogicalDelete";
 import { validatePayloadAgainstTemplate } from "./validate";
 
 export type LayoutPayloadIssue = { path: string; reason: string };
@@ -37,7 +38,8 @@ export async function fetchTemplatesAndValidatePayload(
   fetchTemplate: FetchLayoutTemplate
 ): Promise<LayoutPayloadIssue[]> {
   const templates: Array<{ layoutVariantId: string; template: EmailTemplate }> = [];
-  for (const v of manifest.variants) {
+  const visibleVariants = listVisibleLayoutVariants(manifest.variants);
+  for (const v of visibleVariants) {
     if (v.id === currentLayoutVariantId) {
       templates.push({ layoutVariantId: v.id, template: currentTemplate });
     } else {

@@ -49,7 +49,7 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     summary: "按钮胶囊 padding 由渲染层固定。",
     jsonPath: "props.buttonStyle.padding",
     blockTypes: ["button"],
-    implementation: "src/lib/buttonInnerPadding.ts",
+    implementation: "src/render-defaults-contract/values.ts",
   },
   {
     id: "forbid.textLineHeight",
@@ -129,7 +129,7 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     title: "按钮内边距",
     summary: "按钮胶囊内边距由渲染层统一固定，不写入 JSON。",
     valueKey: "BUTTON_INNER_PADDING",
-    implementation: "src/lib/buttonInnerPadding.ts",
+    implementation: "src/render-defaults-contract/values.ts",
   },
   {
     id: "inject.imageBackgroundFallback",
@@ -137,7 +137,7 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     title: "图片/底图兜底色",
     summary: "图片和底图透明区域使用统一兜底色。",
     valueKey: "IMAGE_BACKGROUND_FALLBACK_COLOR",
-    implementation: "src/lib/imageBackgroundFallback.ts",
+    implementation: "src/render-defaults-contract/values.ts",
   },
   {
     id: "inject.textLineHeight",

@@ -3,12 +3,15 @@
  * 历史字段见 removed-fields.ts，经 normalizePersistedEmailMeta 剥离。
  */
 
+export const META_SCHEMA_VERSION = "1.0.0" as const;
+
 export type EmailMetaDelivery = {
   subject?: string;
   preheader?: string;
 };
 
 export type EmailMeta = {
+  schemaVersion: typeof META_SCHEMA_VERSION;
   displayName: string;
   /**
    * 打开本模板「样式预设」工作台时默认选中的侧栏项。

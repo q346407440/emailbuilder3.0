@@ -82,16 +82,6 @@ export function projectLayoutContentAlign(
   return { horizontal, vertical };
 }
 
-/**
- * @deprecated 请使用 {@link projectLayoutContentAlign}。纵排/横排均透传 wrapperStyle.contentAlign。
- */
-export function projectLayoutInnerStackContentAlign(
-  direction: unknown,
-  raw?: WrapperContentAlign | null
-): WrapperContentAlign {
-  return projectLayoutContentAlign(direction, raw);
-}
-
 export function projectBackgroundContentAlign(): WrapperBackgroundContentAlign {
   return PROJECT_BACKGROUND_CONTENT_ALIGN;
 }

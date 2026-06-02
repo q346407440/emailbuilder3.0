@@ -71,7 +71,8 @@ export function PayloadSlotSourceModal({
 
   useEffect(() => {
     if (!visible) return;
-    setSourceMode("scene");
+    // 自定义列表变量更常用「自定义」页；场景内置仍可通过「场景变量」切换
+    setSourceMode(mode === "collection" ? "custom" : "scene");
     setSceneDraft(initialScene ?? getPayloadVariableScene());
     setSelectedPresetId(null);
     setFormError("");
@@ -211,7 +212,7 @@ export function PayloadSlotSourceModal({
   const customHint =
     mode === "scalar"
       ? "名称与 key 写入 payload.slots；初值可选，写入 payload.values。"
-      : "名称与 key 写入 payload.slots；列表字段与数据创建后可在右侧「变量详情」中配置。";
+      : "名称与 key 写入 payload.slots；创建后在右侧先配置行字段，再在数据预览中手动填写（无需 JSON）。批量数据可稍后用「从 JSON 导入」。";
 
   const sceneHint =
     mode === "collection"
@@ -347,63 +348,72 @@ export function PayloadSlotSourceModal({
           <p className="modal-form-field__section-title">
             选择要创建的内置{mode === "collection" ? "列表" : "标准"}变量
           </p>
-          <SelectablePickerTable
-            ariaLabel={mode === "collection" ? "场景内置列表变量" : "场景内置标准变量"}
-            rowKey={(preset) => preset.presetId}
-            selectedKey={selectedPresetId}
-            onSelect={(presetId) => {
-              setSelectedPresetId(presetId);
-              setFormError("");
-            }}
-            radioName={
-              mode === "collection" ? "scene-collection-preset" : "scene-scalar-preset"
-            }
-            dataSource={mode === "collection" ? collectionPresets : scalarPresets}
-            columns={
-              mode === "collection"
-                ? [
-                    {
-                      key: "label",
-                      title: "名称",
-                      render: (preset) => preset.label,
-                    },
-                    {
-                      key: "id",
-                      title: "标识",
-                      render: (preset) => (
-                        <code className="selectable-picker-table__mono">{preset.slotId}</code>
-                      ),
-                    },
-                    {
-                      key: "meta",
-                      title: "预览行数",
-                      width: 88,
-                      align: "right",
-                      render: (preset) => String(preset.seedRowCount),
-                    },
-                  ]
-                : [
-                    {
-                      key: "label",
-                      title: "名称",
-                      render: (preset) => preset.label,
-                    },
-                    {
-                      key: "id",
-                      title: "标识",
-                      render: (preset) => (
-                        <code className="selectable-picker-table__mono">{preset.slotId}</code>
-                      ),
-                    },
-                    {
-                      key: "meta",
-                      title: "类型",
-                      width: 88,
-                      render: (preset) => payloadSlotValueTypeLabel(preset.valueType),
-                    },
-                  ]
-            }
-          />
+          {mode === "collection" ? (
+            <SelectablePickerTable
+              ariaLabel="场景内置列表变量"
+              rowKey={(preset) => preset.presetId}
+              selectedKey={selectedPresetId}
+              onSelect={(presetId) => {
+                setSelectedPresetId(presetId);
+                setFormError("");
+              }}
+              radioName="scene-collection-preset"
+              dataSource={collectionPresets}
+              columns={[
+                {
+                  key: "label",
+                  title: "名称",
+                  render: (preset) => preset.label,
+                },
+                {
+                  key: "id",
+                  title: "标识",
+                  render: (preset) => (
+                    <code className="selectable-picker-table__mono">{preset.slotId}</code>
+                  ),
+                },
+                {
+                  key: "meta",
+                  title: "预览行数",
+                  width: 88,
+                  align: "right",
+                  render: (preset) => String(preset.seedRowCount),
+                },
+              ]}
+            />
+          ) : (
+            <SelectablePickerTable
+              ariaLabel="场景内置标准变量"
+              rowKey={(preset) => preset.presetId}
+              selectedKey={selectedPresetId}
+              onSelect={(presetId) => {
+                setSelectedPresetId(presetId);
+                setFormError("");
+              }}
+              radioName="scene-scalar-preset"
+              dataSource={scalarPresets}
+              columns={[
+                {
+                  key: "label",
+                  title: "名称",
+                  render: (preset) => preset.label,
+                },
+                {
+                  key: "id",
+                  title: "标识",
+                  render: (preset) => (
+                    <code className="selectable-picker-table__mono">{preset.slotId}</code>
+                  ),
+                },
+                {
+                  key: "meta",
+                  title: "类型",
+                  width: 88,
+                  render: (preset) => payloadSlotValueTypeLabel(preset.valueType),
+                },
+              ]}
+            />
+          )}
         </>
       )}
     </div>

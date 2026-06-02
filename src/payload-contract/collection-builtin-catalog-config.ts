@@ -10,23 +10,29 @@ export const BUILTIN_PRODUCT_RANGE_MODES = [
 ] as const;
 export type BuiltinProductRangeMode = (typeof BUILTIN_PRODUCT_RANGE_MODES)[number];
 
+/** 选择商品弹窗：full=含 SKU 规格 Tab；spuOnly=仅 SPU（相似品/搭配品树形列表） */
+export const BUILTIN_PRODUCT_SELECTION_SCOPES = ["full", "spuOnly"] as const;
+export type BuiltinProductSelectionScope = (typeof BUILTIN_PRODUCT_SELECTION_SCOPES)[number];
+
 /** SKU 树勾选键：`${spuId}::${skuId}` */
 export type BuiltinSkuSelectionKey = string;
 
 export type BuiltinProductListConfig = {
-  /** 列表行粒度：按商品（SPU）或按规格（SKU 扁平行） */
-  rowGranularity: BuiltinProductRowGranularity;
+  /**
+   * 列表行粒度（持久化兼容字段，归一化后固定为 spu）。
+   * SKU 展示由 template 嵌套 repeat 控制，变量层不再配置 sku 扁平行。
+   */
+  rowGranularity?: BuiltinProductRowGranularity;
   /** 候选商品池来源 */
   rangeMode: BuiltinProductRangeMode;
-  /**
-   * 按 SPU 粒度：已选商品 id（Shoplazza 风格 mock 的 product.id）。
-   * 按 SKU 粒度且 freeSelect：由 skuSelection 推导，可与 selectedSpuIds 冗余存储。
-   */
+  /** 已选商品 id（Shoplazza 风格 mock 的 product.id） */
   selectedSpuIds?: string[];
-  /** 按 SKU 粒度：勾选的规格键列表 */
+  /** 按 SKU Tab 勾选的规格键；列表行仍为 SPU，嵌套 skus 列仅展示已选规格 */
   skuSelection?: BuiltinSkuSelectionKey[];
   /** 按商品专辑取商品：已选专辑 id */
   selectedCollectionIds?: string[];
+  /** 选择商品弹窗范围；默认 full。spuOnly 时禁止 SKU Tab 与 skuSelection */
+  productSelectionScope?: BuiltinProductSelectionScope;
 };
 
 export type BuiltinAlbumListConfig = {
@@ -54,27 +60,57 @@ export function isBuiltinProductRangeMode(value: string): value is BuiltinProduc
   return (BUILTIN_PRODUCT_RANGE_MODES as readonly string[]).includes(value);
 }
 
+export function isBuiltinProductSelectionScope(
+  value: string
+): value is BuiltinProductSelectionScope {
+  return (BUILTIN_PRODUCT_SELECTION_SCOPES as readonly string[]).includes(value);
+}
+
+export function isSpuOnlyBuiltinProductSelection(
+  config: BuiltinProductListConfig | undefined
+): boolean {
+  return normalizeBuiltinProductListConfig(config).productSelectionScope === "spuOnly";
+}
+
+function selectedSpuIdsFromRaw(raw: BuiltinProductListConfig): string[] {
+  const fromSpu = Array.isArray(raw.selectedSpuIds)
+    ? raw.selectedSpuIds.filter((id) => typeof id === "string" && id.trim())
+    : [];
+  const spuIds = new Set(fromSpu);
+  for (const key of raw.skuSelection ?? []) {
+    if (typeof key !== "string") continue;
+    const idx = key.indexOf("::");
+    if (idx <= 0) continue;
+    spuIds.add(key.slice(0, idx));
+  }
+  return [...spuIds];
+}
+
+function skuSelectionFromRaw(raw: BuiltinProductListConfig): BuiltinSkuSelectionKey[] {
+  return Array.isArray(raw.skuSelection)
+    ? raw.skuSelection.filter((k) => typeof k === "string" && k.includes("::"))
+    : [];
+}
+
 export function normalizeBuiltinProductListConfig(
   raw: BuiltinProductListConfig | undefined
 ): BuiltinProductListConfig {
   if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG, selectedSpuIds: [] };
   }
-  const rowGranularity = isBuiltinProductRowGranularity(raw.rowGranularity)
-    ? raw.rowGranularity
-    : "spu";
   const rangeMode = isBuiltinProductRangeMode(raw.rangeMode)
     ? raw.rangeMode
     : "freeSelect";
+  const productSelectionScope =
+    raw.productSelectionScope === "spuOnly" ? "spuOnly" : "full";
+  const skuSelection =
+    productSelectionScope === "spuOnly" ? [] : skuSelectionFromRaw(raw);
   return {
-    rowGranularity,
+    rowGranularity: "spu",
     rangeMode,
-    selectedSpuIds: Array.isArray(raw.selectedSpuIds)
-      ? raw.selectedSpuIds.filter((id) => typeof id === "string" && id.trim())
-      : [],
-    skuSelection: Array.isArray(raw.skuSelection)
-      ? raw.skuSelection.filter((k) => typeof k === "string" && k.includes("::"))
-      : [],
+    productSelectionScope,
+    selectedSpuIds: selectedSpuIdsFromRaw({ ...raw, skuSelection }),
+    skuSelection,
     selectedCollectionIds: (() => {
       const ids = Array.isArray(raw.selectedCollectionIds)
         ? raw.selectedCollectionIds.filter((id) => typeof id === "string" && id.trim())

@@ -1,7 +1,7 @@
 import type { EmailMeta, EmailMetaDelivery } from "../meta-contract/types";
 import { normalizePersistedEmailMeta } from "../meta-contract/normalize";
 
-export { normalizePersistedEmailMeta, normalizePersistedEmailMeta as stripDeprecatedMetaFields };
+export { normalizePersistedEmailMeta };
 
 /** 编辑器元信息面板维护的投递字段（不含 SMTP / 测试收件人）。 */
 export type MetaEditorDeliveryFields = Pick<EmailMetaDelivery, "subject" | "preheader">;

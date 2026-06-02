@@ -8,8 +8,6 @@
   7 左下  8 下中  9 右下
 
 - position-markers-square.png：正方形，9 个数字标出裁切焦点
-- position-markers-pad-lr.png：左右各半幅宽留白（横向画布，数字仅中央正方）
-- position-markers-pad-tb.png：上下各半幅高留白（纵向画布，数字仅中央正方）
 - position-markers-span-lr.png：2:1 全宽三列数字（2A 水平 position 肉眼验收）
 - position-markers-span-tb.png：1:2 全高三行数字（2B 垂直 position 肉眼验收）
 
@@ -96,28 +94,6 @@ def save_square() -> Path:
     return path
 
 
-def save_pad_lr() -> Path:
-    """左右各半幅宽留白：画布 2S×S，正方形居中。"""
-    w, h = SIZE * 2, SIZE
-    img = Image.new("RGBA", (w, h), BG)
-    draw = ImageDraw.Draw(img)
-    draw_nine_numbers(draw, SIZE // 2, 0, SIZE)
-    path = OUT_DIR / "position-markers-pad-lr.png"
-    img.convert("RGB").save(path, format="PNG", optimize=True)
-    return path
-
-
-def save_pad_tb() -> Path:
-    """上下各半幅高留白：画布 S×2S，正方形居中。"""
-    w, h = SIZE, SIZE * 2
-    img = Image.new("RGBA", (w, h), BG)
-    draw = ImageDraw.Draw(img)
-    draw_nine_numbers(draw, 0, SIZE // 2, SIZE)
-    path = OUT_DIR / "position-markers-pad-tb.png"
-    img.convert("RGB").save(path, format="PNG", optimize=True)
-    return path
-
-
 def _draw_span_grid(
     draw: ImageDraw.ImageDraw, w: int, h: int, col_fracs: tuple[float, ...], row_fracs: tuple[float, ...]
 ) -> None:
@@ -155,7 +131,7 @@ def save_span_tb() -> Path:
 
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    paths = [save_square(), save_pad_lr(), save_pad_tb(), save_span_lr(), save_span_tb()]
+    paths = [save_square(), save_span_lr(), save_span_tb()]
     print("已生成（九宫格数字 1–9，1=左上 … 9=右下）：")
     for p in paths:
         with Image.open(p) as im:

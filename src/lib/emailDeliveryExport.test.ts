@@ -4,7 +4,6 @@ import {
   applyEmailTextContentParagraphReset,
   bakeDeliveryExportMeasuredBoxes,
   computeDeliveryExportMeasuredBoxPatch,
-  finalizePresentationLeafShellsForDelivery,
   hasExplicitCssLength,
   prepareEmailPreviewInnerHtmlForDelivery,
 } from "./emailDeliveryExport";

@@ -47,14 +47,15 @@ describe("createPayloadSlot", () => {
     assert.equal(result.payload.values.qty, 42);
   });
 
-  it("创建列表变量：登记 collection 与空数组初值", () => {
+  it("创建列表变量：登记 collection，行字段与 values 待后续配置", () => {
     const result = createCollectionPayloadSlot(basePayload(), {
       slotId: "items",
       label: "商品列表",
     });
     assert.ok("payload" in result);
     assert.equal(result.payload.slots.items?.valueType, "collection");
-    assert.deepEqual(result.payload.values.items, []);
+    assert.equal(result.payload.slots.items?.itemFields, undefined);
+    assert.equal(result.payload.values.items, undefined);
   });
 
   it("拒绝重复 key", () => {

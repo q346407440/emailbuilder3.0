@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import type { EmailPayload } from "../types/email";
 import {
   getDirtyPayloadSlotDraftIds,
   isPayloadSlotDraftDirty,
@@ -8,9 +9,11 @@ import {
 
 describe("payloadSlotDraft", () => {
   it("仅会话缓存（与已提交值一致）不算脏", () => {
-    const payload = {
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
       slots: {
         benefits: {
+          label: "权益",
           valueType: "collection" as const,
           minItems: 2,
           maxItems: 2,
@@ -30,9 +33,11 @@ describe("payloadSlotDraft", () => {
   });
 
   it("已废弃 http 数据源在 seed 时归一为 custom", () => {
-    const payload = {
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
       slots: {
         benefits: {
+          label: "权益",
           valueType: "collection" as const,
           minItems: 1,
           maxItems: 1,
@@ -41,7 +46,7 @@ describe("payloadSlotDraft", () => {
             provider: "http" as const,
             url: "https://api.example.com/items",
             sampleResponseJson: '[{"title":"from-api"}]',
-          },
+          } as unknown as EmailPayload["slots"][string]["dataSource"],
         },
       },
       values: { benefits: [{ title: "a" }] },
@@ -55,8 +60,9 @@ describe("payloadSlotDraft", () => {
   });
 
   it("修改赋值后算脏", () => {
-    const payload = {
-      slots: { name: { valueType: "string" as const } },
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
+      slots: { name: { label: "名称", valueType: "string" as const } },
       values: { name: "旧值" },
     };
     const draft = { value: "新值" };

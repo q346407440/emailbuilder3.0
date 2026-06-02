@@ -29,7 +29,7 @@ describe("projectBuiltinCatalogSimilarTo", () => {
     );
   });
 
-  it("排除锚点商品后按销量取前 N", () => {
+  it("排除锚点商品后相似品 mock 置顶", () => {
     const anchor = {
       name: "Aura 无线耳机",
       href: "https://example.com/products/aura-earbuds",
@@ -38,12 +38,12 @@ describe("projectBuiltinCatalogSimilarTo", () => {
       "products",
       itemFields,
       3,
-      "salesDesc",
+      "priceDesc",
       anchor,
       "href"
     );
     assert.equal(rows.length, 3);
     assert.ok(rows.every((r) => r.href !== anchor.href));
-    assert.equal(rows[0]?.name, "Nova 轻薄本");
+    assert.equal(rows[0]?.name, "相似品");
   });
 });

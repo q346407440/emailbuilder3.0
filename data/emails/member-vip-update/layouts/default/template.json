@@ -1,2304 +1,775 @@
 {
-  "schemaVersion": "3.0.0",
+  "schemaVersion": "4.0.0",
   "emailId": "member_vip_update",
   "templateId": "member_vip_update",
   "templateVersion": 1,
   "locale": "en-US",
-  "rootBlockId": "mv-root",
-  "blockMeta": {
-    "mv-mod-logo": {
-      "blockType": "layout.container",
-      "name": "模块 · 店铺 Logo"
-    },
-    "mv-logo-img": {
-      "blockType": "content.image",
-      "name": "店铺 Logo"
-    },
-    "mv-mod-hero": {
-      "blockType": "layout.container",
-      "name": "模块 · VIP 主视觉（底图+叠字）"
-    },
-    "mv-hero-title": {
-      "blockType": "content.text",
-      "name": "VIP 大标题"
-    },
-    "mv-hero-sub": {
-      "blockType": "content.text",
-      "name": "VIP 副标题"
-    },
-    "mv-mod-intro": {
-      "blockType": "layout.container",
-      "name": "模块 · 问候与更新说明"
-    },
-    "mv-intro-hi": {
-      "blockType": "content.text",
-      "name": "问候称呼"
-    },
-    "mv-intro-body-1": {
-      "blockType": "content.text",
-      "name": "更新说明 1"
-    },
-    "mv-intro-terms": {
-      "blockType": "content.text",
-      "name": "条款同意说明"
-    },
-    "mv-mod-vip-card": {
-      "blockType": "layout.container",
-      "name": "模块 · VIP 状态卡"
-    },
-    "mv-vip-level-row": {
-      "blockType": "layout.container",
-      "name": "VIP 等级行"
-    },
-    "mv-vip-diamond-wrap": {
-      "blockType": "layout.container",
-      "name": "钻石图标底"
-    },
-    "mv-vip-diamond-icon": {
-      "blockType": "content.icon",
-      "name": "钻石图标"
-    },
-    "mv-vip-badge": {
-      "blockType": "content.text",
-      "name": "等级徽章"
-    },
-    "mv-vip-level-title": {
-      "blockType": "content.text",
-      "name": "VIP 等级标题"
-    },
-    "mv-progress-text": {
-      "blockType": "content.text",
-      "name": "升级进度说明"
-    },
-    "mv-progress-bar": {
-      "blockType": "indicator.progress",
-      "name": "升级进度条"
-    },
-    "mv-benefit-cell-1": {
-      "blockType": "layout.container",
-      "name": "权益格 1"
-    },
-    "mv-benefit-cell-1-icon-wrap": {
-      "blockType": "layout.container",
-      "name": "权益图标底 1"
-    },
-    "mv-benefit-cell-1-icon": {
-      "blockType": "content.icon",
-      "name": "权益图标 1"
-    },
-    "mv-benefit-cell-1-text-col": {
-      "blockType": "layout.container",
-      "name": "权益文案列 1"
-    },
-    "mv-benefit-cell-1-title": {
-      "blockType": "content.text",
-      "name": "权益标题 1"
-    },
-    "mv-benefit-cell-1-sub": {
-      "blockType": "content.text",
-      "name": "权益说明 1"
-    },
-    "mv-benefits-grid": {
-      "blockType": "layout.container",
-      "name": "当前权益列表"
-    },
-    "mv-card-divider": {
-      "blockType": "separator.divider",
-      "name": "卡内分隔线"
-    },
-    "mv-activate-intro": {
-      "blockType": "content.text",
-      "name": "激活引导语"
-    },
-    "mv-activate-cell-1": {
-      "blockType": "layout.container",
-      "name": "权益格 1"
-    },
-    "mv-activate-cell-1-icon-wrap": {
-      "blockType": "layout.container",
-      "name": "权益图标底 1"
-    },
-    "mv-activate-cell-1-icon": {
-      "blockType": "content.icon",
-      "name": "权益图标 1"
-    },
-    "mv-activate-cell-1-text-col": {
-      "blockType": "layout.container",
-      "name": "权益文案列 1"
-    },
-    "mv-activate-cell-1-title": {
-      "blockType": "content.text",
-      "name": "权益标题 1"
-    },
-    "mv-activate-cell-1-sub": {
-      "blockType": "content.text",
-      "name": "权益说明 1"
-    },
-    "mv-activate-grid": {
-      "blockType": "layout.container",
-      "name": "激活权益列表"
-    },
-    "mv-cta-btn": {
-      "blockType": "action.button",
-      "name": "激活主按钮"
-    },
-    "mv-disclaimer": {
-      "blockType": "content.text",
-      "name": "权益免责声明"
-    },
-    "mv-mod-account": {
-      "blockType": "layout.container",
-      "name": "模块 · 账户说明"
-    },
-    "mv-account-para-1": {
-      "blockType": "content.text",
-      "name": "账户说明 1"
-    },
-    "mv-account-para-2": {
-      "blockType": "content.text",
-      "name": "账户说明 2"
-    },
-    "mv-account-para-3": {
-      "blockType": "content.text",
-      "name": "联系说明"
-    },
-    "mv-root": {
+  "root": {
+    "id": "mv-root",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "画布根节点"
-    }
-  },
-  "blocks": {
-    "mv-mod-logo": {
-      "id": "mv-mod-logo",
-      "type": "layout",
-      "parentId": "mv-root",
-      "children": [
-        "mv-logo-img"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": "#FFFFFF",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        }
+    },
+    "props": {
+      "backgroundColor": "#ffffff",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
       },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
       },
-      "bindings": {
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "bindings": {
+      "props.backgroundColor": {
+        "slotId": "colors.surface",
+        "mode": "theme",
+        "tokenPath": "colors.surface",
+        "fieldKind": "style"
       }
     },
-    "mv-logo-img": {
-      "id": "mv-logo-img",
-      "type": "image",
-      "parentId": "mv-mod-logo",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "140px",
-        "heightMode": "fixed",
-        "height": "48px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
+    "children": [
+      {
+        "id": "mv-mod-logo",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 店铺 Logo"
         },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "backgroundImage": {
-          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
-          "alt": "Store logo",
-          "link": "",
-          "fit": "contain",
-          "position": "center",
-          "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
-          },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
           "border": {
             "mode": "unified",
             "width": "0",
             "style": "solid",
             "color": "rgba(0,0,0,0)"
-          }
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "center"
-        }
-      },
-      "props": {},
-      "bindings": {
-        "wrapperStyle.backgroundImage.src": {
-          "slotId": "storeLogoSrc",
-          "mode": "variable",
-          "valueType": "image",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺 Logo 地址"
-        },
-        "wrapperStyle.backgroundImage.alt": {
-          "slotId": "storeLogoAlt",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺 Logo 替代文字"
-        }
-      }
-    },
-    "mv-mod-hero": {
-      "id": "mv-mod-hero",
-      "type": "layout",
-      "parentId": "mv-root",
-      "children": [
-        "mv-hero-title",
-        "mv-hero-sub"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "fixed",
-        "height": "220px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
           },
-          "right": "24px",
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": "24px"
-        },
-        "backgroundImage": {
-          "src": "https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=800",
-          "alt": "VIP membership",
-          "link": "",
-          "fit": "cover",
-          "position": "center",
           "borderRadius": {
             "mode": "unified",
             "radius": "0"
           },
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          }
+        },
+        "bindings": {
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "mv-logo-img",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "店铺 Logo"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "widthMode": "fixed",
+              "width": "140px",
+              "heightMode": "fixed",
+              "height": "48px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "backgroundImage": {
+                "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+                "alt": "Store logo",
+                "link": "",
+                "fit": "contain",
+                "position": "center",
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                },
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                }
+              },
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              }
+            },
+            "bindings": {
+              "wrapperStyle.backgroundImage.src": {
+                "slotId": "storeLogoSrc",
+                "mode": "variable",
+                "valueType": "image",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺 Logo 地址"
+              },
+              "wrapperStyle.backgroundImage.alt": {
+                "slotId": "storeLogoAlt",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺 Logo 替代文字"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "mv-mod-hero",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · VIP 主视觉（底图+叠字）"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "fixed",
+          "height": "220px",
           "border": {
             "mode": "unified",
             "width": "0",
             "style": "solid",
             "color": "rgba(0,0,0,0)"
-          }
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.backgroundImage.src": {
-          "slotId": "heroVipImageSrc",
-          "mode": "variable",
-          "valueType": "image",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "VIP 主视觉头图"
-        },
-        "wrapperStyle.backgroundImage.alt": {
-          "slotId": "heroVipImageAlt",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "VIP 头图替代文字"
-        }
-      }
-    },
-    "mv-hero-title": {
-      "id": "mv-hero-title",
-      "type": "text",
-      "parentId": "mv-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "VIP",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.display"
-        },
-        "color": "#C9A227",
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "heroTitleText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "VIP 大标题"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.display",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.display",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-hero-sub": {
-      "id": "mv-hero-sub",
-      "type": "text",
-      "parentId": "mv-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Exclusive membership"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.h1"
-        },
-        "color": "#D4AF37",
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "heroSubtitle",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "VIP 副标题"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.h1",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.h1",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-mod-intro": {
-      "id": "mv-mod-intro",
-      "type": "layout",
-      "parentId": "mv-root",
-      "children": [
-        "mv-intro-hi",
-        "mv-intro-body-1",
-        "mv-intro-terms"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
           },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
           },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-intro-hi": {
-      "id": "mv-intro-hi",
-      "type": "text",
-      "parentId": "mv-mod-intro",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Hi {{ memberName }}"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "greetingHiLine",
-          "mode": "interpolate",
-          "fieldKind": "content",
-          "label": "问候称呼",
-          "interpolationSlots": [
-            {
-              "slotId": "memberName",
-              "valueType": "string",
-              "allowExternal": true,
-              "label": "会员姓名",
-              "description": "插入问候语中的会员姓名。"
-            }
-          ]
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-intro-body-1": {
-      "id": "mv-intro-body-1",
-      "type": "text",
-      "parentId": "mv-mod-intro",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "We're thrilled to share that zyzshop1 Membership Services have been updated to bring more ease, clarity, and member-only features."
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "introBodyText1",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "会员服务更新说明"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-intro-terms": {
-      "id": "mv-intro-terms",
-      "type": "text",
-      "parentId": "mv-mod-intro",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Agree to accept our updated "
-                },
-                {
-                  "text": "Terms of Use",
-                  "link": "https://example.com/terms",
-                  "decoration": "underline"
-                },
-                {
-                  "text": " and "
-                },
-                {
-                  "text": "Privacy Policy",
-                  "link": "https://example.com/privacy",
-                  "decoration": "underline"
-                },
-                {
-                  "text": " and to receive marketing emails from us as a member"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "termsOfUseUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "使用条款链接"
-        },
-        "props.textBody.paragraphs.0.runs.3.link": {
-          "slotId": "privacyPolicyUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "隐私政策链接"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-mod-vip-card": {
-      "id": "mv-mod-vip-card",
-      "type": "layout",
-      "parentId": "mv-root",
-      "children": [
-        "mv-vip-level-row",
-        "mv-progress-text",
-        "mv-progress-bar",
-        "mv-benefits-grid",
-        "mv-card-divider",
-        "mv-activate-intro",
-        "mv-activate-grid",
-        "mv-cta-btn",
-        "mv-disclaimer"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.panel"
-          }
-        },
-        "backgroundColor": "#FDF0E1",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-vip-level-row": {
-      "id": "mv-vip-level-row",
-      "type": "layout",
-      "parentId": "mv-mod-vip-card",
-      "children": [
-        "mv-vip-diamond-wrap",
-        "mv-vip-badge",
-        "mv-vip-level-title"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-vip-diamond-wrap": {
-      "id": "mv-vip-diamond-wrap",
-      "type": "layout",
-      "parentId": "mv-vip-level-row",
-      "children": [
-        "mv-vip-diamond-icon"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "36px",
-        "heightMode": "fixed",
-        "height": "36px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.cta"
-          }
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-vip-diamond-icon": {
-      "id": "mv-vip-diamond-icon",
-      "type": "icon",
-      "parentId": "mv-vip-diamond-wrap",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "size": "20px",
-        "link": "",
-        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/diamond.svg"
-      },
-      "bindings": {
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-vip-badge": {
-      "id": "mv-vip-badge",
-      "type": "text",
-      "parentId": "mv-vip-level-row",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "V1",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "vipLevelBadge",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "等级徽章"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-vip-level-title": {
-      "id": "mv-vip-level-title",
-      "type": "text",
-      "parentId": "mv-vip-level-row",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "VIP 1",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.h1"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "vipLevelTitle",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "VIP 等级标题"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.h1",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.h1",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-progress-text": {
-      "id": "mv-progress-text",
-      "type": "text",
-      "parentId": "mv-mod-vip-card",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Spent $1000.00 more to reach VIP next level"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "progressText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "升级进度说明"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-progress-bar": {
-      "id": "mv-progress-bar",
-      "type": "progress",
-      "parentId": "mv-mod-vip-card",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "trackColor": "#E8DCC8",
-        "fillColor": {
-          "$themeRef": "colors.primary"
-        },
-        "value": 20,
-        "max": 100,
-        "barHeight": "10px",
-        "barBorderRadius": {
-          "mode": "unified",
-          "radius": "9999px"
-        },
-        "barWidthMode": "fill"
-      },
-      "bindings": {
-        "props.value": {
-          "mode": "variable",
-          "allowExternal": true,
-          "slotId": "progressValue",
-          "valueType": "number",
-          "fieldKind": "content",
-          "label": "升级进度值"
-        },
-        "props.max": {
-          "mode": "variable",
-          "allowExternal": true,
-          "slotId": "progressMax",
-          "valueType": "number",
-          "fieldKind": "content",
-          "label": "进度满槽值"
-        },
-        "props.fillColor": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-benefit-cell-1": {
-      "id": "mv-benefit-cell-1",
-      "type": "layout",
-      "parentId": "mv-benefits-grid",
-      "children": [
-        "mv-benefit-cell-1-icon-wrap",
-        "mv-benefit-cell-1-text-col"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-benefit-cell-1-icon-wrap": {
-      "id": "mv-benefit-cell-1-icon-wrap",
-      "type": "layout",
-      "parentId": "mv-benefit-cell-1",
-      "children": [
-        "mv-benefit-cell-1-icon"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "40px",
-        "heightMode": "fixed",
-        "height": "40px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.cta"
-          }
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-benefit-cell-1-icon": {
-      "id": "mv-benefit-cell-1-icon",
-      "type": "icon",
-      "parentId": "mv-benefit-cell-1-icon-wrap",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "size": "20px",
-        "link": "",
-        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
-      },
-      "bindings": {
-        "props.src": {
-          "slotId": "currentMemberBenefits",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.iconSrc"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-benefit-cell-1-text-col": {
-      "id": "mv-benefit-cell-1-text-col",
-      "type": "layout",
-      "parentId": "mv-benefit-cell-1",
-      "children": [
-        "mv-benefit-cell-1-title",
-        "mv-benefit-cell-1-sub"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "fill",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "2px"
-      },
-      "bindings": {}
-    },
-    "mv-benefit-cell-1-title": {
-      "id": "mv-benefit-cell-1-title",
-      "type": "text",
-      "parentId": "mv-benefit-cell-1-text-col",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Get points",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "currentMemberBenefits",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.title"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-benefit-cell-1-sub": {
-      "id": "mv-benefit-cell-1-sub",
-      "type": "text",
-      "parentId": "mv-benefit-cell-1-text-col",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Reward 888 points"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "currentMemberBenefits",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.subtitle"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-benefits-grid": {
-      "id": "mv-benefits-grid",
-      "type": "layout",
-      "parentId": "mv-mod-vip-card",
-      "children": [
-        "mv-benefit-cell-1"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      },
-      "repeat": {
-        "mode": "collection",
-        "slotId": "currentMemberBenefits",
-        "prototypeChildIds": [
-          "mv-benefit-cell-1"
-        ],
-        "fallbackChildIds": [
-          "mv-benefit-cell-1"
-        ],
-        "itemFields": [
-          {
-            "key": "title",
-            "label": "权益标题",
-            "valueType": "string",
-            "required": true
-          },
-          {
-            "key": "subtitle",
-            "label": "权益说明",
-            "valueType": "string",
-            "required": true
-          },
-          {
-            "key": "iconSrc",
-            "label": "图标地址",
-            "valueType": "image",
-            "required": true
-          }
-        ],
-        "minItems": 5,
-        "maxItems": 5,
-        "label": "当前会员权益列表",
-        "description": "VIP 卡内当前权益栅格，固定 5 项。"
-      }
-    },
-    "mv-card-divider": {
-      "id": "mv-card-divider",
-      "type": "divider",
-      "parentId": "mv-mod-vip-card",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "height": "1px",
-        "lineWidthMode": "fill"
-      },
-      "bindings": {
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-intro": {
-      "id": "mv-activate-intro",
-      "type": "text",
-      "parentId": "mv-mod-vip-card",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Activate your membership now to receive the following benefits:"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "activateIntroText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "激活引导语"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-cell-1": {
-      "id": "mv-activate-cell-1",
-      "type": "layout",
-      "parentId": "mv-activate-grid",
-      "children": [
-        "mv-activate-cell-1-icon-wrap",
-        "mv-activate-cell-1-text-col"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-cell-1-icon-wrap": {
-      "id": "mv-activate-cell-1-icon-wrap",
-      "type": "layout",
-      "parentId": "mv-activate-cell-1",
-      "children": [
-        "mv-activate-cell-1-icon"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "40px",
-        "heightMode": "fixed",
-        "height": "40px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.cta"
-          }
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-cell-1-icon": {
-      "id": "mv-activate-cell-1-icon",
-      "type": "icon",
-      "parentId": "mv-activate-cell-1-icon-wrap",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "hug",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "size": "20px",
-        "link": "",
-        "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
-      },
-      "bindings": {
-        "props.src": {
-          "slotId": "activationBenefits",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.iconSrc"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-cell-1-text-col": {
-      "id": "mv-activate-cell-1-text-col",
-      "type": "layout",
-      "parentId": "mv-activate-cell-1",
-      "children": [
-        "mv-activate-cell-1-title",
-        "mv-activate-cell-1-sub"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "fill",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "2px"
-      },
-      "bindings": {}
-    },
-    "mv-activate-cell-1-title": {
-      "id": "mv-activate-cell-1-title",
-      "type": "text",
-      "parentId": "mv-activate-cell-1-text-col",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Get points",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "activationBenefits",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.title"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-cell-1-sub": {
-      "id": "mv-activate-cell-1-sub",
-      "type": "text",
-      "parentId": "mv-activate-cell-1-text-col",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Reward 888 points"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "activationBenefits",
-          "mode": "variable",
-          "valueType": "collection",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "slotPath": "0.subtitle"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-activate-grid": {
-      "id": "mv-activate-grid",
-      "type": "layout",
-      "parentId": "mv-mod-vip-card",
-      "children": [
-        "mv-activate-cell-1"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      },
-      "repeat": {
-        "mode": "collection",
-        "slotId": "activationBenefits",
-        "prototypeChildIds": [
-          "mv-activate-cell-1"
-        ],
-        "fallbackChildIds": [
-          "mv-activate-cell-1"
-        ],
-        "itemFields": [
-          {
-            "key": "title",
-            "label": "权益标题",
-            "valueType": "string",
-            "required": true
-          },
-          {
-            "key": "subtitle",
-            "label": "权益说明",
-            "valueType": "string",
-            "required": true
-          },
-          {
-            "key": "iconSrc",
-            "label": "图标地址",
-            "valueType": "image",
-            "required": true
-          }
-        ],
-        "minItems": 2,
-        "maxItems": 2,
-        "label": "激活后可享权益",
-        "description": "激活区权益栅格，固定 2 项。"
-      }
-    },
-    "mv-cta-btn": {
-      "id": "mv-cta-btn",
-      "type": "button",
-      "parentId": "mv-mod-vip-card",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "text": "👉 I Agree and Activate My Benefits",
-        "link": "https://example.com/activate-membership",
-        "buttonStyle": {
           "backgroundColor": {
             "$themeRef": "colors.surface"
           },
-          "textColor": {
-            "$themeRef": "colors.primary"
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": "24px",
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": "24px"
           },
-          "fontSize": {
-            "$themeRef": "tokens.typography.body"
+          "backgroundImage": {
+            "src": "https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=800",
+            "alt": "VIP membership",
+            "link": "",
+            "fit": "cover",
+            "position": "center",
+            "borderRadius": {
+              "mode": "unified",
+              "radius": "0"
+            },
+            "border": {
+              "mode": "unified",
+              "width": "0",
+              "style": "solid",
+              "color": "rgba(0,0,0,0)"
+            }
           },
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          }
+        },
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.backgroundImage.src": {
+            "slotId": "heroVipImageSrc",
+            "mode": "variable",
+            "valueType": "image",
+            "allowExternal": true,
+            "fieldKind": "content",
+            "label": "VIP 主视觉头图"
+          },
+          "wrapperStyle.backgroundImage.alt": {
+            "slotId": "heroVipImageAlt",
+            "mode": "variable",
+            "valueType": "string",
+            "allowExternal": true,
+            "fieldKind": "content",
+            "label": "VIP 头图替代文字"
+          }
+        },
+        "children": [
+          {
+            "id": "mv-hero-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "VIP 大标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "VIP",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.display"
+              },
+              "color": "#C9A227",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "heroTitleText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "VIP 大标题"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.display",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.display",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-hero-sub",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "VIP 副标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Exclusive membership"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.h1"
+              },
+              "color": "#D4AF37",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "heroSubtitle",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "VIP 副标题"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.h1",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.h1",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "mv-mod-intro",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 问候与更新说明"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
+        },
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "mv-intro-hi",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "问候称呼"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Hi {{ memberName }}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "greetingHiLine",
+                "mode": "interpolate",
+                "fieldKind": "content",
+                "label": "问候称呼",
+                "interpolationSlots": [
+                  {
+                    "slotId": "memberName",
+                    "valueType": "string",
+                    "allowExternal": true,
+                    "label": "会员姓名",
+                    "description": "插入问候语中的会员姓名。"
+                  }
+                ]
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-intro-body-1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "更新说明 1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "We're thrilled to share that zyzshop1 Membership Services have been updated to bring more ease, clarity, and member-only features."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "introBodyText1",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "会员服务更新说明"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-intro-terms",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "条款同意说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Agree to accept our updated "
+                      },
+                      {
+                        "text": "Terms of Use",
+                        "link": "https://example.com/terms",
+                        "decoration": "underline"
+                      },
+                      {
+                        "text": " and "
+                      },
+                      {
+                        "text": "Privacy Policy",
+                        "link": "https://example.com/privacy",
+                        "decoration": "underline"
+                      },
+                      {
+                        "text": " and to receive marketing emails from us as a member"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "termsOfUseUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "使用条款链接"
+              },
+              "props.textBody.paragraphs.0.runs.3.link": {
+                "slotId": "privacyPolicyUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "隐私政策链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "mv-mod-vip-card",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · VIP 状态卡"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
           "border": {
             "mode": "unified",
             "width": "0",
@@ -2308,506 +779,1925 @@
           "borderRadius": {
             "mode": "unified",
             "radius": {
-              "$themeRef": "tokens.radius.cta"
+              "$themeRef": "tokens.radius.panel"
             }
           },
-          "bold": true,
-          "italic": false,
-          "widthMode": "hug"
-        }
-      },
-      "bindings": {
-        "props.text": {
-          "slotId": "ctaButtonText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "激活按钮文案"
-        },
-        "props.link": {
-          "slotId": "ctaButtonUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "激活按钮链接"
-        },
-        "props.buttonStyle.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.cta",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.cta",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "props.buttonStyle.textColor": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-disclaimer": {
-      "id": "mv-disclaimer",
-      "type": "text",
-      "parentId": "mv-mod-vip-card",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "*Actual membership benefits are as issued at the time of your activation."
-                }
-              ]
+          "backgroundColor": "#FDF0E1",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "disclaimerText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "权益免责声明"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-mod-account": {
-      "id": "mv-mod-account",
-      "type": "layout",
-      "parentId": "mv-root",
-      "children": [
-        "mv-account-para-1",
-        "mv-account-para-2",
-        "mv-account-para-3"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
           },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
+        "bindings": {
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.borderRadius.radius": {
+            "slotId": "tokens.radius.panel",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.panel",
+            "fieldKind": "style"
+          }
         },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-account-para-1": {
-      "id": "mv-account-para-1",
-      "type": "text",
-      "parentId": "mv-mod-account",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
+        "children": [
+          {
+            "id": "mv-vip-level-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "VIP 等级行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "mv-vip-diamond-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "钻石图标底"
                 },
-                {
-                  "text": "Create an account",
-                  "link": "https://example.com/register",
-                  "decoration": "underline"
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "fixed",
+                  "gap": "0"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "36px",
+                  "heightMode": "fixed",
+                  "height": "36px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": {
+                      "$themeRef": "tokens.radius.cta"
+                    }
+                  },
+                  "backgroundColor": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "bindings": {
+                  "wrapperStyle.borderRadius.radius": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.backgroundColor": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "mv-vip-diamond-icon",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "钻石图标"
+                    },
+                    "props": {
+                      "color": {
+                        "$themeRef": "colors.primary"
+                      },
+                      "size": "20px",
+                      "link": "",
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/diamond.svg"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "mv-vip-badge",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "等级徽章"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "V1",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.caption"
+                  },
+                  "color": {
+                    "$themeRef": "colors.primary"
+                  },
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "bindings": {
+                  "props.textBody.paragraphs.0.runs.0.text": {
+                    "slotId": "vipLevelBadge",
+                    "mode": "variable",
+                    "valueType": "string",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "等级徽章"
+                  },
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.caption",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.caption",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.primary",
+                    "mode": "theme",
+                    "tokenPath": "colors.primary",
+                    "fieldKind": "style"
+                  }
                 }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "createAccountUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "注册账户链接"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-account-para-2": {
-      "id": "mv-account-para-2",
-      "type": "text",
-      "parentId": "mv-mod-account",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "If you agree to join the membership during Checkout, we have created an account for you. "
+              },
+              {
+                "id": "mv-vip-level-title",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "VIP 等级标题"
                 },
-                {
-                  "text": "Reset password",
-                  "link": "https://example.com/reset-password",
-                  "decoration": "underline"
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "VIP 1",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": {
+                    "$themeRef": "colors.primary"
+                  },
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "bindings": {
+                  "props.textBody.paragraphs.0.runs.0.text": {
+                    "slotId": "vipLevelTitle",
+                    "mode": "variable",
+                    "valueType": "string",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "VIP 等级标题"
+                  },
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.primary",
+                    "mode": "theme",
+                    "tokenPath": "colors.primary",
+                    "fieldKind": "style"
+                  }
                 }
-              ]
+              }
+            ]
+          },
+          {
+            "id": "mv-progress-text",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "升级进度说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Spent $1000.00 more to reach VIP next level"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "progressText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "升级进度说明"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "resetPasswordUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "重置密码链接"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "mv-account-para-3": {
-      "id": "mv-account-para-3",
-      "type": "text",
-      "parentId": "mv-mod-account",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
-                },
-                {
-                  "text": "zyzshop1",
-                  "link": "https://example.com/store",
-                  "decoration": "underline"
-                },
-                {
-                  "text": " Team at "
-                },
-                {
-                  "text": "lintingting516@gmail.com",
-                  "link": "mailto:lintingting516@gmail.com",
-                  "decoration": "underline"
-                }
-              ]
+          },
+          {
+            "id": "mv-progress-bar",
+            "type": "progress",
+            "blockMeta": {
+              "blockType": "indicator.progress",
+              "name": "升级进度条"
+            },
+            "props": {
+              "trackColor": "#E8DCC8",
+              "fillColor": {
+                "$themeRef": "colors.primary"
+              },
+              "value": 20,
+              "max": 100,
+              "barHeight": "10px",
+              "barBorderRadius": {
+                "mode": "unified",
+                "radius": "9999px"
+              },
+              "barWidthMode": "fill"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "props.value": {
+                "mode": "variable",
+                "allowExternal": true,
+                "slotId": "progressValue",
+                "valueType": "number",
+                "fieldKind": "content",
+                "label": "升级进度值"
+              },
+              "props.max": {
+                "mode": "variable",
+                "allowExternal": true,
+                "slotId": "progressMax",
+                "valueType": "number",
+                "fieldKind": "content",
+                "label": "进度满槽值"
+              },
+              "props.fillColor": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
+          },
+          {
+            "id": "mv-benefits-grid",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "当前权益列表"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "padding": {
+                "mode": "unified",
+                "unified": "0"
+              },
+              "contentAlign": {
+                "vertical": "top",
+                "horizontal": "left"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "mv-benefit-cell-1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "权益格 1"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "repeat": {
+                  "mode": "collection",
+                  "slotId": "currentMemberBenefits",
+                  "prototypeChildIds": [
+                    "mv-benefit-cell-1"
+                  ],
+                  "fallbackChildIds": [
+                    "mv-benefit-cell-1"
+                  ],
+                  "itemFields": [
+                    {
+                      "key": "title",
+                      "label": "权益标题",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "subtitle",
+                      "label": "权益说明",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "iconSrc",
+                      "label": "图标地址",
+                      "valueType": "image",
+                      "required": true
+                    }
+                  ],
+                  "minItems": 5,
+                  "maxItems": 5,
+                  "label": "当前会员权益列表",
+                  "description": "VIP 卡内当前权益栅格，固定 5 项。"
+                },
+                "children": [
+                  {
+                    "id": "mv-benefit-cell-1-icon-wrap",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "权益图标底 1"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "0"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fixed",
+                      "width": "40px",
+                      "heightMode": "fixed",
+                      "height": "40px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": {
+                          "$themeRef": "tokens.radius.cta"
+                        }
+                      },
+                      "backgroundColor": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "padding": {
+                        "mode": "unified",
+                        "unified": "0"
+                      },
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      }
+                    },
+                    "bindings": {
+                      "wrapperStyle.borderRadius.radius": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.backgroundColor": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mv-benefit-cell-1-icon",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "权益图标 1"
+                        },
+                        "props": {
+                          "color": {
+                            "$themeRef": "colors.primary"
+                          },
+                          "size": "20px",
+                          "link": "",
+                          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          },
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          }
+                        },
+                        "bindings": {
+                          "props.src": {
+                            "slotId": "currentMemberBenefits",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.iconSrc"
+                          },
+                          "props.color": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "mv-benefit-cell-1-text-col",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "权益文案列 1"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "2px"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "fill",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "contentAlign": {
+                        "vertical": "top",
+                        "horizontal": "left"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mv-benefit-cell-1-title",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "权益标题 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Get points",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": {
+                            "$themeRef": "colors.primary"
+                          },
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "currentMemberBenefits",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.title"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "mv-benefit-cell-1-sub",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "权益说明 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Reward 888 points"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.caption"
+                          },
+                          "color": {
+                            "$themeRef": "colors.secondary"
+                          },
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "currentMemberBenefits",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.subtitle"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.caption",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.caption",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.secondary",
+                            "mode": "theme",
+                            "tokenPath": "colors.secondary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "mv-card-divider",
+            "type": "divider",
+            "blockMeta": {
+              "blockType": "separator.divider",
+              "name": "卡内分隔线"
+            },
+            "props": {
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "height": "1px",
+              "lineWidthMode": "fill"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-activate-intro",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "激活引导语"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Activate your membership now to receive the following benefits:"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "activateIntroText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "激活引导语"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-activate-grid",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "激活权益列表"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "padding": {
+                "mode": "unified",
+                "unified": "0"
+              },
+              "contentAlign": {
+                "vertical": "top",
+                "horizontal": "left"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "mv-activate-cell-1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "权益格 1"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "repeat": {
+                  "mode": "collection",
+                  "slotId": "activationBenefits",
+                  "prototypeChildIds": [
+                    "mv-activate-cell-1"
+                  ],
+                  "fallbackChildIds": [
+                    "mv-activate-cell-1"
+                  ],
+                  "itemFields": [
+                    {
+                      "key": "title",
+                      "label": "权益标题",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "subtitle",
+                      "label": "权益说明",
+                      "valueType": "string",
+                      "required": true
+                    },
+                    {
+                      "key": "iconSrc",
+                      "label": "图标地址",
+                      "valueType": "image",
+                      "required": true
+                    }
+                  ],
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "label": "激活后可享权益",
+                  "description": "激活区权益栅格，固定 2 项。"
+                },
+                "children": [
+                  {
+                    "id": "mv-activate-cell-1-icon-wrap",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "权益图标底 1"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "0"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fixed",
+                      "width": "40px",
+                      "heightMode": "fixed",
+                      "height": "40px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": {
+                          "$themeRef": "tokens.radius.cta"
+                        }
+                      },
+                      "backgroundColor": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "padding": {
+                        "mode": "unified",
+                        "unified": "0"
+                      },
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      }
+                    },
+                    "bindings": {
+                      "wrapperStyle.borderRadius.radius": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.backgroundColor": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mv-activate-cell-1-icon",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "权益图标 1"
+                        },
+                        "props": {
+                          "color": {
+                            "$themeRef": "colors.primary"
+                          },
+                          "size": "20px",
+                          "link": "",
+                          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.19.0/icons/outline/star.svg"
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          },
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          }
+                        },
+                        "bindings": {
+                          "props.src": {
+                            "slotId": "activationBenefits",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.iconSrc"
+                          },
+                          "props.color": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "mv-activate-cell-1-text-col",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "权益文案列 1"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "2px"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "fill",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "contentAlign": {
+                        "vertical": "top",
+                        "horizontal": "left"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "mv-activate-cell-1-title",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "权益标题 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Get points",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": {
+                            "$themeRef": "colors.primary"
+                          },
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "activationBenefits",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.title"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "mv-activate-cell-1-sub",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "权益说明 1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Reward 888 points"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.caption"
+                          },
+                          "color": {
+                            "$themeRef": "colors.secondary"
+                          },
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.textBody.paragraphs.0.runs.0.text": {
+                            "slotId": "activationBenefits",
+                            "mode": "variable",
+                            "valueType": "collection",
+                            "allowExternal": true,
+                            "fieldKind": "content",
+                            "slotPath": "0.subtitle"
+                          },
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.caption",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.caption",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.secondary",
+                            "mode": "theme",
+                            "tokenPath": "colors.secondary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "mv-cta-btn",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "激活主按钮"
+            },
+            "props": {
+              "text": "👉 I Agree and Activate My Benefits",
+              "link": "https://example.com/activate-membership",
+              "buttonStyle": {
+                "backgroundColor": {
+                  "$themeRef": "colors.surface"
+                },
+                "textColor": {
+                  "$themeRef": "colors.primary"
+                },
+                "fontSize": {
+                  "$themeRef": "tokens.typography.body"
+                },
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": {
+                    "$themeRef": "tokens.radius.cta"
+                  }
+                },
+                "bold": true,
+                "italic": false,
+                "widthMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "props.text": {
+                "slotId": "ctaButtonText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "激活按钮文案"
+              },
+              "props.link": {
+                "slotId": "ctaButtonUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "激活按钮链接"
+              },
+              "props.buttonStyle.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.radius": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.backgroundColor": {
+                "slotId": "colors.surface",
+                "mode": "theme",
+                "tokenPath": "colors.surface",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.textColor": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-disclaimer",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "权益免责声明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "*Actual membership benefits are as issued at the time of your activation."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "disclaimerText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "权益免责声明"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
       },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.text": {
-          "slotId": "storeName",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺名称"
+      {
+        "id": "mv-mod-account",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 账户说明"
         },
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "storeUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺链接"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "props.textBody.paragraphs.0.runs.3.text": {
-          "slotId": "supportEmail",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "客服邮箱"
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
         },
-        "props.textBody.paragraphs.0.runs.3.link": {
-          "slotId": "supportEmailMailto",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "客服邮箱 mailto 链接"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
         },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
+        "children": [
+          {
+            "id": "mv-account-para-1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "账户说明 1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
+                      },
+                      {
+                        "text": "Create an account",
+                        "link": "https://example.com/register",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "createAccountUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "注册账户链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-account-para-2",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "账户说明 2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "If you agree to join the membership during Checkout, we have created an account for you. "
+                      },
+                      {
+                        "text": "Reset password",
+                        "link": "https://example.com/reset-password",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "resetPasswordUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "重置密码链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "mv-account-para-3",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "联系说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+                      },
+                      {
+                        "text": "zyzshop1",
+                        "link": "https://example.com/store",
+                        "decoration": "underline"
+                      },
+                      {
+                        "text": " Team at "
+                      },
+                      {
+                        "text": "lintingting516@gmail.com",
+                        "link": "mailto:lintingting516@gmail.com",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.text": {
+                "slotId": "storeName",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺名称"
+              },
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "storeUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺链接"
+              },
+              "props.textBody.paragraphs.0.runs.3.text": {
+                "slotId": "supportEmail",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "客服邮箱"
+              },
+              "props.textBody.paragraphs.0.runs.3.link": {
+                "slotId": "supportEmailMailto",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "客服邮箱 mailto 链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
       }
-    },
-    "mv-root": {
-      "id": "mv-root",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "mv-mod-logo",
-        "mv-mod-hero",
-        "mv-mod-intro",
-        "mv-mod-vip-card",
-        "mv-mod-account"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "backgroundColor": "#ffffff",
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "props.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    }
+    ]
   }
 }

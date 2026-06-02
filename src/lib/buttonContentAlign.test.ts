@@ -6,7 +6,7 @@ import { validateTemplate } from "./validate";
 
 function buildButtonTemplate(wrapperStyle: Record<string, unknown>): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test",
     templateVersion: 1,
     rootBlockId: "root",

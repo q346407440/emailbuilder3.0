@@ -1,1613 +1,1554 @@
 {
-  "schemaVersion": "3.0.0",
+  "schemaVersion": "4.0.0",
   "emailId": "member_points_change",
   "templateId": "member_points_change",
   "templateVersion": 1,
   "locale": "en-US",
-  "rootBlockId": "pc-root",
-  "blockMeta": {
-    "pc-mod-logo": {
-      "blockType": "layout.container",
-      "name": "模块 · 店铺 Logo"
-    },
-    "pc-logo-row": {
-      "blockType": "layout.container",
-      "name": "Logo 居中行"
-    },
-    "pc-logo-img": {
-      "blockType": "content.image",
-      "name": "店铺 Logo"
-    },
-    "pc-mod-hero": {
-      "blockType": "layout.container",
-      "name": "模块 · 积分变动主视觉"
-    },
-    "pc-hero-img": {
-      "blockType": "content.image",
-      "name": "积分头图"
-    },
-    "pc-hero-title": {
-      "blockType": "content.text",
-      "name": "积分变动大标题"
-    },
-    "pc-hero-sub": {
-      "blockType": "content.text",
-      "name": "积分变动副标题"
-    },
-    "pc-mod-greeting": {
-      "blockType": "layout.container",
-      "name": "模块 · 问候语"
-    },
-    "pc-greeting-hi": {
-      "blockType": "content.text",
-      "name": "问候称呼"
-    },
-    "pc-greeting-body": {
-      "blockType": "content.text",
-      "name": "余额更新说明"
-    },
-    "pc-mod-points": {
-      "blockType": "layout.container",
-      "name": "模块 · 积分明细"
-    },
-    "pc-points-desc": {
-      "blockType": "content.text",
-      "name": "积分奖励说明"
-    },
-    "pc-points-box": {
-      "blockType": "layout.container",
-      "name": "积分数值高亮盒"
-    },
-    "pc-points-value": {
-      "blockType": "content.text",
-      "name": "积分数值"
-    },
-    "pc-points-expiry": {
-      "blockType": "content.text",
-      "name": "积分过期时间"
-    },
-    "pc-mod-account": {
-      "blockType": "layout.container",
-      "name": "模块 · 账户说明"
-    },
-    "pc-account-para-1": {
-      "blockType": "content.text",
-      "name": "账户说明 1"
-    },
-    "pc-account-para-2": {
-      "blockType": "content.text",
-      "name": "账户说明 2"
-    },
-    "pc-mod-footer": {
-      "blockType": "layout.container",
-      "name": "模块 · 页脚联系"
-    },
-    "pc-footer-contact": {
-      "blockType": "content.text",
-      "name": "联系说明"
-    },
-    "pc-root": {
+  "root": {
+    "id": "pc-root",
+    "type": "emailRoot",
+    "blockMeta": {
       "blockType": "layout.container",
       "name": "画布根节点"
-    }
-  },
-  "blocks": {
-    "pc-mod-logo": {
-      "id": "pc-mod-logo",
-      "type": "layout",
-      "parentId": "pc-root",
-      "children": [
-        "pc-logo-row"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": "#FFFFFF",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
+    },
+    "props": {
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
       },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
+      "backgroundColor": {
+        "$themeRef": "colors.surface"
       },
-      "bindings": {
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "bindings": {
+      "props.backgroundColor": {
+        "slotId": "colors.surface",
+        "mode": "theme",
+        "tokenPath": "colors.surface",
+        "fieldKind": "style"
       }
     },
-    "pc-logo-row": {
-      "id": "pc-logo-row",
-      "type": "layout",
-      "parentId": "pc-mod-logo",
-      "children": [
-        "pc-logo-img"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
+    "children": [
+      {
+        "id": "pc-mod-logo",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 店铺 Logo"
         },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {
-        "direction": "horizontal",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {}
-    },
-    "pc-logo-img": {
-      "id": "pc-logo-img",
-      "type": "image",
-      "parentId": "pc-logo-row",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fixed",
-        "width": "140px",
-        "heightMode": "fixed",
-        "height": "48px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundImage": {
-          "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
-          "alt": "Store logo",
-          "link": "",
-          "fit": "contain",
-          "position": "center",
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
           "borderRadius": {
             "mode": "unified",
             "radius": "0"
           },
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
+        },
+        "bindings": {
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "pc-logo-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "Logo 居中行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "children": [
+              {
+                "id": "pc-logo-img",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "店铺 Logo"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "140px",
+                  "heightMode": "fixed",
+                  "height": "48px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
+                    "alt": "Store logo",
+                    "link": "",
+                    "fit": "contain",
+                    "position": "center",
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    },
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    }
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "bindings": {
+                  "wrapperStyle.backgroundImage.src": {
+                    "slotId": "storeLogoSrc",
+                    "mode": "variable",
+                    "valueType": "image",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "店铺 Logo 地址"
+                  },
+                  "wrapperStyle.backgroundImage.alt": {
+                    "slotId": "storeLogoAlt",
+                    "mode": "variable",
+                    "valueType": "string",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "店铺 Logo 替代文字"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "pc-mod-hero",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 积分变动主视觉"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
           "border": {
             "mode": "unified",
             "width": "0",
             "style": "solid",
             "color": "rgba(0,0,0,0)"
-          }
-        },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {},
-      "bindings": {
-        "wrapperStyle.backgroundImage.src": {
-          "slotId": "storeLogoSrc",
-          "mode": "variable",
-          "valueType": "image",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺 Logo 地址"
-        },
-        "wrapperStyle.backgroundImage.alt": {
-          "slotId": "storeLogoAlt",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺 Logo 替代文字"
-        }
-      }
-    },
-    "pc-mod-hero": {
-      "id": "pc-mod-hero",
-      "type": "layout",
-      "parentId": "pc-root",
-      "children": [
-        "pc-hero-img",
-        "pc-hero-title",
-        "pc-hero-sub"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
           },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
-          }
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-hero-img": {
-      "id": "pc-hero-img",
-      "type": "image",
-      "parentId": "pc-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "fixed",
-        "height": "180px",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.panel"
-          }
-        },
-        "backgroundImage": {
-          "src": "https://images.pexels.com/photos/3943716/pexels-photo-3943716.jpeg?auto=compress&cs=tinysrgb&w=800",
-          "alt": "Points change",
-          "link": "",
-          "fit": "cover",
-          "position": "center",
           "borderRadius": {
             "mode": "unified",
-            "radius": {
-              "$themeRef": "tokens.radius.panel"
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
           },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
+        },
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "pc-hero-img",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "积分头图"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "180px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": {
+                  "$themeRef": "tokens.radius.panel"
+                }
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/3943716/pexels-photo-3943716.jpeg?auto=compress&cs=tinysrgb&w=800",
+                "alt": "Points change",
+                "link": "",
+                "fit": "cover",
+                "position": "center",
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": {
+                    "$themeRef": "tokens.radius.panel"
+                  }
+                },
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                }
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "bindings": {
+              "wrapperStyle.backgroundImage.src": {
+                "slotId": "heroPointsImageSrc",
+                "mode": "variable",
+                "valueType": "image",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "积分变动头图"
+              },
+              "wrapperStyle.backgroundImage.alt": {
+                "slotId": "heroPointsImageAlt",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "积分头图替代文字"
+              },
+              "wrapperStyle.borderRadius.radius": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.backgroundImage.borderRadius.radius": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "pc-hero-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "积分变动大标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "POINTS CHANGE",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.display"
+              },
+              "color": "#D35400",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "heroTitleText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "积分变动大标题"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.display",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.display",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "pc-hero-sub",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "积分变动副标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Your Points Have Changed, Please Check"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "heroSubtitle",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "积分变动副标题"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "pc-mod-greeting",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 问候语"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
           "border": {
             "mode": "unified",
             "width": "0",
             "style": "solid",
             "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        }
-      },
-      "props": {},
-      "bindings": {
-        "wrapperStyle.backgroundImage.src": {
-          "slotId": "heroPointsImageSrc",
-          "mode": "variable",
-          "valueType": "image",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分变动头图"
-        },
-        "wrapperStyle.backgroundImage.alt": {
-          "slotId": "heroPointsImageAlt",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分头图替代文字"
-        },
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.backgroundImage.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-hero-title": {
-      "id": "pc-hero-title",
-      "type": "text",
-      "parentId": "pc-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "POINTS CHANGE",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.display"
-        },
-        "color": "#D35400",
-        "bold": true,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "heroTitleText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分变动大标题"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.display",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.display",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-hero-sub": {
-      "id": "pc-hero-sub",
-      "type": "text",
-      "parentId": "pc-mod-hero",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Your Points Have Changed, Please Check"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "heroSubtitle",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分变动副标题"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-mod-greeting": {
-      "id": "pc-mod-greeting",
-      "type": "layout",
-      "parentId": "pc-root",
-      "children": [
-        "pc-greeting-hi",
-        "pc-greeting-body"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
           },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-greeting-hi": {
-      "id": "pc-greeting-hi",
-      "type": "text",
-      "parentId": "pc-mod-greeting",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Hi Member Name"
-                }
-              ]
+        "children": [
+          {
+            "id": "pc-greeting-hi",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "问候称呼"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Hi Member Name"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "greetingHiText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "问候称呼"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "greetingHiText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "问候称呼"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-greeting-body": {
-      "id": "pc-greeting-body",
-      "type": "text",
-      "parentId": "pc-mod-greeting",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Your points balance has been updated."
-                }
-              ]
+          },
+          {
+            "id": "pc-greeting-body",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "余额更新说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Your points balance has been updated."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "greetingBodyText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "余额更新说明"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
+          }
+        ]
       },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "greetingBodyText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "余额更新说明"
+      {
+        "id": "pc-mod-points",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 积分明细"
         },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-mod-points": {
-      "id": "pc-mod-points",
-      "type": "layout",
-      "parentId": "pc-root",
-      "children": [
-        "pc-points-desc",
-        "pc-points-box",
-        "pc-points-expiry"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-points-desc": {
-      "id": "pc-points-desc",
-      "type": "text",
-      "parentId": "pc-mod-points",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Bonus 888 points for joining the club:"
-                }
-              ]
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "pointsBonusDesc",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分奖励说明"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-points-box": {
-      "id": "pc-points-box",
-      "type": "layout",
-      "parentId": "pc-mod-points",
-      "children": [
-        "pc-points-value"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": {
-            "$themeRef": "tokens.radius.panel"
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
           }
         },
-        "backgroundColor": "#FFF0E0",
-        "padding": {
-          "mode": "separate",
-          "top": "14px",
-          "right": "24px",
-          "bottom": "14px",
-          "left": "24px"
-        },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "wrapperStyle.borderRadius.radius": {
-          "slotId": "tokens.radius.panel",
-          "mode": "theme",
-          "tokenPath": "tokens.radius.panel",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-points-value": {
-      "id": "pc-points-value",
-      "type": "text",
-      "parentId": "pc-points-box",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "points: "
-                },
-                {
-                  "text": "+888",
-                  "bold": true
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.h1"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.text": {
-          "slotId": "pointsChangeAmount",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分变动数值"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.h1",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.h1",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-points-expiry": {
-      "id": "pc-points-expiry",
-      "type": "text",
-      "parentId": "pc-mod-points",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "center",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "Expiry Date: 2026-12-31 23:59:59"
-                }
-              ]
-            }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.caption"
-        },
-        "color": {
-          "$themeRef": "colors.secondary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.0.text": {
-          "slotId": "pointsExpiryText",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "积分过期时间"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.caption",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.caption",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.secondary",
-          "mode": "theme",
-          "tokenPath": "colors.secondary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-mod-account": {
-      "id": "pc-mod-account",
-      "type": "layout",
-      "parentId": "pc-root",
-      "children": [
-        "pc-account-para-1",
-        "pc-account-para-2"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
           },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
           },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-account-para-1": {
-      "id": "pc-account-para-1",
-      "type": "text",
-      "parentId": "pc-mod-account",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
-                },
-                {
-                  "text": "Create an account",
-                  "link": "https://example.com/register",
-                  "decoration": "underline"
-                }
-              ]
+        "children": [
+          {
+            "id": "pc-points-desc",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "积分奖励说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Bonus 888 points for joining the club:"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "pointsBonusDesc",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "积分奖励说明"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
-      },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "createAccountUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "注册账户链接"
-        },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-account-para-2": {
-      "id": "pc-account-para-2",
-      "type": "text",
-      "parentId": "pc-mod-account",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "If you agree to join the membership during Checkout, we have created an account for you. "
-                },
-                {
-                  "text": "Reset password",
-                  "link": "https://example.com/reset-password",
-                  "decoration": "underline"
+          },
+          {
+            "id": "pc-points-box",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "积分数值高亮盒"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": {
+                  "$themeRef": "tokens.radius.panel"
                 }
-              ]
+              },
+              "backgroundColor": "#FFF0E0",
+              "padding": {
+                "mode": "separate",
+                "top": "14px",
+                "right": "24px",
+                "bottom": "14px",
+                "left": "24px"
+              },
+              "contentAlign": {
+                "vertical": "top",
+                "horizontal": "left"
+              }
+            },
+            "bindings": {
+              "wrapperStyle.borderRadius.radius": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "pc-points-value",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "积分数值"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "points: "
+                          },
+                          {
+                            "text": "+888",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": {
+                    "$themeRef": "colors.primary"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "bindings": {
+                  "props.textBody.paragraphs.0.runs.1.text": {
+                    "slotId": "pointsChangeAmount",
+                    "mode": "variable",
+                    "valueType": "string",
+                    "allowExternal": true,
+                    "fieldKind": "content",
+                    "label": "积分变动数值"
+                  },
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.primary",
+                    "mode": "theme",
+                    "tokenPath": "colors.primary",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "pc-points-expiry",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "积分过期时间"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Expiry Date: 2026-12-31 23:59:59"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.0.text": {
+                "slotId": "pointsExpiryText",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "积分过期时间"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
             }
-          ]
-        },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
-        },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
+          }
+        ]
       },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "resetPasswordUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "重置密码链接"
+      {
+        "id": "pc-mod-account",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 账户说明"
         },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-mod-footer": {
-      "id": "pc-mod-footer",
-      "type": "layout",
-      "parentId": "pc-root",
-      "children": [
-        "pc-footer-contact"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        },
-        "backgroundColor": "#F0E6D8",
-        "padding": {
-          "mode": "separate",
-          "top": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "right": {
-            "$themeRef": "tokens.spacing.pageInline"
-          },
-          "bottom": {
-            "$themeRef": "tokens.spacing.section"
-          },
-          "left": {
-            "$themeRef": "tokens.spacing.pageInline"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
           }
         },
-        "contentAlign": {
-          "vertical": "top",
-          "horizontal": "left"
-        }
-      },
-      "props": {
-        "direction": "vertical",
-        "gapMode": "fixed",
-        "gap": {
-          "$themeRef": "tokens.spacing.gap"
-        }
-      },
-      "bindings": {
-        "wrapperStyle.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.top": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.bottom": {
-          "slotId": "tokens.spacing.section",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.section",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.left": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "wrapperStyle.padding.right": {
-          "slotId": "tokens.spacing.pageInline",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.pageInline",
-          "fieldKind": "style"
-        },
-        "props.gap": {
-          "slotId": "tokens.spacing.gap",
-          "mode": "theme",
-          "tokenPath": "tokens.spacing.gap",
-          "fieldKind": "style"
-        }
-      }
-    },
-    "pc-footer-contact": {
-      "id": "pc-footer-contact",
-      "type": "text",
-      "parentId": "pc-mod-footer",
-      "children": [],
-      "wrapperStyle": {
-        "contentAlign": {
-          "horizontal": "left",
-          "vertical": "top"
-        },
-        "widthMode": "fill",
-        "heightMode": "hug",
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "borderRadius": {
-          "mode": "unified",
-          "radius": "0"
-        }
-      },
-      "props": {
-        "textBody": {
-          "paragraphs": [
-            {
-              "runs": [
-                {
-                  "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
-                },
-                {
-                  "text": "zyzshop1",
-                  "link": "https://example.com/store",
-                  "decoration": "underline"
-                },
-                {
-                  "text": " Team at "
-                },
-                {
-                  "text": "lintingting516@gmail.com",
-                  "link": "mailto:lintingting516@gmail.com",
-                  "decoration": "underline"
-                }
-              ]
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": {
+            "$themeRef": "colors.surface"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
             }
-          ]
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
         },
-        "fontSize": {
-          "$themeRef": "tokens.typography.body"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
         },
-        "color": {
-          "$themeRef": "colors.primary"
-        },
-        "bold": false,
-        "italic": false,
-        "decoration": "none"
+        "children": [
+          {
+            "id": "pc-account-para-1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "账户说明 1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "You need to log into your store account to enjoy member services and savings. I don't have an account. "
+                      },
+                      {
+                        "text": "Create an account",
+                        "link": "https://example.com/register",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "createAccountUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "注册账户链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "pc-account-para-2",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "账户说明 2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "If you agree to join the membership during Checkout, we have created an account for you. "
+                      },
+                      {
+                        "text": "Reset password",
+                        "link": "https://example.com/reset-password",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "resetPasswordUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "重置密码链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
       },
-      "bindings": {
-        "props.textBody.paragraphs.0.runs.1.text": {
-          "slotId": "storeName",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺名称"
+      {
+        "id": "pc-mod-footer",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "模块 · 页脚联系"
         },
-        "props.textBody.paragraphs.0.runs.1.link": {
-          "slotId": "storeUrl",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "店铺链接"
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
         },
-        "props.textBody.paragraphs.0.runs.3.text": {
-          "slotId": "supportEmail",
-          "mode": "variable",
-          "valueType": "string",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "客服邮箱"
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": "#F0E6D8",
+          "padding": {
+            "mode": "separate",
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          },
+          "contentAlign": {
+            "vertical": "top",
+            "horizontal": "left"
+          }
         },
-        "props.textBody.paragraphs.0.runs.3.link": {
-          "slotId": "supportEmailMailto",
-          "mode": "variable",
-          "valueType": "url",
-          "allowExternal": true,
-          "fieldKind": "content",
-          "label": "客服邮箱 mailto 链接"
+        "bindings": {
+          "wrapperStyle.backgroundColor": {
+            "slotId": "colors.surface",
+            "mode": "theme",
+            "tokenPath": "colors.surface",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          }
         },
-        "props.fontSize": {
-          "slotId": "tokens.typography.body",
-          "mode": "theme",
-          "tokenPath": "tokens.typography.body",
-          "fieldKind": "style"
-        },
-        "props.color": {
-          "slotId": "colors.primary",
-          "mode": "theme",
-          "tokenPath": "colors.primary",
-          "fieldKind": "style"
-        }
+        "children": [
+          {
+            "id": "pc-footer-contact",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "联系说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "We are committed to making your experience enjoyable. For questions or feedback, please contact the "
+                      },
+                      {
+                        "text": "zyzshop1",
+                        "link": "https://example.com/store",
+                        "decoration": "underline"
+                      },
+                      {
+                        "text": " Team at "
+                      },
+                      {
+                        "text": "lintingting516@gmail.com",
+                        "link": "mailto:lintingting516@gmail.com",
+                        "decoration": "underline"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "bindings": {
+              "props.textBody.paragraphs.0.runs.1.text": {
+                "slotId": "storeName",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺名称"
+              },
+              "props.textBody.paragraphs.0.runs.1.link": {
+                "slotId": "storeUrl",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "店铺链接"
+              },
+              "props.textBody.paragraphs.0.runs.3.text": {
+                "slotId": "supportEmail",
+                "mode": "variable",
+                "valueType": "string",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "客服邮箱"
+              },
+              "props.textBody.paragraphs.0.runs.3.link": {
+                "slotId": "supportEmailMailto",
+                "mode": "variable",
+                "valueType": "url",
+                "allowExternal": true,
+                "fieldKind": "content",
+                "label": "客服邮箱 mailto 链接"
+              },
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
       }
-    },
-    "pc-root": {
-      "id": "pc-root",
-      "type": "emailRoot",
-      "parentId": null,
-      "children": [
-        "pc-mod-logo",
-        "pc-mod-hero",
-        "pc-mod-greeting",
-        "pc-mod-points",
-        "pc-mod-account",
-        "pc-mod-footer"
-      ],
-      "wrapperStyle": {
-        "widthMode": "fill",
-        "heightMode": "hug"
-      },
-      "props": {
-        "border": {
-          "mode": "unified",
-          "width": "0",
-          "style": "solid",
-          "color": "rgba(0,0,0,0)"
-        },
-        "backgroundColor": {
-          "$themeRef": "colors.surface"
-        },
-        "width": "600px",
-        "padding": {
-          "mode": "unified",
-          "unified": "0"
-        },
-        "gapMode": "fixed",
-        "gap": "0"
-      },
-      "bindings": {
-        "props.backgroundColor": {
-          "slotId": "colors.surface",
-          "mode": "theme",
-          "tokenPath": "colors.surface",
-          "fieldKind": "style"
-        }
-      }
-    }
+    ]
   }
 }

@@ -1,4 +1,6 @@
 import type { EmailListItem, EmailMeta, EmailPayload, EmailTemplate } from "../types/email";
+import type { NestedEmailTemplate } from "../template-disk-contract";
+import { nestedToEditorGraph, editorGraphToNested } from "../lib/templateTreeAdapter";
 import type { TokenPresets } from "../types/tokenPreset";
 import type { ProjectIconManifest } from "../types/iconAsset";
 import type { LayoutManifest } from "../layout-variant-contract/types";
@@ -100,13 +102,6 @@ export type GlobalTokenPresetListItem = {
   presetId: string;
   name?: string;
   tokenPresets: TokenPresets;
-};
-
-export type MasterListItem = {
-  masterId: string;
-  name?: string;
-  version?: string;
-  master: Record<string, unknown>;
 };
 
 function parseEmailListChangedEvent(raw: string): EmailListChangedEvent {
@@ -361,7 +356,19 @@ export async function getTemplate(
     apiUrl(`/emails/${encodeURIComponent(emailKey)}/template${layoutQuery(layoutVariantId)}`)
   );
   if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
-  return r.json() as Promise<EmailTemplate>;
+  const nested = (await r.json()) as NestedEmailTemplate;
+  return nestedToEditorGraph(nested);
+}
+
+export async function getTemplateNested(
+  emailKey: string,
+  layoutVariantId?: string | null
+): Promise<NestedEmailTemplate> {
+  const r = await fetchApi(
+    apiUrl(`/emails/${encodeURIComponent(emailKey)}/template${layoutQuery(layoutVariantId)}`)
+  );
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<NestedEmailTemplate>;
 }
 
 export async function getPayload(emailKey: string): Promise<EmailPayload | null> {
@@ -425,43 +432,16 @@ export async function putGlobalTokenPreset(presetId: string, body: TokenPresets)
   }
 }
 
-export async function listMasters(kind: "sections" | "blocks"): Promise<{ items: MasterListItem[] }> {
-  const r = await fetchApi(apiUrl(`/masters/${kind}`));
-  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
-  return r.json() as Promise<{ items: MasterListItem[] }>;
-}
-
-export async function getMaster(kind: "sections" | "blocks", masterId: string): Promise<Record<string, unknown>> {
-  const r = await fetchApi(apiUrl(`/masters/${kind}/${encodeURIComponent(masterId)}`));
-  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
-  return r.json() as Promise<Record<string, unknown>>;
-}
-
-export async function putMaster(
-  kind: "sections" | "blocks",
-  masterId: string,
-  body: Record<string, unknown>
-): Promise<void> {
-  const r = await fetchApi(apiUrl(`/masters/${kind}/${encodeURIComponent(masterId)}`), {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error(await errorMessageFromResponse(r, t));
-  }
-}
-
 export async function putTemplate(
   emailKey: string,
   body: EmailTemplate,
   layoutVariantId?: string | null
 ): Promise<void> {
+  const nested = editorGraphToNested(body);
   const r = await fetchApi(apiUrl(`/emails/${encodeURIComponent(emailKey)}/template${layoutQuery(layoutVariantId)}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(nested),
   });
   if (!r.ok) {
     const t = await r.text();

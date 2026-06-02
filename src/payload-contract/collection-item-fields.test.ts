@@ -92,7 +92,9 @@ describe("collection itemFields 契约", () => {
 
       const deep: BindingCollectionField[] = [
         {
-          ...nestedSkus(),
+          key: "skus",
+          label: "SKU",
+          valueType: "collection",
           itemFields: [
             {
               key: "childList",

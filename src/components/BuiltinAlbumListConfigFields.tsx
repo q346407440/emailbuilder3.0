@@ -27,6 +27,7 @@ export function BuiltinAlbumListConfigFields({ config, disabled, onChange }: Pro
         </p>
         <ShopSecondaryButton
           htmlType="button"
+          className="builtin-product-list-config__action"
           disabled={disabled}
           onClick={() => setPickerOpen(true)}
         >

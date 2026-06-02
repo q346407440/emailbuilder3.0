@@ -1,9 +1,11 @@
 import type { BuiltinProductListConfig } from "../payload-contract/collection-builtin-catalog-config";
-import { builtinProductRowGranularityLabel, normalizeBuiltinProductListConfig } from "../payload-contract/collection-builtin-catalog-config";
+import {
+  isSpuOnlyBuiltinProductSelection,
+  normalizeBuiltinProductListConfig,
+} from "../payload-contract/collection-builtin-catalog-config";
 import { BUILTIN_ALBUMS_MOCK } from "./builtinCollectionCatalog";
 import { BUILTIN_MOCK_COLLECTIONS } from "./builtinMockCollections";
 import type { BuiltinProductMock } from "./builtinProductMockTypes";
-import { BUILTIN_PRODUCTS_MOCK_RAW } from "./builtinProductsMockData";
 
 export type BuiltinProductPickerTab = "spu" | "sku" | "collection" | "allProducts";
 
@@ -13,8 +15,23 @@ export function productPickerTabFromConfig(
   const c = normalizeBuiltinProductListConfig(config);
   if (c.rangeMode === "allProducts") return "allProducts";
   if (c.rangeMode === "byCollection") return "collection";
-  if (c.rowGranularity === "sku") return "sku";
+  if (!isSpuOnlyBuiltinProductSelection(c) && (c.skuSelection?.length ?? 0) > 0) return "sku";
   return "spu";
+}
+
+export function builtinProductPickerTabsForConfig(
+  config: BuiltinProductListConfig
+): ReadonlyArray<{ id: BuiltinProductPickerTab; label: string }> {
+  const all: ReadonlyArray<{ id: BuiltinProductPickerTab; label: string }> = [
+    { id: "spu", label: "指定商品" },
+    { id: "sku", label: "按 SKU" },
+    { id: "collection", label: "按专辑" },
+    { id: "allProducts", label: "全部商品" },
+  ];
+  if (isSpuOnlyBuiltinProductSelection(config)) {
+    return all.filter((t) => t.id !== "sku");
+  }
+  return all;
 }
 
 export function spuInventoryTotal(product: BuiltinProductMock): number {
@@ -64,19 +81,21 @@ export function summarizeBuiltinProductListConfig(
 ): string {
   const c = normalizeBuiltinProductListConfig(config);
   if (c.rangeMode === "allProducts") {
-    return `全部商品 · ${builtinProductRowGranularityLabel(c.rowGranularity)}`;
+    return "全部商品";
   }
   if (c.rangeMode === "byCollection") {
     const id = c.selectedCollectionIds?.[0];
     const title = BUILTIN_MOCK_COLLECTIONS.find((x) => x.id === id)?.title ?? "未选专辑";
-    return `专辑「${title}」内商品 · ${builtinProductRowGranularityLabel(c.rowGranularity)}`;
+    return `专辑「${title}」内商品`;
   }
-  if (c.rowGranularity === "sku") {
-    const n = c.skuSelection?.length ?? 0;
-    return n > 0 ? `已选 ${n} 个规格（SKU）` : "未选择规格";
+  if (!isSpuOnlyBuiltinProductSelection(c)) {
+    const skuCount = c.skuSelection?.length ?? 0;
+    if (skuCount > 0) {
+      return `已选 ${skuCount} 个规格（${c.selectedSpuIds?.length ?? 0} 件商品）`;
+    }
   }
   const n = c.selectedSpuIds?.length ?? 0;
-  return n > 0 ? `已选 ${n} 件商品（SPU）` : "未选择商品";
+  return n > 0 ? `已选 ${n} 件商品` : "未选择商品";
 }
 
 export function summarizeBuiltinAlbumListSelection(selectedAlbumIds: string[]): string {

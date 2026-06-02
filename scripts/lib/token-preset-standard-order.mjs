@@ -1,5 +1,5 @@
 /**
- * 与 src/lib/tokenPresetStandardOrder.ts 保持同一套标准键序（供 .mjs 脚本使用）。
+ * 与 src/token-preset-contract/standard-keys.ts 保持同一套标准键序（供 .mjs 脚本使用）。
  */
 
 export const TOKEN_PRESET_FAMILY_ORDER = [

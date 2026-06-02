@@ -2,15 +2,48 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import type { EmailPayload, EmailTemplate, TextBody } from "../types/email";
-import { mergeTemplatePayload } from "./merge";
 import {
   applyRepeatRegionBinding,
-  expandRepeatRegions,
   isDescendantOfBlock,
   isRepeatListBindingChildBlock,
   removeRepeatRegionBinding,
-  resolveRepeatContextForBlock,
+  resolveRepeatUnbindSelectionBlockId,
 } from "./repeatRegion";
+import {
+  buildRepeatPreviewModel,
+  previewModelToFlatTemplate,
+  refToStableKey,
+  resolveRepeatContextForRef,
+} from "../repeat-runtime";
+import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
+import type { PreviewBlockNode } from "../repeat-binding-contract";
+import { parseTemplateFromDisk } from "./templateTreeAdapter";
+
+function collectPreviewNodes(
+  model: RepeatPreviewModel,
+  predicate: (ref: VirtualBlockRef) => boolean
+): PreviewBlockNode[] {
+  const out: PreviewBlockNode[] = [];
+  const walk = (node: PreviewBlockNode) => {
+    if (predicate(node.ref)) out.push(node);
+    node.children.forEach(walk);
+  };
+  walk(model.root);
+  return out;
+}
+
+function blockFirstRunFromFlat(flat: EmailTemplate, blockKey: string): string {
+  const block = flat.blocks[blockKey];
+  if (!block || block.type !== "text") return "";
+  return firstRunText(block.props);
+}
+
+function titleTextFromPreviewCard(flat: EmailTemplate, cardNode: PreviewBlockNode): string {
+  const cardKey = cardNode.block.id;
+  const card = flat.blocks[cardKey];
+  const titleKey = card?.children?.[1];
+  return titleKey ? blockFirstRunFromFlat(flat, titleKey) : "";
+}
 
 const TEXT_RUN_BIND = "props.textBody.paragraphs.0.runs.0.text";
 
@@ -26,7 +59,7 @@ function blockFirstRunText(template: EmailTemplate, blockId: string): string {
 
 function templateWithRepeatPrototype(): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "repeat-test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -130,19 +163,17 @@ describe("repeatRegion", () => {
       values: { products: [{ title: "第一件" }, { title: "第二件" }] },
     };
 
-    const expanded = expandRepeatRegions(template, payload);
-    const merged = mergeTemplatePayload(expanded, payload);
-    const list = merged.blocks.list;
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    const list = flat.blocks[listKey]!;
 
-    assert.deepEqual(list.children, [
-      "row__repeatClone__list_0",
-      "row__repeatClone__list_1",
-    ]);
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "第一件");
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "第二件");
+    assert.equal(list.children?.length, 2);
+    assert.equal(blockFirstRunFromFlat(flat, list.children![0]!), "第一件");
+    assert.equal(blockFirstRunFromFlat(flat, list.children![1]!), "第二件");
   });
 
-  it("repeat 展开前按 payload.slots.displayRule 过滤列表项", () => {
+  it("repeat 展开前按 payload.slots.itemVisibility 过滤列表项", () => {
     const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
       slotId: "products",
       prototypeChildIds: ["row"],
@@ -163,7 +194,7 @@ describe("repeatRegion", () => {
             { key: "type", label: "类型", valueType: "string" },
             { key: "title", label: "商品名称", valueType: "string" },
           ],
-          displayRule: { keyField: "type", includeValues: ["A", "C"] },
+          itemVisibility: [true, false, true],
         },
       },
       values: {
@@ -175,12 +206,13 @@ describe("repeatRegion", () => {
       },
     };
 
-    const expanded = expandRepeatRegions(template, payload);
-    assert.deepEqual(expanded.blocks.list.children, ["row__repeatClone__list_0", "row__repeatClone__list_1"]);
-
-    const merged = mergeTemplatePayload(expanded, payload);
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "第一件");
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "第三件");
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    assert.equal(flat.blocks[listKey]?.children?.length, 2);
+    const children = flat.blocks[listKey]!.children!;
+    assert.equal(blockFirstRunFromFlat(flat, children[0]!), "第一件");
+    assert.equal(blockFirstRunFromFlat(flat, children[1]!), "第三件");
   });
 
   it("payload 数组为空时不渲染占位子项，解除后恢复静态 children", () => {
@@ -192,8 +224,10 @@ describe("repeatRegion", () => {
     });
     const payload: EmailPayload = { schemaVersion: "1.0.0", slots: {}, values: { products: [] } };
 
-    const expanded = expandRepeatRegions(template, payload);
-    assert.deepEqual(expanded.blocks.list.children, []);
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    assert.deepEqual(flat.blocks[listKey]?.children ?? [], []);
 
     const restored = removeRepeatRegionBinding(template, "list", payload);
     assert.deepEqual(restored.blocks.list.children, ["fallback"]);
@@ -218,19 +252,135 @@ describe("repeatRegion", () => {
     const list = restored.blocks.list;
 
     assert.equal(list.repeat, undefined);
-    assert.deepEqual(list.children, ["row-1", "row-2", "row-3"]);
+    assert.deepEqual(list.children, ["row", "row-2", "row-3"]);
     assert.equal(
-      restored.blocks["row-1"].bindings?.["props.textBody.paragraphs.0.runs.0.text"]?.slotPath,
-      "0.title"
+      restored.blocks.row.bindings?.["props.textBody.paragraphs.0.runs.0.text"],
+      undefined
     );
     assert.equal(
-      restored.blocks["row-2"].bindings?.["props.textBody.paragraphs.0.runs.0.text"]?.slotPath,
-      "1.title"
+      restored.blocks["row-2"].bindings?.["props.textBody.paragraphs.0.runs.0.text"],
+      undefined
     );
-    assert.equal(blockFirstRunText(restored, "row-1"), "第一件");
+    assert.equal(blockFirstRunText(restored, "row"), "第一件");
     assert.equal(blockFirstRunText(restored, "row-2"), "第二件");
-    assert.equal(restored.blocks.row, undefined);
+    assert.equal(restored.blocks["row-1"], undefined);
     assert.equal(restored.blocks.fallback, undefined);
+  });
+
+  it("解除列表绑定时可选择只保留行模板", () => {
+    const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
+      slotId: "products",
+      prototypeChildIds: ["row"],
+      fallbackChildIds: ["fallback"],
+      itemFields: [{ key: "title", label: "商品名称", valueType: "string" }],
+      fieldMappings: [
+        {
+          id: "title-to-row-content",
+          sourcePath: "title",
+          targetBlockId: "row",
+          targetBindPath: "props.textBody.paragraphs.0.runs.0.text",
+          label: "商品名称",
+          valueType: "string",
+        },
+      ],
+    });
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
+      slots: {},
+      values: { products: [{ title: "第一件" }, { title: "第二件" }] },
+    };
+
+    const restored = removeRepeatRegionBinding(template, "list", payload, {
+      mode: "keepPrototypeOnly",
+    });
+    const list = restored.blocks.list;
+
+    assert.equal(list.repeat, undefined);
+    assert.deepEqual(list.children, ["row"]);
+    assert.equal(
+      restored.blocks.row.bindings?.["props.textBody.paragraphs.0.runs.0.text"],
+      undefined
+    );
+    assert.equal(restored.blocks["row-1"], undefined);
+    assert.equal(restored.blocks["row-2"], undefined);
+  });
+
+  it("self-repeat 解除绑定时可物化为多行或仅保留行模板", () => {
+    const base = templateWithRepeatPrototype();
+    const template: EmailTemplate = {
+      ...base,
+      blocks: {
+        ...base.blocks,
+        rowShell: {
+          id: "rowShell",
+          type: "layout",
+          parentId: "list",
+          children: ["row"],
+          wrapperStyle: {
+            widthMode: "fill",
+            heightMode: "hug",
+            contentAlign: { horizontal: "left", vertical: "top" },
+          },
+          props: { direction: "vertical", gapMode: "fixed", gap: "0" },
+        },
+        row: { ...base.blocks.row, parentId: "rowShell" },
+        list: { ...base.blocks.list, children: ["rowShell"] },
+      },
+      blockMeta: {
+        ...base.blockMeta,
+        rowShell: { blockType: "layout.container", name: "商品行" },
+      },
+    };
+    const bound = applyRepeatRegionBinding(template, "rowShell", {
+      slotId: "products",
+      prototypeChildIds: ["rowShell"],
+      fallbackChildIds: ["rowShell"],
+      itemFields: [{ key: "title", label: "商品名称", valueType: "string" }],
+    });
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
+      slots: {},
+      values: { products: [{ title: "第一件" }, { title: "第二件" }] },
+    };
+
+    const materialized = removeRepeatRegionBinding(bound, "rowShell", payload, {
+      mode: "materializeRows",
+    });
+    // self-repeat 物化：item0 复用原型 id（rowShell）且去掉 repeat，item1 为 rowShell-2；
+    // 两者都须真实存在，list.children 不得出现悬空引用。
+    assert.ok(materialized.blocks.rowShell);
+    assert.equal(materialized.blocks.rowShell.repeat, undefined);
+    assert.ok(materialized.blocks["rowShell-2"]);
+    assert.deepEqual(materialized.blocks.list.children, ["rowShell", "rowShell-2"]);
+
+    const prototypeOnly = removeRepeatRegionBinding(bound, "rowShell", payload, {
+      mode: "keepPrototypeOnly",
+    });
+    assert.equal(prototypeOnly.blocks.rowShell.repeat, undefined);
+    assert.deepEqual(prototypeOnly.blocks.list.children, ["rowShell"]);
+  });
+
+  it("解除列表绑定后选中区块应回到行模板原型", () => {
+    const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
+      slotId: "products",
+      prototypeChildIds: ["row"],
+      fallbackChildIds: ["fallback"],
+      itemFields: [{ key: "title", label: "商品名称", valueType: "string" }],
+    });
+    const payload: EmailPayload = {
+      schemaVersion: "1.0.0",
+      slots: {},
+      values: { products: [{ title: "第一件" }, { title: "第二件" }] },
+    };
+    const materialized = removeRepeatRegionBinding(template, "list", payload, {
+      mode: "materializeRows",
+    });
+    assert.equal(resolveRepeatUnbindSelectionBlockId(template, materialized, "list"), "row");
+
+    const prototypeOnly = removeRepeatRegionBinding(template, "list", payload, {
+      mode: "keepPrototypeOnly",
+    });
+    assert.equal(resolveRepeatUnbindSelectionBlockId(template, prototypeOnly, "list"), "row");
   });
 
   it("允许把任意叶子 block 作为父容器的重复原型", () => {
@@ -246,13 +396,10 @@ describe("repeatRegion", () => {
       values: { products: [{ title: "文本一" }, { title: "文本二" }, { title: "文本三" }] },
     };
 
-    const expanded = expandRepeatRegions(template, payload);
-
-    assert.deepEqual(expanded.blocks.list.children, [
-      "row__repeatClone__list_0",
-      "row__repeatClone__list_1",
-      "row__repeatClone__list_2",
-    ]);
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    assert.equal(flat.blocks[listKey]?.children?.length, 3);
   });
 
   it("禁止把 emailRoot 作为重复宿主", () => {
@@ -289,11 +436,12 @@ describe("repeatRegion", () => {
       values: { products: [{ title: "映射一" }, { title: "映射二" }] },
     };
 
-    const expanded = expandRepeatRegions(template, payload);
-    const merged = mergeTemplatePayload(expanded, payload);
-
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "映射一");
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "映射二");
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    const children = flat.blocks[listKey]!.children!;
+    assert.equal(blockFirstRunFromFlat(flat, children[0]!), "映射一");
+    assert.equal(blockFirstRunFromFlat(flat, children[1]!), "映射二");
   });
 
   it("fieldMappings 优先于原型字段上已有的普通变量绑定", () => {
@@ -331,10 +479,13 @@ describe("repeatRegion", () => {
       },
     };
 
-    const merged = mergeTemplatePayload(expandRepeatRegions(template, payload), payload);
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    const children = flat.blocks[listKey]!.children!;
 
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "第一项");
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "第二项");
+    assert.equal(blockFirstRunFromFlat(flat, children[0]!), "第一项");
+    assert.equal(blockFirstRunFromFlat(flat, children[1]!), "第二项");
     assert.equal(
       template.blocks.row.bindings?.["props.textBody.paragraphs.0.runs.0.text"]?.slotId,
       "globalTitle"
@@ -367,36 +518,42 @@ describe("repeatRegion", () => {
       },
     };
 
-    const merged = mergeTemplatePayload(expandRepeatRegions(template, payload), payload);
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    const children = flat.blocks[listKey]!.children!;
 
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_0"), "全局同名");
-    assert.equal(blockFirstRunText(merged, "row__repeatClone__list_1"), "全局同名");
+    assert.equal(blockFirstRunFromFlat(flat, children[0]!), "全局同名");
+    assert.equal(blockFirstRunFromFlat(flat, children[1]!), "全局同名");
   });
 
-  it("resolveRepeatContextForBlock：宿主自身为 host", () => {
+  it("resolveRepeatContextForRef：宿主自身为 host", () => {
     const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
       slotId: "products",
       prototypeChildIds: ["row"],
       itemFields: [{ key: "title", label: "商品名称", valueType: "string" }],
     });
-    const ctx = resolveRepeatContextForBlock(template, "list");
+    const ctx = resolveRepeatContextForRef(template, { kind: "physical", blockId: "list" });
     assert.ok(ctx);
     assert.equal(ctx!.hostId, "list");
     assert.equal(ctx!.relation, "host");
   });
 
-  it("resolveRepeatContextForBlock：行模板内子孙为 row-template", () => {
+  it("resolveRepeatContextForRef：行模板内子孙为 row-template", () => {
     const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
       slotId: "products",
       prototypeChildIds: ["row"],
       itemFields: [{ key: "title", label: "商品名称", valueType: "string" }],
     });
-    assert.equal(resolveRepeatContextForBlock(template, "row")?.relation, "row-template");
+    assert.equal(
+      resolveRepeatContextForRef(template, { kind: "physical", blockId: "row" })?.relation,
+      "row-template"
+    );
     assert.ok(isDescendantOfBlock(template, "row", "list"));
     assert.ok(isDescendantOfBlock(template, "row", "row"));
   });
 
-  it("resolveRepeatContextForBlock：有 fieldMappings 的区块为 mapped-field", () => {
+  it("resolveRepeatContextForRef：有 fieldMappings 的区块为 mapped-field", () => {
     const template = applyRepeatRegionBinding(templateWithRepeatPrototype(), "list", {
       slotId: "products",
       prototypeChildIds: ["row"],
@@ -410,14 +567,17 @@ describe("repeatRegion", () => {
         },
       ],
     });
-    const ctx = resolveRepeatContextForBlock(template, "row");
+    const ctx = resolveRepeatContextForRef(template, { kind: "physical", blockId: "row" });
     assert.equal(ctx?.relation, "mapped-field");
     assert.equal(ctx?.fieldMappingsOnBlock.length, 1);
   });
 
-  it("resolveRepeatContextForBlock：不在 repeat 行模板内返回 null", () => {
+  it("resolveRepeatContextForRef：不在 repeat 行模板内返回 null", () => {
     const template = templateWithRepeatPrototype();
-    assert.equal(resolveRepeatContextForBlock(template, "fallback"), null);
+    assert.equal(
+      resolveRepeatContextForRef(template, { kind: "physical", blockId: "fallback" }),
+      null
+    );
   });
 
   it("isRepeatListBindingChildBlock：宿主可操作、行模板与 fallback 子树隐藏画布操作", () => {
@@ -448,7 +608,6 @@ describe("repeatRegion", () => {
         widthMode: "fill",
         heightMode: "hug",
         contentAlign: { horizontal: "left", vertical: "top" },
-        contentAlign: { horizontal: "left", vertical: "top" },
       },
       props: {
         textBody: { paragraphs: [{ runs: [{ text: "标题" }] }] },
@@ -473,20 +632,22 @@ describe("repeatRegion", () => {
       values: { products: [{ title: "第一件" }, { title: "第二件" }] },
     };
 
-    const expanded = expandRepeatRegions(bound, payload);
-    assert.deepEqual(expanded.blocks.list.children, [
-      "heading",
-      "row__repeatClone__list_0",
-      "row__repeatClone__list_1",
-    ]);
-    assert.ok(expanded.blocks.heading);
+    const model = buildRepeatPreviewModel(bound, payload);
+    const flat = previewModelToFlatTemplate(model, bound);
+    const listKey = refToStableKey({ kind: "physical", blockId: "list" });
+    const children = flat.blocks[listKey]!.children ?? [];
+    assert.equal(children.length, 3);
+    assert.equal(children[0], refToStableKey({ kind: "physical", blockId: "heading" }));
 
-    const empty = expandRepeatRegions(bound, {
+    const emptyModel = buildRepeatPreviewModel(bound, {
       schemaVersion: "1.0.0",
       slots: {},
       values: { products: [] },
     });
-    assert.deepEqual(empty.blocks.list.children, ["heading"]);
+    const emptyFlat = previewModelToFlatTemplate(emptyModel, bound);
+    assert.deepEqual(emptyFlat.blocks[listKey]?.children ?? [], [
+      refToStableKey({ kind: "physical", blockId: "heading" }),
+    ]);
   });
 
   it("解除绑定时在静态标题与物化行之间保持顺序", () => {
@@ -500,7 +661,6 @@ describe("repeatRegion", () => {
       wrapperStyle: {
         widthMode: "fill",
         heightMode: "hug",
-        contentAlign: { horizontal: "left", vertical: "top" },
         contentAlign: { horizontal: "left", vertical: "top" },
       },
       props: {
@@ -527,38 +687,31 @@ describe("repeatRegion", () => {
     };
 
     const restored = removeRepeatRegionBinding(bound, "list", payload);
-    assert.deepEqual(restored.blocks.list.children, ["heading", "row-1", "row-2"]);
+    assert.deepEqual(restored.blocks.list.children, ["heading", "row", "row-2"]);
   });
 
-  it("嵌套 repeat：双列表主推区 SKU 条展开 5 项且无重复克隆 id", () => {
-    const template = JSON.parse(
-      readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
-    ) as EmailTemplate;
+  it("嵌套 repeat：双列表主推区 SKU 条展开 5 项", () => {
+    const template = parseTemplateFromDisk(
+      JSON.parse(
+        readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
+      )
+    );
     const payload = JSON.parse(
       readFileSync("data/emails/referral-friend-joined/payload.json", "utf8")
     ) as EmailPayload;
 
-    const expanded = expandRepeatRegions(template, payload);
-    const stripId = Object.keys(expanded.blocks).find(
-      (id) =>
-        id.includes("rfj-picked-spotlight-sku-strip__repeatClone") &&
-        id.includes("rfj-picked-spotlight_0") &&
-        id.endsWith("_0_0")
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const stripCards = collectPreviewNodes(
+      model,
+      (ref) =>
+        ref.kind === "repeat-item" &&
+        ref.hostId === "rfj-picked-spotlight-sku-1" &&
+        ref.prototypeRootId === "rfj-picked-spotlight-sku-1" &&
+        ref.contextStack.find((c) => c.slotId === "pickedSpotlightProduct")?.itemIndex === 0
     );
-    assert.ok(stripId);
-    const skuChildren = expanded.blocks[stripId!].children ?? [];
-    assert.equal(skuChildren.length, 5);
-    assert.equal(new Set(skuChildren).size, 5);
-
-    const merged = mergeTemplatePayload(expanded, payload);
-    const titles = skuChildren.map((cardId) => {
-      const titleId = merged.blocks[cardId].children[1];
-      return blockFirstRunText(merged, titleId);
-    });
-    const imageSrcs = skuChildren.map((cardId) => {
-      const imgId = merged.blocks[cardId].children[0];
-      return merged.blocks[imgId].wrapperStyle?.backgroundImage?.src;
-    });
+    assert.equal(stripCards.length, 5);
+    const titles = stripCards.map((node) => titleTextFromPreviewCard(flat, node));
     assert.deepEqual(titles, [
       "曜石黑",
       "云雾白",
@@ -566,13 +719,14 @@ describe("repeatRegion", () => {
       "礼盒装 · 黑",
       "礼盒装 · 白",
     ]);
-    assert.ok(imageSrcs.every((src) => typeof src === "string" && src.length > 0));
   });
 
   it("嵌套 repeat：外层 2 个 SPU 时，内层 SKU 条按各自 SPU 分组展开且不混组", () => {
-    const template = JSON.parse(
-      readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
-    ) as EmailTemplate;
+    const template = parseTemplateFromDisk(
+      JSON.parse(
+        readFileSync("data/emails/referral-friend-joined/layouts/default/template.json", "utf8")
+      )
+    );
     const payload = JSON.parse(
       readFileSync("data/emails/referral-friend-joined/payload.json", "utf8")
     ) as EmailPayload;
@@ -632,32 +786,29 @@ describe("repeatRegion", () => {
       },
     ];
 
-    const expanded = expandRepeatRegions(template, payload);
-    const outerCellIds = expanded.blocks["rfj-picked-spotlight"].children.filter((id) =>
-      id.startsWith("rfj-picked-spotlight-cell__repeatClone__")
+    const model = buildRepeatPreviewModel(template, payload);
+    const flat = previewModelToFlatTemplate(model, template);
+    const stripCards = collectPreviewNodes(
+      model,
+      (ref) =>
+        ref.kind === "repeat-item" &&
+        ref.hostId === "rfj-picked-spotlight-sku-1" &&
+        ref.prototypeRootId === "rfj-picked-spotlight-sku-1"
     );
-    assert.equal(outerCellIds.length, 2);
-    const stripIds = outerCellIds.map((cellId) =>
-      expanded.blocks[cellId].children.find((childId) =>
-        childId.startsWith("rfj-picked-spotlight-sku-strip__repeatClone__")
-      )
-    );
-    const [firstStripId, secondStripId] = stripIds;
-    assert.ok(firstStripId);
-    assert.ok(secondStripId);
-    assert.equal(expanded.blocks[firstStripId]?.children.length, 3);
-    assert.equal(expanded.blocks[secondStripId]?.children.length, 2);
-
-    const merged = mergeTemplatePayload(expanded, payload);
-    const firstTitles = expanded.blocks[firstStripId].children.map((cardId) => {
-      const titleId = merged.blocks[cardId].children[1];
-      return blockFirstRunText(merged, titleId);
-    });
-    const secondTitles = expanded.blocks[secondStripId].children.map((cardId) => {
-      const titleId = merged.blocks[cardId].children[1];
-      return blockFirstRunText(merged, titleId);
-    });
-
+    const byOuterCell = new Map<number, PreviewBlockNode[]>();
+    for (const node of stripCards) {
+      const ref = node.ref;
+      if (ref.kind !== "repeat-item") continue;
+      const outerIndex =
+        ref.contextStack.find((c) => c.slotId === "pickedSpotlightProduct")?.itemIndex ?? -1;
+      const list = byOuterCell.get(outerIndex) ?? [];
+      list.push(node);
+      byOuterCell.set(outerIndex, list);
+    }
+    assert.equal(byOuterCell.get(0)?.length, 3);
+    assert.equal(byOuterCell.get(1)?.length, 2);
+    const firstTitles = (byOuterCell.get(0) ?? []).map((node) => titleTextFromPreviewCard(flat, node));
+    const secondTitles = (byOuterCell.get(1) ?? []).map((node) => titleTextFromPreviewCard(flat, node));
     assert.deepEqual(firstTitles, ["曜石黑", "云雾白", "薄荷绿"]);
     assert.deepEqual(secondTitles, ["42mm 星空灰", "42mm 玫瑰金"]);
   });

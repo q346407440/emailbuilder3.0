@@ -5,7 +5,7 @@ import {
   createScalarPayloadSlot,
   validateNewPayloadSlotFields,
 } from "../lib/createPayloadSlot";
-import type { StandardScalarValueType } from "../lib/standardScalarSlotTypes";
+import type { StandardScalarValueType } from "../payload-contract/standard-scalar-types";
 import { StandardScalarValueTypeSelect } from "./StandardScalarValueTypeSelect";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { ShopSectionModal } from "./ui/ShopSectionModal";

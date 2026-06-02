@@ -15,6 +15,7 @@ description: >-
 |------|------|
 | 开发端口与一键启动 | **`./start.sh`**、**`vite.config.*`**、**`package.json`**（`dev:all` 等） |
 | API 端口 | **`server/index.ts`** / 环境变量（以运行日志为准） |
+| **template 落盘 nested 4.0.0** | GET/PUT wire 为 nested；编辑器内存为 EditorBlockGraph（**`src/lib/templateTreeAdapter.ts`**） |
 
 **默认前端 URL**：以 **`start.sh` / Vite 控制台** 为准（常见 **`http://127.0.0.1:5180`**；拒绝连接时试 **`http://localhost:5180`**）。
 
@@ -33,7 +34,8 @@ description: >-
 2. **`navigate_page`** 到实际监听 URL（见上节）。  
 3. **`take_snapshot` / `take_screenshot`**：首屏与关键区。  
 4. **按改动点操作**（切模板、点区块、改 Inspector、保存等）。  
-5. **`list_console_messages`**；必要时 **`list_network_requests`**（图片 4xx/5xx、保存失败）。  
+   - **列表 repeat 虚拟视图**（`VirtualBlockRef` + `buildRepeatPreviewModel`）：在 step2 / step23x2 / mcp-20260527 / member-welcome（centered）等含 repeat 的邮件中，确认 BlockTree 多行预览、Inspector 列表 Tab、嵌套 skus 循环、解绑物化后 row-2 落盘语义仍正确；**无** `__repeatClone__` 类 block id 出现在预览 DOM。
+5. **`list_console_messages`**；必要时 **`list_network_requests`**（图片 4xx/5xx、保存失败；template PUT 须 204 且 body 为 nested 4.0.0）。
 6. **结论**：写明已测项、是否干净、残留风险。
 
 ## 局限

@@ -1,6 +1,5 @@
 import type { BuiltinAlbumListConfig, BuiltinProductListConfig } from "./collection-builtin-catalog-config";
-import type { BuiltinCollectionExtract } from "./collection-builtin-extract";
-import type { BuiltinCollectionSortId } from "./collection-builtin-sort";
+import type { BuiltinCollectionSortPolicyInput } from "./collection-builtin-sort-policy";
 
 /** 内置列表 catalog（商品 / 专辑 mock，各 10 条） */
 export const BUILTIN_COLLECTION_CATALOG_IDS = ["products", "albums"] as const;
@@ -13,10 +12,8 @@ export type CollectionDataSource =
       type: "remote";
       provider: "builtin";
       catalog: BuiltinCollectionCatalogId;
-      /** 在 catalog 范围内的排序；编辑器预览与运行时解析共用契约 */
-      sort?: BuiltinCollectionSortId;
-      /** 在 catalog 范围内做相似品 / 搭配品等衍生（SPU 级） */
-      extract?: BuiltinCollectionExtract;
+      /** 排序 / 派生策略；常规为 BuiltinCollectionSortId 字符串，相似品/搭配品为 { strategy, targetSlotId } */
+      sort?: BuiltinCollectionSortPolicyInput;
       /** catalog=products 时：粒度、范围、SKU 树选等 */
       productConfig?: BuiltinProductListConfig;
       /** catalog=albums 时：多选专辑 */

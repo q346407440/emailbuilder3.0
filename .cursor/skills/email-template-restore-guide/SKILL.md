@@ -16,7 +16,7 @@ description: >-
 
 ## 大白话：四件事别搞混
 
-1. **`template.json`**：邮件**长什么样**的真源——区块谁套谁、间距、图、字、按钮，以及哪些样式走了 **`$themeRef`**。  
+1. **`template.json`**：邮件**长什么样**的真源——**nested 4.0.0**（顶层 `root` 嵌套树 + 节点 `blockMeta`）；`bindings` / `repeat` / `$themeRef` 在节点上。读写契约见 **`src/template-disk-contract/`**、**`src/lib/templateTreeAdapter.ts`**。  
 2. **`tokenPresets.json`**：这封邮件自己的**「字号/颜色/间距档位」出生档**——还原时一般要**新建一份**，别指望全靠默认值凑。  
 3. **`payload.json`**：文案、链接、图地址等**变量真实值**；有列表（商品、导航等）就按契约填。  
 4. **`meta.json`**：标题等元信息，**可选**，有就一并补齐。
@@ -45,9 +45,9 @@ description: >-
 
 ### 第四步：搭 template.json
 
-- 根下面先挂**语义模块壳**（一层层 layout），根 **`gap`** 倾向 **`0`**，块与块间距用壳的 **padding** 或内层 **gap**（见 § 模块壳与 token）。  
+- 维护 **nested `root` 树**（勿写顶层 `blocks` map）；根下面先挂**语义模块壳**（一层层 layout），根 **`gap`** 倾向 **`0`**，块与块间距用壳的 **padding** 或内层 **gap**（见 § 模块壳与 token）。  
 - 需要跟档位走的样式，用 **`$themeRef` + bindings.tokenPath`** 绑到上一步 preset 里**已经声明**的键；别绑契约不允许 theme 的字段。  
-- 有 grid 列表、按钮、图标等，对照 **`src/block-contract/`** 与样例邮件（如 **`on-cart-abandon-2`**）写法。
+- 有 grid 列表、按钮、图标等，对照 **`src/block-contract/`** 与样例邮件（如 **`coupon-available`**）写法。
 
 ### 第五步：payload + meta
 
@@ -88,7 +88,7 @@ description: >-
 
 ### 交付物（须含本邮件「出生档」预设）
 
-1. **`tokenPresets.json`**：`activePresetId` + 至少一份预设，**`tokens` 显式覆盖将用到的标准键**（勿依赖缺键隐式兜底）。样例：**`data/emails/on-cart-abandon-2`**。  
+1. **`tokenPresets.json`**：`activePresetId` + 至少一份预设，**`tokens` 显式覆盖将用到的标准键**（勿依赖缺键隐式兜底）。样例：**`data/emails/coupon-available`**。  
 2. **`template.json`**：模块壳的 padding / gap / 字号色圆角等 **style 路径** 用 **`$themeRef`** + **`bindings.tokenPath`** 对齐上一步键。  
 3. 其余层：**`payload.json`**、**`meta.json`**（见 **`email-config-motherboard`**）。
 
@@ -162,7 +162,7 @@ description: >-
 | 想查什么 | 读哪个技能 / 目录 |
 |----------|-------------------|
 | 易漏对齐、contentAlign、自检清单 | **`email-template-restore-check`** |
-| 标准 token 键集合与样例 | **`email-token-preset-standard-scope`**、`data/emails/on-cart-abandon-2` |
+| 标准 token 键集合与样例 | **`email-token-preset-standard-scope`**、`data/emails/coupon-available` |
 | 配置面 / 母版、block 白名单 | **`email-config-motherboard`**、`src/block-contract/` |
 | 远程图、图标 URL 约定 | **`email-remote-asset-urls`** |
 | 变量与 payload 形状 | **`easy-email-payload-contract`** |

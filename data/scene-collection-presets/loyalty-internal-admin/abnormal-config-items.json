@@ -1,29 +1,30 @@
 {
+  "schemaVersion": "1.0.0",
   "presetId": "loyalty-internal-abnormal-config",
   "slotId": "loyaltyAbnormalConfigItems",
   "label": "异常配置项",
   "description": "关键问题卡片：问题标题 + 问题说明",
-  "displayRulePreset": {
-    "keyField": "type",
-    "includeValues": [
-      "points_threshold",
-      "max_discount",
-      "guest_order_threshold",
-      "member_points_balance_low"
-    ],
-    "options": [
-      { "value": "points_threshold", "label": "积分使用门槛高" },
-      { "value": "max_discount", "label": "单笔订单积分最大抵扣金额过高" },
-      { "value": "guest_order_threshold", "label": "未注册用户订单优惠门槛过高" },
-      { "value": "member_points_balance_low", "label": "会员可用积分余额过低" }
-    ]
-  },
   "minItems": 4,
   "maxItems": 4,
   "itemFields": [
-    { "key": "type", "label": "问题类型标识", "valueType": "string", "required": true },
-    { "key": "title", "label": "问题标题", "valueType": "string", "required": true },
-    { "key": "description", "label": "问题说明", "valueType": "string", "required": true }
+    {
+      "key": "type",
+      "label": "问题类型标识",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "title",
+      "label": "问题标题",
+      "valueType": "string",
+      "required": true
+    },
+    {
+      "key": "description",
+      "label": "问题说明",
+      "valueType": "string",
+      "required": true
+    }
   ],
   "seedValues": [
     {

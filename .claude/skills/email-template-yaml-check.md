@@ -10,7 +10,7 @@ description: >-
 
 ## 定位（先读）
 
-- **YAML 在本仓库的用途**：**测试与检查**——最小合法夹具、期望 `template.json` 快照、应报错的非法用例；纳入 **`npm run validate:all`**。
+- **YAML 在本仓库的用途**：**测试与检查**——最小合法夹具、期望 **nested 4.0.0** `template.json` 快照、应报错的非法用例；纳入 **`npm run validate:all`**。
 - **不是**：业务邮件的日常编辑格式；真源仍是 **`data/emails/<id>/template.json`** 等 JSON。
 
 ## 代码真源指针

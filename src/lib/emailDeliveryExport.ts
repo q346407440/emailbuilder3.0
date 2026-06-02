@@ -218,9 +218,6 @@ export function stripForbiddenEmailPresentationInlineStyles(root: Element): void
   walk(root);
 }
 
-/** @deprecated 使用 stripForbiddenEmailPresentationInlineStyles */
-export const stripFlexboxFromDeliveryInlineStyles = stripForbiddenEmailPresentationInlineStyles;
-
 /** 剥离画布专用 data-* 与选中态 class，避免进入投递 HTML */
 export function stripPreviewOnlyAttributes(root: Element): void {
   const stripAttrSet = new Set<string>(DELIVERY_EXPORT_STRIP_ATTRS);

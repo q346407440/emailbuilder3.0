@@ -11,24 +11,22 @@ import {
 import type { BuiltinCollectionCatalogId, CollectionDataSource } from "../payload-contract/collection-data-source";
 import { defaultCollectionDataSource } from "../payload-contract/collection-data-source";
 import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  normalizeBuiltinCollectionExtract,
-  type BuiltinCollectionExtract,
-} from "../payload-contract/collection-builtin-extract";
-import {
   DEFAULT_BUILTIN_COLLECTION_SORT,
-  type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
+import {
+  readSortPolicyFromBuiltinDataSource,
+  regularSortFromPolicy,
+  writeSortPolicyToDataSource,
+  type NormalizedBuiltinSortPolicy,
+} from "../payload-contract/collection-builtin-sort-policy";
 import type { BindingCollectionField, EmailPayload } from "../types/email";
-import { builtinCatalogLabel } from "./builtinCollectionCatalog";
 import {
   builtinPreviewItemsForSlot,
   emptyValueForField,
   resolveBuiltinSortFromDataSource,
 } from "./collectionDataSource";
-import { resolveBuiltinExtractFromDataSource } from "./resolveBuiltinCollectionItems";
 import { parseCollectionJsonSample, type CollectionJsonSample } from "./collectionFieldMapping";
-import { builtinProductsCatalogFieldSample } from "./builtinCollectionCatalog";
+import { builtinCatalogLabel, builtinProductsCatalogFieldSample } from "./builtinCollectionCatalog";
 import type {
   CollectionDataSourceKind,
   CollectionSourceDraftCache,
@@ -54,8 +52,7 @@ export type CollectionEditorSnapshot = {
   items: Record<string, unknown>[];
   jsonPaste: string;
   catalog: BuiltinCollectionCatalogId;
-  sort: BuiltinCollectionSortId;
-  extract: BuiltinCollectionExtract;
+  sortPolicy: NormalizedBuiltinSortPolicy;
   productConfig?: BuiltinProductListConfig;
   albumConfig?: BuiltinAlbumListConfig;
 };
@@ -63,20 +60,20 @@ export type CollectionEditorSnapshot = {
 function kindToDataSource(
   kind: CollectionDataSourceKind,
   catalog: BuiltinCollectionCatalogId,
-  sort: BuiltinCollectionSortId,
-  extract: BuiltinCollectionExtract,
+  sortPolicy: NormalizedBuiltinSortPolicy,
   productConfig?: BuiltinProductListConfig,
   albumConfig?: BuiltinAlbumListConfig
 ): CollectionDataSource {
   if (kind === "custom") return { type: "custom" };
-  const base = { type: "remote" as const, provider: "builtin" as const, catalog, sort };
-  const withExtract =
-    extract.kind === "similarTo" || extract.kind === "complement"
-      ? { ...base, extract }
-      : base;
+  const base = {
+    type: "remote" as const,
+    provider: "builtin" as const,
+    catalog,
+    sort: writeSortPolicyToDataSource(sortPolicy),
+  };
   if (catalog === "products") {
     return {
-      ...withExtract,
+      ...base,
       productConfig: normalizeBuiltinProductListConfig(
         productConfig ?? DEFAULT_BUILTIN_PRODUCT_LIST_CONFIG
       ),
@@ -84,11 +81,11 @@ function kindToDataSource(
   }
   if (catalog === "albums") {
     return {
-      ...withExtract,
+      ...base,
       albumConfig: normalizeBuiltinAlbumListConfig(albumConfig ?? DEFAULT_BUILTIN_ALBUM_LIST_CONFIG),
     };
   }
-  return withExtract;
+  return base;
 }
 
 export { builtinCatalogLabel };
@@ -109,8 +106,7 @@ function writeCacheFromSnapshot(
     next.builtin = {
       values: snapshot.items.map((r) => ({ ...r })),
       catalog: snapshot.catalog,
-      sort: snapshot.sort,
-      extract: snapshot.extract,
+      sortPolicy: snapshot.sortPolicy,
       productConfig: snapshot.productConfig,
       albumConfig: snapshot.albumConfig,
       ...(fieldMap !== undefined ? { fieldMap: { ...fieldMap } } : {}),
@@ -139,6 +135,12 @@ export function sampleFromCollectionSnapshot(
   return null;
 }
 
+function readBuiltinSortPolicyFromCache(
+  caches: CollectionSourceDraftCache["builtin"]
+): NormalizedBuiltinSortPolicy {
+  return caches?.sortPolicy ?? { kind: "regular", sort: DEFAULT_BUILTIN_COLLECTION_SORT };
+}
+
 function readSnapshotFromCache(
   caches: CollectionSourceDraftCache,
   kind: CollectionDataSourceKind,
@@ -154,8 +156,7 @@ function readSnapshotFromCache(
       items: caches.custom.values,
       jsonPaste: caches.custom.jsonPaste ?? "",
       catalog: "products",
-      sort: DEFAULT_BUILTIN_COLLECTION_SORT,
-      extract: DEFAULT_BUILTIN_COLLECTION_EXTRACT,
+      sortPolicy: { kind: "regular", sort: DEFAULT_BUILTIN_COLLECTION_SORT },
     };
   }
   if (kind === "builtin" && caches.builtin) {
@@ -165,8 +166,7 @@ function readSnapshotFromCache(
       items: caches.builtin.values,
       jsonPaste: "",
       catalog: caches.builtin.catalog,
-      sort: caches.builtin.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT,
-      extract: normalizeBuiltinCollectionExtract(caches.builtin.extract),
+      sortPolicy: readBuiltinSortPolicyFromCache(caches.builtin),
       productConfig: caches.builtin.productConfig,
       albumConfig: caches.builtin.albumConfig,
     };
@@ -177,20 +177,20 @@ function readSnapshotFromCache(
   );
   if (kind === "builtin") {
     const catalog: BuiltinCollectionCatalogId = "products";
-    const extract = DEFAULT_BUILTIN_COLLECTION_EXTRACT;
-    const sort = DEFAULT_BUILTIN_COLLECTION_SORT;
+    const sortPolicy = { kind: "regular" as const, sort: DEFAULT_BUILTIN_COLLECTION_SORT };
     return {
       kind,
       fixedLength,
-      items: builtinPreviewItemsForSlot(catalog, itemFields, fixedLength, sort, {
-        payload,
-        slotId,
-        extract,
-      }),
+      items: builtinPreviewItemsForSlot(
+        catalog,
+        itemFields,
+        fixedLength,
+        DEFAULT_BUILTIN_COLLECTION_SORT,
+        { payload, slotId, sortPolicy }
+      ),
       jsonPaste: "",
       catalog,
-      sort,
-      extract,
+      sortPolicy,
     };
   }
   return {
@@ -199,8 +199,7 @@ function readSnapshotFromCache(
     items: emptyItems,
     jsonPaste: "",
     catalog: "products",
-    sort: DEFAULT_BUILTIN_COLLECTION_SORT,
-    extract: DEFAULT_BUILTIN_COLLECTION_EXTRACT,
+    sortPolicy: { kind: "regular", sort: DEFAULT_BUILTIN_COLLECTION_SORT },
   };
 }
 
@@ -230,8 +229,7 @@ export function switchCollectionDataSourceDraft(
   const dataSource = kindToDataSource(
     nextKind,
     nextSnapshot.catalog,
-    nextSnapshot.sort,
-    nextSnapshot.extract,
+    nextSnapshot.sortPolicy,
     nextSnapshot.productConfig,
     nextSnapshot.albumConfig
   );
@@ -258,8 +256,7 @@ export function patchCollectionDraftSnapshot(
   const dataSource = kindToDataSource(
     snapshot.kind,
     snapshot.catalog,
-    snapshot.sort,
-    snapshot.extract,
+    snapshot.sortPolicy,
     snapshot.productConfig,
     snapshot.albumConfig
   );
@@ -308,18 +305,16 @@ export function draftToCollectionSnapshot(
     items: itemsForActiveKind(),
     jsonPaste: caches.custom?.jsonPaste ?? "",
     catalog: "products",
-    sort:
-      caches.builtin?.sort ??
-      resolveBuiltinSortFromDataSource(ds),
-    extract:
-      caches.builtin?.extract ??
-      resolveBuiltinExtractFromDataSource(ds),
+    sortPolicy:
+      caches.builtin?.sortPolicy ??
+      (ds.type === "remote" && ds.provider === "builtin"
+        ? readSortPolicyFromBuiltinDataSource(ds)
+        : { kind: "regular", sort: resolveBuiltinSortFromDataSource(ds) }),
   };
 
   if (ds.type === "remote" && ds.provider === "builtin") {
     base.catalog = ds.catalog ?? draft.collectionSources?.builtin?.catalog ?? "products";
-    base.sort = ds.sort ?? base.sort;
-    base.extract = normalizeBuiltinCollectionExtract(ds.extract);
+    base.sortPolicy = readSortPolicyFromBuiltinDataSource(ds);
     base.productConfig =
       ds.productConfig ??
       draft.collectionSources?.builtin?.productConfig ??
@@ -348,7 +343,7 @@ function refreshBuiltinPreviewItems(
     snapshot.catalog,
     itemFields,
     snapshot.fixedLength,
-    snapshot.sort,
+    regularSortFromPolicy(snapshot.sortPolicy),
     {
       payload: {
         ...payload,
@@ -359,8 +354,7 @@ function refreshBuiltinPreviewItems(
             dataSource: kindToDataSource(
               "builtin",
               snapshot.catalog,
-              snapshot.sort,
-              snapshot.extract,
+              snapshot.sortPolicy,
               snapshot.productConfig,
               snapshot.albumConfig
             ),
@@ -368,7 +362,7 @@ function refreshBuiltinPreviewItems(
         },
       },
       slotId,
-      extract: snapshot.extract,
+      sortPolicy: snapshot.sortPolicy,
     }
   );
   return { ...snapshot, items };
@@ -426,37 +420,18 @@ export function applyBuiltinCollectionCatalogToDraft(
   return patchCollectionDraftSnapshot(draft, nextSnap);
 }
 
-/** 内置数据源下更新排序并刷新预览行 */
-export function applyBuiltinCollectionSortToDraft(
+/** 内置数据源下更新排序/派生策略并刷新预览行 */
+export function applyBuiltinCollectionSortPolicyToDraft(
   draft: PayloadSlotDraft,
   snapshot: CollectionEditorSnapshot,
   itemFields: BindingCollectionField[],
-  sort: BuiltinCollectionSortId,
+  sortPolicy: NormalizedBuiltinSortPolicy,
   payload: EmailPayload,
   slotId: string
 ): PayloadSlotDraft {
   if (snapshot.kind !== "builtin") return draft;
   const nextSnap = refreshBuiltinPreviewItems(
-    { ...snapshot, sort },
-    itemFields,
-    payload,
-    slotId
-  );
-  return patchCollectionDraftSnapshot(draft, nextSnap);
-}
-
-/** 内置数据源下更新 extract 并刷新预览行 */
-export function applyBuiltinCollectionExtractToDraft(
-  draft: PayloadSlotDraft,
-  snapshot: CollectionEditorSnapshot,
-  itemFields: BindingCollectionField[],
-  extract: BuiltinCollectionExtract,
-  payload: EmailPayload,
-  slotId: string
-): PayloadSlotDraft {
-  if (snapshot.kind !== "builtin") return draft;
-  const nextSnap = refreshBuiltinPreviewItems(
-    { ...snapshot, extract: normalizeBuiltinCollectionExtract(extract) },
+    { ...snapshot, sortPolicy },
     itemFields,
     payload,
     slotId

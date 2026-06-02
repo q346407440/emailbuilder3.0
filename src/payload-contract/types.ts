@@ -15,24 +15,6 @@ export type InterpolationSlotValueType = BindingInterpolationSlotValueType;
 
 export type PayloadContractIssue = { path: string; reason: string };
 
-/** collection 槽展示规则（运行时按规则从外部全量数据投影可展示子集） */
-export type CollectionDisplayRule = {
-  /** 列表项中用于匹配的字段名（默认 type） */
-  keyField?: string;
-  /** 白名单：仅保留命中的字段值 */
-  includeValues?: string[];
-  /** 黑名单：移除命中的字段值 */
-  excludeValues?: string[];
-};
-
-/** collection 展示规则预设（用于场景内置变量的默认配置与候选值） */
-export type CollectionDisplayRulePreset = {
-  keyField: string;
-  includeValues: string[];
-  /** 可选：白名单值的显示名映射（用于前端多选展示） */
-  options?: Array<{ value: string; label: string }>;
-};
-
 /**
  * payload.json `slots` 中单条变量目录项（唯一真源：名称、类型、collection 字段等）。
  * template.bindings 仅通过 slotId 引用，不再重复维护 label 作为真源。
@@ -46,10 +28,10 @@ export type PayloadSlotDefinition = {
   maxItems?: number;
   /** collection 专用：数据来源（自定义 / 内置 catalog + 可选 sort） */
   dataSource?: CollectionDataSource;
-  /** collection 专用：展示规则（按字段白/黑名单过滤并限制上限） */
-  displayRule?: CollectionDisplayRule;
-  /** collection 专用：展示规则预设（内置变量默认字段与白名单候选） */
-  displayRulePreset?: CollectionDisplayRulePreset;
+  /**
+   * collection 专用：按行下标控制是否参与 repeat/画布（true=展示，false=不展示；缺省为展示）
+   */
+  itemVisibility?: boolean[];
   /**
    * 来自场景内置列表 API（data/scene-collection-presets）的槽；
    * 预览数据由接口/runtime-values 提供，不走「粘贴 JSON + 字段关联」。
@@ -69,6 +51,5 @@ export type ExternalSlotDefinition = {
   label?: string;
   description?: string;
   dataSource?: CollectionDataSource;
-  displayRule?: CollectionDisplayRule;
-  displayRulePreset?: CollectionDisplayRulePreset;
+  itemVisibility?: boolean[];
 };

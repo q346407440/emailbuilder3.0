@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { EmailPayload, EmailTemplate } from "../types/email";
+import type { EmailPayload, EmailTemplate, TextBlock } from "../types/email";
 import {
   renameExternalVariableSlot,
   updateExternalVariableSlotLabel,
@@ -8,7 +8,7 @@ import {
 
 function minimalTemplate(bindings: Record<string, unknown>): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "t",
     templateVersion: 1,
     rootBlockId: "root",
@@ -70,7 +70,7 @@ describe("externalVariableSlotEdit", () => {
     assert.equal(result.payload.values.customerName, "Alice");
     assert.equal(result.payload.values.memberName, undefined);
     assert.equal(
-      result.template.blocks.root?.props.textBody?.paragraphs[0]?.runs[0]?.text,
+      (result.template.blocks.root as TextBlock).props.textBody.paragraphs[0]?.runs[0]?.text,
       "Hi {{ customerName }}!"
     );
     assert.equal(

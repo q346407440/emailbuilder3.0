@@ -34,11 +34,9 @@ describe("applyBuiltinCollectionResolves", () => {
             type: "remote" as const,
             provider: "builtin" as const,
             catalog: "products" as const,
-            sort: "salesDesc" as const,
-            extract: {
-              kind: "similarTo" as const,
-              fromSlotId: "pickedSpotlightProduct",
-              matchField: "href" as const,
+            sort: {
+              strategy: "similarTo" as const,
+              targetSlotId: "pickedSpotlightProduct",
             },
           },
         },

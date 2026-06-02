@@ -1,13 +1,13 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import type { EmailTemplate } from "../types/email";
+import type { EmailTemplate, EmailPayload } from "../types/email";
 import { validatePayloadAgainstTemplate } from "../payload-contract/validate";
 import { loadSceneCollectionPresetsFromDisk } from "../payload-contract/scene-collection-presets/loadFromDisk";
 import { createCollectionPayloadSlotFromPreset } from "./createPayloadSlot";
 
 const emptyTemplate = { blocks: {} } as EmailTemplate;
 
-const basePayload = () => ({
+const basePayload = (): EmailPayload => ({
   schemaVersion: "1.0.0",
   slots: {},
   values: {},

@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import { sortBuiltinCatalogRows } from "./builtinCollectionCatalog";
 
 describe("sortBuiltinCatalogRows", () => {
-  it("salesDesc 将高价商品排在前面", () => {
-    const rows = sortBuiltinCatalogRows("products", "salesDesc");
+  it("priceDesc 将高价商品排在前面", () => {
+    const rows = sortBuiltinCatalogRows("products", "priceDesc");
     const firstPrice = String(rows[0]?.salePrice ?? "");
     assert.ok(firstPrice.includes("899"), `期望最高价在前，实际首项 salePrice=${firstPrice}`);
   });

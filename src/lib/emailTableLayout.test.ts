@@ -2,10 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   layoutColumnInnerShouldFillParentHeight,
-  layoutColumnShouldUseFillFlex,
   layoutPreviewInnerShellStretchesHeight,
   layoutPreviewOuterBoxFillsParentHeight,
-  layoutPreviewOuterTableUsesFullHeight,
   layoutHorizontalOuterPresentationShellFillWidth,
   layoutPreviewOuterTableUsesFullWidth,
   layoutRenderedFixedGapPx,
@@ -190,19 +188,9 @@ test("layoutColumnInnerShouldFillParentHeight：fill 高子块或 gap auto 时�
   );
 });
 
-test("layoutColumnShouldUseFillFlex：已废弃，恒为 false（纵列改 presentation table）", () => {
-  assert.equal(
-    layoutColumnShouldUseFillFlex({
-      wrapperStyle: { heightMode: "fixed", height: "300px" },
-      hasFillHeightChild: true,
-    }),
-    false
-  );
-});
-
 test("fill 纵向 → 内层表需全高", () => {
   assert.equal(
-    layoutPreviewOuterTableUsesFullHeight({
+    layoutPreviewInnerShellStretchesHeight({
       heightMode: "fill",
       directionIsRow: false,
       gapModeAuto: false,

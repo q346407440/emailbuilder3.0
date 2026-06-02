@@ -5,6 +5,8 @@
 import { join, resolve } from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { validateSchemaArtifact } from "../src/schema-registry/index.ts";
 import { loadSceneCollectionPresetsFromDisk } from "../src/payload-contract/scene-collection-presets/loadFromDisk.ts";
 import { validatePayloadAgainstTemplate } from "../src/lib/validate.ts";
 import { createCollectionPayloadSlotFromPreset } from "../src/lib/createPayloadSlot.ts";
@@ -12,10 +14,39 @@ import { createCollectionPayloadSlotFromPreset } from "../src/lib/createPayloadS
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PRESETS_ROOT = join(ROOT, "data", "scene-collection-presets");
-
 const emptyTemplate = { blocks: {} };
 
+function validatePresetFilesViaRegistry(rootDir) {
+  let failed = false;
+  for (const scene of readdirSync(rootDir).filter((name) => statSync(join(rootDir, name)).isDirectory())) {
+    const sceneDir = join(rootDir, scene);
+    for (const file of readdirSync(sceneDir).filter((f) => f.endsWith(".json")).sort()) {
+      const filePath = join(sceneDir, file);
+      let raw;
+      try {
+        raw = JSON.parse(readFileSync(filePath, "utf8"));
+      } catch (e) {
+        failed = true;
+        console.error(`[fail] ${filePath}：JSON 解析失败 — ${e instanceof Error ? e.message : String(e)}`);
+        continue;
+      }
+      const issues = validateSchemaArtifact("sceneCollectionPreset", raw);
+      if (issues.length > 0) {
+        failed = true;
+        for (const issue of issues) {
+          console.error(`[fail] ${filePath} ${issue.path}: ${issue.reason}`);
+        }
+      }
+    }
+  }
+  return failed;
+}
+
 function main() {
+  if (validatePresetFilesViaRegistry(PRESETS_ROOT)) {
+    process.exit(1);
+  }
+
   const { presets, errors } = loadSceneCollectionPresetsFromDisk(PRESETS_ROOT);
   let failed = false;
 

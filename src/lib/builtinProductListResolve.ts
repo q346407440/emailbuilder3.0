@@ -2,14 +2,13 @@ import type { BuiltinProductListConfig } from "../payload-contract/collection-bu
 import {
   formatBuiltinSkuSelectionKey,
   normalizeBuiltinProductListConfig,
-  parseBuiltinSkuSelectionKey,
 } from "../payload-contract/collection-builtin-catalog-config";
-import type { BuiltinCollectionExtract } from "../payload-contract/collection-builtin-extract";
-import { builtinCollectionExtractAnchorIndex } from "../payload-contract/collection-builtin-extract";
 import {
+  DEFAULT_BUILTIN_COLLECTION_SORT,
   normalizeBuiltinCollectionSortId,
   type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
+import type { NormalizedBuiltinSortPolicy } from "../payload-contract/collection-builtin-sort-policy";
 import type { BindingCollectionField, EmailPayload } from "../types/email";
 import {
   flattenBuiltinProductRow,
@@ -19,8 +18,13 @@ import {
   projectRowsToItemFields,
 } from "./builtinCollectionCatalog";
 import { BUILTIN_MOCK_COLLECTIONS } from "./builtinMockCollections";
-import type { BuiltinProductMock, BuiltinProductSkuMock } from "./builtinProductMockTypes";
+import type { BuiltinProductMock } from "./builtinProductMockTypes";
 import { BUILTIN_PRODUCTS_MOCK_RAW } from "./builtinProductsMockData";
+import {
+  attachMerchantSpuTreeRelatedNestedRows,
+  isMerchantSpuTreeRelatedNestedKey,
+  pickSortedLimitedParentProducts,
+} from "./loyaltyMerchantSpuTreePresetSeed";
 
 export type BuiltinSpuSkuTreeNode = {
   spuId: string;
@@ -71,43 +75,6 @@ export function resolveBuiltinProductCandidatePool(
   return selected.map((id) => productById(id)).filter((p): p is BuiltinProductMock => Boolean(p));
 }
 
-function buildSkuFlatRow(product: BuiltinProductMock, sku: BuiltinProductSkuMock): Record<string, unknown> {
-  return {
-    id: formatBuiltinSkuSelectionKey(product.id, sku.id),
-    spuId: product.id,
-    skuId: sku.id,
-    imageSrc: sku.imageSrc,
-    imageAlt: sku.imageAlt,
-    title: sku.title,
-    href: sku.href,
-    salePrice: sku.salePrice,
-    originalPrice: sku.originalPrice,
-    spuName: product.title,
-    spuHref: product.href,
-    totalSales: sku.totalSales,
-    conversionRate: (sku.totalSales ?? 0) * 0.01,
-  };
-}
-
-/** SKU 勾选键 → 扁平行（保持勾选顺序） */
-export function resolveSkuSelectionToFlatRows(
-  selectionKeys: string[],
-  pool?: BuiltinProductMock[]
-): Record<string, unknown>[] {
-  const allowedSpu = new Set((pool ?? BUILTIN_PRODUCTS_MOCK_RAW).map((p) => p.id));
-  const rows: Record<string, unknown>[] = [];
-  for (const key of selectionKeys) {
-    const parsed = parseBuiltinSkuSelectionKey(key);
-    if (!parsed || !allowedSpu.has(parsed.spuId)) continue;
-    const product = productById(parsed.spuId);
-    if (!product) continue;
-    const sku = product.skus.find((s) => s.id === parsed.skuId);
-    if (!sku) continue;
-    rows.push(buildSkuFlatRow(product, sku));
-  }
-  return rows;
-}
-
 function anchorRowFromPayloadAtIndex(
   payload: EmailPayload,
   fromSlotId: string,
@@ -118,6 +85,10 @@ function anchorRowFromPayloadAtIndex(
     : [];
   const idx = Math.max(0, anchorItemIndex - 1);
   return rows[idx] ?? null;
+}
+
+function regularSortFromPolicy(sortPolicy: NormalizedBuiltinSortPolicy): BuiltinCollectionSortId {
+  return sortPolicy.kind === "regular" ? sortPolicy.sort : DEFAULT_BUILTIN_COLLECTION_SORT;
 }
 
 function spuRowsFromConfig(
@@ -131,111 +102,83 @@ function spuRowsFromConfig(
   return projectBuiltinCatalogItemsFromRows(flatRows, itemFields, limit, sort, "products");
 }
 
-function skuRowsFromConfig(
-  config: BuiltinProductListConfig,
-  itemFields: BindingCollectionField[],
-  limit: number,
-  sort: BuiltinCollectionSortId
-): Record<string, unknown>[] {
-  const pool = resolveBuiltinProductCandidatePool(config);
-  const keys = config.skuSelection ?? [];
-  const flatRows = resolveSkuSelectionToFlatRows(keys, pool);
-  if (flatRows.length === 0) return [];
-  return projectBuiltinCatalogItemsFromRows(flatRows, itemFields, limit, sort, "products");
-}
-
 function projectSpuRowsWithNestedSkus(
   products: BuiltinProductMock[],
   itemFields: BindingCollectionField[],
   limit: number,
-  sort: BuiltinCollectionSortId
+  sort: BuiltinCollectionSortId,
+  skuSelection?: string[]
 ): Record<string, unknown>[] {
   const flatRows = products.map(flattenBuiltinProductRow);
   const projected = projectBuiltinCatalogItemsFromRows(flatRows, itemFields, limit, sort, "products");
+  const skuKeySet =
+    skuSelection && skuSelection.length > 0 ? new Set(skuSelection) : null;
   return projected.map((row, i) => {
     const product = products[i];
     if (!product) return row;
     const skuField = itemFields.find((f) => f.valueType === "collection" && f.key === "skus");
     if (!skuField || skuField.valueType !== "collection") return row;
+    const sourceSkus = skuKeySet
+      ? product.skus.filter((s) => skuKeySet.has(formatBuiltinSkuSelectionKey(product.id, s.id)))
+      : product.skus;
     const skuRows = projectRowsToItemFields(
-      product.skus as unknown as Record<string, unknown>[],
+      sourceSkus as unknown as Record<string, unknown>[],
       skuField.itemFields
-    ).slice(0, skuField.maxItems ?? product.skus.length);
+    ).slice(0, skuField.maxItems ?? sourceSkus.length);
     return { ...row, skus: skuRows };
   });
 }
 
-/**
- * 内置商品列表：按 productConfig 粒度 / 范围 / 抽取 / 排序解析行。
- */
+/** 内置商品列表：按 productConfig 范围 / 排序解析 SPU 行。 */
 export function resolveBuiltinProductListItems(opts: {
   config: BuiltinProductListConfig | undefined;
   itemFields: BindingCollectionField[];
   limit: number;
   sort?: BuiltinCollectionSortId;
-  extract?: BuiltinCollectionExtract;
+  sortPolicy?: NormalizedBuiltinSortPolicy;
   payload: EmailPayload;
+  anchorRow?: Record<string, unknown> | null;
 }): Record<string, unknown>[] {
   const config = normalizeBuiltinProductListConfig(opts.config);
-  const sort = normalizeBuiltinCollectionSortId(opts.sort);
-  const extract = opts.extract ?? { kind: "none" };
+  const sortPolicy =
+    opts.sortPolicy ??
+    ({ kind: "regular", sort: normalizeBuiltinCollectionSortId(opts.sort) } as const);
+  const sort = regularSortFromPolicy(sortPolicy);
   const { itemFields, limit, payload } = opts;
 
-  if (extract.kind === "similarTo" || extract.kind === "complement") {
-    const anchorIndex = builtinCollectionExtractAnchorIndex(extract);
-    const anchorRow = anchorRowFromPayloadAtIndex(payload, extract.fromSlotId, anchorIndex);
+  if (sortPolicy.kind === "derived") {
+    const anchorRow =
+      opts.anchorRow !== undefined
+        ? opts.anchorRow
+        : anchorRowFromPayloadAtIndex(payload, sortPolicy.targetSlotId, 1);
     const projectFn =
-      extract.kind === "complement" ? projectBuiltinCatalogComplement : projectBuiltinCatalogSimilarTo;
-    if (config.rowGranularity === "sku") {
-      const spuProjected = projectFn(
-        "products",
-        [{ key: "href", label: "链", valueType: "url", required: true }],
-        Math.max(limit, 3),
-        sort,
-        anchorRow,
-        extract.matchField ?? "href"
-      );
-      const spuIds = spuProjected
-        .map((r) => String(r.href ?? ""))
-        .map((href) => BUILTIN_PRODUCTS_MOCK_RAW.find((p) => p.href === href)?.id)
-        .filter((id): id is string => Boolean(id));
-      const keys: string[] = [];
-      for (const spuId of spuIds.slice(0, limit)) {
-        const product = productById(spuId);
-        const featured = product?.skus[0];
-        if (product && featured) {
-          keys.push(formatBuiltinSkuSelectionKey(product.id, featured.id));
-        }
-      }
-      const skuConfig: BuiltinProductListConfig = {
-        ...config,
-        rowGranularity: "sku",
-        rangeMode: "freeSelect",
-        skuSelection: keys,
-      };
-      return skuRowsFromConfig(skuConfig, itemFields, limit, sort);
-    }
-    return projectFn(
-      "products",
-      itemFields,
-      limit,
-      sort,
-      anchorRow,
-      extract.matchField ?? "href"
-    );
+      sortPolicy.strategy === "complement" ? projectBuiltinCatalogComplement : projectBuiltinCatalogSimilarTo;
+    return projectFn("products", itemFields, limit, sort, anchorRow, "href");
   }
 
-  if (config.rowGranularity === "sku") {
-    return skuRowsFromConfig(config, itemFields, limit, sort);
-  }
-
-  if (config.rangeMode === "freeSelect" && (config.selectedSpuIds ?? []).length === 0) {
+  if (
+    config.rangeMode === "freeSelect" &&
+    (config.selectedSpuIds ?? []).length === 0 &&
+    (config.skuSelection ?? []).length === 0
+  ) {
     return [];
   }
 
   const pool = resolveBuiltinProductCandidatePool(config);
   if (itemFields.some((f) => f.valueType === "collection" && f.key === "skus")) {
-    return projectSpuRowsWithNestedSkus(pool, itemFields, limit, sort);
+    return projectSpuRowsWithNestedSkus(pool, itemFields, limit, sort, config.skuSelection);
+  }
+  if (itemFields.some((f) => f.valueType === "collection" && isMerchantSpuTreeRelatedNestedKey(f.key))) {
+    const orderedParents = pickSortedLimitedParentProducts(pool, limit, sort);
+    const flatRows = orderedParents.map(flattenBuiltinProductRow);
+    const parentRows = projectBuiltinCatalogItemsFromRows(
+      flatRows,
+      itemFields,
+      limit,
+      sort,
+      "products"
+    );
+    return attachMerchantSpuTreeRelatedNestedRows(parentRows, orderedParents, itemFields);
   }
   return spuRowsFromConfig(config, itemFields, limit, sort);
 }

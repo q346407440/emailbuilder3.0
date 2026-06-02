@@ -23,6 +23,7 @@ import { fileURLToPath } from "node:url";
 import { CONTENT_ALIGN_NEUTRAL, contentAlignFromAxes } from "./lib/content-align-axis.mjs";
 import { finalizeGeneratedTemplate } from "./lib/finalize-generated-template.mjs";
 import { textBodyFromString } from "./lib/test-email-text-body.mjs";
+import { graphToDiskJson } from "./lib/template-disk-io.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.join(__dirname, "..");
@@ -1011,7 +1012,7 @@ chapterHeader(
 
 // ─── 落盘 ───────────────────────────────────────────────
 const template = {
-  schemaVersion: "3.0.0",
+  schemaVersion: "4.0.0",
   emailId: EMAIL_KEY,
   templateId: EMAIL_KEY,
   templateVersion: 1,
@@ -1069,7 +1070,7 @@ function writeJson(filePath, data) {
 writeJson(path.join(OUT, "meta.json"), meta);
 writeJson(path.join(OUT, "payload.json"), payload);
 writeJson(path.join(OUT, "layout-manifest.json"), layoutManifest);
-writeJson(path.join(LAYOUT_DIR, "template.json"), template);
+writeJson(path.join(LAYOUT_DIR, "template.json"), graphToDiskJson(template));
 writeJson(path.join(LAYOUT_DIR, "tokenPresets.json"), tokenPresets);
 
 finalizeGeneratedTemplate(path.join(LAYOUT_DIR, "template.json"));

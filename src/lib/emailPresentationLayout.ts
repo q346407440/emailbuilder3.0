@@ -72,13 +72,6 @@ export function gridMatrixSlotContentAlignCss(
   };
 }
 
-/** @deprecated 使用 gridMatrixSlotContentAlignCss */
-export function gridMatrixSlotVerticalAlignCss(
-  contentAlign: WrapperContentAlign | undefined
-): CSSProperties {
-  return gridMatrixSlotContentAlignCss(contentAlign);
-}
-
 /** 纵排栈：统计 fill 高子块数量（用于按行分配百分比高度） */
 export function countVerticalStackFillHeightChildren(
   template: EmailTemplate,

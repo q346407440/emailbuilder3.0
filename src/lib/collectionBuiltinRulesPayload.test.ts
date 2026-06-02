@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailPayload } from "../types/email";
-import {
-  patchPayloadBuiltinCollectionExtract,
-  patchPayloadBuiltinCollectionSort,
-} from "./collectionBuiltinRulesPayload";
+import { patchPayloadBuiltinCollectionSortPolicy } from "./collectionBuiltinRulesPayload";
 
 function payloadWithPickedProducts(): EmailPayload {
   return {
@@ -40,32 +37,18 @@ function payloadWithPickedProducts(): EmailPayload {
 }
 
 describe("collectionBuiltinRulesPayload", () => {
-  it("patchPayloadBuiltinCollectionSort 写入 slots.dataSource.sort", () => {
+  it("patchPayloadBuiltinCollectionSortPolicy 写入常规 sort", () => {
     const base = payloadWithPickedProducts();
-    const next = patchPayloadBuiltinCollectionSort(base, "pickedProducts", "salesDesc");
+    const next = patchPayloadBuiltinCollectionSortPolicy(base, "pickedProducts", {
+      kind: "regular",
+      sort: "priceDesc",
+    });
     assert.equal(next.slots.pickedProducts?.dataSource?.type, "remote");
     if (next.slots.pickedProducts?.dataSource?.type === "remote") {
-      assert.equal(next.slots.pickedProducts.dataSource.sort, "salesDesc");
+      assert.equal(next.slots.pickedProducts.dataSource.sort, "priceDesc");
     }
     assert.ok(Array.isArray(next.values.pickedProducts));
     assert.equal((next.values.pickedProducts as unknown[]).length, 4);
   });
 
-  it("patchPayloadBuiltinCollectionExtract 写入 similarTo 并刷新 values", () => {
-    const base = payloadWithPickedProducts();
-    const next = patchPayloadBuiltinCollectionExtract(base, "pickedProducts", {
-      kind: "similarTo",
-      fromSlotId: "pickedSpotlightProduct",
-      matchField: "href",
-    });
-    const ds = next.slots.pickedProducts?.dataSource;
-    assert.equal(ds?.type, "remote");
-    if (ds?.type === "remote" && ds.provider === "builtin") {
-      assert.equal(ds.extract?.kind, "similarTo");
-      if (ds.extract?.kind === "similarTo") {
-        assert.equal(ds.extract.fromSlotId, "pickedSpotlightProduct");
-      }
-    }
-    assert.equal((next.values.pickedProducts as unknown[]).length, 4);
-  });
 });

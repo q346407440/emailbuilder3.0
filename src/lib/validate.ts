@@ -15,7 +15,6 @@ import {
 } from "../payload-contract/validate";
 import {
   COLLECTION_ITEM_FIELDS_NESTING_ERROR,
-  findCollectionFieldByPath,
   isItemPathWithinCollectionListLevelMax,
 } from "../payload-contract/collection-item-fields";
 import {
@@ -30,8 +29,13 @@ import { layoutBackgroundImageRenderable } from "./wrapperBackgroundImage";
 import { getFillValidationReason, isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
 import { extractInterpolationSlotIds } from "./interpolateText";
 import { getAtPath } from "./paths";
-import { isRepeatHostBlock, resolveRepeatContextForBlock } from "./repeatRegion";
+import { isRepeatHostBlock } from "./repeatHostBlock";
+import { resolveRepeatContextForRef } from "../repeat-runtime/repeatVirtualResolver";
 import { validateVisibilityRule } from "../visibility-contract";
+import {
+  findEnclosingRepeatHostBinding,
+  resolveRepeatFieldMappingSourceMeta,
+} from "./repeatNestedFieldMapping";
 import { collectContentAlignEffectivenessIssues } from "./contentAlignConfigurability";
 
 export type ValidationIssue = {
@@ -1033,6 +1037,22 @@ function collectDescendantBlockIds(t: EmailTemplate, rootIds: string[]): Set<str
   return ids;
 }
 
+/** 列表 repeat 在 block 树上的最大嵌套层级（含当前宿主 repeat 层）。 */
+export { REPEAT_NESTING_DEPTH_MAX } from "../repeat-binding-contract/values";
+import { REPEAT_NESTING_DEPTH_MAX } from "../repeat-binding-contract/values";
+
+/** 统计某区块向上祖先链中带 collection repeat 的数量（不含自身）。 */
+function countAncestorRepeatDepth(t: EmailTemplate, blockId: string): number {
+  let depth = 0;
+  let currentId = t.blocks[blockId]?.parentId ?? null;
+  while (currentId) {
+    const block = t.blocks[currentId];
+    if (block?.repeat?.mode === "collection") depth += 1;
+    currentId = block?.parentId ?? null;
+  }
+  return depth;
+}
+
 export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const slotIdToType = new Map<string, string>();
@@ -1104,29 +1124,30 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
           reason: COLLECTION_ITEM_FIELDS_NESTING_ERROR,
         });
       }
-      if (block.repeat.anchorItemIndex !== undefined) {
-        const index = block.repeat.anchorItemIndex;
-        if (!Number.isInteger(index) || index < 0) {
-          issues.push({
-            path: `${path}.anchorItemIndex`,
-            reason: "anchorItemIndex 必须为非负整数",
-          });
-        }
-        if (!block.repeat.itemPath?.trim()) {
-          issues.push({
-            path: `${path}.anchorItemIndex`,
-            reason: "anchorItemIndex 仅在与 itemPath 联用时允许",
-          });
-        }
+      const repeatNestingDepth = countAncestorRepeatDepth(t, blockId) + 1;
+      if (repeatNestingDepth > REPEAT_NESTING_DEPTH_MAX) {
+        issues.push({
+          path: `${path}`,
+          reason: `列表重复嵌套层级不能超过 ${REPEAT_NESTING_DEPTH_MAX} 层`,
+        });
       }
       const repeatPrototypeTreeIds = collectDescendantBlockIds(t, block.repeat.prototypeChildIds);
+      const enclosingParentRepeat = block.repeat.itemPath?.trim()
+        ? findEnclosingRepeatHostBinding(t, blockId)
+        : null;
       for (const mapping of block.repeat.fieldMappings ?? []) {
         const mappingPath = `${path}.fieldMappings.${mapping.id || mapping.targetBindPath}`;
-        const sourceField = findCollectionFieldByPath(block.repeat.itemFields, mapping.sourcePath);
+        const sourceField = resolveRepeatFieldMappingSourceMeta(
+          block.repeat,
+          enclosingParentRepeat,
+          mapping.sourcePath
+        );
         if (!sourceField) {
           issues.push({
             path: `${mappingPath}.sourcePath`,
-            reason: `映射来源字段「${mapping.sourcePath}」必须来自当前 collection 的 itemFields`,
+            reason: `映射来源字段「${mapping.sourcePath}」必须来自当前 collection 的 itemFields${
+              block.repeat.itemPath?.trim() ? "，或父项 repeat 的标量 itemFields（parent. 前缀）" : ""
+            }`,
           });
         } else if (sourceField.valueType === "collection") {
           issues.push({
@@ -1290,7 +1311,7 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
       if (
         valueType === "collection" &&
         collectionBindingUsesItemIndex(spec.slotPath) &&
-        !resolveRepeatContextForBlock(t, blockId)
+        !resolveRepeatContextForRef(t, { kind: "physical", blockId })
       ) {
         issues.push({
           path: `${path}.slotPath`,

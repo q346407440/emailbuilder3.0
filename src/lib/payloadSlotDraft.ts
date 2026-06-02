@@ -8,14 +8,13 @@ import type {
 } from "../payload-contract/collection-data-source";
 import { defaultCollectionDataSource } from "../payload-contract/collection-data-source";
 import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  normalizeBuiltinCollectionExtract,
-  type BuiltinCollectionExtract,
-} from "../payload-contract/collection-builtin-extract";
-import {
   DEFAULT_BUILTIN_COLLECTION_SORT,
-  type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
+import {
+  readSortPolicyFromBuiltinDataSource,
+  regularSortFromPolicy,
+  type NormalizedBuiltinSortPolicy,
+} from "../payload-contract/collection-builtin-sort-policy";
 import type { BindingCollectionField, EmailPayload, PayloadSlotDefinition } from "../types/email";
 import {
   buildDefaultCollectionFieldMap,
@@ -29,7 +28,6 @@ import {
   resolveCollectionFixedLength,
 } from "./collectionDataSource";
 import { applyBuiltinCollectionResolves } from "./resolveBuiltinCollectionItems";
-import { applyCollectionDisplayRule } from "./collectionDisplayRule";
 
 export type CollectionDataSourceKind = "custom" | "builtin";
 
@@ -43,8 +41,7 @@ export type CollectionCustomSourceDraft = {
 export type CollectionBuiltinSourceDraft = {
   values: Record<string, unknown>[];
   catalog: BuiltinCollectionCatalogId;
-  sort?: BuiltinCollectionSortId;
-  extract?: BuiltinCollectionExtract;
+  sortPolicy?: NormalizedBuiltinSortPolicy;
   productConfig?: BuiltinProductListConfig;
   albumConfig?: BuiltinAlbumListConfig;
   fieldMap?: Record<string, string>;
@@ -123,14 +120,10 @@ export function seedCollectionSlotDraft(
 
   const catalog: BuiltinCollectionCatalogId =
     ds.type === "remote" && ds.provider === "builtin" ? ds.catalog : "products";
-  const builtinSort =
+  const builtinSortPolicy =
     ds.type === "remote" && ds.provider === "builtin"
-      ? (ds.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT)
-      : DEFAULT_BUILTIN_COLLECTION_SORT;
-  const builtinExtract =
-    ds.type === "remote" && ds.provider === "builtin"
-      ? normalizeBuiltinCollectionExtract(ds.extract)
-      : DEFAULT_BUILTIN_COLLECTION_EXTRACT;
+      ? readSortPolicyFromBuiltinDataSource(ds)
+      : { kind: "regular" as const, sort: DEFAULT_BUILTIN_COLLECTION_SORT };
 
   const caches: CollectionSourceDraftCache = {
     custom: {
@@ -142,16 +135,17 @@ export function seedCollectionSlotDraft(
     },
     builtin: {
       catalog,
-      sort: builtinSort,
-      extract: builtinExtract,
+      sortPolicy: builtinSortPolicy,
       values:
         active === "builtin"
           ? structuredClone(committedItems)
-          : builtinPreviewItemsForSlot(catalog, itemFields, fixedLength, builtinSort, {
-              payload,
-              slotId,
-              extract: builtinExtract,
-            }),
+          : builtinPreviewItemsForSlot(
+              catalog,
+              itemFields,
+              fixedLength,
+              regularSortFromPolicy(builtinSortPolicy),
+              { payload, slotId, sortPolicy: builtinSortPolicy }
+            ),
     },
   };
 
@@ -164,7 +158,7 @@ export function seedCollectionSlotDraft(
       minItems: entry?.minItems,
       maxItems: entry?.maxItems,
       dataSource: ds,
-      displayRule: entry?.displayRule,
+      itemVisibility: entry?.itemVisibility,
       itemFields: entry?.itemFields,
     },
     value: structuredClone(committedItems),
@@ -205,7 +199,7 @@ export function isPayloadSlotDraftDirty(
 
   if (draft.slotDefPatch) {
     const patch = draft.slotDefPatch;
-    const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(patch, "displayRule");
+    const hasVisibilityPatch = Object.prototype.hasOwnProperty.call(patch, "itemVisibility");
     if (patch.minItems !== undefined && patch.minItems !== entry.minItems) return true;
     if (patch.maxItems !== undefined && patch.maxItems !== entry.maxItems) return true;
     if (patch.itemFields !== undefined && !stableJsonEqual(patch.itemFields, entry.itemFields ?? [])) {
@@ -215,10 +209,8 @@ export function isPayloadSlotDraftDirty(
       const committedDs = entry.dataSource ?? defaultCollectionDataSource();
       if (!stableJsonEqual(patch.dataSource, committedDs)) return true;
     }
-    if (hasDisplayRulePatch) {
-      const nextRule = patch.displayRule;
-      const committedRule = entry.displayRule;
-      if (!stableJsonEqual(nextRule, committedRule)) return true;
+    if (hasVisibilityPatch && !stableJsonEqual(patch.itemVisibility, entry.itemVisibility)) {
+      return true;
     }
   }
 
@@ -274,19 +266,7 @@ export function buildPreviewPayload(
           return merged;
         })();
 
-  next = applyBuiltinCollectionResolves(next);
-  const withDisplayRule: EmailPayload = {
-    ...next,
-    values: { ...next.values },
-  };
-  for (const [slotId, slotDef] of Object.entries(withDisplayRule.slots)) {
-    if (slotDef.valueType !== "collection" || !slotDef.displayRule || !slotDef.sceneCollectionPresetId) {
-      continue;
-    }
-    const current = toCollectionItems(withDisplayRule.values[slotId]);
-    withDisplayRule.values[slotId] = applyCollectionDisplayRule(current, slotDef.displayRule);
-  }
-  return withDisplayRule;
+  return applyBuiltinCollectionResolves(next);
 }
 
 /** 将单槽草稿合并进已提交 payload（保存变量） */
@@ -312,25 +292,25 @@ export function commitPayloadSlotDraft(
   }
 
   if (entry.valueType === "collection") {
-    const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(
+    const hasVisibilityPatch = Object.prototype.hasOwnProperty.call(
       draft.slotDefPatch ?? {},
-      "displayRule"
+      "itemVisibility"
     );
     const hasCollectionPatch =
       draft.slotDefPatch?.dataSource !== undefined ||
-      hasDisplayRulePatch ||
+      hasVisibilityPatch ||
       draft.slotDefPatch?.itemFields !== undefined ||
       draft.slotDefPatch?.minItems !== undefined ||
       draft.value !== undefined;
     if (hasCollectionPatch) {
       next = patchPayloadCollectionSlot(next, slotId, {
         dataSource: draft.slotDefPatch?.dataSource,
-        displayRule: draft.slotDefPatch?.displayRule,
+        itemVisibility: draft.slotDefPatch?.itemVisibility,
         itemFields: draft.slotDefPatch?.itemFields,
         values: draft.value as Record<string, unknown>[] | undefined,
         fixedLength:
           draft.slotDefPatch?.minItems === draft.slotDefPatch?.maxItems
-            ? draft.slotDefPatch.minItems
+            ? draft.slotDefPatch?.minItems
             : undefined,
       });
     }

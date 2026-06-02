@@ -1,5 +1,5 @@
 /**
- * 枚举 data/emails 下全部 template.json（含 layout-manifest 的 layouts/<id>/）。
+ * 枚举 data/emails 下全部 template.json（layouts/<id>/ 路径；须有 layout-manifest.json）。
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -23,31 +23,26 @@ export function listEmailTemplatePaths(emailsRoot) {
     if (!st.isDirectory()) continue;
 
     const manifestPath = path.join(base, "layout-manifest.json");
-    if (fs.existsSync(manifestPath)) {
-      let manifest;
-      try {
-        manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-      } catch {
-        continue;
-      }
-      const variants = Array.isArray(manifest?.variants) ? manifest.variants : [];
-      for (const v of variants) {
-        if (!v?.id) continue;
-        const tpl = path.join(base, "layouts", v.id, "template.json");
-        if (fs.existsSync(tpl)) paths.push(tpl);
-      }
+    if (!fs.existsSync(manifestPath)) continue;
+    let manifest;
+    try {
+      manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    } catch {
       continue;
     }
-
-    const legacy = path.join(base, "template.json");
-    if (fs.existsSync(legacy)) paths.push(legacy);
+    const variants = Array.isArray(manifest?.variants) ? manifest.variants : [];
+    for (const v of variants) {
+      if (!v?.id) continue;
+      const tpl = path.join(base, "layouts", v.id, "template.json");
+      if (fs.existsSync(tpl)) paths.push(tpl);
+    }
   }
   return paths.sort();
 }
 
 /**
  * @param {string} emailsRoot
- * @returns {string[]} emailKey 列表（含已迁移与 legacy）
+ * @returns {string[]} emailKey 列表
  */
 export function listEmailKeys(emailsRoot) {
   if (!fs.existsSync(emailsRoot)) return [];

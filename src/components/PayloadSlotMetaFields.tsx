@@ -11,7 +11,7 @@ import { isSceneCollectionPresetManagedSlot } from "../lib/sceneCollectionPreset
 import {
   isStandardScalarValueType,
   type StandardScalarValueType,
-} from "../lib/standardScalarSlotTypes";
+} from "../payload-contract/standard-scalar-types";
 import { StandardScalarValueTypeSelect } from "./StandardScalarValueTypeSelect";
 import { Field } from "./ui/Field";
 import { ShopInput } from "./ui/ShopFormControls";

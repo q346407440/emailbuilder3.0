@@ -12,7 +12,7 @@ import {
 
 function minimalTemplate(bindings: EmailTemplate["blocks"]["root"]["bindings"]): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -44,11 +44,12 @@ function minimalTemplate(bindings: EmailTemplate["blocks"]["root"]["bindings"]):
           contentAlign: { horizontal: "left", vertical: "top" },
         },
         props: {
-          content: "<p>hello</p>",
           textBody: { paragraphs: [{ runs: [{ text: "hello" }] }] },
           bold: false,
           italic: false,
           decoration: "none",
+          color: "#111111",
+          fontSize: "14px",
         },
         bindings: bindings ?? {},
       },
@@ -267,7 +268,7 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
     assert.equal(ok.length, 0);
   });
 
-  it("collection displayRule 支持按字段值过滤配置", () => {
+  it("collection itemVisibility 支持按行下标配置", () => {
     const template = minimalTemplate({
       "props.items": {
         mode: "variable",
@@ -284,25 +285,11 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
       products: {
         label: "products",
         valueType: "collection",
-        scene: "loyalty-internal-admin",
-        sceneCollectionPresetId: "testSceneProducts",
         itemFields: [
           { key: "type", label: "类型", valueType: "string", required: true },
           { key: "title", label: "名称", valueType: "string", required: true },
         ],
-        displayRule: {
-          keyField: "type",
-          includeValues: ["A", "C"],
-          excludeValues: ["legacy"],
-        },
-        displayRulePreset: {
-          keyField: "type",
-          includeValues: ["A", "C"],
-          options: [
-            { value: "A", label: "类型 A" },
-            { value: "C", label: "类型 C" },
-          ],
-        },
+        itemVisibility: [true, false, true],
       },
     };
     const issues = validatePayloadAgainstTemplate(
@@ -312,7 +299,7 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
     assert.equal(issues.length, 0);
   });
 
-  it("collection displayRule 非法配置应报错", () => {
+  it("collection itemVisibility 非法配置应报错", () => {
     const template = minimalTemplate({});
     const payload = validPayload(
       {},
@@ -321,27 +308,15 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
           label: "products",
           valueType: "collection",
           itemFields: [{ key: "title", label: "标题", valueType: "string" }],
-          displayRule: {
-            keyField: "bad.field",
-            includeValues: ["  "],
-          } as unknown as EmailPayload["slots"]["products"]["displayRule"],
-          displayRulePreset: {
-            keyField: "",
-            includeValues: [],
-            options: [{ value: "A", label: "" }],
-          } as unknown as EmailPayload["slots"]["products"]["displayRulePreset"],
+          itemVisibility: [true, "no"] as unknown as boolean[],
         },
       }
     );
     const issues = validatePayloadAgainstTemplate(template, payload);
-    assert.ok(issues.some((i) => i.path.endsWith("displayRule.keyField")));
-    assert.ok(issues.some((i) => i.path.endsWith("displayRule.includeValues")));
-    assert.ok(issues.some((i) => i.path.endsWith("displayRulePreset.keyField")));
-    assert.ok(issues.some((i) => i.path.endsWith("displayRulePreset.includeValues")));
-    assert.ok(issues.some((i) => i.path.endsWith("displayRulePreset.options[0].label")));
+    assert.ok(issues.some((i) => i.path.endsWith("itemVisibility[1]")));
   });
 
-  it("collection displayRule 仅允许内置场景变量声明", () => {
+  it("collection displayRule 已废弃应报错", () => {
     const template = minimalTemplate({});
     const payload = validPayload(
       {},
@@ -351,7 +326,7 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
           valueType: "collection",
           itemFields: [{ key: "title", label: "标题", valueType: "string" }],
           displayRule: { keyField: "type", includeValues: ["A"] },
-        },
+        } as EmailPayload["slots"]["products"],
       }
     );
     const issues = validatePayloadAgainstTemplate(template, payload);

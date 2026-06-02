@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -62,6 +63,38 @@ export function ConfirmDialogProvider({ children }: ProviderProps) {
   }, []);
 
   const value = useMemo(() => ({ confirm }), [confirm]);
+
+  useEffect(() => {
+    if (!pending) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.isComposing) return;
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        finish(false);
+        return;
+      }
+
+      if (event.key !== "Enter" || event.shiftKey || event.altKey) return;
+      if (event.metaKey || event.ctrlKey) return;
+
+      const active = document.activeElement;
+      const tag = active?.tagName;
+      if (tag === "TEXTAREA" || (active instanceof HTMLElement && active.isContentEditable)) return;
+      if (tag === "INPUT") {
+        const inputType = (active as HTMLInputElement).type;
+        if (inputType !== "button" && inputType !== "submit") return;
+      }
+      if (tag === "SELECT") return;
+
+      event.preventDefault();
+      finish(true);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [pending, finish]);
 
   return (
     <ConfirmDialogContext.Provider value={value}>

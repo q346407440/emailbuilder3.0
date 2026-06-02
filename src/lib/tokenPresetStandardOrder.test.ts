@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import fs from "node:fs";
 import path from "node:path";
-import { normalizeTokenPresetTokens, sortTokenPresetFamilies, sortTokenPresetScales } from "./tokenPresetStandardOrder";
+import { normalizeTokenPresetTokens, sortTokenPresetFamilies, sortTokenPresetScales } from "../token-preset-contract/standard-keys";
 
 describe("tokenPresetStandardOrder", () => {
   it("family 顺序与 public-neutral-saas 一致", () => {

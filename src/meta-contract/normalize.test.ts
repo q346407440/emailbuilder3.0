@@ -26,6 +26,11 @@ describe("normalizePersistedEmailMeta", () => {
     assert.equal("designSource" in out, false);
     assert.deepEqual(out.delivery, { subject: "s", preheader: "p" });
   });
+
+  it("不自动补 schemaVersion", () => {
+    const out = normalizePersistedEmailMeta({ displayName: "x" });
+    assert.equal("schemaVersion" in out, false);
+  });
 });
 
 describe("validateEmailMeta", () => {
@@ -37,10 +42,16 @@ describe("validateEmailMeta", () => {
   it("合法 meta 无错误", () => {
     assert.deepEqual(
       validateEmailMeta({
+        schemaVersion: "1.0.0",
         displayName: "名",
         delivery: { subject: "主题" },
       }),
       []
     );
+  });
+
+  it("缺 schemaVersion 报错", () => {
+    const issues = validateEmailMeta({ displayName: "名" });
+    assert.ok(issues.some((i) => i.path === "schemaVersion"));
   });
 });

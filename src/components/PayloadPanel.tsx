@@ -14,7 +14,7 @@ type Props = {
   selectedSlotId: string | null;
   onSelectSlot: (slotId: string) => void;
   onPayloadChange: (next: EmailPayload) => void;
-  /** 新建变量成功后：写入 payload.json 并与当前邮件场景绑定 */
+  /** 新建变量：先写入 payload.json，成功后再更新编辑器（失败则 UI 不变） */
   onVariableCreated?: (args: { payload: EmailPayload; slotId: string }) => void | Promise<void>;
   onCollectionSlotCreated?: (slotId: string) => void;
 };
@@ -56,15 +56,19 @@ export function PayloadPanel({
   };
 
   async function commitNewVariable(nextPayload: EmailPayload, slotId: string, mode: CreatePayloadSlotModalMode) {
-    if (onVariableCreated) {
-      await onVariableCreated({ payload: nextPayload, slotId });
-    } else {
-      onPayloadChange(nextPayload);
-      onSelectSlot(slotId);
-    }
     setSourceModalMode(null);
-    if (mode === "collection") {
-      onCollectionSlotCreated?.(slotId);
+    try {
+      if (onVariableCreated) {
+        await onVariableCreated({ payload: nextPayload, slotId });
+      } else {
+        onPayloadChange(nextPayload);
+        onSelectSlot(slotId);
+      }
+      if (mode === "collection") {
+        onCollectionSlotCreated?.(slotId);
+      }
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -149,6 +153,7 @@ export function PayloadPanel({
             setPayloadVariableScene(scene);
           }}
           onScenePresetConfirm={({ scene, presetId }) => {
+            setSourceModalMode(null);
             void getSceneCollectionPreset(scene, presetId)
               .then((preset) => {
                 const result = createCollectionPayloadSlotFromPreset(payload, preset);
@@ -156,7 +161,7 @@ export function PayloadPanel({
                   window.alert(result.error);
                   return;
                 }
-                void commitNewVariable(result.payload, result.slotId, "collection");
+                return commitNewVariable(result.payload, result.slotId, "collection");
               })
               .catch((e) => {
                 window.alert(e instanceof Error ? e.message : String(e));

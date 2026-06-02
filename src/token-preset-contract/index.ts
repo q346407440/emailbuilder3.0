@@ -1,4 +1,5 @@
 export type { TokenPresetFamily, TokenPresetStandardKey, TokenPresetStandardTokens } from "./types";
+export { TOKEN_PRESET_SCHEMA_VERSION } from "./version";
 export {
   TOKEN_PRESET_FAMILY_ORDER,
   TOKEN_PRESET_SCALE_ORDER,

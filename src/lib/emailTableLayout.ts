@@ -120,16 +120,6 @@ export function layoutPreviewInnerShellStretchesHeight(params: {
   return !params.directionIsRow && params.gapModeAuto && params.childCount > 0;
 }
 
-/** @deprecated 使用 layoutPreviewOuterBoxFillsParentHeight / layoutPreviewInnerShellStretchesHeight */
-export function layoutPreviewOuterTableUsesFullHeight(params: {
-  heightMode: unknown;
-  directionIsRow: boolean;
-  gapModeAuto: boolean;
-  childCount: number;
-}): boolean {
-  return layoutPreviewInnerShellStretchesHeight(params);
-}
-
 export function layoutRowInnerShouldFillParentHeight(
   wrapperStyle: { heightMode?: unknown; height?: unknown } | undefined,
   childCount: number
@@ -183,17 +173,6 @@ export function layoutColumnInnerShouldFillParentHeight(params: {
   if (params.childCount < 1 || !layoutParentHasExplicitHeight(params.wrapperStyle)) return false;
   if (params.gapModeAuto && params.childCount > 0) return true;
   if (params.hasFillHeightChild) return true;
-  return false;
-}
-
-/**
- * @deprecated 纵列 fill 高子块改由 `verticalStackRowHeightStyle` + presentation 栈表均分，不再使用 Flex。
- */
-export function layoutColumnShouldUseFillFlex(params: {
-  wrapperStyle: { heightMode?: unknown; height?: unknown } | undefined;
-  hasFillHeightChild: boolean;
-}): boolean {
-  void params;
   return false;
 }
 

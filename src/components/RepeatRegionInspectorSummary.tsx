@@ -1,36 +1,30 @@
-import type { CSSProperties, ReactNode } from "react";
-import type { EmailTemplate, RepeatFieldMapping, RepeatRegionBinding } from "../types/email";
+import type { ButtonHTMLAttributes } from "react";
+import type { EmailPayload, EmailTemplate, RepeatFieldMapping, RepeatRegionBinding } from "../types/email";
 import type { RepeatContextRelation } from "../lib/repeatRegion";
 import {
-  repeatColorIndexForHost,
-  repeatTreeTagPalette,
-  repeatTreeTagRoleLabel,
-} from "../lib/repeatRegionTreeTags";
-import { sanitizeListRepeatUserLabel } from "../lib/repeatNestedBindingUi";
+  repeatBindingMappingRows,
+  repeatBindingOverviewRowCount,
+  repeatBindingOverviewStructureShort,
+  repeatBindingPreviewFields,
+  repeatBindingRelationOpsLabel,
+} from "../lib/repeatInspectorSummaryCopy";
+import { normalizeItemVisibility, setCollectionItemVisibilityAt } from "../lib/collectionItemVisibility";
+import { toCollectionItems } from "../lib/payloadSlotDraft";
+import { CollectionFixedLengthField } from "./CollectionFixedLengthField";
+import { ReadonlyCollectionItemPreview } from "./ReadonlyCollectionItemPreview";
+import { Field } from "./ui/Field";
 
-function blockDisplayName(template: EmailTemplate, blockId: string): string {
-  const raw = template.blockMeta?.[blockId]?.name?.trim() || blockId;
-  return sanitizeListRepeatUserLabel(raw);
-}
-
-function RepeatAccentPill({
-  palette,
-  children,
-  title,
-}: {
-  palette: ReturnType<typeof repeatTreeTagPalette>;
-  children: ReactNode;
-  title?: string;
-}) {
-  const style: CSSProperties = {
-    borderColor: palette.border,
-    backgroundColor: palette.background,
-    color: palette.text,
-  };
+function InspectorTextAction({
+  className,
+  type = "button",
+  ...rest
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <span className="inspector-repeat-card__pill" style={style} title={title}>
-      {children}
-    </span>
+    <button
+      type={type}
+      className={["resource-text-action", className].filter(Boolean).join(" ")}
+      {...rest}
+    />
   );
 }
 
@@ -39,10 +33,23 @@ export type RepeatRegionInspectorSummaryProps = {
   hostId: string;
   repeat: RepeatRegionBinding;
   itemCount: number;
+  payload: EmailPayload | null;
   relation: RepeatContextRelation;
   prototypeRootId?: string;
   fieldMappingsOnBlock?: RepeatFieldMapping[];
   formatMappingLine?: (mapping: RepeatFieldMapping) => string;
+  onEdit?: () => void;
+  editLabel?: string;
+  onUnbind?: () => void;
+  unbindTitle?: string;
+  onItemVisibilityChange?: (itemVisibility: boolean[]) => void;
+  /** 与变量面板共用的列表固定长度（payload.slots）；仅 repeat 宿主且可编辑时展示 */
+  collectionFixedLength?: number;
+  collectionFixedLengthDisabled?: boolean;
+  collectionFixedLengthDisabledReason?: string;
+  onCollectionFixedLengthChange?: (length: number) => void;
+  /** 嵌套 itemPath 时覆盖 Inspector 数据预览行（默认读顶层 slot values） */
+  previewValues?: unknown;
 };
 
 export function RepeatRegionInspectorSummary({
@@ -50,122 +57,160 @@ export function RepeatRegionInspectorSummary({
   hostId,
   repeat,
   itemCount,
+  payload,
   relation,
   prototypeRootId,
   fieldMappingsOnBlock = [],
   formatMappingLine,
+  onEdit,
+  editLabel = "编辑绑定",
+  onUnbind,
+  unbindTitle,
+  onItemVisibilityChange,
+  collectionFixedLength,
+  collectionFixedLengthDisabled = false,
+  collectionFixedLengthDisabledReason,
+  onCollectionFixedLengthChange,
+  previewValues,
 }: RepeatRegionInspectorSummaryProps) {
-  const palette = repeatTreeTagPalette(repeatColorIndexForHost(template, hostId));
-  const cardStyle = {
-    "--inspector-repeat-accent-bg": palette.background,
-    "--inspector-repeat-accent-text": palette.text,
-  } as CSSProperties;
+  const variableLabel = repeat.label?.trim() || repeat.slotId;
+  const { contextHint } = repeatBindingRelationOpsLabel(
+    relation,
+    template,
+    hostId,
+    prototypeRootId
+  );
+  const previewFields = repeatBindingPreviewFields(repeat);
+  const resolvedPreviewValues = previewValues ?? payload?.values?.[repeat.slotId];
+  const previewRowCount = Math.max(
+    itemCount,
+    toCollectionItems(resolvedPreviewValues).length,
+    1
+  );
+  const itemVisibility = normalizeItemVisibility(
+    previewRowCount,
+    payload?.slots?.[repeat.slotId]?.itemVisibility
+  );
+  const mappingRows =
+    formatMappingLine && repeat.fieldMappings?.length
+      ? repeatBindingMappingRows(repeat, formatMappingLine)
+      : [];
 
-  const slotLabel = repeat.label?.trim() || repeat.slotId;
-  const hostName = blockDisplayName(template, hostId);
-  const fixedCount =
-    repeat.minItems != null && repeat.minItems === repeat.maxItems ? repeat.minItems : null;
+  const editAction = onEdit ? (
+    <InspectorTextAction type="button" onClick={onEdit}>
+      {editLabel}
+    </InspectorTextAction>
+  ) : null;
+  const unbindAction = onUnbind ? (
+    <InspectorTextAction
+      type="button"
+      className="resource-text-action--danger"
+      title={unbindTitle}
+      onClick={onUnbind}
+    >
+      解除绑定
+    </InspectorTextAction>
+  ) : null;
+  const manageHeaderExtra =
+    onEdit || onUnbind ? (
+      <span className="resource-text-actions">
+        {editAction}
+        {unbindAction}
+      </span>
+    ) : null;
 
-  const relationPill =
-    relation === "host"
-      ? "列表宿主"
-      : relation === "row-template"
-        ? "行模板内"
-        : "字段映射";
+  if (relation === "host") {
+    return (
+      <div className="inspector-list-bind-panel">
+        <Field label="列表变量" headerExtra={manageHeaderExtra}>
+          <p className="inspector-list-bind-panel__primary">{variableLabel}</p>
+        </Field>
+
+        <dl className="inspector-list-bind-overview" aria-label="绑定概览">
+          <div className="inspector-list-bind-overview__item">
+            <dt>画布行数</dt>
+            <dd>{repeatBindingOverviewRowCount(itemCount, repeat)}</dd>
+          </div>
+          <div className="inspector-list-bind-overview__item">
+            <dt>每行结构</dt>
+            <dd>{repeatBindingOverviewStructureShort(template, hostId, repeat)}</dd>
+          </div>
+          <div className="inspector-list-bind-overview__item">
+            <dt>已映射字段</dt>
+            <dd>{mappingRows.length > 0 ? `${mappingRows.length} 项` : "未配置"}</dd>
+          </div>
+        </dl>
+
+        {collectionFixedLength !== undefined ? (
+          <CollectionFixedLengthField
+            slotId={repeat.slotId}
+            fixedLength={collectionFixedLength}
+            disabled={collectionFixedLengthDisabled || !onCollectionFixedLengthChange}
+            disabledReason={
+              collectionFixedLengthDisabledReason ??
+              (!onCollectionFixedLengthChange ? "当前不可编辑列表长度。" : undefined)
+            }
+            hint="修改后同步至左侧「变量」面板；「画布行数」还受显隐与数据源预览影响。"
+            onCommit={onCollectionFixedLengthChange ?? (() => undefined)}
+          />
+        ) : null}
+
+        {mappingRows.length > 0 ? (
+          <Field label="字段映射">
+            <ul className="inspector-list-bind-mapping">
+              {mappingRows.map((line) => (
+                <li key={line} className="inspector-list-bind-mapping__row">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </Field>
+        ) : null}
+
+        <Field
+          label="数据预览"
+          hint="无数据时不显示行，不占高度。勾选「不展示」与变量面板同步；列表长度见上方；修改数据请至左侧「变量」面板。"
+        >
+          <ReadonlyCollectionItemPreview
+            slotId={repeat.slotId}
+            fields={previewFields}
+            values={resolvedPreviewValues}
+            itemVisibility={itemVisibility}
+            onItemHiddenChange={
+              onItemVisibilityChange
+                ? (index, hidden) => {
+                    onItemVisibilityChange(
+                      setCollectionItemVisibilityAt(itemVisibility, previewRowCount, index, !hidden)
+                    );
+                  }
+                : undefined
+            }
+          />
+        </Field>
+      </div>
+    );
+  }
 
   return (
-    <div className="inspector-repeat-card" style={cardStyle}>
-      <div className="inspector-repeat-card__header">
-        <span className="inspector-repeat-card__status">已绑定</span>
-        <RepeatAccentPill palette={palette}>{relationPill}</RepeatAccentPill>
-        <RepeatAccentPill palette={palette} title="与左侧区块树同色标识">
-          {repeatTreeTagRoleLabel("host")} · {slotLabel}
-        </RepeatAccentPill>
-      </div>
-
-      <div className="inspector-repeat-card__grid" role="list">
-        <div className="inspector-repeat-card__row">
-          <dt>列表变量</dt>
-          <dd>
-            <span className="inspector-repeat-card__value">{slotLabel}</span>
-            <code className="inspector-repeat-card__code">{repeat.slotId}</code>
-            {repeat.itemPath?.trim() ? (
-              <span className="inspector-repeat-card__hint-pill">
-                子级路径 · {repeat.itemPath}
-              </span>
-            ) : null}
-            {repeat.anchorItemIndex !== undefined ? (
-              <span className="inspector-repeat-card__hint-pill">
-                锚定父级第 {repeat.anchorItemIndex + 1} 项
-              </span>
-            ) : null}
-          </dd>
-        </div>
-
-        <div className="inspector-repeat-card__row">
-          <dt>当前数据</dt>
-          <dd>
-            <span className="inspector-repeat-card__metric">
-              {itemCount} 项
-              {repeat.minItems != null && repeat.maxItems != null && fixedCount == null
-                ? `（目录 ${repeat.minItems}–${repeat.maxItems} 项）`
-                : fixedCount != null
-                  ? `（固定 ${fixedCount} 项）`
-                  : null}
-            </span>
-          </dd>
-        </div>
-
-        <div className="inspector-repeat-card__row">
-          <dt>重复宿主</dt>
-          <dd>
-            <span className="inspector-repeat-card__block-chip">{hostName}</span>
-          </dd>
-        </div>
-
-        {repeat.prototypeChildIds.length > 0 ? (
-          <div className="inspector-repeat-card__row">
-            <dt>行模板</dt>
-            <dd className="inspector-repeat-card__chip-list">
-              {repeat.prototypeChildIds.map((childId) => (
-                <span key={childId} className="inspector-repeat-card__block-chip">
-                  {blockDisplayName(template, childId)}
-                </span>
-              ))}
-            </dd>
-          </div>
-        ) : null}
-      </div>
-
-      {relation === "host" ? (
-        <p className="inspector-repeat-card__note">列表为空时不渲染子项，不占位高度。</p>
+    <div className="inspector-list-bind-panel">
+      {contextHint ? (
+        <p className="inspector__muted inspector-list-bind-panel__summary">{contextHint}</p>
       ) : null}
 
-      {relation === "row-template" && prototypeRootId ? (
-        <div className="inspector-repeat-card__callout">
-          <p>
-            当前区块位于行模板「<strong>{blockDisplayName(template, prototypeRootId)}</strong>
-            」内，继承宿主「{hostName}」的列表绑定。
-          </p>
-          <p className="inspector-repeat-card__callout-muted">
-            可在「内容」页为字段绑定变量，或点击下方更换列表映射。
-          </p>
-        </div>
-      ) : null}
+      <Field label="列表变量" headerExtra={manageHeaderExtra}>
+        <p className="inspector-list-bind-panel__primary">{variableLabel}</p>
+      </Field>
 
       {relation === "mapped-field" && fieldMappingsOnBlock.length > 0 && formatMappingLine ? (
-        <div className="inspector-repeat-card__callout">
-          <p className="inspector-repeat-card__callout-title">本区块字段映射</p>
-          <ul className="inspector-repeat-card__mapping-list">
+        <Field label="字段填充">
+          <ul className="inspector-list-bind-mapping">
             {fieldMappingsOnBlock.map((mapping) => (
-              <li key={mapping.id}>
-                <code className="inspector-repeat-card__mapping-line">
-                  {formatMappingLine(mapping)}
-                </code>
+              <li key={mapping.id} className="inspector-list-bind-mapping__row">
+                {formatMappingLine(mapping)}
               </li>
             ))}
           </ul>
-        </div>
+        </Field>
       ) : null}
     </div>
   );

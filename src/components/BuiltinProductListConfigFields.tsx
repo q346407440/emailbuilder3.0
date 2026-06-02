@@ -1,10 +1,8 @@
 import { useState } from "react";
 import {
-  BUILTIN_PRODUCT_ROW_GRANULARITIES,
-  builtinProductRowGranularityLabel,
+  isSpuOnlyBuiltinProductSelection,
   normalizeBuiltinProductListConfig,
   type BuiltinProductListConfig,
-  type BuiltinProductRowGranularity,
 } from "../payload-contract/collection-builtin-catalog-config";
 import { summarizeBuiltinProductListConfig } from "../lib/builtinPickerCatalog";
 import { BuiltinProductPickerModal } from "./BuiltinProductPickerModal";
@@ -19,36 +17,25 @@ type Props = {
 
 export function BuiltinProductListConfigFields({ config, disabled, onChange }: Props) {
   const normalized = normalizeBuiltinProductListConfig(config);
+  const spuOnly = isSpuOnlyBuiltinProductSelection(normalized);
   const [pickerOpen, setPickerOpen] = useState(false);
-
-  const onGranularityChange = (rowGranularity: BuiltinProductRowGranularity) => {
-    if (rowGranularity === normalized.rowGranularity) return;
-    onChange(
-      normalizeBuiltinProductListConfig({
-        ...normalized,
-        rowGranularity,
-        selectedSpuIds: rowGranularity === "spu" ? normalized.selectedSpuIds : [],
-        skuSelection: rowGranularity === "sku" ? normalized.skuSelection : [],
-      })
-    );
-  };
-
-  const showSkuTreeAfterCollection =
-    normalized.rangeMode === "byCollection" &&
-    normalized.rowGranularity === "sku" &&
-    (normalized.selectedCollectionIds?.length ?? 0) > 0;
 
   return (
     <section className="builtin-product-list-config">
       <Field
         label="商品范围"
-        hint="与店匠「选择商品」一致：SPU 多选、SKU 树形多选、专辑单选、或全部商品。"
+        hint={
+          spuOnly
+            ? "选择主 SPU 候选池：指定商品、按专辑或全部商品。子级相似品/搭配品由系统按主 SPU 生成，不支持按 SKU 勾选。"
+            : "选择候选商品池：指定商品、按 SKU 规格、按专辑或全部商品。列表行固定为 SPU，SKU 展示由模板嵌套 repeat 控制。"
+        }
       >
         <p className="builtin-product-list-config__summary">
           {summarizeBuiltinProductListConfig(normalized)}
         </p>
         <ShopSecondaryButton
           htmlType="button"
+          className="builtin-product-list-config__action"
           disabled={disabled}
           onClick={() => setPickerOpen(true)}
         >
@@ -66,30 +53,6 @@ export function BuiltinProductListConfigFields({ config, disabled, onChange }: P
           setPickerOpen(false);
         }}
       />
-
-      <Field
-        label="列表行粒度"
-        hint="按 SKU 时邮件仅父级循环；选「专辑 / 全部商品」后在此切换 SPU 或 SKU 扁平行。"
-      >
-        <select
-          className="payload-collection-config__select"
-          value={normalized.rowGranularity}
-          disabled={disabled || normalized.rangeMode === "allProducts"}
-          onChange={(e) => onGranularityChange(e.target.value as BuiltinProductRowGranularity)}
-        >
-          {BUILTIN_PRODUCT_ROW_GRANULARITIES.map((g) => (
-            <option key={g} value={g}>
-              {builtinProductRowGranularityLabel(g)}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      {showSkuTreeAfterCollection ? (
-        <p className="inspector__muted">
-          已选专辑内商品为候选池；请再次打开「选择商品…」并切换到 SKU 页签勾选规格。
-        </p>
-      ) : null}
     </section>
   );
 }

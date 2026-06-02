@@ -136,7 +136,6 @@ export function TopbarTemplateSelect({
             />
           )}
           onChange={handleTemplatePick}
-          onSelect={handleTemplatePick}
         >
           {items.map((it) => (
             <ShopSelect.Option key={it.emailKey} value={it.emailKey}>

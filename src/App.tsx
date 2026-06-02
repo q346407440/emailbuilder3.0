@@ -3,8 +3,16 @@ import type { EmailListItem, EmailMeta, EmailPayload, EmailTemplate } from "./ty
 import type { LayoutManifest } from "./layout-variant-contract/types";
 import type { TokenPresets } from "./types/tokenPreset";
 import * as api from "./api/client";
-import { mergeTemplatePayload } from "./lib/merge";
-import { expandRepeatRegions, sourceBlockIdFromRepeatClone } from "./lib/repeatRegion";
+import type { VirtualBlockRef } from "./repeat-binding-contract";
+import {
+  buildRepeatPreviewModel,
+  findPreviewNodeByRef,
+  previewModelToFlatTemplate,
+  applyThemeToPreviewModel,
+  refToStableKey,
+  resolvePhysicalBlockId,
+} from "./repeat-runtime";
+import { resolveBlockTheme } from "./lib/resolveThemeInTemplate";
 import { applyVisibilityRules, templateHasVisibilityRules } from "./lib/visibility";
 import { collectExternalVariableSlots, getSlotPrimaryBlockId } from "./lib/payloadSlots";
 import {
@@ -15,7 +23,7 @@ import {
   type PayloadSlotDraft,
   type PayloadSlotDraftMap,
 } from "./lib/payloadSlotDraft";
-import { normalizeTokenPresetTokens } from "./lib/tokenPresetStandardOrder";
+import { normalizeTokenPresetTokens } from "./token-preset-contract/standard-keys";
 import {
   validatePayloadAgainstTemplate,
   validatePayloadAgainstTemplateUnion,
@@ -30,7 +38,7 @@ import {
 import { isLogicallyDeleted } from "./lib/logicalDelete";
 import { listVisibleLayoutVariants } from "./lib/layoutVariantLogicalDelete";
 import { resolveDesignTokens } from "./lib/resolveTokenPreset";
-import { resolveThemeInTemplate } from "./lib/resolveThemeInTemplate";
+import { reconcileSelectedBlockRefAfterTemplateChange, type TemplateChangeOptions } from "./lib/templateBlockSelection";
 import { isThemeRef } from "./types/themeRef";
 import { getLastSelectedEmailKey, setLastSelectedEmailKey } from "./lib/lastSelectedEmail";
 import { normalizeEmailRootBlock } from "./lib/normalizeEmailRoot";
@@ -56,7 +64,7 @@ import {
   emailDataSyncEditorSnapshot,
   shouldShowEmailDataSyncToast,
 } from "./lib/emailDataSyncToast";
-import { goToExternalApiIntegration, goToLibrary } from "./lib/appNavigation";
+import { goToExternalApiIntegration } from "./lib/appNavigation";
 import { TopbarHomeBackButton } from "./components/ui/TopbarHomeBackButton";
 import {
   computeCanvasBlockActionLayout,
@@ -243,8 +251,7 @@ export default function App() {
   const [globalTokenPresets, setGlobalTokenPresets] = useState<Record<string, TokenPresets>>({});
   const [workbenchView, setWorkbenchView] = useState<WorkbenchView>("block");
   const [selectedPayloadSlotId, setSelectedPayloadSlotId] = useState<string | null>(null);
-  const [autoOpenDataSourceSlotId, setAutoOpenDataSourceSlotId] = useState<string | null>(null);
-  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [selectedBlockRef, setSelectedBlockRef] = useState<VirtualBlockRef | null>(null);
   const [insertModalOpen, setInsertModalOpen] = useState(false);
   const [insertModalMode, setInsertModalMode] = useState<InsertBlockMode>("child");
   const [insertingBlock, setInsertingBlock] = useState(false);
@@ -270,8 +277,8 @@ export default function App() {
   /** 正在编辑的公共预设内存稿（仅含已改动的 id） */
   const [globalPresetDraft, setGlobalPresetDraft] = useState<Record<string, TokenPresets>>({});
 
-  const selectBlock = useCallback((id: string | null) => {
-    setSelectedBlockId(id ? sourceBlockIdFromRepeatClone(id) : null);
+  const selectBlock = useCallback((ref: VirtualBlockRef | null) => {
+    setSelectedBlockRef(ref);
     setBlockTreeSyncNonce((n) => n + 1);
   }, []);
 
@@ -282,7 +289,7 @@ export default function App() {
       const slot = collectExternalVariableSlots(template).find((s) => s.slotId === slotId);
       if (!slot) return;
       const blockId = getSlotPrimaryBlockId(template, slot);
-      if (blockId) selectBlock(blockId);
+      if (blockId) selectBlock({ kind: "physical", blockId });
     },
     [selectBlock, template]
   );
@@ -320,6 +327,9 @@ export default function App() {
     tokenPresets,
   });
   editorSyncStateRef.current = { template, payload, tokenPresets };
+  /** SSE 同步时判断：未保存的 payload 不应被磁盘快照覆盖（含新建变量落盘前） */
+  const payloadDirtyRef = useRef(false);
+  const lastPersistErrorRef = useRef("");
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
   const canvasStageRef = useRef<HTMLDivElement | null>(null);
   const [canvasBlockActionLayout, setCanvasBlockActionLayout] =
@@ -623,11 +633,10 @@ export default function App() {
   }, []);
 
   const resolvedPreview = useMemo((): {
-    template: EmailTemplate | null;
-    previewTemplate: EmailTemplate | null;
+    previewModel: ReturnType<typeof buildRepeatPreviewModel> | null;
     issues: Array<{ path: string; reason: string }>;
   } => {
-    if (!template || !previewPayload) return { template: null, previewTemplate: null, issues: [] };
+    if (!template || !previewPayload) return { previewModel: null, issues: [] };
     const afterVisibility: EmailTemplate = (() => {
       if (!hasVisibilityBlocks) {
         return applyVisibilityRules(template, previewPayload);
@@ -637,34 +646,38 @@ export default function App() {
       }
       return template;
     })();
-    const expandedTemplate = expandRepeatRegions(afterVisibility, previewPayload);
-    const mergedTemplate = mergeTemplatePayload(expandedTemplate, previewPayload);
-    if (!containsThemeRef(mergedTemplate)) {
-      return { template: mergedTemplate, previewTemplate: mergedTemplate, issues: [] };
+    let previewModel = buildRepeatPreviewModel(afterVisibility, previewPayload);
+    const flat = previewModelToFlatTemplate(previewModel, afterVisibility);
+    if (!containsThemeRef(flat)) {
+      return { previewModel, issues: [] };
     }
     if (!effectiveDesignTokens) {
       return {
-        template: null,
-        previewTemplate: mergedTemplate,
+        previewModel: null,
         issues: [{ path: "tokenPresets", reason: "模板包含 $themeRef，但当前缺少可用的样式预设" }],
       };
     }
-    const resolved = resolveThemeInTemplate(mergedTemplate, effectiveDesignTokens);
-    return {
-      template: resolved.template,
-      previewTemplate: resolved.template ?? mergedTemplate,
-      issues: resolved.issues,
-    };
+    const issues: Array<{ path: string; reason: string }> = [];
+    previewModel = applyThemeToPreviewModel(previewModel, (block) =>
+      resolveBlockTheme(block, { theme: effectiveDesignTokens, issues })
+    );
+    if (issues.length > 0) {
+      return { previewModel: null, issues };
+    }
+    return { previewModel, issues: [] };
   }, [template, previewPayload, effectiveDesignTokens, hasVisibilityBlocks, canvasSimulateAllHidden]);
 
-  /** 画布用已烘焙主题；烘焙失败时回退未烘焙稿，避免整页卡在「正在加载编辑器…」 */
-  const merged = resolvedPreview?.previewTemplate ?? null;
+  const previewModel = resolvedPreview?.previewModel ?? null;
   const insertableEntries = useMemo(() => listInsertableCatalogEntries(), []);
-  const selectedCanvasBlockId = selectedBlockId ?? merged?.rootBlockId ?? null;
-  const selectedCanvasBlock = useMemo(() => {
-    if (!merged || !selectedCanvasBlockId) return null;
-    return merged.blocks[selectedCanvasBlockId] ?? null;
-  }, [merged, selectedCanvasBlockId]);
+  const selectedCanvasBlockKey = selectedBlockRef ? refToStableKey(selectedBlockRef) : null;
+  const selectedPhysicalBlockId = selectedBlockRef
+    ? resolvePhysicalBlockId(selectedBlockRef)
+    : null;
+  const selectedPreviewNode =
+    previewModel && selectedBlockRef
+      ? findPreviewNodeByRef(previewModel, selectedBlockRef)
+      : null;
+  const selectedCanvasBlock = selectedPreviewNode?.block ?? null;
   const selectedSupportsChildInsert =
     selectedCanvasBlock?.type === "emailRoot" ||
     selectedCanvasBlock?.type === "layout" ||
@@ -678,17 +691,17 @@ export default function App() {
     selectedCanvasBlock && selectedCanvasBlock.type !== "emailRoot"
   );
   const selectedTemplateBlock = useMemo(() => {
-    if (!template || !selectedBlockId) return null;
-    return template.blocks[selectedBlockId] ?? null;
-  }, [template, selectedBlockId]);
+    if (!template || !selectedPhysicalBlockId) return null;
+    return template.blocks[selectedPhysicalBlockId] ?? null;
+  }, [template, selectedPhysicalBlockId]);
   const isRepeatListBindingChild = useMemo(() => {
-    if (!template || !selectedBlockId) return false;
-    return isRepeatListBindingChildBlock(template, selectedBlockId);
-  }, [template, selectedBlockId]);
+    if (!template || !selectedPhysicalBlockId) return false;
+    return isRepeatListBindingChildBlock(template, selectedPhysicalBlockId);
+  }, [template, selectedPhysicalBlockId]);
   const siblingMoveState = useMemo(() => {
-    if (!template || !selectedBlockId) return null;
-    return getBlockSiblingMoveState(template, selectedBlockId);
-  }, [template, selectedBlockId]);
+    if (!template || !selectedPhysicalBlockId) return null;
+    return getBlockSiblingMoveState(template, selectedPhysicalBlockId);
+  }, [template, selectedPhysicalBlockId]);
   const selectedCanDuplicate = Boolean(
     selectedTemplateBlock &&
       selectedTemplateBlock.type !== "emailRoot" &&
@@ -703,12 +716,12 @@ export default function App() {
   const canvasActionsBusy = insertingBlock || deletingBlock || reorderingBlock;
 
   useEffect(() => {
-    if (!merged || !selectedCanvasBlockId || !showCanvasBlockActions) {
+    if (!previewModel || !selectedCanvasBlockKey || !showCanvasBlockActions) {
       setCanvasBlockActionLayout(null);
       return;
     }
 
-    const previewRootId = merged.rootBlockId;
+    const previewRootId = previewModel.root.block.id;
 
     const updateLayout = () => {
       const stage = canvasStageRef.current;
@@ -721,7 +734,7 @@ export default function App() {
         `[data-email-preview-block="${escapePreviewBlockIdForSelector(previewRootId)}"]`
       );
       const selectedEl = scroll.querySelector<HTMLElement>(
-        `[data-email-preview-block="${escapePreviewBlockIdForSelector(selectedCanvasBlockId)}"]`
+        `[data-email-preview-block="${escapePreviewBlockIdForSelector(selectedCanvasBlockKey)}"]`
       );
       if (!rootEl || !selectedEl) {
         setCanvasBlockActionLayout(null);
@@ -744,7 +757,7 @@ export default function App() {
       scroll?.removeEventListener("scroll", updateLayout);
       window.removeEventListener("resize", updateLayout);
     };
-  }, [merged, selectedCanvasBlockId, showCanvasBlockActions, blockTreeSyncNonce]);
+  }, [previewModel, selectedCanvasBlockKey, showCanvasBlockActions, blockTreeSyncNonce]);
 
   const templatesForPayloadValidation = useMemo(() => {
     if (!template || !layoutVariantId) return [];
@@ -787,6 +800,7 @@ export default function App() {
       stableStringify(payload) !== stableStringify(diskTemplatePayload.payload)
     );
   }, [diskTemplatePayload, payload, payloadSlotDraftsDirty]);
+  payloadDirtyRef.current = payloadDirty;
 
   const tokenPresetsDirty = useMemo(() => {
     if (stylePresetListSelection !== "local") return false;
@@ -815,9 +829,18 @@ export default function App() {
     []
   );
 
-  const onTemplateChange = useCallback((nextTemplate: EmailTemplate) => {
+  const onTemplateChange = useCallback((nextTemplate: EmailTemplate, options?: TemplateChangeOptions) => {
+    if (options?.selectBlockRef !== undefined) {
+      setSelectedBlockRef(options.selectBlockRef);
+    } else {
+      setSelectedBlockRef((current) =>
+        template !== null
+          ? reconcileSelectedBlockRefAfterTemplateChange(template, nextTemplate, current)
+          : current
+      );
+    }
     setTemplate(nextTemplate);
-  }, []);
+  }, [template]);
 
   const onPersistSuccess = useCallback(
     async () => {
@@ -829,6 +852,7 @@ export default function App() {
   );
 
   const onPersistError = useCallback((message: string) => {
+    lastPersistErrorRef.current = message;
     setError(message);
     setStatus("");
   }, []);
@@ -845,22 +869,32 @@ export default function App() {
 
   const handlePayloadVariableCreated = useCallback(
     async (nextPayload: EmailPayload, slotId: string) => {
-      if (!emailKey || !template) return;
-      setPayload(nextPayload);
-      setSelectedPayloadSlotId(slotId);
+      if (!emailKey || !template) {
+        const msg = "邮件尚未加载完成，无法创建变量。";
+        message.error(msg);
+        throw new Error(msg);
+      }
       setStatus("变量入库中…");
       setError(null);
+      lastPersistErrorRef.current = "";
       const ok = await persistPayloadSlotCatalog(nextPayload);
-      if (ok) {
-        setDiskTemplatePayload({
-          template: structuredClone(template),
-          payload: structuredClone(nextPayload),
-        });
-        setStatus("变量已保存");
-        message.info("变量已写入 payload.json", 1.6);
-      } else {
+      if (!ok) {
         setStatus("");
+        const detail = lastPersistErrorRef.current.trim();
+        const msg = detail
+          ? `变量未能写入 payload.json：${detail}`
+          : "变量未能写入 payload.json，创建已取消。";
+        message.error(msg);
+        throw new Error(msg);
       }
+      setPayload(nextPayload);
+      setSelectedPayloadSlotId(slotId);
+      setDiskTemplatePayload({
+        template: structuredClone(template),
+        payload: structuredClone(nextPayload),
+      });
+      setStatus("变量已创建");
+      message.success("变量已创建并写入 payload.json", 1.6);
     },
     [emailKey, template, persistPayloadSlotCatalog]
   );
@@ -893,24 +927,36 @@ export default function App() {
 
   const handlePayloadVariableDeleted = useCallback(
     async (next: { template: EmailTemplate; payload: EmailPayload; slotId: string }) => {
-      if (!emailKey) return;
-      setTemplate(next.template);
-      setPayload(next.payload);
+      if (!emailKey || !template) {
+        const msg = "邮件尚未加载完成，无法删除变量。";
+        message.error(msg);
+        throw new Error(msg);
+      }
       setStatus("变量删除中…");
       setError(null);
       const ok = await persistTemplatePayloadCatalog(next.template, next.payload);
-      if (ok) {
-        setDiskTemplatePayload({
-          template: structuredClone(next.template),
-          payload: structuredClone(next.payload),
-        });
-        setStatus("变量已删除");
-        message.info("变量已删除并写入模板与 payload", 1.6);
-      } else {
+      if (!ok) {
         setStatus("");
+        const msg = "变量未能从库中删除，请查看顶部错误说明。";
+        message.error(msg);
+        throw new Error(msg);
       }
+      setTemplate(next.template);
+      setPayload(next.payload);
+      setPayloadSlotDrafts((prev) => discardPayloadSlotDraft(prev, next.slotId));
+      setSelectedPayloadSlotId((prev) => {
+        if (prev !== next.slotId) return prev;
+        const remaining = Object.keys(next.payload.slots ?? {});
+        return remaining[0] ?? null;
+      });
+      setDiskTemplatePayload({
+        template: structuredClone(next.template),
+        payload: structuredClone(next.payload),
+      });
+      setStatus("变量已删除");
+      message.success("变量已从 payload.json 与模板中删除", 1.6);
     },
-    [emailKey, persistTemplatePayloadCatalog]
+    [emailKey, template, persistTemplatePayloadCatalog]
   );
 
   const hasLayoutDirty = templateDirty || payloadDirty || tokenPresetsDirty || globalStylePresetDirty;
@@ -932,10 +978,7 @@ export default function App() {
       setStatus("正在创建新版式…");
       setError(null);
       try {
-        const created = await api.createLayoutVariant(emailKey, {
-          label,
-          copyFromLayoutVariantId: layoutVariantId,
-        });
+        const created = await api.createLayoutVariant(emailKey, { label });
         setLayoutManifest(created.manifest);
         await loadEmail(emailKey, created.layoutVariantId);
         setStatus("新版式已创建");
@@ -948,7 +991,7 @@ export default function App() {
         setLayoutVariantBusy(false);
       }
     },
-    [confirmDiscardLayoutDirty, emailKey, layoutVariantId, loadEmail]
+    [confirmDiscardLayoutDirty, emailKey, loadEmail]
   );
 
   const renameLayoutVariant = useCallback(
@@ -1012,13 +1055,13 @@ export default function App() {
       try {
         const result = insertCatalogBlockIntoTemplate({
           template,
-          selectedBlockId,
+          selectedBlockId: selectedPhysicalBlockId,
           mode: insertModalMode,
           entry,
           tokenPresets,
         });
         setTemplate(result.template);
-        selectBlock(result.insertedBlockId);
+        selectBlock({ kind: "physical", blockId: result.insertedBlockId });
         setInsertModalOpen(false);
         setStatus(
           insertModalMode === "child"
@@ -1031,14 +1074,14 @@ export default function App() {
         setInsertingBlock(false);
       }
     },
-    [template, selectedBlockId, insertModalMode, selectBlock, tokenPresets]
+    [template, selectedPhysicalBlockId, insertModalMode, selectBlock, tokenPresets]
   );
 
   const handleDeleteSelectedCanvasBlock = useCallback(async () => {
-    if (!template || !selectedBlockId || deletingBlock) return;
-    const block = template.blocks[selectedBlockId];
+    if (!template || !selectedPhysicalBlockId || deletingBlock) return;
+    const block = template.blocks[selectedPhysicalBlockId];
     if (!block || block.type === "emailRoot") return;
-    const label = template.blockMeta?.[selectedBlockId]?.name?.trim() || selectedBlockId;
+    const label = template.blockMeta?.[selectedPhysicalBlockId]?.name?.trim() || selectedPhysicalBlockId;
     const hasChildren = (block.children?.length ?? 0) > 0;
     const ok = await confirm({
       title: "删除区块",
@@ -1053,23 +1096,23 @@ export default function App() {
     setDeletingBlock(true);
     try {
       const parentId = block.parentId;
-      const next = deleteBlockFromTemplate(template, selectedBlockId);
+      const next = deleteBlockFromTemplate(template, selectedPhysicalBlockId);
       setTemplate(next);
-      selectBlock(parentId ?? null);
+      selectBlock(parentId ? { kind: "physical", blockId: parentId } : null);
       setStatus(`已删除「${label}」`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setDeletingBlock(false);
     }
-  }, [confirm, template, selectedBlockId, deletingBlock, selectBlock]);
+  }, [confirm, template, selectedPhysicalBlockId, deletingBlock, selectBlock]);
 
   const handleMoveSelectedCanvasBlock = useCallback(
     (direction: "up" | "down") => {
-      if (!template || !selectedBlockId || canvasActionsBusy) return;
+      if (!template || !selectedPhysicalBlockId || canvasActionsBusy) return;
       setReorderingBlock(true);
       try {
-        const next = moveBlockAmongSiblings(template, selectedBlockId, direction);
+        const next = moveBlockAmongSiblings(template, selectedPhysicalBlockId, direction);
         setTemplate(next);
         setStatus(direction === "up" ? "已上移" : "已下移");
       } catch (e) {
@@ -1078,16 +1121,19 @@ export default function App() {
         setReorderingBlock(false);
       }
     },
-    [template, selectedBlockId, canvasActionsBusy]
+    [template, selectedPhysicalBlockId, canvasActionsBusy]
   );
 
   const handleDuplicateSelectedCanvasBlock = useCallback(() => {
-    if (!template || !selectedBlockId || canvasActionsBusy) return;
+    if (!template || !selectedPhysicalBlockId || canvasActionsBusy) return;
     setReorderingBlock(true);
     try {
-      const { template: next, duplicatedRootId } = duplicateBlockBelow(template, selectedBlockId);
+      const { template: next, duplicatedRootId } = duplicateBlockBelow(
+        template,
+        selectedPhysicalBlockId
+      );
       setTemplate(next);
-      selectBlock(duplicatedRootId);
+      selectBlock({ kind: "physical", blockId: duplicatedRootId });
       const label = next.blockMeta?.[duplicatedRootId]?.name?.trim() || duplicatedRootId;
       setStatus(`已复制「${label}」`);
     } catch (e) {
@@ -1095,7 +1141,7 @@ export default function App() {
     } finally {
       setReorderingBlock(false);
     }
-  }, [template, selectedBlockId, canvasActionsBusy, selectBlock]);
+  }, [template, selectedPhysicalBlockId, canvasActionsBusy, selectBlock]);
 
   const save = useCallback(async () => {
     if (!emailKey || !template || !payload) return;
@@ -1113,8 +1159,9 @@ export default function App() {
         template: structuredClone(template),
         payload: prev?.payload ? structuredClone(prev.payload) : structuredClone(payload),
       }));
-      setStatus("区块已保存");
+      setStatus("");
       setError(null);
+      message.success("区块已保存", 2);
       void loadList({ silent: true });
     } catch (e) {
       setStatus("");
@@ -1125,7 +1172,7 @@ export default function App() {
   const discardDraft = useCallback(() => {
     if (!diskTemplatePayload) return;
     setTemplate(structuredClone(diskTemplatePayload.template));
-    setStatus("已放弃未保存区块更改");
+    message.info("已放弃未保存区块更改", 1.6);
   }, [diskTemplatePayload]);
 
   const saveTokenPresets = useCallback(async () => {
@@ -1403,7 +1450,14 @@ export default function App() {
           tokenPresets: tpSynced,
         });
         setTemplate(t);
-        setPayload(p);
+        if (payloadDirtyRef.current) {
+          const editorPayload = editorSyncStateRef.current.payload;
+          if (editorPayload) {
+            setPayload(editorPayload);
+          }
+        } else {
+          setPayload(p);
+        }
         setTokenPresets(tpSynced);
         setDiskTokenPresets(structuredClone(tpSynced));
         if (
@@ -1520,7 +1574,6 @@ export default function App() {
         <TopbarLayoutVariantSelect
           manifest={layoutManifest}
           value={layoutVariantId}
-          legacySingleFile={Boolean(template && !layoutManifest)}
           busy={layoutVariantBusy}
           disabled={topbarSelectionLocked || status.startsWith("加载") || status.startsWith("切换")}
           onSelect={(nextLayoutId) => void switchLayoutVariant(nextLayoutId)}
@@ -1554,55 +1607,75 @@ export default function App() {
             </button>
           ))}
         </div>
-        <div className="resource-text-actions topbar__actions">
-          <button
-            type="button"
-            className="resource-text-action"
-            disabled={!emailKey}
-            title={emailKey ? "查看当前模板的变量目录与模拟外部 values 入参" : "请先选择模板"}
-            onClick={() =>
-              emailKey &&
-              goToExternalApiIntegration(emailKey, {
-                layoutVariantId,
-                tokenPreset: stylePresetListSelection,
-              })
-            }
+        <div className="topbar__actions">
+          <div
+            className="resource-text-actions topbar__action-group"
+            role="group"
+            aria-label="当前模板操作"
           >
-            外部 API
-          </button>
-          <button type="button" className="resource-text-action" onClick={goToLibrary}>
-            组件库管理
-          </button>
-          <button
-            type="button"
-            className="resource-text-action"
-            disabled={!emailKey || !templateDirty}
-            title={!emailKey ? "请先选择模板" : templateDirty ? "仅保存区块配置（template）" : "当前无未保存区块更改"}
-            onClick={() => void save()}
-          >
-            保存区块
-          </button>
-          {workbenchView === "meta" ? (
             <button
               type="button"
               className="resource-text-action"
-              disabled={!metaCanSendTest}
-              title={metaCanSendTest ? "发送测试邮件" : "未配置 SMTP，暂不可发送"}
+              disabled={!emailKey || !templateDirty}
+              title={
+                !emailKey
+                  ? "请先选择模板"
+                  : templateDirty
+                    ? "仅保存区块配置（template）"
+                    : "当前无未保存区块更改"
+              }
+              onClick={() => void save()}
+            >
+              保存区块
+            </button>
+            {templateDirty && diskTemplatePayload ? (
+              <button
+                type="button"
+                className="resource-text-action resource-text-action--danger"
+                title="仅放弃未保存区块更改"
+                onClick={discardDraft}
+              >
+                放弃未保存区块
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="resource-text-action"
+              disabled={!emailKey || !metaCanSendTest}
+              title={
+                !emailKey
+                  ? "请先选择模板"
+                  : metaCanSendTest
+                    ? "发送测试邮件"
+                    : "未配置 SMTP，暂不可发送"
+              }
               onClick={() => setMetaSendTestNonce((v) => v + 1)}
             >
               发送测试邮件
             </button>
-          ) : null}
-          {templateDirty && diskTemplatePayload ? (
+          </div>
+          <span className="topbar__action-divider" aria-hidden />
+          <div
+            className="resource-text-actions topbar__action-group"
+            role="group"
+            aria-label="平台与资源"
+          >
             <button
               type="button"
-              className="resource-text-action resource-text-action--danger"
-              title="仅放弃未保存区块更改"
-              onClick={discardDraft}
+              className="resource-text-action"
+              disabled={!emailKey}
+              title={emailKey ? "查看当前模板的变量目录与模拟外部 values 入参" : "请先选择模板"}
+              onClick={() =>
+                emailKey &&
+                goToExternalApiIntegration(emailKey, {
+                  layoutVariantId,
+                  tokenPreset: stylePresetListSelection,
+                })
+              }
             >
-              放弃未保存区块
+              外部 API
             </button>
-          ) : null}
+          </div>
         </div>
         {status ? <span className="topbar__status">{status}</span> : null}
       </header>
@@ -1610,6 +1683,17 @@ export default function App() {
       {error ? <div className="app__banner app__banner--error">{error}</div> : null}
       {validationIssues.length ? <ValidationIssuesBanner issues={validationIssues} /> : null}
       <main className="workspace">
+        {workbenchView !== "meta" && emailKey ? (
+          <div className="meta-editor-send-test-host" hidden aria-hidden>
+            <MetaEditor
+              emailKey={emailKey}
+              onError={setError}
+              variant="embedded"
+              openSendTestNonce={metaSendTestNonce}
+              onSendTestCapabilityChange={setMetaCanSendTest}
+            />
+          </div>
+        ) : null}
         {workbenchView === "meta" ? (
           <aside className="block-tree workspace__left-placeholder" aria-label="左侧面板占位">
             <div className="block-tree__title">元信息</div>
@@ -1641,15 +1725,19 @@ export default function App() {
             onVariableCreated={({ payload: nextPayload, slotId }) =>
               handlePayloadVariableCreated(nextPayload, slotId)
             }
-            onCollectionSlotCreated={setAutoOpenDataSourceSlotId}
           />
-        ) : (
+        ) : previewModel ? (
           <BlockTree
-            template={merged}
-            selectedBlockId={selectedBlockId}
+            sourceTemplate={template}
+            previewModel={previewModel}
+            selectedBlockRef={selectedBlockRef}
             syncNonce={blockTreeSyncNonce}
             onSelect={selectBlock}
           />
+        ) : (
+          <aside className="block-tree">
+            <p className="inspector__muted">预览暂不可用</p>
+          </aside>
         )}
         <section className="canvas-col">
           <div className="canvas-col__head">
@@ -1669,7 +1757,7 @@ export default function App() {
             ) : null}
           </div>
           <div className="canvas-col__stage" ref={canvasStageRef}>
-            {merged && showCanvasBlockActions && canvasBlockActionLayout ? (
+            {previewModel && showCanvasBlockActions && canvasBlockActionLayout ? (
               <div className="canvas-block-actions" aria-label="画布区块操作">
                 {showCanvasLeftActions ? (
                   <div
@@ -1756,11 +1844,16 @@ export default function App() {
             ) : null}
             <div className="canvas-scroll" ref={canvasScrollRef}>
               <div className="canvas-frame">
-                <EmailPreview
-                  template={merged}
-                  selectedBlockId={selectedBlockId}
-                  onSelectBlock={selectBlock}
-                />
+                {previewModel ? (
+                  <EmailPreview
+                    previewModel={previewModel}
+                    sourceTemplate={template}
+                    selectedBlockRef={selectedBlockRef}
+                    onSelectBlock={selectBlock}
+                  />
+                ) : (
+                  <p className="inspector__muted">预览暂不可用（请检查样式预设或校验问题）</p>
+                )}
               </div>
             </div>
           </div>
@@ -1802,8 +1895,6 @@ export default function App() {
             onSlotDraftChange={handleSlotDraftChange}
             onCommitSlot={handleCommitPayloadSlot}
             selectedSlotId={selectedPayloadSlotId}
-            autoOpenDataSourceSlotId={autoOpenDataSourceSlotId}
-            onAutoOpenDataSourceHandled={() => setAutoOpenDataSourceSlotId(null)}
             onPayloadChange={setPayload}
             onTemplatePayloadChange={onUpdate}
             onVariableDeleted={handlePayloadVariableDeleted}
@@ -1824,7 +1915,8 @@ export default function App() {
             template={template}
             payload={payload}
             previewPayload={previewPayload}
-            selectedBlockId={selectedBlockId}
+            selectedBlockRef={selectedBlockRef}
+            previewModel={previewModel}
             onUpdate={onUpdate}
             onTemplateChange={onTemplateChange}
             onDiscardPayloadSlotDraft={(slotId) =>
@@ -1832,7 +1924,6 @@ export default function App() {
             }
             emailKey={emailKey}
             layoutVariantId={layoutVariantId}
-            mergedTemplate={merged}
             effectiveDesignTokens={effectiveDesignTokens}
             tokenPresets={tokenPresets}
           />

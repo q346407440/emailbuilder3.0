@@ -14,11 +14,11 @@
 | email-template-restore-guide | [.claude/skills/email-template-restore-guide.md](.claude/skills/email-template-restore-guide.md) | 按设计图还原邮件的一站式指南：白话执行顺序、交付物清单、模块壳与 token 绑定（三条原则与圆角放哪）。 当用户说按图还原、像素还原、新建邮件目录、交付模板、白话步骤、模块壳、token 绑定、对图排版时使用； 易漏案例与反模式见 email-template-restore-check；配置母版与 block 白名单见 email-config-motherboard。 |
 | email-template-restore-check | [.claude/skills/email-template-restore-check.md](.claude/skills/email-template-restore-check.md) | 根据设计图/截图还原 Easy-Email 邮件时的易遗漏点与交付前自检清单（叠放层对齐、`wrapperStyle.contentAlign`、禁止 crossAlign 与已废弃 overlay 撑高/空 layout 推右、堆叠模块与根 gap 上的圆角反模式、模块壳内内容贴边与 pageInline 分工等）。 当用户用口语说「还原邮件模板」「按设计稿/Png/截图做邮件」「用我的还原邮件 skills」「实现这封邮件模板」「邮件学习模板」「project-plan 里对话要做模板」「模板还原检查」「还原遗漏」「像素还原自检」或迭代任意邮件模板 JSON 时，应在动手改结构/样式前**优先读取**本技能，避免返工。 |
 | easy-email-frontend-chrome-verify | [.claude/skills/easy-email-frontend-chrome-verify.md](.claude/skills/easy-email-frontend-chrome-verify.md) | 在前端渲染或应用行为变更后，须先在 Cursor 中创建与本技能验收顺序逐项对应的任务清单并据此执行； 再用 user-chrome-devtools MCP 打开本地页（默认 5180）、快照/截图、走关键流程并查看控制台与网络。 在用户要求 UI 验收、用 Chrome DevTools MCP 手动测试，或收尾涉及 src/components、EmailPreview、Inspector、画布、模板渲染时使用； 修改邮件模板数据且影响预览效果时同样须浏览器验收。若 MCP 报 browser is already running / chrome-profile 占用，见本技能附录。 |
-| easy-email-payload-contract | [.claude/skills/easy-email-payload-contract.md](.claude/skills/easy-email-payload-contract.md) | Easy-Email payload 变量赋值契约唯一真源：`src/payload-contract/`。 定义 payload.json 顶层形态、variable 槽 valueType（string/url/image/color/number/boolean/collection）、interpolate 原子槽、 collection 的 itemFields 与 values 值级校验。 槽目录真源在 payload.slots、取值在 payload.values；template 仅保留绑定关系（repeat / bindings / visibility）。 详文 docs/邮件变量与绑定真源.md。 当用户问「payload 契约」「列表字段类型」「slot valueType」「业务变量校验」时使用。 |
-| easy-email-repeat-binding | [.claude/skills/easy-email-repeat-binding.md](.claude/skills/easy-email-repeat-binding.md) | Easy-Email 列表重复（repeat）绑定与物化态重绑：代码真源在 src/lib/repeatRegion.ts、repeatMaterializedNormalize.ts、repeatNestedBinding.ts； UI 在 Inspector、RepeatRegionBindModal、ValidationIssuesBanner、BlockTree。 当用户说「列表绑定」「解除列表绑定」「父级与子级都循环」「物化态重绑」「fieldMappings 映射目标不存在」、 referral-friend-joined 主推 SPU+SKU、嵌套 skus 循环、绑定向导默认变量/行模板时使用。 场景走查与任务勾选见 docs/referral-friend-joined-列表重复绑定交互优化.md 与 docs/referral-friend-joined-列表绑定前端走查与交互优化-2026-05-21.md。 |
+| easy-email-payload-contract | [.claude/skills/easy-email-payload-contract.md](.claude/skills/easy-email-payload-contract.md) | Easy-Email payload 变量赋值契约唯一真源：`src/payload-contract/`。 定义 payload.json 顶层形态、variable 槽 valueType（string/url/image/color/number/boolean/collection）、interpolate 原子槽、 collection 的 itemFields 与 values 值级校验。 槽目录真源在 payload.slots、取值在 payload.values；template 仅保留绑定关系（repeat / bindings / visibility）。 当用户问「payload 契约」「列表字段类型」「slot valueType」「业务变量校验」时使用。 |
+| easy-email-repeat-binding | [.claude/skills/easy-email-repeat-binding.md](.claude/skills/easy-email-repeat-binding.md) | Easy-Email 列表 repeat 绑定唯一真源：src/repeat-binding-contract/（REPEAT_BINDING_RULES）。 运行时 src/repeat-runtime/（虚拟预览）、src/lib/repeatRegion.ts（物化/绑定）、repeatMaterializedNormalize.ts、repeatNestedBinding.ts； UI：Inspector、RepeatRegionBindModal（两步向导）。派生列表 A/B 见 docs/step2-相似品搭配品-derivedFrom-执行计划.md。 |
 | easy-email-render-defaults | [.claude/skills/easy-email-render-defaults.md](.claude/skills/easy-email-render-defaults.md) | Easy-Email「渲染默认 / 禁止持久化」唯一真源：`src/render-defaults-contract/`。 定义画布会生效但不写入 template.json 的固定规则、禁止字段、以及底图 padding 等特殊渲染语义。 与 block-contract（允许写什么 JSON）、token-preset-contract（样式预设键）并列。 当用户问「哪些配置不进 JSON」「项目默认规则」「底图内边距语义」「render defaults schema」时读取。 |
 | email-remote-asset-urls | [.claude/skills/email-remote-asset-urls.md](.claude/skills/email-remote-asset-urls.md) | 邮件模板中的远程占位图源约定：摄影默认 Pexels（images.pexels.com）；图标默认 jsDelivr 锁版本的 npm 包（Tabler / Simple Icons / lucide-static）。禁止编造 URL；交付前验证可访问性。当用户说「占位图」「Pexels」「图标 CDN」「远程图源」「类似模板43」或 Agent 填写邮件素材 URL 时使用。 |
-| email-token-preset-standard-scope | [.claude/skills/email-token-preset-standard-scope.md](.claude/skills/email-token-preset-standard-scope.md) | 定义本仓库「样式预设」在 tokenPresets.json 中约定的标准 family / scale 集合，以及模板里 $themeRef 与 bindings.tokenPath 的合法写法； 含「组件/字段应绑到哪一条标准 token」的决策思维（设计意图、胶囊类型、白名单与刻意不绑的边界）； 以 data/emails/on-cart-abandon-2 为对齐样例。当用户或 Agent 新建/扩展 tokenPresets、批量绑定 $themeRef、核对模板是否引用未声明 token、或要求「与弃购 2 同一套预设范围」时使用。 |
+| email-token-preset-standard-scope | [.claude/skills/email-token-preset-standard-scope.md](.claude/skills/email-token-preset-standard-scope.md) | 定义本仓库「样式预设」在 tokenPresets.json 中约定的标准 family / scale 集合，以及模板里 $themeRef 与 bindings.tokenPath 的合法写法； 含「组件/字段应绑到哪一条标准 token」的决策思维（设计意图、胶囊类型、白名单与刻意不绑的边界）； 以 data/emails/coupon-available 为对齐样例。当用户或 Agent 新建/扩展 tokenPresets、批量绑定 $themeRef、核对模板是否引用未声明 token、或要求「与 coupon-available 同一套预设范围」时使用。 |
 
 ---
 
@@ -53,36 +53,44 @@
 
 ## 总原则
 
-- **可演进、非临时**：禁止「只为当前 PR 糊一下」的命名、魔法数、复制粘贴大段逻辑。简单可以，但必须**有清晰边界、可测试、可替换**（例如端口与路径走配置/环境变量，不写死散落多处）。
-- **先找后写**：改功能或加 UI 前，先在仓库内搜索是否已有 **组件 / hook / `src/lib` 工具函数 / 类型**；能扩展则扩展，避免平行造第二套相似实现。
+- **可演进、非临时**：禁止「只为当前 PR 糊一下」的命名、魔法数、复制粘贴大段逻辑。简单可以，但必须**有清晰边界、可测试、可替换**（端口、数据根、路径走环境变量或集中配置，不写死散落多处）。
+- **先找后写**：动手前先在仓库内搜索是否已有 **契约 / `src/lib` / 组件 / hook / server 模块 / 迁移脚本**；能扩展则扩展，避免平行造第二套相似实现。
+- **全栈同一套领域逻辑**：合并、校验、路径解析、repeat/派生列表解析等**只写一份**（`src/lib` + `src/*-contract/`），前端、server、脚本**共用**；禁止在 route handler 或页面里重写等价规则。
 
 ## 分层与职责
 
 | 区域 | 职责 |
 |------|------|
-| `src/components/` | 可复用 UI 与组合块；**无**数据获取副作用的纯展示优先抽这里。 |
-| `src/lib/` | 与 React 解耦的纯逻辑（合并、校验、路径读写等），供前端与（如需要）服务端复用。 |
-| `src/hooks/`（可建） | 跨组件的状态、订阅、副作用封装；不要在多个页面重复 `useEffect` + 相同 fetch 模式。 |
-| `src/types/` | 共享类型与契约；API 与编辑器状态共用同一套类型定义。 |
-| `server/` | HTTP 与 IO；**不写**应在 `src/lib` 的合并/校验核心逻辑（避免双份真理）。 |
+| `src/*-contract/` | 机器真源：字段白名单、枚举、禁止项、规则目录（与 `easy-email-source-first-contract` 对齐）。 |
+| `src/lib/` | 与框架解耦的**纯领域逻辑**（合并、校验、repeat、落盘路径解析等）；**前端、server、脚本**均从此 import。 |
+| `src/types/` | 共享 TS 类型；API、编辑器、落盘 JSON 共用。 |
+| `src/components/` | 可复用 UI；**无**数据获取副作用的纯展示优先抽这里。 |
+| `src/hooks/`（可建） | 跨组件状态、订阅、副作用；避免多页面重复相同 `useEffect` + fetch。 |
+| `src/api/` | 前端 HTTP 客户端：路径、错误体解析集中在此；页面/组件只调封装 client，不内联 URL。 |
+| `server/` | **薄 HTTP 层**：路由、鉴权（若有）、请求/响应映射、**IO**（读写信件目录、SSE、上传）；**不写**本应在 `src/lib` / 契约层的校验与合并核心。 |
+| `server/*.ts`（非 index） | 按领域拆的 **server 侧适配/IO 模块**（如 `emailLayoutContext.ts`、`*Store.ts`）：路径解析、watch、第三方 SMTP 等；仍应薄，复杂规则下沉 `src/lib`。 |
+| `scripts/` | 迁移与批处理：复用 `src/lib` + 契约；**不**在脚本里维护第二份键表或校验规则。 |
 
 ## 公共复用（必须贯彻）
 
-1. **第二次相似即抽象**：两处及以上相同或仅参数不同的 UI/逻辑 → 抽 **小组件**、**hook** 或 **`lib` 纯函数**，并替换调用方。
-2. **组件粒度**：优先 **小而稳定** 的原子/分子组件（按钮区、表单行、面板区块），再由页面/容器编排；避免单文件数千行的「上帝组件」。
-3. **样式与布局**：重复的布局骨架（如三列工作台、顶栏区块）应抽成布局组件或 CSS 模块，避免多文件复制同一 flex/grid。
-4. **数据与 API**：`fetch` 路径、错误体解析集中在 `src/api/`（或同类模块）；页面只调用已封装的 client，不内联 URL。
-5. **命名与导出**：公共模块使用**明确、领域化**命名（`mergeTemplatePayload` 优于 `merge`）；优先 **具名导出** 便于重构与 tree-shaking。
+1. **第二次相似即抽象**：两处及以上相同或仅参数不同的逻辑 → 抽 **`lib` 纯函数**、**契约常量**、**小组件**、**hook** 或 **server 模块**，并替换调用方。
+2. **Route / 页面保持薄**：`server/index.ts` 与页面容器只做编排（读 body → 调 lib → 写响应 / 落盘）；单文件不应持续堆叠本可下沉的业务分支。
+3. **组件粒度（前端）**：优先小而稳定的原子/分子组件，再由页面编排；避免单文件数千行的「上帝组件」。
+4. **IO 与领域分离（后端）**：文件读写、路径拼接、环境变量默认值放在 server 或专用 IO 模块；**业务判断**（能否保存、409 原因、合并结果）走 `src/lib/validate` 等已有入口。
+5. **API 对称**：新增 HTTP 能力时，**同时**考虑 `src/api/` 客户端封装与 `easy-email-storage-api` 技能索引；错误体形态保持一致、可解析。
+6. **命名与导出**：公共模块使用**明确、领域化**命名（`mergeTemplatePayload` 优于 `merge`）；优先**具名导出**便于重构与 tree-shaking。
 
 ## 迭代中沉淀
 
-- 新增能力时默认问一句：**「半年后别人会复用这段吗？」** 若是，第一次实现就放在正确层级（`lib` vs `components`），而不是「以后再抽」。
+- 新增能力时默认问：**「半年后前端、server 或脚本会复用这段吗？」** 若是，第一次就放在正确层级（契约 → lib → server/UI），而不是「以后再抽」。
 - 重构时：**缩小 diff 范围**，先抽公共再改行为，避免行为与结构大挪移混在同一提交。
 
 ## 反模式（避免）
 
-- 在多个组件内复制同一 JSON 字段路径字符串或校验规则。
-- 在 `App.tsx` 持续堆叠本可属于 hook 或子组件的逻辑。
+- 在多个组件、route handler 或脚本里复制同一 JSON 字段路径、校验规则或 merge 逻辑。
+- 在 `App.tsx` 或 `server/index.ts` 持续堆叠本可属于 hook、子组件或 `src/lib` 的逻辑。
+- server 为省事 duplicate 一份 `validateTemplate` / payload 契约判断，与 `src/lib` 行为漂移。
+- 迁移脚本手写与契约不一致的 JSON 形态，导致「能跑脚本但过不了 `validate:all`」。
 - 为省事使用 `any` 绕过类型，或禁用 lint 规则而不补类型/注释说明。
 ---
 
@@ -90,7 +98,7 @@
 
 > 来源：`.cursor/rules/easy-email-frontend-verify-reminder.mdc`
 
-若本次改动影响**模板预览、画布、区块树、Inspector、加载/保存**等可在浏览器中验证的行为，或修改了 **`data/emails/**` 下邮件数据**（`template.json`、`tokenPresets.json`、`payload.json`、`meta.json` 等）从而改变预览中的版式/图片/文案，收尾前在本地已运行 `./start.sh`（或 `npm run dev:all`）的前提下，按技能 **`easy-email-frontend-chrome-verify`**（`.cursor/skills/easy-email-frontend-chrome-verify/SKILL.md`）使用 **`user-chrome-devtools`** MCP 打开 `http://127.0.0.1:5180` 并走验收步骤（含切换到目标邮件、粗查图片加载与控制台/网络）。
+若本次改动影响**模板预览、画布、区块树、Inspector、加载/保存**等可在浏览器中验证的行为，或修改了 **`data/emails/**` 下邮件数据**（`template.json`、`tokenPresets.json`、`payload.json`、`meta.json` 等）从而改变预览中的版式/图片/文案，收尾前在本地已运行 `./start.sh`（或 `npm run dev:all`）的前提下，按技能 **`easy-email-frontend-chrome-verify`**（`.cursor/skills/easy-email-frontend-chrome-verify/SKILL.md`）使用 **`user-chrome-devtools`** MCP 打开 `http://127.0.0.1:5180` 并走验收步骤（含切换到目标邮件、粗查图片加载与控制台/网络）。涉及**保存 template** 时，确认 `PUT` body 与磁盘 `template.json` 均为 **nested 4.0.0**（`schemaVersion` + `root`，无顶层 `blocks`）。
 
 MCP 报 profile 占用冲突时，按技能 **`easy-email-frontend-chrome-verify`** 附录「MCP profile 冲突」处理。
 ---
@@ -122,15 +130,16 @@ MCP 报 profile 占用冲突时，按技能 **`easy-email-frontend-chrome-verify
 | 变更类型 | 优先真源（先改这里） | 常见派生 / 消费层 |
 |----------|----------------------|-------------------|
 | block 字段白名单、类型能力 | `src/block-contract/`（`registry.ts`、`by-type/*.ts`） | `src/lib/validate.ts`、Inspector、渲染 |
-| 模板结构、bindings、`$themeRef` | legacy：`data/emails/<id>/template.json`；多版式：`layouts/<layoutVariantId>/template.json` + `layout-manifest.json` | 同版式目录 `tokenPresets.json`、`EmailPreview`、导出 |
+| 模板结构、bindings、`$themeRef` | **落盘**：`src/template-disk-contract/` + `src/lib/templateTreeAdapter.ts`；**文件**：`layouts/<layoutVariantId>/template.json` + `layout-manifest.json` | 同版式 `tokenPresets.json`、`EmailPreview`、导出；编辑器内存为 EditorBlockGraph |
 | 场景版式清单、路径解析 | `src/layout-variant-contract/` + `src/lib/emailLayoutVariant.ts` | `server/emailLayoutContext.ts`、`src/api/client.ts`（`?layout=`）、`run-validate-all.mjs` |
 | 样式档位、标准 token 键 | `tokenPresets.json` + `src/token-preset-contract/` | template 中 `$themeRef` / `bindings.tokenPath` |
-| 变量槽目录、取值、collection 列 | `payload.json`（`slots` + `values`）+ `blocks.*.repeat`；契约 `src/payload-contract/` | `template.bindings`（仅 slotId/路径，无 defaultValue）、`mergeTemplatePayload`、校验；见 `docs/邮件变量与绑定真源.md` |
+| 变量槽目录、取值、collection 列 | `payload.json`（`slots` + `values`）+ `blocks.*.repeat`；契约 `src/payload-contract/` | `template.bindings`（仅 slotId/路径，无 defaultValue）、`mergeTemplatePayload`、校验；技能 **`easy-email-payload-contract`** |
 | 禁止持久化、渲染默认语义 | `src/render-defaults-contract/` | 渲染层；**勿**把默认写进 template |
 | visibility 表达式合法性 | `src/visibility-contract/` | template 中的 visibility |
 | 共享 TS 类型、合并逻辑 | `src/types/`、`src/lib/`（与 React 解耦） | `src/components/`、`server/`（**server 不写双份校验核心**） |
 | HTTP 路径、落盘 IO | `server/index.ts` + `easy-email-storage-api` 技能 | `src/api/` 客户端 |
-| 全仓库 JSON 形态迭代 | 迁移脚本 `package.json` 中 `migrate:*` / `normalize:*` | 全量 `data/emails/**`、校验与测试 |
+| 全仓库 JSON 形态迭代 | 迁移脚本 `package.json` 中 `migrate:*` / `normalize:*`；索引 **`src/schema-registry/`** | 全量 `data/emails/**`、校验与测试 |
+| 列表 repeat 虚拟预览 | **`src/repeat-binding-contract/`** + **`src/repeat-runtime/`** | `App.tsx`、BlockTree、EmailPreview、Inspector；物化/解绑 **`repeatRegion.ts`** |
 
 概念索引与口语路由：技能 **`easy-email-concepts`**。
 
@@ -177,10 +186,10 @@ MCP 报 profile 占用冲突时，按技能 **`easy-email-frontend-chrome-verify
 |------|----------|------|
 | 按设计图还原邮件 | tokenPresets → template → payload → validate → 浏览器 | `email-template-restore-guide`、`email-template-restore-check` |
 | 仅改业务文案/链接 | `payload.json`（槽在 template.bindings） | `easy-email-payload-contract` |
-| 列表绑定 / 解除 / 物化重绑 / 嵌套 skus 循环 | `repeatRegion.ts` → `repeatMaterializedNormalize.ts` → `repeatNestedBinding.ts` → Inspector/弹窗；**勿**在 skills 重复键表 | `easy-email-repeat-binding` |
+| 列表绑定 / 解除 / 物化重绑 / 嵌套 skus 循环 | **`src/repeat-runtime/`** + `repeatRegion.ts` → Inspector/弹窗；**勿**在 skills 重复键表 | `easy-email-repeat-binding` |
 | block 类型/字段新增、配置母版 | `block-contract` → `validate.ts` → 模板/Inspector/渲染 | `email-config-motherboard` |
 | 落盘/API | 先契约与 `server/`，再 `src/api/` | `easy-email-storage-api` |
-| 场景版式（含单版式 `default`） | `layout-manifest.json` + `layouts/<id>/`（template + tokenPresets）；全量迁移 `npm run migrate:layout-variants:write` | 顶栏版式切换（多版式时）、`useEmailDiskPersist` 多版式 payload 预检 |
+| 场景版式（含单版式 `default`） | `layout-manifest.json` + `layouts/<id>/`（template + tokenPresets）；新建场景须自带 manifest | 顶栏版式切换（多版式时）、`useEmailDiskPersist` 多版式 payload 预检 |
 ---
 
 ## Rule 5: 同步 Claude 规则与技能

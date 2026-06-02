@@ -6,7 +6,7 @@ import type { EmailTemplate } from "../types/email";
 
 test("flatMapHorizontalLayoutRowCells：hug 子列会把 td width attr 透传到渲染结果", () => {
   const template: EmailTemplate = {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test",
     templateVersion: 1,
     rootBlockId: "root",

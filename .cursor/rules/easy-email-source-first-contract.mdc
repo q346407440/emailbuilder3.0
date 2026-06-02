@@ -28,15 +28,16 @@ alwaysApply: true
 | 变更类型 | 优先真源（先改这里） | 常见派生 / 消费层 |
 |----------|----------------------|-------------------|
 | block 字段白名单、类型能力 | `src/block-contract/`（`registry.ts`、`by-type/*.ts`） | `src/lib/validate.ts`、Inspector、渲染 |
-| 模板结构、bindings、`$themeRef` | legacy：`data/emails/<id>/template.json`；多版式：`layouts/<layoutVariantId>/template.json` + `layout-manifest.json` | 同版式目录 `tokenPresets.json`、`EmailPreview`、导出 |
+| 模板结构、bindings、`$themeRef` | **落盘**：`src/template-disk-contract/` + `src/lib/templateTreeAdapter.ts`；**文件**：`layouts/<layoutVariantId>/template.json` + `layout-manifest.json` | 同版式 `tokenPresets.json`、`EmailPreview`、导出；编辑器内存为 EditorBlockGraph |
 | 场景版式清单、路径解析 | `src/layout-variant-contract/` + `src/lib/emailLayoutVariant.ts` | `server/emailLayoutContext.ts`、`src/api/client.ts`（`?layout=`）、`run-validate-all.mjs` |
 | 样式档位、标准 token 键 | `tokenPresets.json` + `src/token-preset-contract/` | template 中 `$themeRef` / `bindings.tokenPath` |
-| 变量槽目录、取值、collection 列 | `payload.json`（`slots` + `values`）+ `blocks.*.repeat`；契约 `src/payload-contract/` | `template.bindings`（仅 slotId/路径，无 defaultValue）、`mergeTemplatePayload`、校验；见 `docs/邮件变量与绑定真源.md` |
+| 变量槽目录、取值、collection 列 | `payload.json`（`slots` + `values`）+ `blocks.*.repeat`；契约 `src/payload-contract/` | `template.bindings`（仅 slotId/路径，无 defaultValue）、`mergeTemplatePayload`、校验；技能 **`easy-email-payload-contract`** |
 | 禁止持久化、渲染默认语义 | `src/render-defaults-contract/` | 渲染层；**勿**把默认写进 template |
 | visibility 表达式合法性 | `src/visibility-contract/` | template 中的 visibility |
 | 共享 TS 类型、合并逻辑 | `src/types/`、`src/lib/`（与 React 解耦） | `src/components/`、`server/`（**server 不写双份校验核心**） |
 | HTTP 路径、落盘 IO | `server/index.ts` + `easy-email-storage-api` 技能 | `src/api/` 客户端 |
-| 全仓库 JSON 形态迭代 | 迁移脚本 `package.json` 中 `migrate:*` / `normalize:*` | 全量 `data/emails/**`、校验与测试 |
+| 全仓库 JSON 形态迭代 | 迁移脚本 `package.json` 中 `migrate:*` / `normalize:*`；索引 **`src/schema-registry/`** | 全量 `data/emails/**`、校验与测试 |
+| 列表 repeat 虚拟预览 | **`src/repeat-binding-contract/`** + **`src/repeat-runtime/`** | `App.tsx`、BlockTree、EmailPreview、Inspector；物化/解绑 **`repeatRegion.ts`** |
 
 概念索引与口语路由：技能 **`easy-email-concepts`**。
 
@@ -83,7 +84,7 @@ alwaysApply: true
 |------|----------|------|
 | 按设计图还原邮件 | tokenPresets → template → payload → validate → 浏览器 | `email-template-restore-guide`、`email-template-restore-check` |
 | 仅改业务文案/链接 | `payload.json`（槽在 template.bindings） | `easy-email-payload-contract` |
-| 列表绑定 / 解除 / 物化重绑 / 嵌套 skus 循环 | `repeatRegion.ts` → `repeatMaterializedNormalize.ts` → `repeatNestedBinding.ts` → Inspector/弹窗；**勿**在 skills 重复键表 | `easy-email-repeat-binding` |
+| 列表绑定 / 解除 / 物化重绑 / 嵌套 skus 循环 | **`src/repeat-runtime/`** + `repeatRegion.ts` → Inspector/弹窗；**勿**在 skills 重复键表 | `easy-email-repeat-binding` |
 | block 类型/字段新增、配置母版 | `block-contract` → `validate.ts` → 模板/Inspector/渲染 | `email-config-motherboard` |
 | 落盘/API | 先契约与 `server/`，再 `src/api/` | `easy-email-storage-api` |
-| 场景版式（含单版式 `default`） | `layout-manifest.json` + `layouts/<id>/`（template + tokenPresets）；全量迁移 `npm run migrate:layout-variants:write` | 顶栏版式切换（多版式时）、`useEmailDiskPersist` 多版式 payload 预检 |
+| 场景版式（含单版式 `default`） | `layout-manifest.json` + `layouts/<id>/`（template + tokenPresets）；新建场景须自带 manifest | 顶栏版式切换（多版式时）、`useEmailDiskPersist` 多版式 payload 预检 |

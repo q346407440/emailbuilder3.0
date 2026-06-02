@@ -1,23 +1,32 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import type { VirtualBlockRef } from "../repeat-binding-contract";
 import type { EmailTemplate } from "../types/email";
+import type { RepeatPreviewModel } from "../repeat-binding-contract";
 import { blockTypeLabel } from "../lib/blockTypeLabel";
-import { isMaterializedRepeatRowBlockId, sourceBlockIdFromRepeatClone } from "../lib/repeatRegion";
+import {
+  isRepeatExpansionGroupSelected,
+  refToStableKey,
+  resolvePhysicalBlockId,
+} from "../repeat-runtime";
 import {
   buildRepeatRegionTreeTagIndex,
+  formatRepeatItemDisplayName,
   repeatTreeTagForBlock,
   repeatTreeTagPalette,
   repeatTreeTagRoleLabel,
   repeatTreeTagTitle,
+  repeatTreeRowDisplayTag,
   type RepeatTreeBlockTag,
 } from "../lib/repeatRegionTreeTags";
 import { ShopSecondaryButton } from "./ui/ShopFormControls";
 
 type Props = {
-  template: EmailTemplate;
-  selectedBlockId: string | null;
+  /** 磁盘 template（repeat tag 索引） */
+  sourceTemplate: EmailTemplate;
+  previewModel: RepeatPreviewModel;
+  selectedBlockRef: VirtualBlockRef | null;
   syncNonce: number;
-  onSelect: (id: string | null) => void;
-  startBlockId?: string;
+  onSelect: (ref: VirtualBlockRef | null) => void;
   variant?: "panel" | "embedded";
   title?: string;
 };
@@ -29,10 +38,7 @@ function RepeatTreeTag({ template, tag }: { template: EmailTemplate; tag: Repeat
     backgroundColor: palette.background,
     color: palette.text,
   };
-  const label =
-    tag.role === "repeat-item" && tag.itemIndex !== undefined
-      ? `${repeatTreeTagRoleLabel(tag.role)}${tag.itemIndex + 1}`
-      : repeatTreeTagRoleLabel(tag.role);
+  const label = repeatTreeTagRoleLabel(tag.role);
 
   return (
     <span className="block-tree__repeat-tag" style={style} title={repeatTreeTagTitle(template, tag)}>
@@ -52,7 +58,6 @@ function Row({
   onToggle,
   repeatTag,
   repeatGroupStripe,
-  materializedStatic,
   template,
 }: {
   blockTreeRowId: string;
@@ -65,7 +70,6 @@ function Row({
   onToggle: () => void;
   repeatTag: RepeatTreeBlockTag | null;
   repeatGroupStripe: RepeatTreeBlockTag | null;
-  materializedStatic: boolean;
   template: EmailTemplate;
 }) {
   const stripePalette = repeatGroupStripe ? repeatTreeTagPalette(repeatGroupStripe.colorIndex) : null;
@@ -74,7 +78,7 @@ function Row({
     <div
       className={`block-tree__row ${selected ? "block-tree__row--selected" : ""} ${
         repeatGroupStripe ? "block-tree__row--repeat-group" : ""
-      }${materializedStatic ? " block-tree__row--materialized" : ""}`}
+      }`}
       data-block-tree-row={blockTreeRowId}
       style={{
         paddingLeft: 8 + depth * 14,
@@ -98,36 +102,63 @@ function Row({
         <span className="block-tree__label-inner">
           <span className="block-tree__label-text">{label}</span>
           {repeatTag ? <RepeatTreeTag template={template} tag={repeatTag} /> : null}
-          {materializedStatic ? (
-            <span className="block-tree__materialized-tag" title="解除绑定后的物化静态行，重绑列表后将恢复为循环">
-              静态
-            </span>
-          ) : null}
         </span>
       </ShopSecondaryButton>
     </div>
   );
 }
 
+function repeatTagForRef(
+  ref: VirtualBlockRef,
+  tagIndex: ReturnType<typeof buildRepeatRegionTreeTagIndex>,
+  template: EmailTemplate
+): RepeatTreeBlockTag | null {
+  if (ref.kind === "repeat-item") {
+    const host = tagIndex.hosts.find((h) => h.hostId === ref.hostId);
+    if (!host) return null;
+    return {
+      groupKey: ref.hostId,
+      role: "repeat-item",
+      colorIndex: host.colorIndex,
+      slotId: host.slotId,
+      slotLabel: host.slotLabel,
+      prototypeChildIds: host.prototypeChildIds,
+      itemIndex: ref.itemIndex,
+    };
+  }
+  return tagIndex.byBlockId.get(ref.blockId) ?? repeatTreeTagForBlock(tagIndex, template, ref.blockId);
+}
+
 export function BlockTree({
-  template,
-  selectedBlockId,
+  sourceTemplate,
+  previewModel,
+  selectedBlockRef,
   syncNonce,
   onSelect,
-  startBlockId,
   variant = "panel",
   title = "区块结构",
 }: Props) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const repeatTagIndex = useMemo(() => buildRepeatRegionTreeTagIndex(template), [template]);
+  const repeatTagIndex = useMemo(
+    () => buildRepeatRegionTreeTagIndex(sourceTemplate),
+    [sourceTemplate]
+  );
+  const blockMeta = useMemo(
+    () => previewModelToBlockMeta(previewModel, sourceTemplate),
+    [previewModel, sourceTemplate]
+  );
 
   const defaultOpen = useMemo(() => {
     const o: Record<string, boolean> = {};
-    for (const id of Object.keys(template.blocks)) o[id] = true;
+    const visit = (node: (typeof previewModel)["root"]) => {
+      o[node.block.id] = true;
+      node.children.forEach(visit);
+    };
+    visit(previewModel.root);
     return o;
-  }, [template]);
+  }, [previewModel]);
 
   const isOpen = (id: string) => open[id] ?? defaultOpen[id] ?? true;
 
@@ -139,14 +170,22 @@ export function BlockTree({
     const container = scrollRef.current;
     if (!container) return;
 
-    if (selectedBlockId !== null) {
+    if (selectedBlockRef !== null) {
       const ancestors: string[] = [];
-      let cur = template.blocks[selectedBlockId];
-      while (cur?.parentId) {
-        ancestors.push(cur.parentId);
-        cur = template.blocks[cur.parentId];
-      }
-      if (ancestors.length) {
+      let found = false;
+      const walk = (node: (typeof previewModel)["root"], trail: string[]): boolean => {
+        if (isRepeatExpansionGroupSelected(selectedBlockRef, node.ref)) {
+          ancestors.push(...trail);
+          found = true;
+          return true;
+        }
+        for (const child of node.children) {
+          if (walk(child, [...trail, node.block.id])) return true;
+        }
+        return false;
+      };
+      walk(previewModel.root, []);
+      if (found && ancestors.length) {
         setOpen((prev) => {
           const next = { ...prev };
           for (const aid of ancestors) next[aid] = true;
@@ -155,8 +194,8 @@ export function BlockTree({
       }
     }
 
-    const id = selectedBlockId ?? startBlockId ?? template.rootBlockId;
-    const safe = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(id) : id.replace(/"/g, '\\"');
+    const rowId = selectedBlockRef ? refToStableKey(selectedBlockRef) : previewModel.root.block.id;
+    const safe = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(rowId) : rowId.replace(/"/g, '\\"');
 
     const timer = window.setTimeout(() => {
       const scrollToRow = () => {
@@ -167,69 +206,70 @@ export function BlockTree({
       requestAnimationFrame(() => requestAnimationFrame(scrollToRow));
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [selectedBlockId, syncNonce, template.rootBlockId, startBlockId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedBlockRef, syncNonce, previewModel]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function renderNode(id: string, depth: number): ReactNode {
-    const b = template.blocks[id];
-    if (!b) return null;
-    const blockName = template.blockMeta?.[id]?.name?.trim();
+  function renderNode(node: (typeof previewModel)["root"], depth: number): ReactNode {
+    const { ref, block, children } = node;
+    const blockId = block.id;
+    const physicalId = resolvePhysicalBlockId(ref);
+    const blockName = blockMeta[blockId]?.name?.trim();
     const label = blockName
-      ? `${blockName} · ${blockTypeLabel(b.type)}`
-      : `${blockTypeLabel(b.type)} · ${id.slice(0, 8)}`;
-    const hasKids = b.children.length > 0;
-    const selected = selectedBlockId === id || selectedBlockId === sourceBlockIdFromRepeatClone(id);
+      ? `${blockName} · ${blockTypeLabel(block.type)}`
+      : `${blockTypeLabel(block.type)} · ${physicalId.slice(0, 8)}`;
+    const hasKids = children.length > 0;
+    const selected =
+      selectedBlockRef === null
+        ? block.type === "emailRoot"
+        : isRepeatExpansionGroupSelected(selectedBlockRef, ref);
     const handleClick = () => {
-      if (b.type === "emailRoot") onSelect(null);
-      else onSelect(id);
+      if (block.type === "emailRoot") onSelect(null);
+      else onSelect(ref);
     };
 
-    const directTag = repeatTagIndex.byBlockId.get(id) ?? null;
-    const groupTag = repeatTreeTagForBlock(repeatTagIndex, template, id);
-    const repeatTag = directTag?.role === "repeat-item" ? directTag : null;
+    const directTag = repeatTagForRef(ref, repeatTagIndex, sourceTemplate);
+    const groupTag =
+      ref.kind === "physical"
+        ? repeatTreeTagForBlock(repeatTagIndex, sourceTemplate, ref.blockId)
+        : directTag;
+    const repeatTag = repeatTreeRowDisplayTag(ref, directTag, repeatTagIndex);
     const repeatGroupStripe =
       directTag?.role === "host"
         ? directTag
         : groupTag && groupTag.role !== "host"
           ? groupTag
           : null;
-    const materializedStatic = !repeatTag && isMaterializedRepeatRowBlockId(id, template);
 
     return (
-      <div key={id}>
+      <div key={blockId}>
         <Row
-          blockTreeRowId={sourceBlockIdFromRepeatClone(id)}
+          blockTreeRowId={blockId}
           depth={depth}
           label={label}
-          selected={b.type === "emailRoot" ? selectedBlockId === null : selected}
+          selected={selected}
           onClick={handleClick}
           hasChildren={hasKids}
-          open={isOpen(id)}
-          onToggle={() => toggle(id)}
+          open={isOpen(blockId)}
+          onToggle={() => toggle(blockId)}
           repeatTag={repeatTag}
           repeatGroupStripe={repeatGroupStripe}
-          materializedStatic={materializedStatic}
-          template={template}
+          template={sourceTemplate}
         />
-        {hasKids && isOpen(id) ? b.children.map((cid) => renderNode(cid, depth + 1)) : null}
+        {hasKids && isOpen(blockId)
+          ? children.map((child) => renderNode(child, depth + 1))
+          : null}
       </div>
     );
   }
 
-  const treeRootId = startBlockId ?? template.rootBlockId;
   const treeSubtreeIds = useMemo(() => {
     const ids: string[] = [];
-    const seen = new Set<string>();
-    const visit = (blockId: string) => {
-      if (seen.has(blockId)) return;
-      const block = template.blocks[blockId];
-      if (!block) return;
-      seen.add(blockId);
-      ids.push(blockId);
-      block.children.forEach(visit);
+    const visit = (node: (typeof previewModel)["root"]) => {
+      ids.push(node.block.id);
+      node.children.forEach(visit);
     };
-    visit(treeRootId);
+    visit(previewModel.root);
     return ids;
-  }, [template, treeRootId]);
+  }, [previewModel]);
 
   const expandAllNodes = () => {
     setOpen((prev) => {
@@ -243,14 +283,14 @@ export function BlockTree({
     setOpen((prev) => {
       const next = { ...defaultOpen, ...prev };
       for (const id of treeSubtreeIds) next[id] = false;
-      next[treeRootId] = true;
+      next[previewModel.root.block.id] = true;
       return next;
     });
   };
 
   const treeBody = (
     <div ref={scrollRef} className="block-tree__scroll">
-      {renderNode(treeRootId, 0)}
+      {renderNode(previewModel.root, 0)}
     </div>
   );
 
@@ -276,4 +316,24 @@ export function BlockTree({
       {treeBody}
     </aside>
   );
+}
+
+function previewModelToBlockMeta(
+  model: RepeatPreviewModel,
+  sourceTemplate: EmailTemplate
+): NonNullable<EmailTemplate["blockMeta"]> {
+  const meta: NonNullable<EmailTemplate["blockMeta"]> = {};
+  const visit = (node: (typeof model)["root"]) => {
+    const physicalId = resolvePhysicalBlockId(node.ref);
+    const src = sourceTemplate.blockMeta?.[physicalId];
+    if (src) {
+      meta[node.block.id] =
+        node.ref.kind === "repeat-item" && src.name
+          ? { ...src, name: formatRepeatItemDisplayName(src.name, node.ref.itemIndex) }
+          : src;
+    }
+    node.children.forEach(visit);
+  };
+  visit(model.root);
+  return meta;
 }

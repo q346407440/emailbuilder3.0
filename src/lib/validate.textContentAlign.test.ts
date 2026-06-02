@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailTemplate } from "../types/email";
+import { MINIMAL_TEXT_PROPS } from "./testFixtures/emailTemplate";
 import { validateTemplate } from "./validate";
 
 function buildTemplate(contentAlign: unknown): EmailTemplate {
@@ -13,7 +14,7 @@ function buildTemplate(contentAlign: unknown): EmailTemplate {
   }
 
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test-template",
     templateVersion: 1,
     rootBlockId: "root",
@@ -44,15 +45,10 @@ function buildTemplate(contentAlign: unknown): EmailTemplate {
         children: [],
         wrapperStyle: wrapperStyle as EmailTemplate["blocks"][string]["wrapperStyle"],
         props: {
-          content: "<p>Hello</p>",
+          ...MINIMAL_TEXT_PROPS,
           textBody: {
             paragraphs: [{ runs: [{ text: "Hello" }] }],
           },
-          fontSize: "14px",
-          color: "#222222",
-          bold: false,
-          italic: false,
-          decoration: "none",
         },
         bindings: {},
       },

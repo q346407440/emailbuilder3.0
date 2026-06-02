@@ -15,6 +15,3 @@ export function normalizePersistedEmailMeta(meta: Record<string, unknown>): Reco
   }
   return next;
 }
-
-/** @deprecated 使用 normalizePersistedEmailMeta */
-export const stripDeprecatedMetaFields = normalizePersistedEmailMeta;

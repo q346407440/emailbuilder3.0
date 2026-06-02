@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { isThemeRef } from "../types/themeRef";
 import type { TokenPresets } from "../types/tokenPreset";
+import type { EmailTemplate } from "../types/email";
 import { BLOCK_CATALOG_ENTRIES } from "./blockDefaults";
 import { prepareCatalogBlockForInsert } from "./prepareCatalogBlockForInsert";
 import { validateTemplateBindings } from "./validate";
@@ -59,8 +60,8 @@ describe("prepareCatalogBlockForInsert", () => {
       buttonEntry!.buildSampleBlock("btn", "root"),
       sampleTokenPresets
     );
-    const template = {
-      schemaVersion: "3.0.0" as const,
+    const template: EmailTemplate = {
+      schemaVersion: "4.0.0" as const,
       templateId: "t",
       templateVersion: 1,
       rootBlockId: "root",
@@ -82,7 +83,7 @@ describe("prepareCatalogBlockForInsert", () => {
           },
           bindings: {},
         },
-        btn: prepared,
+        btn: prepared as EmailTemplate["blocks"][string],
       },
     };
     const themeIssues = validateTemplateBindings(template).filter((i) =>

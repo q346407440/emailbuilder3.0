@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import { isPayloadSlotIdTaken } from "../lib/payloadSlotRegister";
 import { SLOT_ID_PATTERN } from "../payload-contract/value-types";
-import { slotValueTypeLabelForPicker } from "../lib/variableSlotCompatibility";
+import { slotValueTypeLabelForPicker } from "../payload-contract/variable-slot-compatibility";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";

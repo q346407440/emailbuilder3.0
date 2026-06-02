@@ -1,20 +1,21 @@
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
 import { defaultCollectionDataSource } from "../payload-contract/collection-data-source";
 import {
-  DEFAULT_BUILTIN_COLLECTION_EXTRACT,
-  type BuiltinCollectionExtract,
-} from "../payload-contract/collection-builtin-extract";
-import {
   DEFAULT_BUILTIN_COLLECTION_SORT,
   type BuiltinCollectionSortId,
 } from "../payload-contract/collection-builtin-sort";
+import {
+  readSortPolicyFromBuiltinDataSource,
+  regularSortFromPolicy,
+  type NormalizedBuiltinSortPolicy,
+} from "../payload-contract/collection-builtin-sort-policy";
 import type { BindingCollectionField, EmailPayload, PayloadSlotDefinition } from "../types/email";
-import type { CollectionDisplayRule } from "../payload-contract/types";
+import { resizeCollectionItemVisibility } from "./collectionItemVisibility";
 import {
   projectBuiltinCatalogItems,
   type BuiltinCollectionCatalogId,
 } from "./builtinCollectionCatalog";
-import { resolveBuiltinCollectionItems } from "./resolveBuiltinCollectionItems";
+import { resolveBuiltinCollectionItemsForAnchor } from "./resolveBuiltinCollectionItems";
 
 export const COLLECTION_FIXED_LENGTH_MIN = 1;
 export const COLLECTION_FIXED_LENGTH_MAX = 10;
@@ -66,10 +67,15 @@ export function extractArrayFromJsonRoot(
 
 export function emptyValueForField(field: BindingCollectionField): unknown {
   if (field.valueType === "collection") return [];
+  if (field.valueType === "number") return 0;
   return "";
 }
 
-function coerceFieldValue(value: unknown, field: BindingCollectionField): unknown {
+/** collection 列表项标量 coercion（与 payload 契约 number 语义一致） */
+export function coerceCollectionFieldValue(
+  value: unknown,
+  field: BindingCollectionField
+): unknown {
   if (field.valueType === "collection") {
     const nested = Array.isArray(value) ? value : [];
     const result = normalizeCollectionItems(nested, field.itemFields, {
@@ -81,6 +87,13 @@ function coerceFieldValue(value: unknown, field: BindingCollectionField): unknow
     });
     return result.ok ? result.items : [];
   }
+  if (field.valueType === "number") {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    const str = String(value ?? "").trim();
+    if (!str || str === "—") return field.required ? 0 : "";
+    const n = Number(str);
+    return Number.isFinite(n) ? n : field.required ? 0 : "";
+  }
   if (value === undefined || value === null) return "";
   const str = String(value).trim();
   if (!str) return "";
@@ -90,6 +103,10 @@ function coerceFieldValue(value: unknown, field: BindingCollectionField): unknow
     }
   }
   return str;
+}
+
+function coerceFieldValue(value: unknown, field: BindingCollectionField): unknown {
+  return coerceCollectionFieldValue(value, field);
 }
 
 /** 将原始数组项映射到 itemFields，并校验必填 */
@@ -207,16 +224,15 @@ export function resolveCollectionPreviewItems(
           ds.catalog,
           itemFields,
           fixedLength,
-          ds.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT
+          regularSortFromPolicy(readSortPolicyFromBuiltinDataSource(ds))
         ),
       };
     }
-    return resolveBuiltinCollectionItems({
+    return resolveBuiltinCollectionItemsForAnchor({
       catalog: ds.catalog,
       itemFields,
       fixedLength,
-      sort: ds.sort,
-      extract: ds.extract,
+      sortPolicy: readSortPolicyFromBuiltinDataSource(ds),
       productConfig: ds.productConfig,
       albumConfig: ds.albumConfig,
       payload,
@@ -235,17 +251,21 @@ export function builtinPreviewItemsForSlot(
   ctx?: {
     payload: EmailPayload;
     slotId: string;
-    extract?: BuiltinCollectionExtract;
+    sortPolicy?: NormalizedBuiltinSortPolicy;
   }
 ): Record<string, unknown>[] {
   if (ctx?.payload && ctx.slotId) {
     const ds = ctx.payload.slots[ctx.slotId]?.dataSource;
-    const result = resolveBuiltinCollectionItems({
+    const sortPolicy =
+      ctx.sortPolicy ??
+      (ds?.type === "remote" && ds.provider === "builtin"
+        ? readSortPolicyFromBuiltinDataSource(ds)
+        : { kind: "regular" as const, sort });
+    const result = resolveBuiltinCollectionItemsForAnchor({
       catalog,
       itemFields,
       fixedLength,
-      sort,
-      extract: ctx.extract ?? DEFAULT_BUILTIN_COLLECTION_EXTRACT,
+      sortPolicy,
       productConfig:
         ds?.type === "remote" && ds.provider === "builtin" ? ds.productConfig : undefined,
       albumConfig:
@@ -263,7 +283,7 @@ export function resolveBuiltinSortFromDataSource(
   dataSource: CollectionDataSource | undefined
 ): BuiltinCollectionSortId {
   if (dataSource?.type === "remote" && dataSource.provider === "builtin") {
-    return dataSource.sort ?? DEFAULT_BUILTIN_COLLECTION_SORT;
+    return regularSortFromPolicy(readSortPolicyFromBuiltinDataSource(dataSource));
   }
   return DEFAULT_BUILTIN_COLLECTION_SORT;
 }
@@ -285,26 +305,30 @@ export function updatePayloadCollectionSlotMeta(
     minItems?: number;
     maxItems?: number;
     dataSource?: CollectionDataSource;
-    displayRule?: CollectionDisplayRule;
+    itemVisibility?: boolean[];
   },
   patch: {
     fixedLength?: number;
     dataSource?: CollectionDataSource;
-    displayRule?: CollectionDisplayRule;
+    itemVisibility?: boolean[];
   }
 ): typeof slotDef {
   const next = { ...slotDef };
-  const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(patch, "displayRule");
+  const hasVisibilityPatch = Object.prototype.hasOwnProperty.call(patch, "itemVisibility");
   if (patch.fixedLength !== undefined) {
     const len = clampFixedLength(patch.fixedLength);
     next.minItems = len;
     next.maxItems = len;
+    const resized = resizeCollectionItemVisibility(next.itemVisibility, len);
+    if (resized !== undefined) {
+      next.itemVisibility = resized;
+    }
   }
   if (patch.dataSource !== undefined) {
     next.dataSource = patch.dataSource;
   }
-  if (hasDisplayRulePatch) {
-    next.displayRule = patch.displayRule;
+  if (hasVisibilityPatch) {
+    next.itemVisibility = patch.itemVisibility;
   }
   return next;
 }
@@ -316,7 +340,7 @@ export function patchPayloadCollectionSlot(
     fixedLength?: number;
     dataSource?: CollectionDataSource;
     itemFields?: BindingCollectionField[];
-    displayRule?: CollectionDisplayRule;
+    itemVisibility?: boolean[];
     values?: Record<string, unknown>[];
   }
 ): EmailPayload {
@@ -329,16 +353,16 @@ export function patchPayloadCollectionSlot(
     values: { ...payload.values },
   };
 
-  const hasDisplayRulePatch = Object.prototype.hasOwnProperty.call(patch, "displayRule");
+  const hasVisibilityPatch = Object.prototype.hasOwnProperty.call(patch, "itemVisibility");
   let slotDef: PayloadSlotDefinition = { ...entry };
   if (patch.itemFields !== undefined) {
     slotDef = { ...slotDef, itemFields: patch.itemFields };
   }
-  if (patch.fixedLength !== undefined || patch.dataSource !== undefined || hasDisplayRulePatch) {
+  if (patch.fixedLength !== undefined || patch.dataSource !== undefined || hasVisibilityPatch) {
     slotDef = updatePayloadCollectionSlotMeta(slotDef, {
       fixedLength: patch.fixedLength,
       dataSource: patch.dataSource,
-      displayRule: patch.displayRule,
+      itemVisibility: patch.itemVisibility,
     }) as PayloadSlotDefinition;
   }
 

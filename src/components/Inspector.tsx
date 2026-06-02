@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { message } from "@shoplazza/sds";
 import type {
   BorderRadiusValue,
@@ -33,18 +33,22 @@ import {
 } from "../lib/wrapperFillConstraint";
 import { reconcileLayoutStructuralSubtreeInPlace } from "../lib/wrapperLayoutReconcile";
 import { RepeatRegionBindModal } from "./RepeatRegionBindModal";
+import { RepeatUnbindChoiceModal } from "./RepeatUnbindChoiceModal";
+import { ListBindInspectorEmpty } from "./ListBindInspectorEmpty";
 import { RepeatRegionInspectorSummary } from "./RepeatRegionInspectorSummary";
+import { InspectorPanelSection } from "./ui/InspectorPanelSection";
 import {
   BuiltinCollectionRulesFields,
-  readBuiltinRulesFromPayloadSlot,
+  readBuiltinSortPolicyFromPayloadSlot,
 } from "./BuiltinCollectionRulesFields";
+import { patchPayloadBuiltinCollectionSortPolicy } from "../lib/collectionBuiltinRulesPayload";
+import { patchPayloadCollectionSlot } from "../lib/collectionDataSource";
 import {
-  patchPayloadBuiltinCollectionExtract,
-  patchPayloadBuiltinCollectionSort,
-} from "../lib/collectionBuiltinRulesPayload";
-import type { BuiltinCollectionExtract } from "../payload-contract/collection-builtin-extract";
-import type { BuiltinCollectionSortId } from "../payload-contract/collection-builtin-sort";
-import { listCollectionSlotIdsForExtract } from "../lib/resolveBuiltinCollectionItems";
+  applyPayloadCollectionFixedLength,
+  collectionFixedLengthEditability,
+  readPayloadCollectionFixedLength,
+} from "../lib/collectionFixedLength";
+import type { NormalizedBuiltinSortPolicy } from "../payload-contract/collection-builtin-sort-policy";
 import { TextRichEditor } from "./TextRichEditor";
 import {
   normalizeTextBody,
@@ -72,44 +76,47 @@ import type { ExpandedTheme } from "../types/theme";
 import type { TokenPresets } from "../types/tokenPreset";
 import type { ReactNode } from "react";
 import { AdminInspectorTabs, type InspectorMainTab } from "./AdminInspectorTabs";
+import {
+  buildInspectorTabAvailability,
+  resolveInspectorTabForContext,
+} from "../lib/inspectorTabPreference";
 import { InspectorBlockNameField } from "./InspectorBlockNameField";
 import { IconSrcEditor } from "./IconSrcEditor";
 import { InspectorFieldSource } from "./InspectorFieldSource";
 import { getInspectFieldBindMode, isInspectFollowLocked } from "../lib/inspectFieldBindMode";
-import { mergeTemplatePayload } from "../lib/merge";
-import { applyVisibilityRules } from "../lib/visibility";
-import { filterSlotsForVisibilityPicker } from "../lib/variableSlotCompatibility";
+import { filterSlotsForVisibilityPicker } from "../payload-contract/variable-slot-compatibility";
+import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
+import {
+  countRepeatExpansionGroupMembers,
+  findPreviewNodeByRef,
+  previewModelToFlatTemplate,
+  resolvePhysicalBlockId,
+  resolveRepeatContextForRef,
+} from "../repeat-runtime";
 import {
   buildRepeatPrototypeIdSet,
   collectionItemCount,
-  expandRepeatRegions,
   isRepeatHostBlock,
-  resolveRepeatContextForBlock,
 } from "../lib/repeatRegion";
 import { remapRepeatFieldMappingTargets } from "../lib/repeatMaterializedNormalize";
-import type { RepeatLoopScope } from "../lib/repeatNestedBinding";
 import {
-  applyUnifiedRepeatBinding,
-  buildRepeatBindPreviewCounts,
-  deriveUnifiedRepeatPlanFromTemplate,
-  filterChildRepeatMappingTargets,
-  filterParentRepeatMappingTargets,
-  formatRepeatBindScopePreview,
-  childRepeatPrototypeOptionKeyFromBinding,
-  isChildRepeatPrototypeReservedByParent,
-  listChildRepeatPrototypeOptions,
+  applySingleLevelRepeatBinding,
   listNestedCollectionFields,
-  preferredChildRepeatPrototypeOptionKey,
   removeUnifiedRepeatBinding,
-  resolveUnifiedBindParentHostId,
 } from "../lib/repeatNestedBinding";
+import { resolveRepeatUnbindSelectionBlockId } from "../lib/repeatRegion";
+import type { TemplateChangeOptions } from "../lib/templateBlockSelection";
+import type { RepeatUnbindMode } from "../lib/repeatUnbindMode";
+import { mergeRepeatBindSlotCandidates } from "../lib/repeatBindSlotCandidates";
 import {
-  parentScalarItemFieldsFromItemFields,
-  pickRepeatCollectionCandidateForHost,
-} from "../lib/repeatNestedBindingUi";
-import { resolveThemeInTemplate } from "../lib/resolveThemeInTemplate";
-import { containsThemeRefDeep, readTemplateFieldOnly } from "../lib/themeBindingEdit";
-import { IMAGE_BACKGROUND_FALLBACK_COLOR } from "../lib/imageBackgroundFallback";
+  enrichNestedRepeatPreviewRowsForInspector,
+  findEnclosingParentRepeatBinding,
+  listRepeatFieldMappingScalarFields,
+  resolveNestedRepeatPreviewItems,
+  resolveRepeatFieldMappingSourceMeta,
+} from "../lib/repeatNestedFieldMapping";
+import { readTemplateFieldOnly } from "../lib/themeBindingEdit";
+import { IMAGE_BACKGROUND_FALLBACK_COLOR } from "../render-defaults-contract/values";
 import { EMAIL_ROOT_FIXED_WIDTH, emailRootWidthMismatchReason } from "../render-defaults-contract/values";
 import { getAtPath } from "../lib/paths";
 import { collectPayloadVariableSlots } from "../lib/payloadSlots";
@@ -118,14 +125,10 @@ import {
   listRepeatMappableContentBindPaths,
   repeatMappingTargetLabel,
 } from "../lib/repeatMappableContentBindPaths";
-import { isThemeRef, parseThemeRefPath } from "../types/themeRef";
+import { isThemeRef, parseThemeRefPath, type ThemeRef } from "../types/themeRef";
 import { previewThemeTokenValue } from "../lib/themeTokenCandidates";
 import type { SlotValueType } from "../payload-contract/types";
 import { findCollectionFieldByPath } from "../payload-contract/collection-item-fields";
-import {
-  defaultExpandedCollectionGroupPaths,
-  flattenItemFieldsForFieldMap,
-} from "../lib/collectionFieldMappingTree";
 import {
   getVisibilityOperatorSpec,
   getVisibilityOperatorsForValueType,
@@ -135,25 +138,21 @@ import {
 type Props = {
   template: EmailTemplate;
   payload: EmailPayload;
-  selectedBlockId: string | null;
+  selectedBlockRef: VirtualBlockRef | null;
+  previewModel: RepeatPreviewModel | null;
   onUpdate: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
-  onTemplateChange: (nextTemplate: EmailTemplate) => void;
+  onTemplateChange: (nextTemplate: EmailTemplate, options?: TemplateChangeOptions) => void;
   /** 当前场景目录名，用于复制调试定位文案 */
   emailKey?: string | null;
   /** 当前版式变体 id（有 layout-manifest 时） */
   layoutVariantId?: string | null;
-  /** 与画布一致的合并/解析后模板，用于 Inspector 展示字面量 */
-  mergedTemplate?: EmailTemplate | null;
   /**
-   * 当前生效的设计令牌（与画布解析同源）。在 App 未传入 mergedTemplate 时，Inspector 用其本地合并并解析，
-   * 以便「改为字面量」能拿到烘焙值（避免字面量选项整行禁用）。
+   * 当前生效的设计令牌（与画布解析同源）。
    */
   effectiveDesignTokens?: ExpandedTheme | null;
   tokenPresets?: TokenPresets | null;
-  /** 多版式场景：用于 payload 孤儿槽展示名（如其它版式仍声明 storeName） */
-  /** 含变量草稿的预览 payload；列表规则展示与锚点选项与之对齐 */
+  /** 含变量草稿的预览 payload */
   previewPayload?: EmailPayload | null;
-  /** 从区块 Inspector 直接写入 payload 后，丢弃该槽未保存草稿以免与真源冲突 */
   onDiscardPayloadSlotDraft?: (slotId: string) => void;
 };
 
@@ -171,14 +170,6 @@ type RepeatCollectionCandidate = {
   minItems?: number;
   maxItems?: number;
   description?: string;
-};
-type RepeatPrototypeOption = {
-  key: string;
-  hostId: string;
-  prototypeChildIds: string[];
-  label: string;
-  description: string;
-  source: "container" | "leaf-self" | "leaf-parent" | "global";
 };
 type RepeatTargetFieldOption = {
   key: string;
@@ -224,23 +215,32 @@ const SPACING_SIDE_LABELS = {
   left: "左",
 } as const;
 
-/** 列表重复可选变量：仅 payload.slots 中声明的 collection 槽（与变量面板一致） */
-function buildHostRepeatPrototypeOptions(
+/** 从 blockId 向上走到 hostId（不含 hostId）：路径上任一区块自带 repeat → true（字段属更深层）。 */
+function hasIntermediateRepeatBetween(
   template: EmailTemplate,
+  blockId: string,
   hostId: string
-): RepeatPrototypeOption[] {
-  const host = template.blocks[hostId];
-  if (!host || !isRepeatHostBlock(host)) return [];
-  return host.children
-    .filter((childId) => Boolean(template.blocks[childId]))
-    .map((childId) => ({
-      key: repeatOptionKey(hostId, [childId]),
-      hostId,
-      prototypeChildIds: [childId],
-      label: `${blockDisplayName(template, childId)}（当前容器子区块）`,
-      description: "父级列表宿主下的行模板子区块。",
-      source: "container" as const,
-    }));
+): boolean {
+  let cur: string | null = blockId;
+  while (cur && cur !== hostId) {
+    if (template.blocks[cur]?.repeat?.mode === "collection") return true;
+    cur = template.blocks[cur]?.parentId ?? null;
+  }
+  return false;
+}
+
+/** hostId 子树内（不含自身）是否存在带 repeat 的子容器。 */
+function hasNestedRepeatUnder(template: EmailTemplate, hostId: string): boolean {
+  const visit = (blockId: string): boolean => {
+    for (const childId of template.blocks[blockId]?.children ?? []) {
+      const child = template.blocks[childId];
+      if (!child) continue;
+      if (child.repeat?.mode === "collection") return true;
+      if (visit(childId)) return true;
+    }
+    return false;
+  };
+  return visit(hostId);
 }
 
 function buildRepeatCollectionCandidates(
@@ -276,31 +276,6 @@ function buildVisibilitySlotCandidates(
     minItems: slot.minItems,
     maxItems: slot.maxItems,
   }));
-}
-
-function repeatOptionKey(hostId: string, prototypeChildIds: string[]): string {
-  return `${hostId}:${prototypeChildIds.join("+")}`;
-}
-
-/** 从已绑定的 repeat 还原行模板选项（子项进入弹窗时展示宿主侧配置，不可改选） */
-function repeatPrototypeOptionFromBinding(
-  template: EmailTemplate,
-  hostId: string,
-  prototypeChildIds: string[]
-): RepeatPrototypeOption {
-  const labels = prototypeChildIds.map((childId) => blockDisplayName(template, childId));
-  const label =
-    labels.length === 1
-      ? `${labels[0]}（列表行模板）`
-      : `${labels.join("、")}（列表行模板）`;
-  return {
-    key: repeatOptionKey(hostId, prototypeChildIds),
-    hostId,
-    prototypeChildIds,
-    label,
-    description: "行模板已在列表宿主绑定；从子项区块进入时不可更换。",
-    source: "container",
-  };
 }
 
 function collectSubtreeBlockIds(template: EmailTemplate, rootIds: string[]): string[] {
@@ -363,9 +338,9 @@ function buildRepeatFieldMappings(
   });
 }
 
-function inferRepeatMappingDraft(
+/** 列表重复绑定向导：仅从 repeat 上已保存的 fieldMappings 回填草稿，不做自动猜测。 */
+function repeatMappingDraftFromSaved(
   template: EmailTemplate,
-  slotId: string,
   itemFields: RepeatCollectionCandidate["itemFields"],
   targetOptions: RepeatTargetFieldOption[],
   currentMappings?: RepeatFieldMapping[]
@@ -388,46 +363,7 @@ function inferRepeatMappingDraft(
     const current = currentByTarget.get(target.key);
     if (current && findCollectionFieldByPath(itemFields, current)) {
       draft[target.key] = current;
-      continue;
     }
-    const targetBlock = template.blocks[target.blockId];
-    const existingSpec = targetBlock?.bindings?.[target.bindPath];
-    if (
-      existingSpec?.mode === "variable" &&
-      existingSpec.allowExternal === true &&
-      existingSpec.valueType === "collection" &&
-      existingSpec.slotId === slotId &&
-      typeof existingSpec.slotPath === "string"
-    ) {
-      const existingFieldPath = existingSpec.slotPath.replace(/^\d+\./, "");
-      if (findCollectionFieldByPath(itemFields, existingFieldPath)) {
-        draft[target.key] = existingFieldPath;
-        continue;
-      }
-    }
-    const normalizedTarget = target.bindPath.toLowerCase();
-    const leaf = target.bindPath.split(".").slice(-1)[0]?.toLowerCase() ?? "";
-    const leafPaths = flattenItemFieldsForFieldMap(
-      itemFields,
-      defaultExpandedCollectionGroupPaths(itemFields)
-    )
-      .filter((entry) => entry.kind === "leaf")
-      .map((entry) => entry.path);
-    const matchedPath = leafPaths.find((path) => {
-      const key = path.split(".").slice(-1)[0]?.toLowerCase() ?? "";
-      if (key === leaf || path.toLowerCase().endsWith(`.${leaf}`)) return true;
-      if (leaf === "src" && (key.includes("image") || key.includes("icon") || path.includes("image")))
-        return true;
-      if (leaf === "alt" && key.includes("alt")) return true;
-      if (
-        leaf === "link" &&
-        (key.includes("url") || key.includes("link") || key.includes("href"))
-      ) {
-        return true;
-      }
-      return normalizedTarget.includes(key);
-    });
-    if (matchedPath) draft[target.key] = matchedPath;
   }
   return draft;
 }
@@ -560,8 +496,14 @@ function normalizeSpacingValue(raw: unknown): SpacingValue {
   };
 }
 
+function spacingSideToInputValue(value: string | ThemeRef | undefined): string {
+  if (value === undefined) return "0";
+  if (typeof value === "string") return value;
+  return value.$themeRef;
+}
+
 function spacingForUnified(spacing: SpacingValue): string {
-  if (spacing.mode === "unified") return spacing.unified ?? "0";
+  if (spacing.mode === "unified") return spacingSideToInputValue(spacing.unified);
   const values = [spacing.top, spacing.right, spacing.bottom, spacing.left].filter(
     (value): value is string => typeof value === "string"
   );
@@ -593,49 +535,88 @@ function InspectorEmptyTabHint() {
 export function Inspector({
   template,
   payload,
-  selectedBlockId,
+  selectedBlockRef,
+  previewModel,
   onUpdate,
   onTemplateChange,
   emailKey = null,
   layoutVariantId = null,
-  mergedTemplate = null,
   effectiveDesignTokens = null,
   tokenPresets = null,
   previewPayload = null,
   onDiscardPayloadSlotDraft,
 }: Props) {
   const effectivePayload = previewPayload ?? payload;
+  const selectedBlockId = selectedBlockRef ? resolvePhysicalBlockId(selectedBlockRef) : null;
   const root = template.blocks[template.rootBlockId];
-  const canvasMode = selectedBlockId === null;
-  /** 默认打开「样式」：组件级配色、画面位置等在样式页；切换选中区块时与画布一致回到样式，避免误以为未生效 */
+  const canvasMode = selectedBlockRef === null;
+  /** 切换区块时尽量保持上次选中的 Tab；当前区块无该 Tab 时回退「样式」 */
   const [inspectorTab, setInspectorTab] = useState<InspectorMainTab>("style");
+  const preferredInspectorTabRef = useRef<InspectorMainTab>("style");
+  const inspectorBlockKeyRef = useRef<string | null>(null);
   const [repeatModalOpen, setRepeatModalOpen] = useState(false);
+  const [repeatModalViewOnly, setRepeatModalViewOnly] = useState(false);
+  const [repeatUnbindModalOpen, setRepeatUnbindModalOpen] = useState(false);
   const [repeatSlotId, setRepeatSlotId] = useState("");
-  const [repeatPrototypeOptionKey, setRepeatPrototypeOptionKey] = useState("");
-  const [repeatLoopScope, setRepeatLoopScope] = useState<RepeatLoopScope>("parentOnly");
-  const [repeatChildItemPath, setRepeatChildItemPath] = useState("");
-  const [repeatChildPrototypeOptionKey, setRepeatChildPrototypeOptionKey] = useState("");
-  const [repeatAnchorItemIndex, setRepeatAnchorItemIndex] = useState(0);
-  const [repeatParentMappingDraft, setRepeatParentMappingDraft] = useState<Record<string, string>>({});
-  const [repeatChildMappingDraft, setRepeatChildMappingDraft] = useState<Record<string, string>>({});
+  const [repeatMappingDraft, setRepeatMappingDraft] = useState<Record<string, string>>({});
   const [textVarPillModalMeta, setTextVarPillModalMeta] = useState<TextBodyVariableRunMeta | null>(null);
+  const inspectorTabContext = useMemo(() => {
+    const rootBlock = template.blocks[template.rootBlockId];
+    if (!rootBlock) {
+      return buildInspectorTabAvailability(true, "emailRoot", false);
+    }
+    const activeBlock = canvasMode
+      ? rootBlock
+      : selectedBlockId
+        ? template.blocks[selectedBlockId]
+        : undefined;
+    if (!activeBlock) {
+      return buildInspectorTabAvailability(canvasMode, "layout", false);
+    }
+    const resolvedRepeat = canvasMode
+      ? null
+      : selectedBlockRef
+        ? resolveRepeatContextForRef(template, selectedBlockRef)
+        : null;
+    const showRepeatRegionPanel =
+      Boolean(resolvedRepeat) || (!canvasMode && activeBlock.type !== "emailRoot");
+    return buildInspectorTabAvailability(canvasMode, activeBlock.type, showRepeatRegionPanel);
+  }, [canvasMode, selectedBlockRef, template]);
+
+  const inspectorBlockKey = canvasMode ? "__canvas__" : (selectedBlockId ?? "__none__");
+
+  const setInspectorTabPersist = useCallback((tab: InspectorMainTab) => {
+    preferredInspectorTabRef.current = tab;
+    setInspectorTab(tab);
+  }, []);
+
   useEffect(() => {
-    setInspectorTab("style");
-  }, [canvasMode, selectedBlockId]);
+    const blockChanged = inspectorBlockKeyRef.current !== inspectorBlockKey;
+    inspectorBlockKeyRef.current = inspectorBlockKey;
+
+    if (blockChanged) {
+      setInspectorTab(
+        resolveInspectorTabForContext(preferredInspectorTabRef.current, inspectorTabContext)
+      );
+      return;
+    }
+
+    setInspectorTab((current) =>
+      inspectorTabContext[current]
+        ? current
+        : resolveInspectorTabForContext(preferredInspectorTabRef.current, inspectorTabContext)
+    );
+  }, [inspectorBlockKey, inspectorTabContext]);
+
   useEffect(() => {
     setTextVarPillModalMeta(null);
   }, [selectedBlockId]);
 
-  /** 与 InspectorFieldSource 解除主题跟随时的烘焙同源；App 未传 merged 时在此用 payload 合并 + 令牌解析补一份 */
-  const mergedForInspector = useMemo(() => {
-    if (mergedTemplate) return mergedTemplate;
-    if (!effectiveDesignTokens) return null;
-    const visible = applyVisibilityRules(template, payload);
-    const expanded = expandRepeatRegions(visible, payload);
-    const base = mergeTemplatePayload(expanded, payload);
-    if (!containsThemeRefDeep(base)) return base;
-    return resolveThemeInTemplate(base, effectiveDesignTokens).template;
-  }, [effectiveDesignTokens, mergedTemplate, payload, template]);
+  /** 与画布一致的 merge 预览（用于 Inspector 展示字面量） */
+  const previewFlatTemplate = useMemo(() => {
+    if (!previewModel) return null;
+    return previewModelToFlatTemplate(previewModel, template);
+  }, [previewModel, template]);
   const visibilitySlotCandidates = useMemo(
     () => buildVisibilitySlotCandidates(template, payload),
     [payload, template]
@@ -653,8 +634,15 @@ export function Inspector({
   const parentBlock = block.parentId ? template.blocks[block.parentId] : undefined;
   const id = block.id;
   const blockDisplayLabel = blockDisplayName(template, id);
-  const templatePathHint = emailKey ? layoutVariantTemplatePathHint(emailKey, layoutVariantId) : null;
+  const templatePathHint =
+    emailKey && layoutVariantId
+      ? layoutVariantTemplatePathHint(emailKey, layoutVariantId)
+      : null;
   const panelLabel = canvasMode ? "画布设置（邮件根节点）" : "区块设置";
+  const repeatExpansionGroupCount = useMemo(() => {
+    if (!previewModel || !selectedBlockRef || selectedBlockRef.kind !== "repeat-item") return 0;
+    return countRepeatExpansionGroupMembers(previewModel, selectedBlockRef);
+  }, [previewModel, selectedBlockRef]);
   const buildCopyLocatorText = () => {
     if (!templatePathHint) return "";
     const lines = [
@@ -681,350 +669,229 @@ export function Inspector({
     }
   };
 
-  const simpleDirectRepeatBindMode =
-    !canvasMode && block.type !== "emailRoot" && isRepeatHostBlock(block);
-  const directRepeatPrototypeOption: RepeatPrototypeOption | null =
-    simpleDirectRepeatBindMode
-      ? {
-          key: repeatOptionKey(block.id, [block.id]),
-          hostId: block.id,
-          prototypeChildIds: [block.id],
-          label: `${blockDisplayLabel}（直接按当前区块循环）`,
-          description: "直接把当前区块作为循环行模板，按列表长度复制。",
-          source: "leaf-self",
-        }
-      : null;
-
-  const blockRepeatPrototypeOptions: RepeatPrototypeOption[] = (() => {
-    if (canvasMode) return [];
-    if (directRepeatPrototypeOption) return [directRepeatPrototypeOption];
-    if (!isRepeatHostBlock(block)) return [];
-    return block.children
-      .filter((childId) => Boolean(template.blocks[childId]))
-      .map((childId) => ({
-        key: repeatOptionKey(block.id, [childId]),
-        hostId: block.id,
-        prototypeChildIds: [childId],
-        label: `${blockDisplayName(template, childId)}（当前容器子区块）`,
-        description: "当前容器下可选的行模板子区块。",
-        source: "container" as const,
-      }));
-  })();
-
-  /** 画布根 Inspector 不提供列表重复入口；与 block-contract 中 emailRoot 禁止 repeat 壳键一致 */
-  const repeatPrototypeOptions = canvasMode ? [] : blockRepeatPrototypeOptions;
-  const resolvedRepeatContext = canvasMode ? null : resolveRepeatContextForBlock(template, id);
+  const resolvedRepeatContext =
+    canvasMode || !selectedBlockRef
+      ? null
+      : resolveRepeatContextForRef(template, selectedBlockRef);
   const repeatCollectionCandidates = buildRepeatCollectionCandidates(template, payload);
   const currentRepeat = resolvedRepeatContext?.repeat ?? null;
-  const unifiedBindParentHostId = canvasMode
-    ? ""
-    : simpleDirectRepeatBindMode
-      ? id
-      : resolveUnifiedBindParentHostId(
-        template,
-        id,
-        directRepeatPrototypeOption?.hostId ?? repeatPrototypeOptions[0]?.hostId ?? id
-      );
-  const parentHostRepeat = unifiedBindParentHostId
-    ? template.blocks[unifiedBindParentHostId]?.repeat
+  // 绑定目标 = 当前选中的可作宿主容器自身（self-repeat：绑哪个容器复制哪个）。
+  const repeatBindHostId = !canvasMode && isRepeatHostBlock(block) ? id : "";
+  const ownRepeat = !canvasMode ? block.repeat ?? null : null;
+  const repeatBindPrototypeChildIds = repeatBindHostId ? [repeatBindHostId] : [];
+  // 外层 repeat：供「父项子列表」候选；行模板内子块查看绑定时跳过当前列表宿主本身。
+  const enclosingParentRepeat = canvasMode
+    ? null
+    : findEnclosingParentRepeatBinding(template, id, {
+        skipRepeatHostId:
+          !repeatBindHostId && resolvedRepeatContext?.relation !== "host"
+            ? resolvedRepeatContext?.hostId
+            : null,
+      });
+  // 子列表来源：当前容器在某父级 repeat 行内时，列出父项的子列表字段（itemPath）。
+  const parentSlotLabel =
+    enclosingParentRepeat?.label?.trim() || enclosingParentRepeat?.slotId || "";
+  const subListBindCandidates: RepeatCollectionCandidate[] = enclosingParentRepeat
+    ? listNestedCollectionFields(enclosingParentRepeat.itemFields).map((f) => ({
+        key: `${enclosingParentRepeat.slotId}::${f.path}`,
+        slotId: enclosingParentRepeat.slotId,
+        itemPath: f.path,
+        itemFields: f.itemFields ?? [],
+        label: f.label ?? f.path,
+        minItems: f.minItems,
+        maxItems: f.maxItems,
+        parentSlotLabel,
+        description: `「${parentSlotLabel}」父项的子列表`,
+      }))
+    : [];
+  const repeatBindCandidates = mergeRepeatBindSlotCandidates(
+    enclosingParentRepeat,
+    subListBindCandidates,
+    repeatCollectionCandidates
+  );
+  const repeatCandidate = repeatBindCandidates.find((candidate) => candidate.key === repeatSlotId);
+  // 字段映射目标：行模板子树内、且不落在更深层 repeat 子树内的内容字段（决策 H）。
+  const repeatTargetFieldOptions = repeatBindHostId
+    ? buildRepeatTargetFieldOptions(template, repeatBindPrototypeChildIds).filter(
+        (opt) => !hasIntermediateRepeatBetween(template, opt.blockId, repeatBindHostId)
+      )
+    : [];
+  const repeatBindRowTemplateLabel = repeatBindHostId
+    ? blockDisplayName(template, repeatBindHostId)
     : undefined;
-  const unifiedModalPrototypeOptions = (() => {
-    if (!unifiedBindParentHostId) return repeatPrototypeOptions;
-    if (parentHostRepeat?.prototypeChildIds.length) {
-      return [
-        repeatPrototypeOptionFromBinding(
-          template,
-          unifiedBindParentHostId,
-          parentHostRepeat.prototypeChildIds
-        ),
-      ];
+  /** 弹窗上下文宿主：编辑时为当前选中宿主；查看绑定时为 enclosing 列表宿主 */
+  const repeatModalHostId =
+    repeatModalViewOnly && resolvedRepeatContext
+      ? resolvedRepeatContext.hostId
+      : repeatBindHostId;
+  const repeatModalPrototypeChildIds = repeatModalHostId
+    ? (() => {
+        const proto = template.blocks[repeatModalHostId]?.repeat?.prototypeChildIds;
+        return proto?.length ? [...proto] : [repeatModalHostId];
+      })()
+    : repeatBindPrototypeChildIds;
+  const repeatModalTargetFieldOptions = repeatModalHostId
+    ? buildRepeatTargetFieldOptions(template, repeatModalPrototypeChildIds).filter(
+        (opt) => !hasIntermediateRepeatBetween(template, opt.blockId, repeatModalHostId)
+      )
+    : repeatTargetFieldOptions;
+  const repeatModalRowTemplateLabel = repeatModalHostId
+    ? blockDisplayName(template, repeatModalHostId)
+    : repeatBindRowTemplateLabel;
+  const repeatForInspectorStats = ownRepeat ?? currentRepeat;
+  const repeatPreviewContexts =
+    selectedBlockRef?.kind === "repeat-item" ? selectedBlockRef.contextStack : [];
+  const repeatItemCount = repeatForInspectorStats
+    ? repeatForInspectorStats.itemPath?.trim()
+      ? resolveNestedRepeatPreviewItems(
+          repeatForInspectorStats,
+          payload,
+          repeatPreviewContexts
+        ).length
+      : collectionItemCount(payload, repeatForInspectorStats, repeatPreviewContexts)
+    : 0;
+  const ownRepeatPreviewValues = ownRepeat?.itemPath?.trim()
+    ? enrichNestedRepeatPreviewRowsForInspector(
+        ownRepeat,
+        payload,
+        repeatPreviewContexts,
+        enclosingParentRepeat
+      )
+    : undefined;
+  const ownRepeatFixedLengthEdit = useMemo(() => {
+    if (!ownRepeat) return null;
+    const editability = collectionFixedLengthEditability(payload, ownRepeat.slotId, {
+      nestedRepeatItemPath: Boolean(ownRepeat.itemPath?.trim()),
+    });
+    return {
+      fixedLength: readPayloadCollectionFixedLength(payload, ownRepeat.slotId),
+      editability,
+    };
+  }, [ownRepeat, payload]);
+  /** 不可绑定时仅置灰按钮并用 title 说明，不再额外占一行提示文案 */
+  const repeatBindDisabledReason = (() => {
+    if (canvasMode) return "请先在画布中选中要作为行模板的区块。";
+    if (!repeatBindHostId) {
+      return "请选中布局容器、栅格或图片区块后再绑定；选中的容器即为列表行模板。";
     }
-    return buildHostRepeatPrototypeOptions(template, unifiedBindParentHostId);
+    if (repeatBindCandidates.length === 0) {
+      return "当前没有可用列表变量，请先准备列表数据。";
+    }
+    return null;
   })();
-  const lockRepeatRowTemplate =
-    !canvasMode && unifiedBindParentHostId !== id && Boolean(parentHostRepeat);
-  const effectiveRepeatPrototypeOptions =
-    simpleDirectRepeatBindMode && directRepeatPrototypeOption
-      ? [directRepeatPrototypeOption]
-      : lockRepeatRowTemplate && parentHostRepeat
-      ? unifiedModalPrototypeOptions
-      : repeatPrototypeOptions.length > 0
-        ? repeatPrototypeOptions
-        : unifiedModalPrototypeOptions;
-  const repeatCandidate = repeatCollectionCandidates.find((candidate) => candidate.key === repeatSlotId);
-  const selectedRepeatPrototypeOption =
-    effectiveRepeatPrototypeOptions.find((option) => option.key === repeatPrototypeOptionKey) ??
-    effectiveRepeatPrototypeOptions[0];
-  const nestedCollectionFields = repeatCandidate
-    ? listNestedCollectionFields(repeatCandidate.itemFields)
-    : [];
-  const showRepeatLoopScope = !simpleDirectRepeatBindMode && nestedCollectionFields.length > 0;
-  const childRepeatPrototypeOptions = selectedRepeatPrototypeOption
-    ? listChildRepeatPrototypeOptions(template, selectedRepeatPrototypeOption.prototypeChildIds)
-    : [];
-  const selectedChildRepeatPrototypeOption =
-    childRepeatPrototypeOptions.find((option) => option.key === repeatChildPrototypeOptionKey) ??
-    childRepeatPrototypeOptions[0];
-  const allRepeatTargetFieldOptions = selectedRepeatPrototypeOption
-    ? buildRepeatTargetFieldOptions(template, selectedRepeatPrototypeOption.prototypeChildIds)
-    : [];
-  const parentRepeatTargetFieldOptions = filterParentRepeatMappingTargets(
-    template,
-    selectedRepeatPrototypeOption?.prototypeChildIds ?? [],
-    selectedChildRepeatPrototypeOption?.prototypeChildIds,
-    allRepeatTargetFieldOptions
-  );
-  const childRepeatTargetFieldOptions = filterChildRepeatMappingTargets(
-    template,
-    selectedRepeatPrototypeOption?.prototypeChildIds ?? [],
-    selectedChildRepeatPrototypeOption?.prototypeChildIds ??
-      childRepeatPrototypeOptions[0]?.prototypeChildIds,
-    allRepeatTargetFieldOptions
-  );
-  const nestedChildField = nestedCollectionFields.find((field) => field.path === repeatChildItemPath);
-  const repeatItemCount = currentRepeat ? collectionItemCount(payload, currentRepeat) : 0;
-  const repeatScopePreview =
-    repeatCandidate && showRepeatLoopScope
-      ? formatRepeatBindScopePreview(repeatLoopScope, {
-          parentSlotLabel: repeatCandidate.label,
-          childListLabel: nestedChildField?.label ?? repeatChildItemPath,
-          ...buildRepeatBindPreviewCounts(
-            payload,
-            repeatCandidate.slotId,
-            repeatLoopScope === "parentOnly" ? undefined : repeatChildItemPath || nestedCollectionFields[0]?.path,
-            repeatLoopScope === "childOnly" ? repeatAnchorItemIndex : undefined
-          ),
-          anchorItemIndex: repeatLoopScope === "childOnly" ? repeatAnchorItemIndex : undefined,
-        })
-      : "";
-  const isNestedChildRepeatHost =
-    !canvasMode &&
-    isRepeatHostBlock(block) &&
-    Boolean(block.repeat?.itemPath?.trim()) &&
-    unifiedBindParentHostId !== id;
-  const repeatUnavailableReason =
-    !canvasMode && block.type !== "emailRoot" && !isRepeatHostBlock(block)
-      ? "仅支持在可插入子级的布局容器上绑定列表。"
-      : !canvasMode && repeatPrototypeOptions.length === 0 && unifiedModalPrototypeOptions.length === 0
-        ? "当前没有可用的列表宿主容器，请先放入 layout 或 grid。"
-        : null;
-  const canConfigureRepeat =
-    repeatPrototypeOptions.length > 0 || unifiedModalPrototypeOptions.length > 0;
+  const repeatBindDisabled = Boolean(repeatBindDisabledReason);
+  const showRepeatRegionPanel =
+    Boolean(resolvedRepeatContext) || (!canvasMode && block.type !== "emailRoot");
 
-  const resetRepeatBindDrafts = (
-    candidate: RepeatCollectionCandidate | undefined,
-    option: RepeatPrototypeOption | undefined,
-    opts?: {
-      parentRepeat?: typeof parentHostRepeat;
-      childRepeat?: typeof parentHostRepeat;
-      childHostId?: string;
-      childPrototypeChildIds?: string[];
-      childItemPath?: string;
-    }
-  ) => {
-    if (!candidate || !option) {
-      setRepeatParentMappingDraft({});
-      setRepeatChildMappingDraft({});
+  const resetRepeatBindDrafts = (candidate: RepeatCollectionCandidate | undefined) => {
+    if (!candidate || !repeatBindHostId) {
+      setRepeatMappingDraft({});
       return;
     }
-    const parentScalars = parentScalarItemFieldsFromItemFields(candidate.itemFields);
-    const childProtoIds =
-      opts?.childPrototypeChildIds ?? selectedChildRepeatPrototypeOption?.prototypeChildIds ?? [];
-    setRepeatParentMappingDraft(
-      inferRepeatMappingDraft(
+    setRepeatMappingDraft(
+      repeatMappingDraftFromSaved(
         template,
-        candidate.slotId,
-        parentScalars,
-        filterParentRepeatMappingTargets(
-          template,
-          option.prototypeChildIds,
-          childProtoIds.length ? childProtoIds : undefined,
-          buildRepeatTargetFieldOptions(template, option.prototypeChildIds)
+        listRepeatFieldMappingScalarFields(
+          {
+            mode: "collection",
+            slotId: candidate.slotId,
+            prototypeChildIds: [],
+            itemFields: candidate.itemFields,
+            itemPath: candidate.itemPath,
+            fieldMappings: [],
+          },
+          enclosingParentRepeat
         ),
-        opts?.parentRepeat?.fieldMappings
-      )
-    );
-    const childPath = opts?.childItemPath ?? repeatChildItemPath;
-    const childItemFields = nestedCollectionFields.find((f) => f.path === childPath)?.itemFields ?? [];
-    setRepeatChildMappingDraft(
-      inferRepeatMappingDraft(
-        template,
-        candidate.slotId,
-        childItemFields,
-        filterChildRepeatMappingTargets(
-          template,
-          option.prototypeChildIds,
-          childProtoIds.length ? childProtoIds : childRepeatPrototypeOptions[0]?.prototypeChildIds,
-          buildRepeatTargetFieldOptions(template, option.prototypeChildIds)
-        ),
-        opts?.childRepeat?.fieldMappings
+        repeatTargetFieldOptions,
+        ownRepeat?.fieldMappings
       )
     );
   };
 
-  const syncChildRepeatDefaults = (
-    candidate: RepeatCollectionCandidate,
-    option: RepeatPrototypeOption,
-    scope: RepeatLoopScope,
-    overrideItemPath?: string
-  ) => {
-    if (scope === "parentOnly") return;
-    const nested = listNestedCollectionFields(candidate.itemFields);
-    const itemPath = (overrideItemPath ?? repeatChildItemPath) || nested[0]?.path || "";
-    const protos = listChildRepeatPrototypeOptions(template, option.prototypeChildIds);
-    const selectableProtos = protos.filter(
-      (p) => !isChildRepeatPrototypeReservedByParent(p, option)
-    );
-    const derived = deriveUnifiedRepeatPlanFromTemplate(template, unifiedBindParentHostId, candidate.itemFields);
-    const keyFromDerived =
-      derived?.childHostId && derived.childPrototypeChildIds?.length
-        ? childRepeatPrototypeOptionKeyFromBinding(
-            template,
-            option.prototypeChildIds,
-            derived.childHostId,
-            derived.childPrototypeChildIds
-          )
-        : undefined;
-    const pickKey = (key: string | undefined) =>
-      key && selectableProtos.some((p) => p.key === key) ? key : undefined;
-    const nextKey =
-      pickKey(repeatChildPrototypeOptionKey) ??
-      pickKey(keyFromDerived) ??
-      pickKey(preferredChildRepeatPrototypeOptionKey(template, selectableProtos)) ??
-      selectableProtos[0]?.key ??
-      "";
-    setRepeatChildItemPath(itemPath);
-    setRepeatChildPrototypeOptionKey(nextKey);
-  };
+  const openRepeatModal = (viewOnly = false) => {
+    setRepeatModalViewOnly(viewOnly);
 
-  const openRepeatModal = () => {
-    const preferredSlot = parentHostRepeat?.slotId || currentRepeat?.slotId;
-    const defaultCandidateLike = pickRepeatCollectionCandidateForHost(
-      repeatCollectionCandidates,
-      unifiedBindParentHostId,
-      preferredSlot
-    );
-    const defaultCandidate = defaultCandidateLike
-      ? repeatCollectionCandidates.find((candidate) => candidate.key === defaultCandidateLike.key)
-      : undefined;
-    const initialSlotId = preferredSlot || defaultCandidateLike?.key || "";
-    const initialCandidate =
-      repeatCollectionCandidates.find((candidate) => candidate.key === initialSlotId) ??
-      defaultCandidate;
-    const derived =
-      initialCandidate && unifiedBindParentHostId
-        ? deriveUnifiedRepeatPlanFromTemplate(
-            template,
-            unifiedBindParentHostId,
-            initialCandidate.itemFields
-          )
-        : null;
-    const initialScope = simpleDirectRepeatBindMode ? "parentOnly" : (derived?.scope ?? "parentOnly");
-    const initialOption =
-      (simpleDirectRepeatBindMode
-        ? effectiveRepeatPrototypeOptions[0]
-        : unifiedModalPrototypeOptions.find(
-        (option) =>
-          option.key ===
-          repeatOptionKey(
-            unifiedBindParentHostId,
-            derived?.parentPrototypeChildIds ?? parentHostRepeat?.prototypeChildIds ?? []
-          )
-      )) ??
-      unifiedModalPrototypeOptions[0] ??
-      effectiveRepeatPrototypeOptions[0];
-    setRepeatSlotId(initialSlotId);
-    setRepeatLoopScope(initialScope);
-    setRepeatAnchorItemIndex(derived?.anchorItemIndex ?? 0);
-    setRepeatChildItemPath(
-      simpleDirectRepeatBindMode
-        ? ""
-        : (derived?.childItemPath ?? listNestedCollectionFields(initialCandidate?.itemFields ?? [])[0]?.path ?? "")
-    );
-    const initialChildKey =
-      derived?.childHostId && derived.childPrototypeChildIds?.length && initialOption
-        ? childRepeatPrototypeOptionKeyFromBinding(
-            template,
-            initialOption.prototypeChildIds,
-            derived.childHostId,
-            derived.childPrototypeChildIds
-          )
-        : "";
-    setRepeatChildPrototypeOptionKey(initialChildKey ?? "");
-    setRepeatPrototypeOptionKey(initialOption?.key ?? "");
-    if (initialCandidate && initialOption) {
-      syncChildRepeatDefaults(initialCandidate, initialOption, initialScope);
-      const childRepeatBlock = derived?.childHostId
-        ? template.blocks[derived.childHostId]?.repeat
-        : undefined;
-      resetRepeatBindDrafts(initialCandidate, initialOption, {
-        parentRepeat: parentHostRepeat,
-        childRepeat: childRepeatBlock,
-        childHostId: derived?.childHostId,
-        childPrototypeChildIds: derived?.childPrototypeChildIds,
-      });
+    if (viewOnly && resolvedRepeatContext) {
+      const hostRepeat = resolvedRepeatContext.repeat;
+      const preferredSlot = hostRepeat.itemPath?.trim()
+        ? `${hostRepeat.slotId}::${hostRepeat.itemPath.trim()}`
+        : hostRepeat.slotId;
+      const initialSlotId = repeatBindCandidates.some((c) => c.key === preferredSlot)
+        ? preferredSlot
+        : hostRepeat.slotId;
+      setRepeatSlotId(initialSlotId);
+      const hostId = resolvedRepeatContext.hostId;
+      const protoIds = hostRepeat.prototypeChildIds?.length
+        ? [...hostRepeat.prototypeChildIds]
+        : [hostId];
+      const targetOpts = buildRepeatTargetFieldOptions(template, protoIds).filter(
+        (opt) => !hasIntermediateRepeatBetween(template, opt.blockId, hostId)
+      );
+      setRepeatMappingDraft(
+        repeatMappingDraftFromSaved(
+          template,
+          listRepeatFieldMappingScalarFields(hostRepeat, enclosingParentRepeat),
+          targetOpts,
+          hostRepeat.fieldMappings
+        )
+      );
+      setRepeatModalOpen(true);
+      return;
     }
+
+    // 已绑定时回显当前来源（顶层变量或父项子列表）；否则只在唯一候选时预选，多候选留空。
+    const preferredSlot = ownRepeat
+      ? ownRepeat.itemPath?.trim()
+        ? `${ownRepeat.slotId}::${ownRepeat.itemPath.trim()}`
+        : ownRepeat.slotId
+      : "";
+    const initialSlotId =
+      (preferredSlot && repeatBindCandidates.some((c) => c.key === preferredSlot)
+        ? preferredSlot
+        : "") || (repeatBindCandidates.length === 1 ? repeatBindCandidates[0]!.key : "");
+    setRepeatSlotId(initialSlotId);
+    resetRepeatBindDrafts(repeatBindCandidates.find((c) => c.key === initialSlotId));
     setRepeatModalOpen(true);
   };
 
   const applyRepeatFromModal = () => {
     const candidate = repeatCandidate;
-    const prototypeOption = selectedRepeatPrototypeOption;
     if (!candidate) {
-      message.error("请选择一个父级列表变量。");
+      message.error("请选择一个列表变量。");
       return;
     }
-    if (repeatLoopScope !== "childOnly" && !prototypeOption) {
-      message.error("请选择一个父级行模板。");
-      return;
-    }
-    if (repeatLoopScope !== "parentOnly") {
-      if (!repeatChildItemPath.trim()) {
-        message.error("请选择要循环的子级列表列。");
-        return;
-      }
-      if (!selectedChildRepeatPrototypeOption) {
-        message.error("请选择子级行模板。");
-        return;
-      }
-    }
-    const parentHostId = unifiedBindParentHostId || prototypeOption?.hostId;
-    if (!parentHostId) {
-      message.error("未找到父级列表宿主。");
+    if (!repeatBindHostId) {
+      message.error("无法确定列表行模板，请先在画布中选中要循环的容器。");
       return;
     }
     try {
       onTemplateChange(
-        applyUnifiedRepeatBinding(
+        applySingleLevelRepeatBinding(
           template,
           {
-            scope: repeatLoopScope,
+            hostId: repeatBindHostId,
             slotId: candidate.slotId,
-            parentHostId,
-            parentPrototypeChildIds: prototypeOption?.prototypeChildIds ?? [],
-            parentItemFields: candidate.itemFields,
-            parentFieldMappings: buildRepeatFieldMappings(
-              parentScalarItemFieldsFromItemFields(candidate.itemFields),
-              parentRepeatTargetFieldOptions,
-              repeatParentMappingDraft
+            itemPath: candidate.itemPath,
+            itemFields: candidate.itemFields,
+            fieldMappings: buildRepeatFieldMappings(
+              listRepeatFieldMappingScalarFields(
+                {
+                  mode: "collection",
+                  slotId: candidate.slotId,
+                  prototypeChildIds: [],
+                  itemFields: candidate.itemFields,
+                  itemPath: candidate.itemPath,
+                  fieldMappings: [],
+                },
+                enclosingParentRepeat
+              ),
+              repeatTargetFieldOptions,
+              repeatMappingDraft
             ),
-            parentMinItems: candidate.minItems,
-            parentMaxItems: candidate.maxItems,
-            parentLabel: candidate.label,
-            parentDescription: candidate.description,
-            childItemPath: repeatChildItemPath,
-            childHostId: selectedChildRepeatPrototypeOption?.hostId,
-            childPrototypeChildIds: selectedChildRepeatPrototypeOption?.prototypeChildIds ?? [],
-            childItemFields: nestedChildField?.itemFields,
-            childFieldMappings: buildRepeatFieldMappings(
-              nestedChildField?.itemFields ?? [],
-              childRepeatTargetFieldOptions,
-              repeatChildMappingDraft
-            ),
-            childMinItems: nestedChildField?.minItems,
-            childMaxItems: nestedChildField?.maxItems,
-            childLabel: nestedChildField?.label,
-            anchorItemIndex: repeatLoopScope === "childOnly" ? repeatAnchorItemIndex : undefined,
+            minItems: candidate.minItems,
+            maxItems: candidate.maxItems,
+            label: candidate.label,
+            description: candidate.description,
           },
           payload
         )
@@ -1037,38 +904,28 @@ export function Inspector({
   };
 
   const removeRepeat = () => {
-    if (!unifiedBindParentHostId) return;
-    if (!template.blocks[unifiedBindParentHostId]?.repeat) return;
-    onTemplateChange(removeUnifiedRepeatBinding(template, unifiedBindParentHostId, payload));
+    if (!repeatBindHostId) return;
+    if (!template.blocks[repeatBindHostId]?.repeat) return;
+    setRepeatUnbindModalOpen(true);
+  };
+
+  const confirmRepeatUnbind = (mode: RepeatUnbindMode) => {
+    if (!repeatBindHostId) return;
+    if (!template.blocks[repeatBindHostId]?.repeat) return;
+    const next = removeUnifiedRepeatBinding(template, repeatBindHostId, payload, { mode });
+    const nextId = resolveRepeatUnbindSelectionBlockId(template, next, repeatBindHostId);
+    onTemplateChange(next, {
+      selectBlockRef: nextId ? { kind: "physical", blockId: nextId } : null,
+    });
+    setRepeatUnbindModalOpen(false);
     setRepeatModalOpen(false);
+    message.success("列表绑定已解除");
   };
 
-  const handleRepeatSlotOrPrototypeChange = (slotId: string, prototypeKey: string) => {
-    const nextSlotId = showRepeatLoopScope ? repeatSlotId || slotId : slotId;
-    const nextCandidate =
-      repeatCollectionCandidates.find((candidate) => candidate.key === nextSlotId) ??
-      repeatCandidate;
-    const nextOption =
-      effectiveRepeatPrototypeOptions.find((option) => option.key === prototypeKey) ??
-      effectiveRepeatPrototypeOptions[0];
-    if (!showRepeatLoopScope && slotId !== repeatSlotId) {
-      setRepeatSlotId(slotId);
-    }
-    setRepeatPrototypeOptionKey(
-      simpleDirectRepeatBindMode ? (effectiveRepeatPrototypeOptions[0]?.key ?? prototypeKey) : prototypeKey
-    );
-    if (nextCandidate && nextOption) {
-      syncChildRepeatDefaults(nextCandidate, nextOption, repeatLoopScope);
-      resetRepeatBindDrafts(nextCandidate, nextOption);
-    }
-  };
-
-  const handleRepeatLoopScopeChange = (scope: RepeatLoopScope) => {
-    setRepeatLoopScope(scope);
-    if (repeatCandidate && selectedRepeatPrototypeOption) {
-      syncChildRepeatDefaults(repeatCandidate, selectedRepeatPrototypeOption, scope);
-      resetRepeatBindDrafts(repeatCandidate, selectedRepeatPrototypeOption);
-    }
+  const handleRepeatSlotChange = (slotId: string) => {
+    if (slotId === repeatSlotId) return;
+    setRepeatSlotId(slotId);
+    resetRepeatBindDrafts(repeatBindCandidates.find((c) => c.key === slotId));
   };
 
   const updateBlockVisibility = (nextVisibility: VisibilityRule | undefined) => {
@@ -1114,8 +971,8 @@ export function Inspector({
   };
 
   const renderRepeatBuiltinCollectionRules = (slotId: string) => {
-    const rules = readBuiltinRulesFromPayloadSlot(effectivePayload, slotId);
-    if (!rules) return null;
+    const sortPolicy = readBuiltinSortPolicyFromPayloadSlot(effectivePayload, slotId);
+    if (!sortPolicy) return null;
     const slotLabel = effectivePayload.slots[slotId]?.label?.trim() || slotId;
     const slotDataSource = effectivePayload.slots[slotId]?.dataSource;
     const catalog =
@@ -1127,40 +984,13 @@ export function Inspector({
         slotId={slotId}
         payload={effectivePayload}
         catalog={catalog}
-        sort={rules.sort}
-        extract={rules.extract}
+        sortPolicy={sortPolicy}
         syncNote={`与变量「${slotLabel}」的数据源配置为同一份（payload.slots.${slotId}.dataSource），在变量面板修改会同步反映于此。`}
-        extractHint="相似品依赖另一列表槽首项；子列表请在父级 itemFields 中声明 collection，并在列表绑定里选择子列表路径。"
-        sortHint="在商品目录范围内排序后，再取列表长度条数用于预览。"
-        onSortChange={(sort: BuiltinCollectionSortId) => {
+        sortHint="排序作用于当前商品列表自身；与变量面板配置同步。"
+        onSortPolicyChange={(nextPolicy: NormalizedBuiltinSortPolicy) => {
           commitBuiltinCollectionRules(
             slotId,
-            patchPayloadBuiltinCollectionSort(payload, slotId, sort)
-          );
-        }}
-        onExtractKindChange={(kind: BuiltinCollectionExtract["kind"]) => {
-          const anchorOptions = listCollectionSlotIdsForExtract(payload, slotId);
-          const nextExtract: BuiltinCollectionExtract =
-            kind === "similarTo"
-              ? {
-                  kind: "similarTo",
-                  fromSlotId: anchorOptions[0] ?? "",
-                  matchField: "href",
-                }
-              : { kind: "none" };
-          commitBuiltinCollectionRules(
-            slotId,
-            patchPayloadBuiltinCollectionExtract(payload, slotId, nextExtract)
-          );
-        }}
-        onExtractFromSlotChange={(fromSlotId: string) => {
-          commitBuiltinCollectionRules(
-            slotId,
-            patchPayloadBuiltinCollectionExtract(payload, slotId, {
-              kind: "similarTo",
-              fromSlotId,
-              matchField: "href",
-            })
+            patchPayloadBuiltinCollectionSortPolicy(payload, slotId, nextPolicy)
           );
         }}
       />
@@ -1173,168 +1003,152 @@ export function Inspector({
     targetBindPath: string;
     id: string;
   }) => {
-    const sourceKey = mapping.sourcePath.replace(/^\d+\./, "");
+    const repeatForLabel = currentRepeat ?? ownRepeat;
     const fieldLabel =
-      currentRepeat?.itemFields?.find((field) => field.key === sourceKey)?.label ?? sourceKey;
+      (repeatForLabel
+        ? resolveRepeatFieldMappingSourceMeta(
+            repeatForLabel,
+            enclosingParentRepeat,
+            mapping.sourcePath
+          )?.label
+        : undefined) ?? mapping.sourcePath;
     return `${fieldLabel} → ${targetFieldLabel(template, mapping.targetBlockId, mapping.targetBindPath)}`;
   };
 
-  const repeatRegionPanel =
-    resolvedRepeatContext || canConfigureRepeat || repeatUnavailableReason ? (
-      <>
-        <h3 className="inspector__subtitle">列表重复</h3>
-        <section className="inspector__section">
-          {isNestedChildRepeatHost && currentRepeat ? (
-            <>
-              <p className="inspector__muted">
-                子级列表循环由父级统一配置。
+  const repeatRegionPanel = showRepeatRegionPanel ? (
+      <InspectorPanelSection title="列表绑定">
+        {ownRepeat ? (
+          <>
+            <RepeatRegionInspectorSummary
+              template={template}
+              hostId={id}
+              repeat={ownRepeat}
+              itemCount={repeatItemCount}
+              payload={payload}
+              relation="host"
+              prototypeRootId={ownRepeat.prototypeChildIds[0]}
+              formatMappingLine={formatRepeatMappingLine}
+              onEdit={() => openRepeatModal(false)}
+              editLabel="编辑绑定"
+              onUnbind={removeRepeat}
+              unbindTitle="选择解除方式：保留全部行，或仅保留行模板"
+              onItemVisibilityChange={(itemVisibility) => {
+                onUpdate({
+                  template,
+                  payload: patchPayloadCollectionSlot(payload, ownRepeat.slotId, { itemVisibility }),
+                });
+              }}
+              collectionFixedLength={
+                ownRepeatFixedLengthEdit?.fixedLength ??
+                readPayloadCollectionFixedLength(payload, ownRepeat.slotId)
+              }
+              collectionFixedLengthDisabled={!ownRepeatFixedLengthEdit?.editability.editable}
+              collectionFixedLengthDisabledReason={ownRepeatFixedLengthEdit?.editability.reason}
+              onCollectionFixedLengthChange={(length: number) => {
+                if (!ownRepeatFixedLengthEdit?.editability.editable) return;
+                onUpdate({
+                  template,
+                  payload: applyPayloadCollectionFixedLength(payload, ownRepeat.slotId, length),
+                });
+              }}
+              previewValues={ownRepeatPreviewValues}
+            />
+            {!ownRepeat.itemPath?.trim()
+              ? renderRepeatBuiltinCollectionRules(ownRepeat.slotId)
+              : null}
+          </>
+        ) : repeatBindHostId ? (
+          <>
+            {enclosingParentRepeat ? (
+              <p className="inspector__muted" style={{ marginBottom: 8 }}>
+                当前位于「{enclosingParentRepeat.label ?? enclosingParentRepeat.slotId}
+                」的循环行内，可在此绑定该项的子列表或其他列表，实现嵌套复制。
               </p>
-              <RepeatRegionInspectorSummary
-                template={template}
-                hostId={resolvedRepeatContext!.hostId}
-                repeat={currentRepeat}
-                itemCount={repeatItemCount}
-                relation="host"
-                prototypeRootId={currentRepeat.prototypeChildIds[0]}
-                formatMappingLine={formatRepeatMappingLine}
-              />
-              <div className="inspector-actions-row">
-                <ShopSecondaryButton htmlType="button" onClick={openRepeatModal}>
-                  在整体列表绑定中修改
-                </ShopSecondaryButton>
-              </div>
-            </>
-          ) : currentRepeat ? (
-            <>
-              <RepeatRegionInspectorSummary
-                template={template}
-                hostId={resolvedRepeatContext!.hostId}
-                repeat={currentRepeat}
-                itemCount={repeatItemCount}
-                relation={resolvedRepeatContext!.relation}
-                prototypeRootId={resolvedRepeatContext?.prototypeRootId}
-                fieldMappingsOnBlock={resolvedRepeatContext?.fieldMappingsOnBlock}
-                formatMappingLine={formatRepeatMappingLine}
-              />
-              {resolvedRepeatContext?.relation === "host" && !currentRepeat.itemPath?.trim()
-                ? renderRepeatBuiltinCollectionRules(currentRepeat.slotId)
-                : null}
-              <div className="inspector-actions-row">
-                <ShopSecondaryButton htmlType="button" onClick={openRepeatModal}>
-                  {resolvedRepeatContext?.relation === "host" && id === unifiedBindParentHostId
-                    ? "编辑列表绑定"
-                    : "查看/更换绑定"}
-                </ShopSecondaryButton>
-                {id === unifiedBindParentHostId && (parentHostRepeat || currentRepeat) ? (
-                  <ShopSecondaryButton
-                    htmlType="button"
-                    onClick={removeRepeat}
-                    title="解除当前列表绑定"
-                  >
-                    解除列表绑定
-                  </ShopSecondaryButton>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="inspector__muted">
-                {canvasMode ? "先选择行模板。" : "绑定后按列表长度生成行模板。"}
-              </p>
-              {repeatUnavailableReason ? (
-                <p className="inspector__muted">{repeatUnavailableReason}</p>
-              ) : null}
-              <ShopPrimaryButton
-                htmlType="button"
-                onClick={openRepeatModal}
-                disabled={repeatCollectionCandidates.length === 0 || !canConfigureRepeat}
-              >
-                绑定列表重复
-              </ShopPrimaryButton>
-              {repeatCollectionCandidates.length === 0 ? (
-                <p className="inspector__muted">
-                  当前没有可用列表变量，请先准备列表数据。
-                </p>
-              ) : null}
-            </>
-          )}
-        </section>
-      </>
+            ) : null}
+            <ListBindInspectorEmpty
+              disabled={repeatBindDisabled}
+              disabledReason={repeatBindDisabledReason ?? undefined}
+              onConfigure={() => openRepeatModal(false)}
+            />
+          </>
+        ) : currentRepeat ? (
+          <RepeatRegionInspectorSummary
+            template={template}
+            hostId={resolvedRepeatContext!.hostId}
+            repeat={currentRepeat}
+            itemCount={repeatItemCount}
+            payload={payload}
+            relation={resolvedRepeatContext!.relation}
+            prototypeRootId={resolvedRepeatContext?.prototypeRootId}
+            fieldMappingsOnBlock={resolvedRepeatContext?.fieldMappingsOnBlock}
+            formatMappingLine={formatRepeatMappingLine}
+            onEdit={() => openRepeatModal(true)}
+            editLabel="查看绑定"
+          />
+        ) : (
+          <ListBindInspectorEmpty
+            disabled={repeatBindDisabled}
+            disabledReason={repeatBindDisabledReason ?? undefined}
+            onConfigure={() => openRepeatModal(false)}
+          />
+        )}
+      </InspectorPanelSection>
     ) : null;
 
   const repeatModal = (
+    <>
     <RepeatRegionBindModal
       visible={repeatModalOpen}
-      canvasMode={canvasMode}
+      viewOnly={repeatModalViewOnly}
       template={template}
       payload={payload}
-      hasCurrentRepeat={
-        simpleDirectRepeatBindMode ? Boolean(template.blocks[unifiedBindParentHostId]?.repeat) : Boolean(parentHostRepeat || currentRepeat)
-      }
-      collectionCandidates={repeatCollectionCandidates}
-      prototypeOptions={effectiveRepeatPrototypeOptions}
-      rowTemplateLocked={lockRepeatRowTemplate}
-      parentListHostId={unifiedBindParentHostId}
-      parentListSlotLocked={showRepeatLoopScope}
-      showLoopScope={showRepeatLoopScope}
-      loopScope={repeatLoopScope}
-      scopePreview={repeatScopePreview}
-      nestedChildListLabel={nestedChildField?.label}
-      nestedCollectionOptions={nestedCollectionFields}
-      parentPrototypeChildIds={selectedRepeatPrototypeOption?.prototypeChildIds ?? []}
-      childPrototypeOptions={childRepeatPrototypeOptions}
-      childItemPath={repeatChildItemPath}
-      childPrototypeOptionKey={repeatChildPrototypeOptionKey}
-      childPrototypeChildIds={selectedChildRepeatPrototypeOption?.prototypeChildIds ?? []}
-      anchorItemIndex={repeatAnchorItemIndex}
-      parentTargetFieldOptions={parentRepeatTargetFieldOptions}
-      childTargetFieldOptions={childRepeatTargetFieldOptions}
-      hideParentTemplateStep={simpleDirectRepeatBindMode}
+      hasCurrentRepeat={Boolean(ownRepeat)}
+      collectionCandidates={repeatBindCandidates}
+      parentPrototypeChildIds={repeatModalPrototypeChildIds}
+      parentRowTemplateLabel={repeatModalRowTemplateLabel}
+      parentTargetFieldOptions={repeatModalTargetFieldOptions}
       repeatSlotId={repeatSlotId}
-      repeatPrototypeOptionKey={repeatPrototypeOptionKey}
-      parentMappingDraft={repeatParentMappingDraft}
-      childMappingDraft={repeatChildMappingDraft}
+      parentMappingDraft={repeatMappingDraft}
       repeatCandidate={repeatCandidate}
-      selectedPrototypeOption={selectedRepeatPrototypeOption}
-      onClose={() => setRepeatModalOpen(false)}
+      enclosingParentRepeat={enclosingParentRepeat}
+      onClose={() => {
+        setRepeatModalOpen(false);
+        setRepeatModalViewOnly(false);
+      }}
       onApply={applyRepeatFromModal}
-      onRemove={parentHostRepeat || currentRepeat ? removeRepeat : undefined}
-      onLoopScopeChange={handleRepeatLoopScopeChange}
-      onChildItemPathChange={(path) => {
-        if (repeatCandidate && selectedRepeatPrototypeOption) {
-          syncChildRepeatDefaults(
-            repeatCandidate,
-            selectedRepeatPrototypeOption,
-            repeatLoopScope,
-            path
-          );
-          resetRepeatBindDrafts(repeatCandidate, selectedRepeatPrototypeOption, {
-            childItemPath: path,
-          });
-        } else {
-          setRepeatChildItemPath(path);
-        }
-      }}
-      onChildPrototypeOptionKeyChange={(key) => {
-        setRepeatChildPrototypeOptionKey(key);
-        const selected = childRepeatPrototypeOptions.find((option) => option.key === key);
-        if (repeatCandidate && selectedRepeatPrototypeOption && selected) {
-          resetRepeatBindDrafts(repeatCandidate, selectedRepeatPrototypeOption, {
-            childHostId: selected.hostId,
-            childPrototypeChildIds: selected.prototypeChildIds,
-          });
-        }
-      }}
-      onAnchorItemIndexChange={setRepeatAnchorItemIndex}
-      onRepeatPrototypeOptionKeyChange={setRepeatPrototypeOptionKey}
-      onParentMappingDraftChange={setRepeatParentMappingDraft}
-      onChildMappingDraftChange={setRepeatChildMappingDraft}
-      onSlotOrPrototypeChange={handleRepeatSlotOrPrototypeChange}
+      onRemove={ownRepeat ? removeRepeat : undefined}
+      onParentMappingDraftChange={setRepeatMappingDraft}
+      onSlotChange={handleRepeatSlotChange}
     />
+    <RepeatUnbindChoiceModal
+      visible={repeatUnbindModalOpen}
+      itemCount={
+        repeatBindHostId && template.blocks[repeatBindHostId]?.repeat
+          ? collectionItemCount(payload, template.blocks[repeatBindHostId]!.repeat!)
+          : 0
+      }
+      nestedHint={
+        repeatBindHostId && hasNestedRepeatUnder(template, repeatBindHostId)
+          ? "其子容器内的列表循环将一并解除。"
+          : undefined
+      }
+      onClose={() => setRepeatUnbindModalOpen(false)}
+      onChoose={confirmRepeatUnbind}
+    />
+    </>
   );
 
 
-  const mergedBlockForId = (bid: string): EmailBlock | null => mergedForInspector?.blocks[bid] ?? null;
+  const mergedBlockForRef = (ref: VirtualBlockRef): EmailBlock | null => {
+    if (!previewModel) return null;
+    return findPreviewNodeByRef(previewModel, ref)?.block ?? null;
+  };
+  const mergedBlockForId = (bid: string): EmailBlock | null => {
+    if (selectedBlockRef && resolvePhysicalBlockId(selectedBlockRef) === bid) {
+      return mergedBlockForRef(selectedBlockRef);
+    }
+    return mergedBlockForRef({ kind: "physical", blockId: bid });
+  };
   const rd = (b: EmailBlock, bindPath: string) =>
     readInspectorDisplayValue(b, payload, mergedBlockForId(b.id), bindPath, template);
 
@@ -1357,9 +1171,15 @@ export function Inspector({
     return "";
   };
 
+  // K：当前容器处于某 repeat 内时，其「可绑定业务内容字段」由列表项映射决定，
+  // 一律置灰只读（含尚未映射的字段），不在此手动改源/改值。
+  const repeatContentBindPaths = !canvasMode ? listRepeatMappableContentBindPaths(block) : [];
+  const isRepeatContentLocked = (blockId: string, bindPath: string): boolean =>
+    blockId === id && Boolean(resolvedRepeatContext) && repeatContentBindPaths.includes(bindPath);
   const isBindPathLocked = (blockId: string, bindPath: string): boolean => {
     const b = template.blocks[blockId];
     if (!b) return false;
+    if (isRepeatContentLocked(blockId, bindPath)) return true;
     const mode = getInspectFieldBindMode(template, b, payload, blockId, bindPath);
     return mode === "themeFollow" || mode === "variableFollow";
   };
@@ -1389,12 +1209,13 @@ export function Inspector({
       template={template}
       payload={payload}
       block={targetBlock}
-      mergedTemplate={mergedForInspector}
+      mergedTemplate={previewFlatTemplate}
       effectiveDesignTokens={effectiveDesignTokens}
       tokenPresets={tokenPresets}
       bindPath={bindPath}
       onUpdate={onUpdate}
       onTemplateChange={onTemplateChange}
+      disabled={isRepeatContentLocked(targetBlock.id, bindPath)}
     />
   );
 
@@ -1885,7 +1706,7 @@ export function Inspector({
           {spacing.mode === "unified"
             ? renderUnitInputRow({
                 label: prefixed("内边距"),
-                value: spacing.unified ?? "0",
+                value: spacingSideToInputValue(spacing.unified),
                 unit: "px",
                 hint: hint(`${opts.basePath}.unified`),
                 onChange: (next) => push("unified", next.trim() || "0"),
@@ -1899,7 +1720,7 @@ export function Inspector({
             <div className="inspector-field-row">
               {renderUnitInputRow({
                 label: `${SPACING_SIDE_LABELS.top}内边距`,
-                value: spacing.top ?? "0",
+                value: spacingSideToInputValue(spacing.top),
                 unit: "px",
                 hint: hint(`${opts.basePath}.top`),
                 onChange: (next) => push("top", next.trim() || "0"),
@@ -1908,7 +1729,7 @@ export function Inspector({
               })}
               {renderUnitInputRow({
                 label: `${SPACING_SIDE_LABELS.right}内边距`,
-                value: spacing.right ?? "0",
+                value: spacingSideToInputValue(spacing.right),
                 unit: "px",
                 hint: hint(`${opts.basePath}.right`),
                 onChange: (next) => push("right", next.trim() || "0"),
@@ -1919,7 +1740,7 @@ export function Inspector({
             <div className="inspector-field-row">
               {renderUnitInputRow({
                 label: `${SPACING_SIDE_LABELS.bottom}内边距`,
-                value: spacing.bottom ?? "0",
+                value: spacingSideToInputValue(spacing.bottom),
                 unit: "px",
                 hint: hint(`${opts.basePath}.bottom`),
                 onChange: (next) => push("bottom", next.trim() || "0"),
@@ -1928,7 +1749,7 @@ export function Inspector({
               })}
               {renderUnitInputRow({
                 label: `${SPACING_SIDE_LABELS.left}内边距`,
-                value: spacing.left ?? "0",
+                value: spacingSideToInputValue(spacing.left),
                 unit: "px",
                 hint: hint(`${opts.basePath}.left`),
                 onChange: (next) => push("left", next.trim() || "0"),
@@ -2765,7 +2586,7 @@ export function Inspector({
         </div>
         <AdminInspectorTabs
           active={inspectorTab}
-          onChange={setInspectorTab}
+          onChange={setInspectorTabPersist}
           contentPane={
             <section className="inspector__section">
               <h3 className="inspector__subtitle">组件 · 内容</h3>
@@ -2942,10 +2763,15 @@ export function Inspector({
           ⧉
         </button>
       </div>
+      {repeatExpansionGroupCount > 1 ? (
+        <p className="inspector__repeat-group-hint" title="同一行模板在列表中的全部展开项已一并选中">
+          列表展开：同组共 {repeatExpansionGroupCount} 项（编辑作用于行模板）
+        </p>
+      ) : null}
 
       <AdminInspectorTabs
         active={inspectorTab}
-        onChange={setInspectorTab}
+        onChange={setInspectorTabPersist}
         layoutPane={
           <>
           {block.type === "layout" || block.type === "image" ? (
@@ -3121,7 +2947,7 @@ export function Inspector({
           </section>
           </>
         }
-        listPane={resolvedRepeatContext || canConfigureRepeat || repeatUnavailableReason ? repeatRegionPanel : undefined}
+        listPane={showRepeatRegionPanel ? repeatRegionPanel : undefined}
         visibilityPane={visibilityPanel}
         stylePane={
           <>
@@ -3289,7 +3115,10 @@ export function Inspector({
           </>
         }
         contentPane={
-          <>
+          <div
+            aria-disabled={resolvedRepeatContext ? true : undefined}
+            style={resolvedRepeatContext ? { opacity: 0.55, pointerEvents: "none" } : undefined}
+          >
           <h3 className="inspector__subtitle">组件 · 内容</h3>
           <section className="inspector__section">
             {block.type === "text" ? (
@@ -3312,18 +3141,18 @@ export function Inspector({
                         payload={payload}
                         block={block}
                         textBody={textBodyForEditor}
-                        mergedTemplate={mergedForInspector}
+                        mergedTemplate={previewFlatTemplate}
                         effectiveDesignTokens={effectiveDesignTokens}
                         onUpdate={onUpdate}
                         onTemplateChange={onTemplateChange}
                         onAggregateLiteralize={
-                          mergedForInspector
+                          previewFlatTemplate
                             ? () => {
                                 const baked = bakeTextBodyToLiteralByMode(
                                   template,
                                   payload,
                                   block.id,
-                                  mergedForInspector,
+                                  previewFlatTemplate,
                                   (bindPath) => readDisplayString(block, bindPath)
                                 );
                                 const body = normalizeTextBody(
@@ -3364,14 +3193,14 @@ export function Inspector({
                       }
                       onVariablePillClick={setTextVarPillModalMeta}
                       onVariablePillDetach={(meta) => {
-                        if (!mergedForInspector) return;
+                        if (!previewFlatTemplate) return;
                         const detached = detachRunVariableToLiteral(
                           template,
                           payload,
                           block.id,
                           meta.textBindPath,
                           meta.displayText,
-                          mergedForInspector
+                          previewFlatTemplate
                         );
                         const body = normalizeTextBody(detached.template.blocks[block.id]?.props.textBody);
                         if (!body) {
@@ -3473,14 +3302,14 @@ export function Inspector({
                     setTextVarPillModalMeta(null);
                   }}
                   onDetach={() => {
-                    if (!textVarPillModalMeta || !mergedForInspector) return;
+                    if (!textVarPillModalMeta || !previewFlatTemplate) return;
                     const detached = detachRunVariableToLiteral(
                       template,
                       payload,
                       block.id,
                       textVarPillModalMeta.textBindPath,
                       textVarPillModalMeta.displayText,
-                      mergedForInspector
+                      previewFlatTemplate
                     );
                     const body = normalizeTextBody(detached.template.blocks[block.id]?.props.textBody);
                     if (!body) {
@@ -3598,7 +3427,7 @@ export function Inspector({
               <InspectorEmptyTabHint />
             ) : null}
           </section>
-          </>
+          </div>
         }
       />
       {repeatModal}

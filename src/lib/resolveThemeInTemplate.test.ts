@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { EmailBlock, EmailTemplate } from "../types/email";
+import type { EmailBlock, EmailTemplate, ProgressBlockProps } from "../types/email";
 import type { ExpandedTheme } from "../types/theme";
 import { bakeThemeRefs, resolveThemeInTemplate } from "./resolveThemeInTemplate";
 
@@ -29,7 +29,7 @@ const theme: ExpandedTheme = {
 
 function templateWithProps(props: Record<string, unknown>): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "demo",
     templateVersion: 1,
     rootBlockId: "root",
@@ -130,7 +130,7 @@ describe("resolveThemeInTemplate", () => {
 
   it("解析 progress 的 fillColor / trackColor themeRef", () => {
     const input: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "demo",
       templateVersion: 1,
       rootBlockId: "root",
@@ -160,20 +160,21 @@ describe("resolveThemeInTemplate", () => {
             value: 20,
             max: 100,
           },
-        },
+        } as unknown as EmailBlock,
       },
     };
 
     const result = resolveThemeInTemplate(input, theme);
 
     assert.equal(result.issues.length, 0);
-    assert.equal(result.template?.blocks.bar?.props?.trackColor, "#efefef");
-    assert.equal(result.template?.blocks.bar?.props?.fillColor, "#0056a8");
+    const barProps = result.template?.blocks.bar?.props as ProgressBlockProps;
+    assert.equal(barProps?.trackColor, "#efefef");
+    assert.equal(barProps?.fillColor, "#0056a8");
   });
 
   it("tokens.radius 从合并主题 tokens.radius 字典解析", () => {
     const input: EmailTemplate = {
-      schemaVersion: "3.0.0",
+      schemaVersion: "4.0.0",
       templateId: "demo",
       templateVersion: 1,
       rootBlockId: "img1",

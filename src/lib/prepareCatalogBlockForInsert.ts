@@ -51,5 +51,5 @@ export function prepareCatalogBlockForInsert(
     ...block,
     props: deepMaterializeThemeRefs(block.props, tokenPresets) as EmailBlock["props"],
     wrapperStyle: deepMaterializeThemeRefs(block.wrapperStyle, tokenPresets) as EmailBlock["wrapperStyle"],
-  };
+  } as EmailBlock;
 }

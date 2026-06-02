@@ -8,11 +8,15 @@ import {
 } from "../lib/textBodyContentMode";
 import { textBodyToPlainString } from "../lib/textBodyFormat";
 import { InspectorFieldSource } from "./InspectorFieldSource";
+import { FIELD_SOURCE_MODE_LABEL } from "../lib/fieldSourceUiCopy";
 
 const MODE_PILL: Partial<
   Record<TextBodyContentMode, { label: string; classSuffix: string }>
 > = {
-  inlineVariable: { label: "文中变量", classSuffix: "inline-variable" },
+  inlineVariable: {
+    label: FIELD_SOURCE_MODE_LABEL.inlineVariable,
+    classSuffix: "inline-variable",
+  },
 };
 
 type Props = {

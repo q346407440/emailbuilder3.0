@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailTemplate } from "../types/email";
+import { MINIMAL_TEXT_PROPS } from "./testFixtures/emailTemplate";
 import { deleteBlockFromTemplate } from "./deleteTemplateBlock";
 
 function baseTemplate(): EmailTemplate {
   return {
-    schemaVersion: "3.0.0",
+    schemaVersion: "4.0.0",
     templateId: "test",
     templateVersion: 1,
     rootBlockId: "root",
@@ -48,13 +49,8 @@ function baseTemplate(): EmailTemplate {
         children: [],
         wrapperStyle: { widthMode: "fill", heightMode: "hug" },
         props: {
+          ...MINIMAL_TEXT_PROPS,
           textBody: { paragraphs: [{ runs: [{ text: "hi" }] }] },
-          fontFamily: "Arial",
-          fontSize: "14px",
-          color: "#111111",
-          bold: false,
-          italic: false,
-          decoration: "none",
         },
         bindings: {},
       },
