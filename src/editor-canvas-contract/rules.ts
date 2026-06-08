@@ -17,6 +17,15 @@ export const EDITOR_CANVAS_RULES: readonly EditorCanvasRule[] = [
     valueKey: "EMAIL_CANVAS_SCROLL_OVERFLOW_X",
     implementation: "src/app.css（.canvas-scroll）、src/App.tsx",
   },
+  {
+    id: "editor.canvasPreviewViewport",
+    title: "画布预览桌面/移动视窗",
+    summary:
+      "顶栏切换仅改变预览视窗宽（桌面 600 / 移动 375），不写 template.json；fill/hug 按 min(版心, 视窗) 自适应，fixed 强制 px 超出则裁切。",
+    valueKey: "EMAIL_CANVAS_VIEWPORT_DESKTOP_PX",
+    implementation:
+      "src/editor-canvas-contract/values.ts · src/lib/canvasDimensionResolve.ts · src/components/EmailPreview.tsx",
+  },
 ] as const;
 
 export const EDITOR_CANVAS_RULE_IDS = EDITOR_CANVAS_RULES.map((r) => r.id);

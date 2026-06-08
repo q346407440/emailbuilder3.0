@@ -13,6 +13,7 @@ import { applyBlockField, bindingMeta } from "../lib/applyEdit";
 import { readInspectorDisplayValue } from "../lib/inspectorBindingDisplay";
 import { applyBlockMetaName, blockDisplayName } from "../lib/blockMeta";
 import { Field } from "./ui/Field";
+import { UrlAssetUploadInput } from "./ui/UrlAssetUploadInput";
 import { ColorField } from "./ui/ColorField";
 import { ContentAlignAxisControl } from "./ui/ContentAlignAxisControl";
 import { resolveContentAlignInspectorPresentation } from "../lib/contentAlignConfigurability";
@@ -81,6 +82,10 @@ import {
   resolveInspectorTabForContext,
 } from "../lib/inspectorTabPreference";
 import { InspectorBlockNameField } from "./InspectorBlockNameField";
+import { saveBlockMasterInsertDefault } from "../api/client";
+import { resolveCatalogEntryForBlock } from "../lib/catalogEntryForBlock";
+import { extractBlockInsertPrototype } from "../lib/extractBlockInsertPrototype";
+import type { BlockMaster } from "../types/master";
 import { IconSrcEditor } from "./IconSrcEditor";
 import { InspectorFieldSource } from "./InspectorFieldSource";
 import { getInspectFieldBindMode, isInspectFollowLocked } from "../lib/inspectFieldBindMode";
@@ -154,6 +159,12 @@ type Props = {
   /** 含变量草稿的预览 payload */
   previewPayload?: EmailPayload | null;
   onDiscardPayloadSlotDraft?: (slotId: string) => void;
+  /** 保存插入默认配置成功后更新本地母版缓存 */
+  onBlockMasterSaved?: (master: BlockMaster) => void;
+  getFieldError?: (bindPath: string) => string | undefined;
+  getFieldWarning?: (bindPath: string) => string | undefined;
+  requestedInspectorTab?: InspectorMainTab | null;
+  onConsumedInspectorTabRequest?: () => void;
 };
 
 type TextBlock = Extract<EmailBlock, { type: "text" }>;
@@ -545,6 +556,11 @@ export function Inspector({
   tokenPresets = null,
   previewPayload = null,
   onDiscardPayloadSlotDraft,
+  onBlockMasterSaved,
+  getFieldError,
+  getFieldWarning,
+  requestedInspectorTab = null,
+  onConsumedInspectorTabRequest,
 }: Props) {
   const effectivePayload = previewPayload ?? payload;
   const selectedBlockId = selectedBlockRef ? resolvePhysicalBlockId(selectedBlockRef) : null;
@@ -560,6 +576,7 @@ export function Inspector({
   const [repeatSlotId, setRepeatSlotId] = useState("");
   const [repeatMappingDraft, setRepeatMappingDraft] = useState<Record<string, string>>({});
   const [textVarPillModalMeta, setTextVarPillModalMeta] = useState<TextBodyVariableRunMeta | null>(null);
+  const [savingInsertDefault, setSavingInsertDefault] = useState(false);
   const inspectorTabContext = useMemo(() => {
     const rootBlock = template.blocks[template.rootBlockId];
     if (!rootBlock) {
@@ -589,6 +606,12 @@ export function Inspector({
     preferredInspectorTabRef.current = tab;
     setInspectorTab(tab);
   }, []);
+
+  useEffect(() => {
+    if (!requestedInspectorTab) return;
+    setInspectorTabPersist(requestedInspectorTab);
+    onConsumedInspectorTabRequest?.();
+  }, [requestedInspectorTab, onConsumedInspectorTabRequest, setInspectorTabPersist]);
 
   useEffect(() => {
     const blockChanged = inspectorBlockKeyRef.current !== inspectorBlockKey;
@@ -626,9 +649,27 @@ export function Inspector({
     [template, payload]
   );
 
+  const block = canvasMode ? root : selectedBlockId ? template.blocks[selectedBlockId] : undefined;
+
+  const repeatExpansionGroupCount = useMemo(() => {
+    if (!previewModel || !selectedBlockRef || selectedBlockRef.kind !== "repeat-item") return 0;
+    return countRepeatExpansionGroupMembers(previewModel, selectedBlockRef);
+  }, [previewModel, selectedBlockRef]);
+
+  const ownRepeatForFixedLength = !canvasMode && block ? block.repeat ?? null : null;
+  const ownRepeatFixedLengthEdit = useMemo(() => {
+    if (!ownRepeatForFixedLength) return null;
+    const editability = collectionFixedLengthEditability(payload, ownRepeatForFixedLength.slotId, {
+      nestedRepeatItemPath: Boolean(ownRepeatForFixedLength.itemPath?.trim()),
+    });
+    return {
+      fixedLength: readPayloadCollectionFixedLength(payload, ownRepeatForFixedLength.slotId),
+      editability,
+    };
+  }, [ownRepeatForFixedLength, payload]);
+
   if (!root) return <div className="inspector">缺少根节点</div>;
 
-  const block = canvasMode ? root : selectedBlockId ? template.blocks[selectedBlockId] : undefined;
   if (!block) return <div className="inspector">未找到该区块</div>;
 
   const parentBlock = block.parentId ? template.blocks[block.parentId] : undefined;
@@ -639,10 +680,6 @@ export function Inspector({
       ? layoutVariantTemplatePathHint(emailKey, layoutVariantId)
       : null;
   const panelLabel = canvasMode ? "画布设置（邮件根节点）" : "区块设置";
-  const repeatExpansionGroupCount = useMemo(() => {
-    if (!previewModel || !selectedBlockRef || selectedBlockRef.kind !== "repeat-item") return 0;
-    return countRepeatExpansionGroupMembers(previewModel, selectedBlockRef);
-  }, [previewModel, selectedBlockRef]);
   const buildCopyLocatorText = () => {
     if (!templatePathHint) return "";
     const lines = [
@@ -758,16 +795,6 @@ export function Inspector({
         enclosingParentRepeat
       )
     : undefined;
-  const ownRepeatFixedLengthEdit = useMemo(() => {
-    if (!ownRepeat) return null;
-    const editability = collectionFixedLengthEditability(payload, ownRepeat.slotId, {
-      nestedRepeatItemPath: Boolean(ownRepeat.itemPath?.trim()),
-    });
-    return {
-      fixedLength: readPayloadCollectionFixedLength(payload, ownRepeat.slotId),
-      editability,
-    };
-  }, [ownRepeat, payload]);
   /** 不可绑定时仅置灰按钮并用 title 说明，不再额外占一行提示文案 */
   const repeatBindDisabledReason = (() => {
     if (canvasMode) return "请先在画布中选中要作为行模板的区块。";
@@ -1151,6 +1178,33 @@ export function Inspector({
   };
   const rd = (b: EmailBlock, bindPath: string) =>
     readInspectorDisplayValue(b, payload, mergedBlockForId(b.id), bindPath, template);
+
+  const catalogEntryForSave =
+    canvasMode || block.type === "emailRoot"
+      ? undefined
+      : resolveCatalogEntryForBlock(template, block);
+
+  const onSaveInsertDefault = async () => {
+    if (!catalogEntryForSave || canvasMode) return;
+    setSavingInsertDefault(true);
+    try {
+      const prototype = extractBlockInsertPrototype({
+        template,
+        payload: effectivePayload,
+        blockId: id,
+        mergedBlock: mergedBlockForId(id),
+        previewFlatTemplate,
+        tokenPresets,
+      });
+      const result = await saveBlockMasterInsertDefault(catalogEntryForSave.masterId, prototype);
+      onBlockMasterSaved?.(result.master);
+      message.success(`「${result.componentLabel}」的插入默认配置已保存`);
+    } catch (e) {
+      message.error(e instanceof Error ? e.message : "保存插入默认配置失败");
+    } finally {
+      setSavingInsertDefault(false);
+    }
+  };
 
   const readDisplayColorString = (b: EmailBlock, bindPath: string): string => {
     const resolved = rd(b, bindPath);
@@ -1854,10 +1908,19 @@ export function Inspector({
     onChange: (next: string) => void;
     disabled?: boolean;
     headerExtra?: ReactNode;
+    /** 图片/图标地址字段：在输入框旁提供本地上传并回填 URL */
+    uploadAssetKind?: "image" | "icon";
   }) => {
     return (
       <Field label={opts.label} hint={opts.hint} headerExtra={opts.headerExtra}>
-        {typeof opts.maxLength === "number" ? (
+        {opts.uploadAssetKind ? (
+          <UrlAssetUploadInput
+            uploadKind={opts.uploadAssetKind}
+            value={opts.value}
+            disabled={opts.disabled}
+            onChange={opts.onChange}
+          />
+        ) : typeof opts.maxLength === "number" ? (
           <ShopCountInput
             value={opts.value}
             maxLength={opts.maxLength}
@@ -2343,6 +2406,8 @@ export function Inspector({
       label,
       value: readDisplayString(target, bindPath),
       maxLength: bindPath === "wrapperStyle.backgroundImage.alt" ? 100 : undefined,
+      uploadAssetKind:
+        bindPath === "wrapperStyle.backgroundImage.src" ? "image" : undefined,
       hint: readDisplayHint(target, bindPath),
       onChange: (next) => pushBlock(target.id, bindPath, next),
       disabled: isInspectFollowLocked(template, target, payload, bindPath),
@@ -2593,11 +2658,11 @@ export function Inspector({
               {root.wrapperStyle?.backgroundImage ? (
                 <>
                   <Field label="背景图地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.src")}>
-                    <ShopInput
-                      type="text"
+                    <UrlAssetUploadInput
+                      uploadKind="image"
                       value={String(rd(root, "wrapperStyle.backgroundImage.src") ?? "")}
                       disabled={isInspectFollowLocked(template, root, payload, "wrapperStyle.backgroundImage.src")}
-                      onChange={(e) => pushRoot("wrapperStyle.backgroundImage.src", e.target.value)}
+                      onChange={(next) => pushRoot("wrapperStyle.backgroundImage.src", next)}
                     />
                   </Field>
                   <Field label="背景替代文本" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.alt")}>
@@ -2659,6 +2724,8 @@ export function Inspector({
                   onChange={(v) => pushRoot("props.backgroundColor", v)}
                   disabled={isInspectFollowLocked(template, root, payload, "props.backgroundColor")}
                   headerExtra={fieldBindHeader(root, "props.backgroundColor")}
+                  error={getFieldError?.("props.backgroundColor")}
+                  warning={getFieldWarning?.("props.backgroundColor")}
                 />
               </section>
               <h3 className="inspector__subtitle">画布描边</h3>
@@ -2716,22 +2783,18 @@ export function Inspector({
                   const w = root.props.width;
                   const widthStr = typeof w === "string" ? w.trim() : "";
                   const widthOk = widthStr === EMAIL_ROOT_FIXED_WIDTH;
+                  const widthErr =
+                    getFieldError?.("props.width") ??
+                    (!widthOk ? emailRootWidthMismatchReason(w) : undefined);
                   return (
-                    <>
-                      {!widthOk ? (
-                        <div className="app__banner app__banner--warn">
-                          校验提示：{`blocks.${root.id}.props.width`}：{emailRootWidthMismatchReason(w)}
-                        </div>
-                      ) : null}
-                      <Field label="画布宽度（固定）">
-                        <ShopUnitInput
-                          value={widthStr || EMAIL_ROOT_FIXED_WIDTH}
-                          unit="px"
-                          onChange={() => undefined}
-                          disabled
-                        />
-                      </Field>
-                    </>
+                    <Field label="画布宽度（固定）" error={widthErr}>
+                      <ShopUnitInput
+                        value={widthStr || EMAIL_ROOT_FIXED_WIDTH}
+                        unit="px"
+                        onChange={() => undefined}
+                        disabled
+                      />
+                    </Field>
                   );
                 })()}
               </section>
@@ -2753,15 +2816,27 @@ export function Inspector({
             onUpdate({ template: applyBlockMetaName(template, id, name), payload })
           }
         />
-        <button
-          type="button"
-          className="inspector__title-copy-btn"
-          onClick={() => void onCopyLocator()}
-          title="复制定位信息"
-          aria-label="复制定位信息"
-        >
-          ⧉
-        </button>
+        <div className="inspector__title-actions">
+          <button
+            type="button"
+            className="inspector__title-save-default-btn"
+            disabled={savingInsertDefault || !catalogEntryForSave}
+            onClick={() => void onSaveInsertDefault()}
+            title="将当前组件的内容、样式、布局保存为该类型的插入默认配置（变量与主题样式将保存为当前展示的字面量）"
+            aria-label="保存组件插入默认配置"
+          >
+            ⊛
+          </button>
+          <button
+            type="button"
+            className="inspector__title-copy-btn"
+            onClick={() => void onCopyLocator()}
+            title="复制定位信息"
+            aria-label="复制定位信息"
+          >
+            ⧉
+          </button>
+        </div>
       </div>
       {repeatExpansionGroupCount > 1 ? (
         <p className="inspector__repeat-group-hint" title="同一行模板在列表中的全部展开项已一并选中">
@@ -3086,6 +3161,8 @@ export function Inspector({
               hint={wrapperBindMeta.fromPayload ? "来自变量赋值" : undefined}
               disabled={isInspectFollowLocked(template, block, payload, "wrapperStyle.backgroundColor")}
               headerExtra={fieldBindHeader(block, "wrapperStyle.backgroundColor")}
+              error={getFieldError?.("wrapperStyle.backgroundColor")}
+              warning={getFieldWarning?.("wrapperStyle.backgroundColor")}
             />
             <fieldset className="inspector-bound-fieldset">
               {renderBorderRadiusEditor({
@@ -3420,7 +3497,7 @@ export function Inspector({
             ].includes(block.type) ? (
               <p className="inspector__muted">该类型暂无专用表单，可在后续迭代中扩展属性面板。</p>
             ) : null}
-            {block.type === "divider" || block.type === "progress" ? (
+            {block.type === "divider" ? (
               <InspectorEmptyTabHint />
             ) : null}
             {block.type === "grid" && !layoutHasBackgroundImage(block) ? (

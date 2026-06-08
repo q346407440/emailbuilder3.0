@@ -1,3 +1,5 @@
+import type { PublishStatus } from "../publish-status-contract/types";
+
 /** 场景级版式清单（落盘：`data/emails/<emailKey>/layout-manifest.json`） */
 export const LAYOUT_MANIFEST_SCHEMA_VERSION = "1.0.0" as const;
 
@@ -5,6 +7,8 @@ export type LayoutVariantEntry = {
   /** 版式 id：`[a-zA-Z0-9_-]+`，对应 `layouts/<id>/` */
   id: string;
   label: string;
+  /** 版式层发布状态：活动 V2 仅可选用 published */
+  publishStatus: PublishStatus;
   description?: string;
   /** 创建时间（ISO）；用于顶栏版式列表按创建倒序展示 */
   createdAt?: string;

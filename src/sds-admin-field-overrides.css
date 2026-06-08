@@ -67,61 +67,106 @@
   border-radius: 3px;
 }
 
-/* 对齐折扣页面主/次级按钮：新建折扣、折扣设计 */
-.app .shop-btn {
-  height: 36px;
+/* 企业级文字链按钮（与模块行「重命名 / 删除」、顶栏资源操作一致）
+ * 勿加 .app 前缀：SDS Modal portal 在 .app 外，弹窗内按钮须同样生效。 */
+.shop-btn.sds-btn-link,
+.shop-btn.sds-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: 0;
   min-width: 0;
-  padding: 7px 16px;
-  border-radius: 3px;
-  font-size: 14px;
+  margin: 0;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.shop-btn.sds-btn-link.shop-btn--primary,
+.shop-btn.sds-btn.shop-btn--primary {
+  color: var(--accent, #3d8bd9);
+}
+
+.shop-btn.sds-btn-link.shop-btn--primary:hover:not(:disabled),
+.shop-btn.sds-btn-link.shop-btn--primary:focus-visible:not(:disabled),
+.shop-btn.sds-btn.shop-btn--primary:hover:not(:disabled),
+.shop-btn.sds-btn.shop-btn--primary:focus-visible:not(:disabled) {
+  color: var(--accent-hover, #2f7bc9);
+  background-color: rgba(61, 139, 217, 0.08);
+}
+
+.shop-btn.sds-btn-link.shop-btn--primary:disabled,
+.shop-btn.sds-btn.shop-btn--primary:disabled,
+.shop-btn.sds-btn-link.shop-btn--primary[disabled],
+.shop-btn.sds-btn.shop-btn--primary[disabled] {
+  color: rgba(61, 139, 217, 0.45);
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.shop-btn.sds-btn-link.shop-btn--secondary,
+.shop-btn.sds-btn.shop-btn--secondary {
+  color: rgba(0, 0, 0, 0.65);
   font-weight: 500;
-  line-height: 20px;
-  box-shadow: none;
 }
 
-.app .shop-btn.shop-btn--primary {
-  color: #ffffff;
-  background: #4d74ed;
-  border-color: transparent;
+.shop-btn.sds-btn-link.shop-btn--secondary:hover:not(:disabled),
+.shop-btn.sds-btn-link.shop-btn--secondary:focus-visible:not(:disabled),
+.shop-btn.sds-btn.shop-btn--secondary:hover:not(:disabled),
+.shop-btn.sds-btn.shop-btn--secondary:focus-visible:not(:disabled) {
+  color: rgba(0, 0, 0, 0.88);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-.app .shop-btn.shop-btn--primary:hover:not(:disabled),
-.app .shop-btn.shop-btn--primary:focus-visible:not(:disabled) {
-  color: #ffffff;
-  background: #4169e6;
-  border-color: transparent;
-}
-
-.app .shop-btn.shop-btn--primary:disabled,
-.app .shop-btn.shop-btn--primary[disabled],
-.app .sds-btn-primary.shop-btn--primary:disabled {
-  color: rgba(255, 255, 255, 0.92);
-  background: #b8c3e8;
-  border-color: transparent;
+.shop-btn.sds-btn-link.shop-btn--secondary:disabled,
+.shop-btn.sds-btn.shop-btn--secondary:disabled,
+.shop-btn.sds-btn-link.shop-btn--secondary[disabled],
+.shop-btn.sds-btn.shop-btn--secondary[disabled] {
+  color: rgba(0, 0, 0, 0.25);
+  background: transparent;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
-.app .shop-btn.shop-btn--secondary:disabled,
-.app .shop-btn.shop-btn--secondary[disabled] {
-  color: rgba(34, 34, 34, 0.45);
-  background: #eceef2;
-  border-color: transparent;
+.shop-btn.sds-btn-link.shop-btn--danger,
+.shop-btn.sds-btn.shop-btn--danger {
+  color: var(--err-text, #b83232);
+}
+
+.shop-btn.sds-btn-link.shop-btn--danger:hover:not(:disabled),
+.shop-btn.sds-btn-link.shop-btn--danger:focus-visible:not(:disabled),
+.shop-btn.sds-btn.shop-btn--danger:hover:not(:disabled),
+.shop-btn.sds-btn.shop-btn--danger:focus-visible:not(:disabled) {
+  color: #9f2a2a;
+  background-color: rgba(184, 50, 50, 0.08);
+}
+
+.shop-btn.sds-btn-link.shop-btn--danger:disabled,
+.shop-btn.sds-btn.shop-btn--danger:disabled,
+.shop-btn.sds-btn-link.shop-btn--danger[disabled],
+.shop-btn.sds-btn.shop-btn--danger[disabled] {
+  color: rgba(184, 50, 50, 0.45);
+  background: transparent;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
-.app .shop-btn.shop-btn--secondary {
-  color: #222222;
-  background: #d8dbe0;
-  border-color: transparent;
-}
-
-.app .shop-btn.shop-btn--secondary:hover:not(:disabled),
-.app .shop-btn.shop-btn--secondary:focus-visible:not(:disabled) {
-  color: #222222;
-  background: #cfd4db;
-  border-color: transparent;
+/* 弹窗 / 行内操作区：文字链按钮横向对齐（与 resource-text-actions 一致） */
+.shop-action-button-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px 10px;
 }
 
 /* 区块树按钮沿用树形样式，仅统一为公共按钮组件 */
@@ -141,12 +186,25 @@
   min-height: 0;
   padding: 4px 6px;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   background: transparent;
   color: var(--text);
   font-size: 13px;
   font-weight: 400;
   line-height: normal;
+  /* 覆盖 .shop-btn 的 center，否则各行标签长短不一时文字起始位置会错位 */
+  justify-content: flex-start;
+}
+
+/* 选中/悬停高亮在整行 .block-tree__row，避免次级按钮灰底仅包住文字宽度 */
+.app .block-tree__row--selected .shop-btn.block-tree__label,
+.app .block-tree__row--selected .shop-btn.block-tree__label:hover,
+.app .block-tree__row--selected .shop-btn.block-tree__label:focus-visible,
+.app .block-tree__row:hover .shop-btn.block-tree__label,
+.app .block-tree__row:hover .shop-btn.block-tree__label:hover,
+.app .block-tree__row:hover .shop-btn.block-tree__label:focus-visible {
+  background: transparent;
+  border-color: transparent;
 }
 
 /* 文本工具条按钮沿用小尺寸样式，仅统一为公共按钮组件 */

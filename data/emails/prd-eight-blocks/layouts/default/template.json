@@ -1,0 +1,539 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "prd-eight-blocks",
+  "templateId": "prd-eight-blocks",
+  "templateVersion": 1,
+  "locale": "zh-CN",
+  "root": {
+    "id": "prd-eight-blocks-root",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "email.root",
+      "name": "画布根"
+    },
+    "props": {
+      "backgroundColor": "#ffffff",
+      "width": "600px",
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "prd-eight-blocks-layout-0",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "示例 · 布局容器"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "8px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "backgroundColor": "#F5F5F5",
+          "padding": {
+            "mode": "separate",
+            "top": "16px",
+            "right": "16px",
+            "bottom": "16px",
+            "left": "16px"
+          }
+        },
+        "children": [
+          {
+            "id": "prd-eight-blocks-layout-child-a",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "布局内文案 A"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "布局容器内子区块 A"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#333333",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "prd-eight-blocks-layout-child-b",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "布局内文案 B"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "布局容器内子区块 B"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#333333",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "prd-eight-blocks-grid-1",
+        "type": "grid",
+        "blockMeta": {
+          "blockType": "layout.grid",
+          "name": "示例 · 栅格"
+        },
+        "props": {
+          "columns": 2,
+          "gap": "8px",
+          "cellWidthMode": "auto",
+          "cellHeightMode": "content-max"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "16px",
+            "right": "16px",
+            "bottom": "16px",
+            "left": "16px"
+          },
+          "backgroundColor": "#FAFAFA"
+        },
+        "children": [
+          {
+            "id": "prd-eight-blocks-grid-cell-a",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "栅格格 1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "栅格单元格 1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#333333",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "prd-eight-blocks-grid-cell-b",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "栅格格 2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "栅格单元格 2"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#333333",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "prd-eight-blocks-text-2",
+        "type": "text",
+        "blockMeta": {
+          "blockType": "content.text",
+          "name": "示例 · 文本"
+        },
+        "props": {
+          "textBody": {
+            "paragraphs": [
+              {
+                "runs": [
+                  {
+                    "text": "示例正文"
+                  }
+                ]
+              }
+            ]
+          },
+          "fontSize": "14px",
+          "color": "#111111",
+          "bold": false,
+          "italic": false,
+          "decoration": "none"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        }
+      },
+      {
+        "id": "prd-eight-blocks-image-3",
+        "type": "image",
+        "blockMeta": {
+          "blockType": "content.image",
+          "name": "示例 · 图片"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "8px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "center"
+          },
+          "widthMode": "fill",
+          "heightMode": "fixed",
+          "height": "160px",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "8px"
+          },
+          "backgroundImage": {
+            "src": "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
+            "alt": "图片",
+            "link": "",
+            "fit": "cover",
+            "position": "center",
+            "borderRadius": {
+              "mode": "unified",
+              "radius": "0"
+            },
+            "border": {
+              "mode": "unified",
+              "width": "0",
+              "style": "solid",
+              "color": "rgba(0,0,0,0)"
+            }
+          }
+        }
+      },
+      {
+        "id": "prd-eight-blocks-icon-4",
+        "type": "icon",
+        "blockMeta": {
+          "blockType": "content.icon",
+          "name": "示例 · 图标"
+        },
+        "props": {
+          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.21.0/icons/outline/photo.svg",
+          "link": "",
+          "color": "#111111",
+          "size": "20px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "center"
+          },
+          "widthMode": "hug",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        }
+      },
+      {
+        "id": "prd-eight-blocks-button-5",
+        "type": "button",
+        "blockMeta": {
+          "blockType": "action.button",
+          "name": "示例 · 按钮"
+        },
+        "props": {
+          "text": "按钮",
+          "link": "https://example.com",
+          "buttonStyle": {
+            "widthMode": "hug",
+            "backgroundColor": "#FFFFFF",
+            "textColor": "#111111",
+            "fontSize": "14px",
+            "border": {
+              "mode": "unified",
+              "width": "1px",
+              "style": "solid",
+              "color": "#111111"
+            },
+            "borderRadius": {
+              "mode": "unified",
+              "radius": "0"
+            },
+            "bold": false,
+            "italic": false
+          }
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "hug",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        }
+      },
+      {
+        "id": "prd-eight-blocks-divider-6",
+        "type": "divider",
+        "blockMeta": {
+          "blockType": "separator.divider",
+          "name": "示例 · 分割线"
+        },
+        "props": {
+          "color": "#666666",
+          "lineWidthMode": "fill",
+          "height": "2px"
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "16px",
+            "right": "16px",
+            "bottom": "16px",
+            "left": "16px"
+          }
+        }
+      },
+      {
+        "id": "prd-eight-blocks-progress-7",
+        "type": "progress",
+        "blockMeta": {
+          "blockType": "indicator.progress",
+          "name": "示例 · 进度条"
+        },
+        "props": {
+          "trackColor": "#FFFFFF",
+          "fillColor": "#111111",
+          "value": 20,
+          "max": 100,
+          "barWidthMode": "fill",
+          "barHeight": "10px",
+          "barBorderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        }
+      }
+    ]
+  }
+}

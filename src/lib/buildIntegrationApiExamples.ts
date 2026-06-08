@@ -62,6 +62,10 @@ export type IntegrationApiDemo = {
   curl: string;
 };
 
+/**
+ * 对外接入契约：仅「使用已维护模板」的读路径 + 场景级 payload 写入。
+ * 不含 POST /emails、layout-variants 等编辑器维护（含复制）接口。
+ */
 export function integrationEndpointsForEmail(
   emailKey: string,
   layoutVariantId: string | null | undefined

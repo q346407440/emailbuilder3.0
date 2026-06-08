@@ -4,7 +4,11 @@ import { nestedToEditorGraph, editorGraphToNested } from "../lib/templateTreeAda
 import type { TokenPresets } from "../types/tokenPreset";
 import type { ProjectIconManifest } from "../types/iconAsset";
 import type { LayoutManifest } from "../layout-variant-contract/types";
+import type { BlockInsertPrototype } from "../block-insert-default-contract";
+import type { BlockMaster, SectionMaster } from "../types/master";
 import { getApiBase } from "./apiBase";
+import { LAYOUT_VARIANT_AI_FROM_IMAGE_STREAM_IDLE_TIMEOUT_MS } from "../layout-variant-ai-contract/constants";
+import type { AiPipelineProgressPayload } from "../layout-variant-ai-contract/progress";
 
 const FETCH_TIMEOUT_MS = 60_000;
 
@@ -13,15 +17,26 @@ function apiUrl(path: string): string {
   return `${getApiBase()}${normalized}`;
 }
 
-/** 带超时的 fetch，避免代理/连接池占满时无限挂起 */
-async function fetchApi(input: string, init?: RequestInit): Promise<Response> {
+/** 带超时的 fetch，避免代理/连接池占满时无限挂起；timeoutMs 为 null 时不设超时。 */
+async function fetchApi(
+  input: string,
+  init?: RequestInit,
+  options?: { timeoutMs?: number | null; timeoutMessage?: string }
+): Promise<Response> {
+  const timeoutMs = options?.timeoutMs;
+  if (timeoutMs == null) {
+    return fetch(input, init);
+  }
+  const effectiveTimeout = timeoutMs > 0 ? timeoutMs : FETCH_TIMEOUT_MS;
+  const timeoutMessage =
+    options?.timeoutMessage ?? "请求超时，请确认已运行 npm run dev:all（API 端口 8787）";
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timeoutId = window.setTimeout(() => controller.abort(), effectiveTimeout);
   try {
     return await fetch(input, { ...init, signal: controller.signal });
   } catch (e) {
     if (e instanceof DOMException && e.name === "AbortError") {
-      throw new Error("请求超时，请确认已运行 npm run dev:all（API 端口 8787）");
+      throw new Error(timeoutMessage);
     }
     throw e;
   } finally {
@@ -73,6 +88,8 @@ export type CreateEmailResult = {
 export async function createEmail(body: {
   displayName: string;
   emailKey?: string;
+  /** 复制源场景 emailKey：深拷贝全部未删除版式、payload、meta（发布状态重置为未发布） */
+  copyFromEmailKey?: string;
 }): Promise<CreateEmailResult> {
   const r = await fetchApi(apiUrl("/emails"), {
     method: "POST",
@@ -261,6 +278,8 @@ export type CreateLayoutVariantResult = {
   label: string;
   activeLayoutVariantId: string;
   manifest: LayoutManifest;
+  /** 豆包 mjs 管线落盘的 scripts/generate-doubao-*.mjs（可选） */
+  mjsPath?: string;
 };
 
 export async function createLayoutVariant(
@@ -279,6 +298,101 @@ export async function createLayoutVariant(
   return r.json() as Promise<CreateLayoutVariantResult>;
 }
 
+async function readAiFromImageSseResponse(
+  response: Response,
+  onProgress?: (payload: AiPipelineProgressPayload) => void
+): Promise<CreateLayoutVariantResult> {
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error("无法读取生成进度流");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result: CreateLayoutVariantResult | null = null;
+  let lastEventAt = Date.now();
+
+  const idleTimer = window.setInterval(() => {
+    if (Date.now() - lastEventAt > LAYOUT_VARIANT_AI_FROM_IMAGE_STREAM_IDLE_TIMEOUT_MS) {
+      void reader.cancel("idle timeout");
+    }
+  }, 5000);
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      lastEventAt = Date.now();
+      buffer += decoder.decode(value, { stream: true });
+
+      const chunks = buffer.split("\n\n");
+      buffer = chunks.pop() ?? "";
+
+      for (const chunk of chunks) {
+        if (!chunk.trim()) continue;
+        const lines = chunk.split("\n");
+        let eventName = "";
+        const dataLines: string[] = [];
+        for (const line of lines) {
+          if (line.startsWith("event:")) {
+            eventName = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
+            dataLines.push(line.slice(5).trimStart());
+          }
+        }
+        const data = dataLines.join("\n");
+        if (!eventName || !data) continue;
+
+        if (eventName === "progress") {
+          onProgress?.(JSON.parse(data) as AiPipelineProgressPayload);
+        } else if (eventName === "done") {
+          result = JSON.parse(data) as CreateLayoutVariantResult;
+        } else if (eventName === "error") {
+          const errBody = JSON.parse(data) as { message?: string };
+          throw new Error(errBody.message ?? "生成失败，请稍后重试");
+        }
+      }
+    }
+  } finally {
+    window.clearInterval(idleTimer);
+  }
+
+  if (!result) {
+    throw new Error("生成未完成，请重试");
+  }
+  return result;
+}
+
+/** 以设计图 AI 创建版式（SSE 分步进度 + 落盘）。 */
+export async function createLayoutVariantFromDesignImage(
+  emailKey: string,
+  label: string,
+  imageFile: File,
+  options?: { onProgress?: (payload: AiPipelineProgressPayload) => void }
+): Promise<CreateLayoutVariantResult> {
+  const form = new FormData();
+  form.append("label", label.trim());
+  form.append("image", imageFile, imageFile.name || "design.png");
+  const r = await fetchApi(
+    apiUrl(`/emails/${encodeURIComponent(emailKey)}/layout-variants/ai-from-image`),
+    {
+      method: "POST",
+      body: form,
+      headers: { Accept: "text/event-stream" },
+    },
+    { timeoutMs: null }
+  );
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(await errorMessageFromResponse(r, t));
+  }
+  const contentType = r.headers.get("content-type") ?? "";
+  if (contentType.includes("text/event-stream")) {
+    return readAiFromImageSseResponse(r, options?.onProgress);
+  }
+  return r.json() as Promise<CreateLayoutVariantResult>;
+}
+
 export type PatchLayoutVariantResult = {
   layoutVariantId: string;
   label: string;
@@ -288,7 +402,7 @@ export type PatchLayoutVariantResult = {
 export async function patchLayoutVariant(
   emailKey: string,
   layoutVariantId: string,
-  body: { label: string; description?: string }
+  body: { label?: string; description?: string; publishStatus?: EmailMeta["publishStatus"] }
 ): Promise<PatchLayoutVariantResult> {
   const r = await fetchApi(
     apiUrl(
@@ -505,6 +619,33 @@ export async function listProjectIconAssets(): Promise<ProjectIconManifest> {
   return r.json() as Promise<ProjectIconManifest>;
 }
 
+export type ProjectAssetUploadResult = {
+  assetId: string;
+  url: string;
+  filename: string;
+};
+
+async function uploadProjectAsset(
+  endpoint: string,
+  file: File
+): Promise<ProjectAssetUploadResult> {
+  const form = new FormData();
+  form.append("file", file);
+  const r = await fetchApi(apiUrl(endpoint), { method: "POST", body: form });
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<ProjectAssetUploadResult>;
+}
+
+/** 上传 SVG 图标，返回可写入 props.src 的 URL。 */
+export function uploadProjectIconAsset(file: File): Promise<ProjectAssetUploadResult> {
+  return uploadProjectAsset("/project-assets/icons/upload", file);
+}
+
+/** 上传位图，返回可写入图片/背景 src 的 URL。 */
+export function uploadProjectImageAsset(file: File): Promise<ProjectAssetUploadResult> {
+  return uploadProjectAsset("/project-assets/images/upload", file);
+}
+
 export async function fetchBuiltinCollectionCatalog(
   catalogId: "products" | "albums"
 ): Promise<{ catalogId: string; items: Record<string, unknown>[] }> {
@@ -554,4 +695,117 @@ export async function sendTestEmail(
     throw new Error(await errorMessageFromResponse(r, t));
   }
   return r.json() as Promise<SendTestEmailResult>;
+}
+
+export type CampaignV2TemplateListItem = {
+  emailKey: string;
+  displayName: string;
+};
+
+export type CampaignV2LayoutListItem = {
+  layoutVariantId: string;
+  label: string;
+};
+
+/** 活动 V2：已发布邮件模板列表（Mock CRM 接口）。 */
+export async function listCampaignV2Templates(): Promise<{ items: CampaignV2TemplateListItem[] }> {
+  const r = await fetchApi(apiUrl("/crm/campaign-v2/templates"));
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<{ items: CampaignV2TemplateListItem[] }>;
+}
+
+/** 活动 V2：指定模板下已发布版式列表（Mock CRM 接口）。 */
+export async function listCampaignV2Layouts(
+  emailKey: string
+): Promise<{ items: CampaignV2LayoutListItem[] }> {
+  const r = await fetchApi(
+    apiUrl(`/crm/campaign-v2/templates/${encodeURIComponent(emailKey)}/layouts`)
+  );
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<{ items: CampaignV2LayoutListItem[] }>;
+}
+
+export type CampaignV2BindingCheckResult = {
+  available: boolean;
+  invalidHint: string | null;
+  templateDisplayName: string;
+  layoutLabel: string | null;
+};
+
+/** 活动 V2：校验已保存的模板 + 版式绑定是否仍可用（打开活动 / 发信前）。 */
+export async function checkCampaignV2Binding(
+  emailKey: string,
+  layoutVariantId: string
+): Promise<CampaignV2BindingCheckResult> {
+  const params = new URLSearchParams({ layout: layoutVariantId });
+  const r = await fetchApi(
+    apiUrl(
+      `/crm/campaign-v2/templates/${encodeURIComponent(emailKey)}/binding-check?${params.toString()}`
+    )
+  );
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<CampaignV2BindingCheckResult>;
+}
+
+/** 列出全部 block 组件母版（插入默认真源）。 */
+export async function listBlockMasters(): Promise<{ items: BlockMaster[] }> {
+  const r = await fetchApi(apiUrl("/masters/blocks"));
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<{ items: BlockMaster[] }>;
+}
+
+export type SaveBlockInsertDefaultResult = {
+  master: BlockMaster;
+  componentLabel: string;
+};
+
+/** 将提取的插入默认原型写入全局组件母版。 */
+export async function saveBlockMasterInsertDefault(
+  masterId: string,
+  prototype: BlockInsertPrototype
+): Promise<SaveBlockInsertDefaultResult> {
+  const r = await fetchApi(apiUrl(`/masters/blocks/${encodeURIComponent(masterId)}/insert-default`), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(prototype),
+  });
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<SaveBlockInsertDefaultResult>;
+}
+
+/** 列出已保存的 Section 模块母版。 */
+export async function listSectionMasters(): Promise<{ items: SectionMaster[] }> {
+  const r = await fetchApi(apiUrl("/masters/sections"));
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<{ items: SectionMaster[] }>;
+}
+
+export async function createSectionMaster(master: SectionMaster): Promise<SectionMaster> {
+  const r = await fetchApi(apiUrl("/masters/sections"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(master),
+  });
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<SectionMaster>;
+}
+
+export async function renameSectionMaster(
+  masterId: string,
+  name: string
+): Promise<SectionMaster> {
+  const r = await fetchApi(apiUrl(`/masters/sections/${encodeURIComponent(masterId)}`), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<SectionMaster>;
+}
+
+export async function deleteSectionMaster(masterId: string): Promise<void> {
+  const r = await fetchApi(apiUrl(`/masters/sections/${encodeURIComponent(masterId)}`), {
+    method: "DELETE",
+  });
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
 }

@@ -108,7 +108,8 @@ export function emailPresentationHugTdWidthStyle(widthMode: unknown): CSSPropert
   if (normalizePresentationWidthMode(widthMode) === "hug") {
     return { width: "1%", whiteSpace: "nowrap" };
   }
-  return { width: "100%" };
+  // fill/fixed 叶壳须显式 normal，避免继承横排 hug/fixed 槽位 td 的 nowrap
+  return { width: "100%", whiteSpace: "normal" };
 }
 
 /** 叶壳 inner `<td>` 承载的外观键；外层 div 须剥离，避免与 td 双层描边/内边距。 */

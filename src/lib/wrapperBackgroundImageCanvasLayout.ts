@@ -34,6 +34,8 @@ export type WrapperBackgroundImageCanvasLayout = {
   bgTableBorderCollapse: "collapse" | "separate";
   /** 定高画布为 true：table 不写死 height，仅 td 定高，避免与 outer 盒双计高度后 overflow 裁切 */
   bgTableHeightFromTd: boolean;
+  /** heightMode=fill：内层 table/td 用 100% 撑满外层定高槽位（grid 单元格、layout fill 子级等） */
+  fillStretchHeight: boolean;
   enableHugIntrinsicHeight: boolean;
 };
 
@@ -80,6 +82,7 @@ export function resolveWrapperBackgroundImageCanvasLayout(
   const hRaw = typeof wrapperStyle?.height === "string" ? wrapperStyle.height.trim() : "";
   const fixedCanvasHeight =
     hm === "fixed" && hRaw && hRaw !== "auto" ? normalizeCssLengthPx(hRaw) ?? hRaw : undefined;
+  const fillStretchHeight = hm === "fill" && !fixedCanvasHeight;
 
   const overlayBorderCss = borderToCss((background as { border?: unknown }).border);
   const hasVisibleOverlayBorder = borderCssHasVisibleWidth(overlayBorderCss);
@@ -125,6 +128,7 @@ export function resolveWrapperBackgroundImageCanvasLayout(
     bgPresentationFields: background,
     bgTableBorderCollapse,
     bgTableHeightFromTd,
+    fillStretchHeight,
     enableHugIntrinsicHeight:
       input.enableHugIntrinsicHeight === true &&
       wrapperStyle?.heightMode === "hug" &&

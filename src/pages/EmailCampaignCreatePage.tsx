@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../api/client";
 import { CrmOpsShell } from "../components/crmOps/CrmOpsShell";
-import { listVisibleLayoutVariants } from "../lib/layoutVariantLogicalDelete";
+import { readCampaignV2BindingFromUrl } from "../lib/campaignCreateBindingUrl";
 import { goToEmailCampaign, goToEmailEditorFromCampaignCreate } from "../lib/appNavigation";
 
 type TemplateOption = {
@@ -31,7 +31,12 @@ export function EmailCampaignCreatePage() {
   const [selectedLayoutId, setSelectedLayoutId] = useState<string | null>(null);
   const [layoutDropdownOpen, setLayoutDropdownOpen] = useState(false);
 
+  const [bindingCheckLoading, setBindingCheckLoading] = useState(false);
+  const [bindingInvalidHint, setBindingInvalidHint] = useState<string | null>(null);
+
   const dropdownAreaRef = useRef<HTMLDivElement | null>(null);
+  const preserveLayoutSelectionRef = useRef<string | null>(null);
+  const initialBindingAppliedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,7 +44,7 @@ export function EmailCampaignCreatePage() {
       setTemplateLoading(true);
       setTemplateLoadError(null);
       try {
-        const response = await api.listEmails();
+        const response = await api.listCampaignV2Templates();
         if (cancelled) return;
         setTemplateOptions(
           response.items.map((item) => ({
@@ -58,6 +63,18 @@ export function EmailCampaignCreatePage() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  /** 活动打开时恢复 URL 上的已保存绑定（Mock：`?emailKey=&layout=`）。 */
+  useEffect(() => {
+    if (initialBindingAppliedRef.current) return;
+    const { emailKey, layoutVariantId } = readCampaignV2BindingFromUrl();
+    if (!emailKey || !layoutVariantId) return;
+    initialBindingAppliedRef.current = true;
+    preserveLayoutSelectionRef.current = layoutVariantId;
+    setTemplateVersion("v2");
+    setSelectedTemplateKey(emailKey);
+    setSelectedLayoutId(layoutVariantId);
   }, []);
 
   useEffect(() => {
@@ -91,25 +108,26 @@ export function EmailCampaignCreatePage() {
       setLayoutLoadError(null);
       setLayoutDropdownOpen(false);
       try {
-        const manifest = await api.getLayoutManifest(selectedTemplateKey);
+        const response = await api.listCampaignV2Layouts(selectedTemplateKey);
         if (cancelled) return;
 
-        let options: LayoutOption[];
-        if (manifest) {
-          const visible = listVisibleLayoutVariants(manifest.variants);
-          options = visible.map((variant) => ({
-            id: variant.id,
-            label: variant.label?.trim() || variant.id,
-            layoutVariantId: variant.id,
-          }));
-        } else {
-          options = [{ id: "__legacy_default__", label: "默认版式", layoutVariantId: null }];
-        }
+        const options: LayoutOption[] = response.items.map((item) => ({
+          id: item.layoutVariantId,
+          label: item.label?.trim() || item.layoutVariantId,
+          layoutVariantId: item.layoutVariantId,
+        }));
 
         setLayoutOptions(options);
-        setSelectedLayoutId((previousId) =>
-          options.some((item) => item.id === previousId) ? previousId : (options[0]?.id ?? null)
-        );
+        setSelectedLayoutId((previousId) => {
+          const preserve = preserveLayoutSelectionRef.current;
+          if (preserve) {
+            preserveLayoutSelectionRef.current = null;
+            return preserve;
+          }
+          return options.some((item) => item.id === previousId)
+            ? previousId
+            : (options[0]?.id ?? null);
+        });
       } catch (error) {
         if (cancelled) return;
         setLayoutOptions([]);
@@ -125,6 +143,54 @@ export function EmailCampaignCreatePage() {
       cancelled = true;
     };
   }, [templateVersion, selectedTemplateKey]);
+
+  /** 已选模板 + 版式时校验绑定是否仍可用（打开活动 / 切换选型后）。 */
+  useEffect(() => {
+    if (templateVersion !== "v2" || !selectedTemplateKey || !selectedLayoutId) {
+      setBindingInvalidHint(null);
+      return;
+    }
+
+    let cancelled = false;
+    const run = async () => {
+      setBindingCheckLoading(true);
+      try {
+        const result = await api.checkCampaignV2Binding(selectedTemplateKey, selectedLayoutId);
+        if (cancelled) return;
+
+        setBindingInvalidHint(result.available ? null : result.invalidHint);
+
+        if (result.templateDisplayName) {
+          setTemplateOptions((prev) => {
+            if (prev.some((item) => item.key === selectedTemplateKey)) return prev;
+            return [
+              ...prev,
+              { key: selectedTemplateKey, label: result.templateDisplayName },
+            ];
+          });
+        }
+
+        const layoutId = selectedLayoutId;
+        const layoutLabel = result.layoutLabel?.trim() || layoutId;
+        setLayoutOptions((prev) => {
+          if (prev.some((item) => item.id === layoutId)) return prev;
+          return [...prev, { id: layoutId, label: layoutLabel, layoutVariantId: layoutId }];
+        });
+      } catch (error) {
+        if (cancelled) return;
+        setBindingInvalidHint(
+          error instanceof Error ? error.message : "模板可用性校验失败"
+        );
+      } finally {
+        if (!cancelled) setBindingCheckLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [templateVersion, selectedTemplateKey, selectedLayoutId]);
 
   const activeTemplateOptions = useMemo(
     () => (templateVersion === "v2" ? templateOptions : []),
@@ -159,7 +225,11 @@ export function EmailCampaignCreatePage() {
           ? "版式加载中…"
           : "请选择版式");
   const canGoSetEmail =
-    templateVersion === "v2" && Boolean(selectedTemplateKey) && Boolean(selectedLayoutId);
+    templateVersion === "v2" &&
+    Boolean(selectedTemplateKey) &&
+    Boolean(selectedLayoutId) &&
+    !bindingCheckLoading &&
+    !bindingInvalidHint;
 
   return (
     <CrmOpsShell activeNav="emailCampaign">
@@ -288,7 +358,7 @@ export function EmailCampaignCreatePage() {
                             ? "V1 当前无模板数据"
                             : templateLoading
                               ? "模板加载中…"
-                              : "暂无可用模板"}
+                              : "暂无已发布模板"}
                         </div>
                       ) : (
                         activeTemplateOptions.map((option) => (
@@ -339,7 +409,7 @@ export function EmailCampaignCreatePage() {
                       <div className="crm-create__dropdown-menu" role="listbox" aria-label="版式列表">
                         {activeLayoutOptions.length === 0 ? (
                           <div className="crm-create__dropdown-empty">
-                            {layoutLoading ? "版式加载中…" : "暂无可用版式"}
+                            {layoutLoading ? "版式加载中…" : "暂无已发布版式"}
                           </div>
                         ) : (
                           activeLayoutOptions.map((option) => (
@@ -364,6 +434,11 @@ export function EmailCampaignCreatePage() {
                 ) : null}
               </div>
 
+              {bindingInvalidHint ? (
+                <p className="crm-create__binding-error" role="alert">
+                  {bindingInvalidHint}
+                </p>
+              ) : null}
               {templateLoadError ? <p className="crm-create__tip">模板列表加载失败：{templateLoadError}</p> : null}
               {layoutLoadError ? <p className="crm-create__tip">版式列表加载失败：{layoutLoadError}</p> : null}
             </div>
@@ -400,7 +475,15 @@ export function EmailCampaignCreatePage() {
           <button type="button" className="crm-create__ghost-btn" onClick={goToEmailCampaign}>
             取消
           </button>
-          <button type="button" className="crm-create__primary-btn">
+          <button
+            type="button"
+            className="crm-create__primary-btn"
+            disabled={
+              templateVersion === "v2" &&
+              Boolean(selectedTemplateKey && selectedLayoutId) &&
+              Boolean(bindingInvalidHint)
+            }
+          >
             确认
           </button>
         </footer>

@@ -162,7 +162,7 @@ export function goToEmailEditorWithContext(
   navigateApp(qs ? `${EDITOR_PATH}?${qs}` : EDITOR_PATH);
 }
 
-/** 从「创建邮件」进入编辑器：锁定顶栏模板与版式切换，由上一级页面托管来源。 */
+/** 从「创建邮件」进入编辑器：锁定顶栏模板、版式切换与发布状态操作，由上一级页面托管来源。 */
 export function goToEmailEditorFromCampaignCreate(
   emailKey: string,
   layoutVariantId?: string | null

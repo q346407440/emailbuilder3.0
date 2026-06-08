@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { message } from "@shoplazza/sds";
+import { TemplateValidationDock } from "../components/TemplateValidationDock";
+import { toastError, toastSuccess } from "../lib/appToast";
+import { validationSaveBlockedMessage } from "../lib/validationIssueDisplay";
+import type { ValidationIssue } from "../lib/validate";
 import type { EmailListItem, EmailPayload, EmailTemplate } from "../types/email";
 import type { LayoutManifest } from "../layout-variant-contract/types";
 import type { TokenPresets } from "../types/tokenPreset";
@@ -103,9 +107,7 @@ export function ExternalApiIntegrationPage() {
     useState<IntegrationTokenPresetSelection>("local");
   const [valuesJson, setValuesJson] = useState("{}");
   const [valuesJsonError, setValuesJsonError] = useState<string | null>(null);
-  const [validationIssues, setValidationIssues] = useState<Array<{ path: string; reason: string }>>(
-    []
-  );
+  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const [mergeStatus, setMergeStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,7 +179,9 @@ export function ExternalApiIntegrationPage() {
         setTokenPresetSelection(token);
         return { layoutId, token };
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(msg);
+        toastError(msg);
         setTemplate(null);
         setPayload(defaultPayload());
         setLocalTokenPresets(null);
@@ -207,7 +211,9 @@ export function ExternalApiIntegrationPage() {
           setLoading(false);
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(msg);
+        toastError(msg);
         setLoading(false);
       }
     })();
@@ -358,16 +364,16 @@ export function ExternalApiIntegrationPage() {
           (layoutId) => api.getTemplate(emailKey, layoutId)
         );
         setValidationIssues(issues);
-        if (issues.length === 0) message.success("校验通过：模拟入参符合全部版式 template");
-        else message.error(`校验未通过（${issues.length} 项）`);
+        if (issues.length === 0) toastSuccess("校验通过：模拟入参符合全部版式 template");
+        else toastError(validationSaveBlockedMessage(issues));
       } else {
         const issues = validatePayloadAgainstTemplate(template, nextPayload);
         setValidationIssues(issues);
-        if (issues.length === 0) message.success("校验通过");
-        else message.error(`校验未通过（${issues.length} 项）`);
+        if (issues.length === 0) toastSuccess("校验通过");
+        else toastError(validationSaveBlockedMessage(issues));
       }
     } catch (e) {
-      message.error(e instanceof Error ? e.message : String(e));
+      toastError(e instanceof Error ? e.message : String(e));
     }
   }, [emailKey, layoutManifest, layoutVariantId, parseValuesJson, payload, template]);
 
@@ -391,17 +397,16 @@ export function ExternalApiIntegrationPage() {
           setMergeStatus(
             `合并完成（含 $themeRef 烘焙），主题解析有 ${resolved.issues.length} 条提示`
           );
-          message.error(`主题解析提示 ${resolved.issues.length} 条`);
+          toastError(`主题解析提示 ${resolved.issues.length} 条`);
           return;
         }
       }
-      setMergeStatus(
-        `本地合并成功：已展开 repeat、合并 payload，并按「${integrationTokenPresetLabel(tokenPresetSelection, globalTokenPresets)}」烘焙主题`
-      );
-      message.success("合并预览成功");
+      const statusText = `本地合并成功：已展开 repeat、合并 payload，并按「${integrationTokenPresetLabel(tokenPresetSelection, globalTokenPresets)}」烘焙主题`;
+      setMergeStatus(statusText);
+      toastSuccess("合并预览成功");
     } catch (e) {
       setMergeStatus(null);
-      message.error(e instanceof Error ? e.message : String(e));
+      toastError(e instanceof Error ? e.message : String(e));
     }
   }, [
     globalTokenPresets,
@@ -491,13 +496,11 @@ export function ExternalApiIntegrationPage() {
         </span>
       </header>
 
-      {error ? <div className="app__banner app__banner--error">{error}</div> : null}
-      {validationIssues.length > 0 ? (
-        <div className="app__banner app__banner--warn">
-          校验：{validationIssues.map((i) => `${i.path}：${i.reason}`).join("；")}
+      {error && !template ? (
+        <div className="app__banner app__banner--error" role="alert">
+          {error}
         </div>
       ) : null}
-      {mergeStatus ? <div className="app__banner">{mergeStatus}</div> : null}
 
       <main className="integration-workspace">
         <section className="integration-panel integration-panel--context">
@@ -591,6 +594,7 @@ export function ExternalApiIntegrationPage() {
           {valuesJsonError ? (
             <p className="integration-panel__error">{valuesJsonError}</p>
           ) : null}
+          {mergeStatus ? <p className="integration-panel__status">{mergeStatus}</p> : null}
           <div className="integration-panel__actions">
             <ShopPrimaryButton htmlType="button" onClick={() => void runValidate()}>
               校验入参
@@ -675,6 +679,15 @@ export function ExternalApiIntegrationPage() {
           </ul>
         </section>
       </main>
+      {validationIssues.length > 0 && template ? (
+        <TemplateValidationDock
+          issues={validationIssues}
+          template={template}
+          onNavigateIssue={(_target) => {
+            document.querySelector(".integration-panel--values")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      ) : null}
     </div>
   );
 }

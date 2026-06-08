@@ -1,0 +1,2835 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "coupon_template72_doubao",
+  "templateId": "coupon_template72_doubao",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "couponte-root",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "画布根"
+    },
+    "props": {
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "backgroundColor": "#ffffff",
+      "width": "600px",
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "couponte-s1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "头部区域"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#ffffff",
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "couponte-s1-logo",
+            "type": "icon",
+            "blockMeta": {
+              "blockType": "content.icon",
+              "name": "Yelp标志"
+            },
+            "props": {
+              "src": "",
+              "size": "48px",
+              "color": "#d32323"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "hug",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "couponte-s1-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "主标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Places everyone’s ordering from right now"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "36px",
+              "color": "#222222",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "couponte-s1-desc",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "描述文案"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "As if by magic, this email will attempt to read your mind... Here are some trending delivery and takeout spots that we also think you’ll love. Don't forget, you can always check business pages for their latest health & safety updates, like curbside pickup and mask requirements."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "couponte-s2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "餐厅列表区域"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "24px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#ffffff",
+          "padding": {
+            "mode": "separate",
+            "top": "0",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "couponte-s2-row1",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "第一行餐厅"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "20px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "couponte-restaurant1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Bulgogi"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "16px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "backgroundColor": "#ffffff",
+                  "padding": {
+                    "mode": "separate",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "24px",
+                    "left": "0"
+                  },
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "couponte-restaurant1-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "Bulgogi菜品"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/7491952/pexels-photo-7491952.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "korean bibimbap with fried egg on hot stone plate",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant1-name",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅名称"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Bulgogi"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "18px",
+                      "color": "#222222",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant1-rating-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "评分行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "couponte-restaurant1-rating-stars",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "评分星星"
+                        },
+                        "props": {
+                          "direction": "horizontal",
+                          "gapMode": "fixed",
+                          "gap": "2px"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "couponte-restaurant1-rating-star-0",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant1-rating-star-1",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant1-rating-star-2",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant1-rating-star-3",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant1-rating-star-half",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "半星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star-half.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "couponte-restaurant1-reviews",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "评论数"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "69 reviews"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "14px",
+                          "color": "#666666",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "couponte-restaurant1-meta",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅信息"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "$$ • Korean"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant1-location",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅位置"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Greenville, SC"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "couponte-restaurant2",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Molly and Myles Ice Cream"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "16px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "backgroundColor": "#ffffff",
+                  "padding": {
+                    "mode": "separate",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "24px",
+                    "left": "0"
+                  },
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "couponte-restaurant2-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "Molly and Myles Ice Cream菜品"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/22809638/pexels-photo-22809638.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "person holding large ice cream cone in casual dessert shop",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant2-name",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅名称"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Molly and Myles Ice Cream"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "18px",
+                      "color": "#222222",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant2-rating-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "评分行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "couponte-restaurant2-rating-stars",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "评分星星"
+                        },
+                        "props": {
+                          "direction": "horizontal",
+                          "gapMode": "fixed",
+                          "gap": "2px"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "couponte-restaurant2-rating-star-0",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant2-rating-star-1",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant2-rating-star-2",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant2-rating-star-3",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant2-rating-star-4",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "couponte-restaurant2-reviews",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "评论数"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "46 reviews"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "14px",
+                          "color": "#666666",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "couponte-restaurant2-meta",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅信息"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "$$ • Ice Cream & Frozen Yogurt"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant2-location",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅位置"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Greenville, SC"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "couponte-s2-row2",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "第二行餐厅"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "20px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "couponte-restaurant3",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Sabor Latin Street Grill - Greenville"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "16px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "backgroundColor": "#ffffff",
+                  "padding": {
+                    "mode": "separate",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "24px",
+                    "left": "0"
+                  },
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "couponte-restaurant3-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "Sabor Latin Street Grill - Greenville菜品"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/27244303/pexels-photo-27244303.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "loaded nachos with ground beef lettuce sour cream",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant3-name",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅名称"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Sabor Latin Street Grill - Greenville"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "18px",
+                      "color": "#222222",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant3-rating-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "评分行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "couponte-restaurant3-rating-stars",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "评分星星"
+                        },
+                        "props": {
+                          "direction": "horizontal",
+                          "gapMode": "fixed",
+                          "gap": "2px"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "couponte-restaurant3-rating-star-0",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant3-rating-star-1",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant3-rating-star-2",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant3-rating-star-3",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant3-rating-star-half",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "半星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star-half.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "couponte-restaurant3-reviews",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "评论数"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "35 reviews"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "14px",
+                          "color": "#666666",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "couponte-restaurant3-meta",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅信息"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Latin American"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant3-location",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅位置"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Greenville, SC"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "couponte-restaurant4",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Persis Indian Grill"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "16px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "backgroundColor": "#ffffff",
+                  "padding": {
+                    "mode": "separate",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "24px",
+                    "left": "0"
+                  },
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "couponte-restaurant4-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "Persis Indian Grill菜品"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/35539324/pexels-photo-35539324.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "indian thali platter with multiple curries rice and papadum",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant4-name",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅名称"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Persis Indian Grill"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "18px",
+                      "color": "#222222",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant4-rating-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "评分行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "couponte-restaurant4-rating-stars",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "评分星星"
+                        },
+                        "props": {
+                          "direction": "horizontal",
+                          "gapMode": "fixed",
+                          "gap": "2px"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "couponte-restaurant4-rating-star-0",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant4-rating-star-1",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant4-rating-star-2",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant4-rating-star-3",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "满星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          },
+                          {
+                            "id": "couponte-restaurant4-rating-star-half",
+                            "type": "icon",
+                            "blockMeta": {
+                              "blockType": "content.icon",
+                              "name": "半星"
+                            },
+                            "props": {
+                              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/star-half.svg",
+                              "size": "16px",
+                              "color": "#d32323"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "center"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "couponte-restaurant4-reviews",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "评论数"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "122 reviews"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "14px",
+                          "color": "#666666",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "couponte-restaurant4-meta",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅信息"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "$$ • Indian, Buffets"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "couponte-restaurant4-location",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "餐厅位置"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Greenville, SC"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#666666",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "couponte-s3",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "下载应用区域"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#ffffff",
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "32px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "1px",
+            "style": "solid",
+            "color": "#f0f0f0"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "couponte-s3-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "下载区域标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Bring Yelp with you"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "24px",
+              "color": "#222222",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "couponte-s3-subtitle",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "下载区域副标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "The fastest way to search for businesses near you."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "couponte-s3-badges",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "应用下载徽章"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "16px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "couponte-s3-appstore",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "App Store下载徽章"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "160px",
+                  "heightMode": "fixed",
+                  "height": "48px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "8px"
+                  },
+                  "backgroundColor": "#000000",
+                  "backgroundImage": {
+                    "src": "#",
+                    "alt": "",
+                    "fit": "contain",
+                    "position": "center",
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    }
+                  }
+                },
+                "children": [
+                  {
+                    "id": "couponte-s3-appstore-content",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "App Store内容"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "couponte-s3-appstore-icon",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "App Store图标"
+                        },
+                        "props": {
+                          "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/apple.svg",
+                          "size": "28px",
+                          "color": "#ffffff"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "center"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      },
+                      {
+                        "id": "couponte-s3-appstore-text",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "App Store文字"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Download on the App Store"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "12px",
+                          "color": "#ffffff",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "couponte-s3-googleplay",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "Google Play下载徽章"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "backgroundImage": {
+                    "src": "#",
+                    "alt": "",
+                    "fit": "contain",
+                    "position": "center",
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    }
+                  },
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "160px",
+                  "heightMode": "fixed",
+                  "height": "48px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "8px"
+                  },
+                  "backgroundColor": "#000000"
+                },
+                "children": [
+                  {
+                    "id": "couponte-s3-googleplay-content",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Google Play内容"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "couponte-s3-googleplay-icon",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "Google Play图标"
+                        },
+                        "props": {
+                          "src": "",
+                          "size": "28px",
+                          "color": "#ffffff"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "center"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      },
+                      {
+                        "id": "couponte-s3-googleplay-text",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Google Play文字"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "GET IT ON Google Play"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "12px",
+                          "color": "#ffffff",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "couponte-s4",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "页脚区域"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#ffffff",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "32px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "couponte-s4-links",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "页脚链接"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Update preferences | Unsubscribe"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "couponte-s4-copyright",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "版权信息"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Copyright © 2020 Yelp Inc., 140 New Montgomery, San Francisco, CA 94105, U.S.A."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

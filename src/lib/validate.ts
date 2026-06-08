@@ -670,7 +670,12 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
 
     if (block.type === "icon") {
       const props = block.props as Record<string, unknown>;
-      validateRequiredString(`blocks.${id}.props.src`, props.src, issues);
+      if (props.src !== undefined && props.src !== null && typeof props.src !== "string") {
+        issues.push({
+          path: `blocks.${id}.props.src`,
+          reason: "图标地址 src 必须为字符串",
+        });
+      }
       validateRequiredString(`blocks.${id}.props.color`, props.color, issues);
       validateRequiredString(`blocks.${id}.props.size`, props.size, issues);
     }

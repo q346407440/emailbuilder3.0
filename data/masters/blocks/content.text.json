@@ -2,7 +2,7 @@
   "schemaVersion": "4.0.0",
   "masterId": "content.text",
   "name": "文本",
-  "version": "1.0.0",
+  "version": "2026-06-05T02:54:05.646Z",
   "description": "富文本段落，支持字号、颜色与对齐。",
   "runtimeType": "text",
   "blockType": "content.text",
@@ -44,57 +44,41 @@
           "name": "文本"
         },
         "props": {
+          "bold": true,
+          "color": "#1F2937",
+          "italic": false,
           "textBody": {
             "paragraphs": [
               {
                 "runs": [
                   {
-                    "text": "示例正文"
+                    "text": "🎉 Your have",
+                    "color": "rgb(12, 113, 255)"
                   }
                 ]
               }
             ]
           },
-          "fontSize": {
-            "$themeRef": "tokens.typography.body"
-          },
-          "color": {
-            "$themeRef": "colors.primary"
-          },
-          "bold": false,
-          "italic": false,
+          "fontSize": "28px",
           "decoration": "none"
         },
         "wrapperStyle": {
-          "contentAlign": {
-            "horizontal": "left",
-            "vertical": "top"
-          },
-          "widthMode": "fill",
-          "heightMode": "hug",
+          "height": "100px",
           "border": {
             "mode": "unified",
             "width": "0",
             "style": "solid",
             "color": "rgba(0,0,0,0)"
           },
+          "widthMode": "fill",
+          "heightMode": "fixed",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "center"
+          },
           "borderRadius": {
             "mode": "unified",
             "radius": "0"
-          }
-        },
-        "bindings": {
-          "props.fontSize": {
-            "slotId": "tokens.typography.body",
-            "mode": "theme",
-            "tokenPath": "tokens.typography.body",
-            "fieldKind": "style"
-          },
-          "props.color": {
-            "slotId": "colors.primary",
-            "mode": "theme",
-            "tokenPath": "colors.primary",
-            "fieldKind": "style"
           }
         }
       }

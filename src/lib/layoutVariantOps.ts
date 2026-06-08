@@ -1,5 +1,6 @@
 import type { LayoutManifest, LayoutVariantEntry } from "../layout-variant-contract/types";
 import { LAYOUT_MANIFEST_SCHEMA_VERSION } from "../layout-variant-contract/types";
+import type { PublishStatus } from "../publish-status-contract/types";
 import { compareByCreatedAtDesc } from "./sortByCreatedAt";
 import { assertLayoutVariantIdSafe } from "./emailLayoutVariant";
 
@@ -85,6 +86,23 @@ export function updateLayoutVariantLabel(
     if (v.id !== layoutVariantId) return v;
     found = true;
     return { ...v, label: normalized };
+  });
+  if (!found) {
+    throw new Error(`未知版式：${layoutVariantId}`);
+  }
+  return { ...manifest, variants };
+}
+
+export function updateLayoutVariantPublishStatus(
+  manifest: LayoutManifest,
+  layoutVariantId: string,
+  publishStatus: PublishStatus
+): LayoutManifest {
+  let found = false;
+  const variants = manifest.variants.map((v) => {
+    if (v.id !== layoutVariantId) return v;
+    found = true;
+    return { ...v, publishStatus };
   });
   if (!found) {
     throw new Error(`未知版式：${layoutVariantId}`);

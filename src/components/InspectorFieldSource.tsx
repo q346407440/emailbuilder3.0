@@ -47,6 +47,7 @@ import type { TextBodyContentMode } from "../lib/textBodyContentMode";
 import { readInspectorDisplayValue } from "../lib/inspectorBindingDisplay";
 import { applyTextBodyWholeVariableFromSlot } from "../lib/textBodyVariableEdit";
 import { readTemplateFieldOnly } from "../lib/themeBindingEdit";
+import { toastWarning } from "../lib/appToast";
 import { PayloadVariablePickerModal } from "./PayloadVariablePickerModal";
 import { RepeatListItemFieldPickerModal } from "./RepeatListItemFieldPickerModal";
 import {
@@ -247,7 +248,7 @@ export function InspectorFieldSource({
           bindPath,
         })
       ) {
-        window.alert(
+        toastWarning(
           `该字段需要「${bindingRequirementLabel(inferred)}」类变量，所选变量类型为「${slot.valueType}」，无法绑定。`
         );
         return;
@@ -315,7 +316,7 @@ export function InspectorFieldSource({
   const handleBindModalCreate = useCallback(
     ({ slotId, label }: { slotId: string; label: string }) => {
       if (!isValidSlotId(slotId)) {
-        window.alert("slotId 必须以字母开头，且只能包含字母、数字和下划线。");
+        toastWarning("slotId 必须以字母开头，且只能包含字母、数字和下划线。");
         return;
       }
       const currentValue = readTemplateFieldOnly(templateRef.current.blocks[block.id]!, bindPath);
@@ -447,7 +448,7 @@ export function InspectorFieldSource({
               : canDetachVariable)),
       action: isListItemField
         ? () => {
-            window.alert(REPEAT_LIST_ITEM_LITERAL_BLOCKED_MESSAGE);
+            toastWarning(REPEAT_LIST_ITEM_LITERAL_BLOCKED_MESSAGE);
           }
         : onAggregateLiteralize &&
             canBake &&

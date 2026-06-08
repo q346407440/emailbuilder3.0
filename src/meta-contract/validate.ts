@@ -1,3 +1,4 @@
+import { validatePublishStatusField } from "../publish-status-contract/validate";
 import { META_REMOVED_DELIVERY_KEYS, META_REMOVED_ROOT_KEYS } from "./removed-fields";
 import { META_SCHEMA_VERSION } from "./types";
 
@@ -43,6 +44,9 @@ export function validateEmailMeta(meta: unknown): MetaValidationIssue[] {
   if (root.displayName !== undefined && (typeof root.displayName !== "string" || !root.displayName.trim())) {
     issues.push({ path: "displayName", reason: "必须为非空字符串" });
   }
+
+  const publishIssue = validatePublishStatusField(root.publishStatus, "publishStatus");
+  if (publishIssue) issues.push(publishIssue);
 
   return issues;
 }

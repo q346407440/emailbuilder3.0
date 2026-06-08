@@ -26,6 +26,3 @@ export function validateOptionalDeletedAtField(
   }
   return null;
 }
-
-export const LOGICAL_DELETE_RESTORE_HINT =
-  "逻辑删除后可在对应 JSON 文件中删除 deletedAt 字段以恢复展示。";

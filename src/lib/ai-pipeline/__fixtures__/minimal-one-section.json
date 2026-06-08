@@ -1,0 +1,142 @@
+{
+  "grounding": {
+    "schemaVersion": "1",
+    "order": ["s1"],
+    "sections": [
+      {
+        "sectionId": "s1",
+        "name": "Hero",
+        "order": 0,
+        "hasOverlay": true,
+        "hasImage": true,
+        "imageQuery": "city skyline",
+        "imageWidth": 600,
+        "imageHeight": 280,
+        "imageSlots": [
+          {
+            "slotId": "s1-img-0",
+            "imageQuery": "city skyline",
+            "imageWidth": 600,
+            "imageHeight": 280
+          }
+        ]
+      }
+    ]
+  },
+  "styleTokens": {
+    "schemaVersion": "1",
+    "tokens": {
+      "colors": {
+        "primary": "#111827",
+        "secondary": "#6B7280",
+        "surface": "#FFFFFF"
+      },
+      "spacing": {
+        "section": "16px",
+        "gap": "12px",
+        "pageInline": "20px"
+      },
+      "typography": {
+        "display": "32px",
+        "h1": "24px",
+        "body": "16px",
+        "caption": "12px"
+      },
+      "radius": {
+        "panel": "12px",
+        "cta": "8px"
+      }
+    },
+    "canvas": {
+      "width": "600px",
+      "emailBackground": "#F3F4F6",
+      "contentSurface": "#FFFFFF"
+    }
+  },
+  "textExtract": {
+    "schemaVersion": "1",
+    "regions": [
+      {
+        "regionId": "s1",
+        "paragraphs": [
+          {
+            "textId": "s1-t0",
+            "role": "heading",
+            "textBody": {
+              "paragraphs": [
+                { "runs": [{ "text": "Summer Collection", "bold": true }] }
+              ]
+            }
+          },
+          {
+            "textId": "s1-t1",
+            "role": "button",
+            "textBody": {
+              "paragraphs": [{ "runs": [{ "text": "SHOP NOW" }] }]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "assetManifest": {
+    "images": {
+      "s1-img-0": {
+        "url": "https://images.pexels.com/photos/325185/pexels-photo-325185.jpeg",
+        "alt": "城市天际线",
+        "fit": "cover",
+        "position": "center"
+      }
+    },
+    "icons": {}
+  },
+  "sections": [
+    {
+      "compactSchemaVersion": "1",
+      "sectionId": "s1",
+      "root": {
+        "kind": "content.image",
+        "wrapper": {
+          "backgroundImageRef": "s1-img-0",
+          "widthMode": "fill",
+          "heightMode": "fixed",
+          "height": "280px",
+          "contentAlign": { "horizontal": "left", "vertical": "top" },
+          "padding": { "mode": "unified", "value": "32px" }
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "12px"
+        },
+        "children": [
+          {
+            "kind": "content.text",
+            "props": { "textId": "s1-t0" },
+            "wrapper": {
+              "widthMode": "fill",
+              "contentAlign": { "horizontal": "left", "vertical": "top" }
+            },
+            "styleKeys": {
+              "fontSize": "typography.display",
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          },
+          {
+            "kind": "action.button",
+            "props": { "textId": "s1-t1" },
+            "wrapper": { "widthMode": "hug" },
+            "styleKeys": {
+              "buttonStyle.backgroundColor": "#000000",
+              "buttonStyle.textColor": "#FFFFFF",
+              "buttonStyle.borderRadius": "tokens.radius.cta"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "emailKey": "fixture-ai",
+  "layoutVariantId": "layout-ai-test"
+}

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json && vite build",
-    "test:unit": "node --test --import tsx src/lib/*.test.ts src/meta-contract/*.test.ts src/payload-contract/*.test.ts src/block-contract/*.test.ts src/editor-canvas-contract/*.test.ts src/render-defaults-contract/*.test.ts src/repeat-binding-contract/*.test.ts src/schema-registry/*.test.ts src/repeat-runtime/*.test.ts",
+    "test:unit": "node --test --import tsx src/lib/*.test.ts src/lib/ai-pipeline/**/*.test.ts src/layout-variant-ai-contract/*.test.ts server/*.test.ts src/meta-contract/*.test.ts src/payload-contract/*.test.ts src/block-contract/*.test.ts src/canvas-dimension-contract/*.test.ts src/editor-canvas-contract/*.test.ts src/render-defaults-contract/*.test.ts src/repeat-binding-contract/*.test.ts src/schema-registry/*.test.ts src/repeat-runtime/*.test.ts",
     "validate:schema-registry": "node --test --import tsx src/schema-registry/registry.test.ts",
     "restore:check": "npm run test:unit && npm run template-yaml:golden",
     "preview": "vite preview",
@@ -22,9 +22,13 @@
     "template-yaml:expand": "tsx scripts/email-template-yaml-to-template.mjs",
     "template-yaml:golden": "tsx scripts/email-template-yaml-to-template.mjs --golden",
     "template-yaml:golden:write": "tsx scripts/email-template-yaml-to-template.mjs --golden --write",
+    "migrate:publish-status": "node scripts/migrate-publish-status.mjs",
+    "migrate:publish-status:write": "node scripts/migrate-publish-status.mjs --write",
     "validate:all": "tsx scripts/run-validate-all.mjs",
     "validate:email": "tsx scripts/run-validate-all.mjs --skip-unit --skip-yaml --skip-public-presets",
-    "sync:masters": "tsx scripts/sync-masters-catalog.ts"
+    "manual-restore:doubao": "tsx scripts/run-manual-restore-doubao.ts",
+    "sync:masters": "tsx scripts/sync-masters-catalog.ts",
+    "sync:icon-cdn-index": "node scripts/sync-icon-cdn-index.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.1",
@@ -34,7 +38,9 @@
     "hono": "^4.6.11",
     "nodemailer": "^8.0.8",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zod": "^4.4.3",
+    "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

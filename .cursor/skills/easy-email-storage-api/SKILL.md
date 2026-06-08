@@ -80,6 +80,15 @@ data/emails/<emailKey>/
 3. `templateId` 建议与 `emailKey` 一致；`payload` 与模板版本字段与实现一致。
 4. **`npm run validate:all`**。
 
+## API 分层（编辑器 vs 对外接入）
+
+| 用途 | 典型调用方 | 能力范围 |
+|------|------------|----------|
+| **对外接入（发信 / 渲染）** | Loyalty 业务、活动发信链路 | **只使用**已发布模板：读 `payload` / `merged` / `template` / `token-presets`、写场景级 **`PUT payload`**（及内置列表变量 runtime 等）。索引真源：**`src/lib/buildIntegrationApiExamples.ts`**（`integrationEndpointsForEmail`）。 |
+| **编辑器维护（运营）** | 邮件编辑器顶栏、本仓库前端 | 新建 / **复制**场景（`POST /emails` + `copyFromEmailKey`）、新建 / **复制**版式（`POST .../layout-variants` + `copyFromLayoutVariantId`）、**以图 AI 新建版式**（`POST .../layout-variants/ai-from-image`，`multipart`：`label` + `image`；生成逻辑见 `server/layoutVariantAiFromImage.ts`）、改 template / meta / 发布状态等。**不**作为对外接入契约交付，接入页文档与 curl 示例**勿**收录上述写结构接口。 |
+
+同进程 `server/index.ts` 路由可共存；对接方按上表只实现「使用」子集即可。
+
 ## 本地 API 摘要
 
 - 基址默认 **`http://127.0.0.1:3001/api/v1`**（以 `server` 启动日志为准）。

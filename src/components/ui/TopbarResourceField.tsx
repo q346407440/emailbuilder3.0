@@ -1,10 +1,17 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { TOPBAR_RESOURCE_SELECT_SLOT_WIDTH } from "./topbarResourceSelectLayout";
 
 type Props = {
   label: string;
   children: ReactNode;
-  /** 控制顶栏下拉槽固定宽度（版式与模板同宽；模板略宽） */
+  /** 控制顶栏选择框槽宽（邮件模板与版式结构同宽） */
   variant: "email-template" | "layout-variant";
+};
+
+const selectSlotStyle: CSSProperties = {
+  flex: `0 0 ${TOPBAR_RESOURCE_SELECT_SLOT_WIDTH}px`,
+  width: TOPBAR_RESOURCE_SELECT_SLOT_WIDTH,
+  maxWidth: TOPBAR_RESOURCE_SELECT_SLOT_WIDTH,
 };
 
 /** 顶栏资源选择：仅标签 + 下拉（操作收进下拉底部） */
@@ -19,7 +26,9 @@ export function TopbarResourceField({ label, children, variant }: Props) {
       ].join(" ")}
     >
       <span className="topbar__select-label">{label}</span>
-      <div className="topbar__select-slot">{children}</div>
+      <div className="topbar__select-slot" style={selectSlotStyle}>
+        {children}
+      </div>
     </div>
   );
 }

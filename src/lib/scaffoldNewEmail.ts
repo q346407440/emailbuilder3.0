@@ -4,6 +4,7 @@ import { EMAIL_TEMPLATE_SCHEMA_VERSION } from "../types/email";
 import type { TokenPresets } from "../types/tokenPreset";
 import { PAYLOAD_SCHEMA_VERSION } from "../payload-contract/types";
 import { META_SCHEMA_VERSION, type EmailMeta } from "../meta-contract";
+import { DEFAULT_PUBLISH_STATUS } from "../publish-status-contract";
 import { assertEmailKeySafe } from "./validate";
 
 export type NewEmailScaffold = {
@@ -44,11 +45,13 @@ export function deriveEmailKeyFromDisplayName(
   return `${base}-${Date.now().toString(36)}`;
 }
 
-function layoutVariantBlockIdPrefix(emailKey: string, layoutVariantId: string): string {
+/** 版式 block id 前缀（default 版式用 emailKey，否则 emailKey-layoutVariantId）。 */
+export function layoutVariantBlockIdPrefix(emailKey: string, layoutVariantId: string): string {
   return layoutVariantId === "default" ? emailKey : `${emailKey}-${layoutVariantId}`;
 }
 
-function buildDefaultTokenPresets(): TokenPresets {
+/** 新建版式 tokenPresets 外壳（tokens 内容由调用方填入）。 */
+export function buildDefaultTokenPresets(): TokenPresets {
   return {
     schemaVersion: "1.0.0",
     activePresetId: "default",
@@ -211,6 +214,7 @@ export function buildNewEmailScaffold(emailKey: string, displayName: string): Ne
         label: "默认",
         description: "新建模板的默认版式",
         createdAt: now,
+        publishStatus: DEFAULT_PUBLISH_STATUS,
       },
     ],
   };
@@ -223,6 +227,7 @@ export function buildNewEmailScaffold(emailKey: string, displayName: string): Ne
 
   const meta: EmailMeta = {
     schemaVersion: META_SCHEMA_VERSION,
+    publishStatus: DEFAULT_PUBLISH_STATUS,
     displayName: displayName.trim(),
     description: "",
     source: "human",

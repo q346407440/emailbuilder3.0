@@ -38,6 +38,7 @@ import {
 import { Field } from "./ui/Field";
 import { ColorField } from "./ui/ColorField";
 import { ShopInput, ShopSelect, ShopTextArea } from "./ui/ShopFormControls";
+import { UrlAssetUploadInput } from "./ui/UrlAssetUploadInput";
 
 type Props = {
   template: EmailTemplate;
@@ -56,6 +57,8 @@ type Props = {
   selectedSlotId?: string | null;
   /** embedded：嵌在配置 Inspector 内，外层用 div，避免 aside 套 aside */
   variant?: "panel" | "embedded";
+  slotValidationError?: string;
+  slotValidationWarning?: string;
 };
 
 function formatDefaultPreview(v: unknown): string {
@@ -456,6 +459,8 @@ function SlotEditor({
         ? "图片 URL（https://…）"
         : "输入 URL";
 
+  const uploadKind = slot.valueType === "image" ? ("image" as const) : undefined;
+
   return (
     <>
       {metaSection}
@@ -466,15 +471,25 @@ function SlotEditor({
           {...(hintParts ? { hint: hintParts } : {})}
           headerExtra={assignmentHeaderExtra}
         >
-          <ShopInput
-            value={stringVal}
-            placeholder={placeholder}
-            disabled={detached}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSlotValue(v === "" ? undefined : v);
-            }}
-          />
+          {uploadKind ? (
+            <UrlAssetUploadInput
+              uploadKind={uploadKind}
+              value={stringVal}
+              placeholder={placeholder}
+              disabled={detached}
+              onChange={(v) => setSlotValue(v === "" ? undefined : v)}
+            />
+          ) : (
+            <ShopInput
+              value={stringVal}
+              placeholder={placeholder}
+              disabled={detached}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSlotValue(v === "" ? undefined : v);
+              }}
+            />
+          )}
         </Field>
       )}
     </>
@@ -493,6 +508,8 @@ export function PayloadInspector({
   onSlotIdChange,
   selectedSlotId = null,
   variant = "panel",
+  slotValidationError,
+  slotValidationWarning,
 }: Props) {
   const { confirm } = useConfirmDialog();
   const [dataSourceModalOpen, setDataSourceModalOpen] = useState(false);
@@ -636,6 +653,8 @@ export function PayloadInspector({
     <PayloadInspectorPanelActive
       activeSlot={activeSlot}
       title={title}
+      slotValidationError={slotValidationError}
+      slotValidationWarning={slotValidationWarning}
       template={template}
       payload={payload}
       previewPayload={previewPayload}
@@ -659,6 +678,8 @@ export function PayloadInspector({
 type PanelActiveProps = {
   activeSlot: ExternalVariableSlotInfo;
   title: string;
+  slotValidationError?: string;
+  slotValidationWarning?: string;
   template: EmailTemplate;
   payload: EmailPayload;
   previewPayload: EmailPayload;
@@ -680,6 +701,8 @@ type PanelActiveProps = {
 function PayloadInspectorPanelActive({
   activeSlot,
   title,
+  slotValidationError,
+  slotValidationWarning,
   template,
   payload,
   previewPayload,
@@ -709,6 +732,13 @@ function PayloadInspectorPanelActive({
   return (
     <aside className="inspector inspector--payload payload-inspector" aria-label="变量详情">
       <header className="payload-inspector__header">
+        {slotValidationError ? (
+          <p className="inspector-field__message inspector-field__message--error" role="alert">
+            {slotValidationError}
+          </p>
+        ) : slotValidationWarning ? (
+          <p className="inspector-field__message inspector-field__message--warn">{slotValidationWarning}</p>
+        ) : null}
         <div className="side-inspector__headrow payload-inspector__headrow">
           <ShopInput
             value={meta.labelDraft}

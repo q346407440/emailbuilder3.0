@@ -11,6 +11,8 @@ type Props = {
   onSelectLocal: () => void;
   onSelectGlobal: (presetId: string) => void;
   onCreateGlobal: (displayLabel: string) => Promise<void>;
+  /** 本邮件 tokenPresets 顶层校验摘要（展示在「本邮件」行） */
+  localValidationHint?: string;
 };
 
 export function TokenPresetPanel({
@@ -20,6 +22,7 @@ export function TokenPresetPanel({
   onSelectLocal,
   onSelectGlobal,
   onCreateGlobal,
+  localValidationHint,
 }: Props) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -55,8 +58,10 @@ export function TokenPresetPanel({
               <SidebarNavRow
                 active={activeListKey === "local"}
                 title={localLabel}
-                meta={localMeta}
+                meta={localValidationHint ? `${localMeta} · 须检查` : localMeta}
                 onSelect={onSelectLocal}
+                className={localValidationHint ? "sidebar-nav-row--validation-error" : undefined}
+                rowTitle={localValidationHint}
               />
             </ul>
           </div>

@@ -42,6 +42,15 @@ description: >-
 
 MCP 不替代单元测试（**`npm run test:unit`** 等）；登录墙等阻塞如实记录。
 
+## 与 PRD 配图技能的分工
+
+| 技能 | 用途 |
+|------|------|
+| **`user-chrome-devtools-screenshot-page`** | 视口整页截图、采集 regions 供红框标注 |
+| **`user-chrome-devtools-screenshot-region`** | 弹窗/下拉等单组件裁切配图（`prd-capture-crop.sh`） |
+| **`image-red-box-annotate`** | 在整页原图上绘制红框标注 |
+| **本技能** | 改 UI / 模板后的功能验收（控制台、网络、业务流程） |
+
 ---
 
 ## 附录：Chrome DevTools MCP profile 冲突

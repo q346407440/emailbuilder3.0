@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { isCollectionField } from "../../payload-contract/collection-item-fields";
 import { ShopInput, ShopSecondaryButton } from "../ui/ShopFormControls";
+import { UrlAssetUploadInput } from "../ui/UrlAssetUploadInput";
 import { CollectionNestedItemsEditModalGate } from "./CollectionNestedItemsEditModal";
 import type { CollectionItemPreviewMode, CollectionPreviewField } from "./types";
 import {
@@ -58,6 +59,7 @@ export function CollectionItemPreviewFieldRows({
 
         const stringValue = displayPreviewScalar(row[field.key]);
         const inputType = field.valueType === "number" ? "number" : "text";
+        const imageUpload = field.valueType === "image" && !readonly;
 
         return (
           <label
@@ -65,27 +67,37 @@ export function CollectionItemPreviewFieldRows({
             className="payload-collection__field collection-linked-preview__field"
           >
             <span>{field.label || field.key}</span>
-            <ShopInput
-              value={stringValue}
-              placeholder="（空）"
-              type={inputType}
-              disabled={readonly ? true : undefined}
-              readOnly={readonly ? true : undefined}
-              onChange={
-                readonly
-                  ? undefined
-                  : (event) => {
-                      const raw = event.target.value;
-                      const next =
-                        field.valueType === "number"
-                          ? raw === ""
-                            ? ""
-                            : Number(raw)
-                          : raw;
-                      onFieldChange?.(field.key, next);
-                    }
-              }
-            />
+            {imageUpload ? (
+              <UrlAssetUploadInput
+                uploadKind="image"
+                value={stringValue}
+                placeholder="（空）"
+                disabled={disabled}
+                onChange={(raw) => onFieldChange?.(field.key, raw)}
+              />
+            ) : (
+              <ShopInput
+                value={stringValue}
+                placeholder="（空）"
+                type={inputType}
+                disabled={readonly ? true : undefined}
+                readOnly={readonly ? true : undefined}
+                onChange={
+                  readonly
+                    ? undefined
+                    : (event) => {
+                        const raw = event.target.value;
+                        const next =
+                          field.valueType === "number"
+                            ? raw === ""
+                              ? ""
+                              : Number(raw)
+                            : raw;
+                        onFieldChange?.(field.key, next);
+                      }
+                }
+              />
+            )}
           </label>
         );
       })}

@@ -7,6 +7,7 @@ import { PayloadSlotSourceModal } from "./PayloadSlotSourceModal";
 import { createCollectionPayloadSlotFromPreset } from "../lib/createPayloadSlot";
 import { getSceneCollectionPreset } from "../api/sceneCollectionPresets";
 import { getPayloadVariableScene, setPayloadVariableScene } from "../lib/payloadVariableScene";
+import { toastError } from "../lib/appToast";
 
 type Props = {
   template: EmailTemplate;
@@ -17,6 +18,8 @@ type Props = {
   /** 新建变量：先写入 payload.json，成功后再更新编辑器（失败则 UI 不变） */
   onVariableCreated?: (args: { payload: EmailPayload; slotId: string }) => void | Promise<void>;
   onCollectionSlotCreated?: (slotId: string) => void;
+  getSlotError?: (slotId: string) => string | undefined;
+  getSlotWarning?: (slotId: string) => string | undefined;
 };
 
 function slotTypeLabel(valueType: string): string {
@@ -45,6 +48,8 @@ export function PayloadPanel({
   onPayloadChange,
   onVariableCreated,
   onCollectionSlotCreated,
+  getSlotError,
+  getSlotWarning,
 }: Props) {
   const [sourceModalMode, setSourceModalMode] = useState<CreatePayloadSlotModalMode | null>(null);
 
@@ -68,7 +73,7 @@ export function PayloadPanel({
         onCollectionSlotCreated?.(slotId);
       }
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : String(e));
+      toastError(e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -111,6 +116,8 @@ export function PayloadPanel({
                 {slots.map((slot) => {
                   const selected = slot.slotId === activeSlotId;
                   const title = slot.label ?? slot.slotId;
+                  const slotErr = getSlotError?.(slot.slotId);
+                  const slotWarn = !slotErr ? getSlotWarning?.(slot.slotId) : undefined;
                   const presetManaged = Boolean(
                     payload.slots[slot.slotId]?.sceneCollectionPresetId?.trim()
                   );
@@ -122,7 +129,14 @@ export function PayloadPanel({
                         type="button"
                         role="radio"
                         aria-checked={selected}
-                        className={`theme-panel__option ${selected ? "theme-panel__option--active" : ""}`}
+                        className={`theme-panel__option ${selected ? "theme-panel__option--active" : ""} ${
+                          slotErr
+                            ? "theme-panel__option--validation-error"
+                            : slotWarn
+                              ? "theme-panel__option--validation-warn"
+                              : ""
+                        }`.trim()}
+                        title={slotErr ?? slotWarn}
                         onClick={() => onSelectSlot(slot.slotId)}
                       >
                         <span className="theme-panel__option-title">{title}</span>
@@ -158,13 +172,13 @@ export function PayloadPanel({
               .then((preset) => {
                 const result = createCollectionPayloadSlotFromPreset(payload, preset);
                 if ("error" in result) {
-                  window.alert(result.error);
+                  toastError(result.error);
                   return;
                 }
                 return commitNewVariable(result.payload, result.slotId, "collection");
               })
               .catch((e) => {
-                window.alert(e instanceof Error ? e.message : String(e));
+                toastError(e instanceof Error ? e.message : String(e));
               });
           }}
         />

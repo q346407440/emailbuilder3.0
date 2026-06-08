@@ -1,6 +1,10 @@
 import type { CSSProperties } from "react";
 import type { WrapperContentAlign } from "../types/email";
 import { normalizeWrapperContentAlign } from "./wrapperContentAlign";
+import {
+  normalizeWrapperDimensionMode,
+  hugWidthMaxWidthCapCss,
+} from "./canvasDimensionResolve";
 
 /** 邮件画布与导出共用的 presentation table 基础样式（与 `<table role="presentation">` 搭配）。 */
 export const emailPresentationTableStyle: CSSProperties = {
@@ -46,7 +50,9 @@ export function layoutPreviewOuterTableUsesFullWidth(params: {
  */
 /** hug 宽叶子块：宽度收缩由槽位 `<td width="1">`（HTML 属性，非 CSS 1%）承担，外层勿用 `fit-content`。 */
 export function wrapperHugWidthShrinkWrapCss(widthMode: unknown): CSSProperties {
-  if (widthMode === "hug") return { maxWidth: "100%" };
+  if (normalizeWrapperDimensionMode(widthMode, "fill") === "hug") {
+    return hugWidthMaxWidthCapCss();
+  }
   return {};
 }
 
@@ -326,8 +332,8 @@ export function layoutRowChildTdWidthStyle(
   }
   if (wm === "fixed") {
     const w = typeof childFixedWidth === "string" ? childFixedWidth.trim() : "";
-    if (w) return { width: w, whiteSpace: "nowrap" };
-    return { whiteSpace: "nowrap" };
+    // 列宽已由 width 钉死；勿写 nowrap（会继承到纵排子树，导致 fill 文本无法换行）
+    return w ? { width: w } : {};
   }
   /** 满宽 + auto 表：fill 列勿写 100%（会抢整表宽）；由 hug/gap 先占位后吃剩余 */
   if (params.innerTableUsesFixedLayout === false) {

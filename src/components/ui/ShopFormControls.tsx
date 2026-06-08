@@ -208,14 +208,14 @@ function joinClassNames(...parts: Array<string | undefined | false>): string {
   return parts.filter(Boolean).join(" ");
 }
 
-/** 对齐折扣后台「新建折扣」主按钮视觉。 */
+/** 企业级文字链主操作（确定、保存、重命名等，主题蓝）。 */
 export const ShopPrimaryButton = forwardRef<HTMLElement, ShopActionButtonProps>(
   function ShopPrimaryButton({ className, htmlType = "button", ...rest }, ref) {
     return (
       <Button
         ref={ref}
         {...rest}
-        type="primary"
+        type="link"
         htmlType={htmlType}
         className={joinClassNames("shop-btn", "shop-btn--primary", className)}
       />
@@ -223,16 +223,31 @@ export const ShopPrimaryButton = forwardRef<HTMLElement, ShopActionButtonProps>(
   }
 );
 
-/** 对齐折扣后台「折扣设计」次级按钮视觉。 */
+/** 企业级文字链次级操作（取消等，中性灰字）。 */
 export const ShopSecondaryButton = forwardRef<HTMLElement, ShopActionButtonProps>(
   function ShopSecondaryButton({ className, htmlType = "button", ...rest }, ref) {
     return (
       <Button
         ref={ref}
         {...rest}
-        type="tertiary"
+        type="link"
         htmlType={htmlType}
         className={joinClassNames("shop-btn", "shop-btn--secondary", className)}
+      />
+    );
+  }
+);
+
+/** 企业级文字链危险操作（删除、确认删除等，警示红）。 */
+export const ShopDangerButton = forwardRef<HTMLElement, ShopActionButtonProps>(
+  function ShopDangerButton({ className, htmlType = "button", ...rest }, ref) {
+    return (
+      <Button
+        ref={ref}
+        {...rest}
+        type="link"
+        htmlType={htmlType}
+        className={joinClassNames("shop-btn", "shop-btn--danger", className)}
       />
     );
   }

@@ -2,8 +2,13 @@ import { useEffect, useState } from "react";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
 
+export type EmailTemplateCreateModalMode = "create" | "copy";
+
 type EmailTemplateCreateModalProps = {
   visible: boolean;
+  mode: EmailTemplateCreateModalMode;
+  /** 复制模式下展示源模板名称 */
+  copySourceDisplayName?: string;
   creating?: boolean;
   onCancel: () => void;
   onCreate: (displayName: string) => Promise<void>;
@@ -11,6 +16,8 @@ type EmailTemplateCreateModalProps = {
 
 export function EmailTemplateCreateModal({
   visible,
+  mode,
+  copySourceDisplayName,
   creating,
   onCancel,
   onCreate,
@@ -20,9 +27,13 @@ export function EmailTemplateCreateModal({
 
   useEffect(() => {
     if (!visible) return;
-    setDraftName("");
+    if (mode === "copy" && copySourceDisplayName?.trim()) {
+      setDraftName(`${copySourceDisplayName.trim()} 副本`);
+    } else {
+      setDraftName("");
+    }
     setDraftError(null);
-  }, [visible]);
+  }, [visible, mode, copySourceDisplayName]);
 
   const close = () => {
     if (creating) return;
@@ -39,16 +50,18 @@ export function EmailTemplateCreateModal({
     try {
       await onCreate(normalized);
     } catch {
-      setDraftError("创建失败，请稍后重试");
+      setDraftError(mode === "copy" ? "复制失败，请稍后重试" : "创建失败，请稍后重试");
     }
   };
 
   if (!visible) return null;
 
+  const isCopy = mode === "copy";
+
   return (
     <ShopSectionModal
       visible
-      title="创建新模板"
+      title={isCopy ? "复制邮件模板" : "创建新模板"}
       onCancel={close}
       maskClosable={!creating}
       closable={!creating}
@@ -59,7 +72,7 @@ export function EmailTemplateCreateModal({
             取消
           </ShopSecondaryButton>
           <ShopPrimaryButton onClick={() => void submit()} loading={creating}>
-            创建
+            {isCopy ? "复制" : "创建"}
           </ShopPrimaryButton>
         </div>
       }
@@ -74,11 +87,25 @@ export function EmailTemplateCreateModal({
           onChange={(e) => setDraftName(e.target.value)}
           onPressEnter={() => void submit()}
         />
-        <span className="topbar__create-hint">
-          将自动在 data/emails 下创建场景目录；标识（emailKey）由名称推导，纯中文名称会使用自动编号。
-        </span>
+        {isCopy ? (
+          <span className="topbar__create-hint">
+            将复制源模板的全部未删除版式（结构、样式预设、变量槽与取值、列表绑定与显影规则等），生成新的场景目录；副本模板与版式均为
+            <strong> 未发布 </strong>
+            状态。
+            {copySourceDisplayName ? (
+              <>
+                <br />
+                源模板：{copySourceDisplayName}
+              </>
+            ) : null}
+          </span>
+        ) : (
+          <span className="topbar__create-hint">
+            将自动在 data/emails 下创建场景目录；标识（emailKey）由名称推导，纯中文名称会使用自动编号。
+          </span>
+        )}
         {draftError ? <span className="topbar__rename-error">{draftError}</span> : null}
       </div>
     </ShopSectionModal>
   );
-}
+};

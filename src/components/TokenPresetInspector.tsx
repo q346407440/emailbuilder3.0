@@ -25,6 +25,8 @@ type Props = {
   setAsTemplateDefaultDisabled?: boolean;
   /** 逻辑删除当前选中的公共预设（仅 listSelection 非 local 时展示删除） */
   onDeleteGlobal?: (presetId: string) => void | Promise<void>;
+  validationError?: string;
+  validationWarning?: string;
 };
 
 /** 样式预设 Inspector：颜色四列；间距/字号/圆角双列；未知分组单列 */
@@ -44,6 +46,8 @@ export function TokenPresetInspector({
   isTemplateDefaultForCurrentSelection,
   setAsTemplateDefaultDisabled,
   onDeleteGlobal,
+  validationError,
+  validationWarning,
 }: Props) {
   const { confirm } = useConfirmDialog();
   if (!tokenPresets) {
@@ -91,9 +95,8 @@ export function TokenPresetInspector({
     if (!globalPresetId || !onDeleteGlobal) return;
     const ok = await confirm(
       logicalDeleteConfirmOptions({
-        title: "逻辑删除公共预设",
-        resourcePhrase: `公共预设「${headTitle}」`,
-        fileHint: `data/token-presets/${globalPresetId}.json`,
+        kind: "globalTokenPreset",
+        name: headTitle,
       })
     );
     if (ok) void onDeleteGlobal(globalPresetId);
@@ -113,6 +116,13 @@ export function TokenPresetInspector({
   return (
     <aside className="inspector inspector--token-preset">
       <header className="token-preset-inspector__header">
+        {validationError ? (
+          <p className="inspector-field__message inspector-field__message--error" role="alert">
+            {validationError}
+          </p>
+        ) : validationWarning ? (
+          <p className="inspector-field__message inspector-field__message--warn">{validationWarning}</p>
+        ) : null}
         <div className="side-inspector__headrow token-preset-inspector__headrow">
           <ShopInput
             value={titleDraft}

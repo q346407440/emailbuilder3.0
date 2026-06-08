@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
 import type { WrapperHeightMode, WrapperStyle, WrapperWidthMode } from "../types/email";
+import {
+  normalizeWrapperDimensionMode,
+  resolveWrapperHeightCss,
+  resolveWrapperWidthCss,
+} from "./canvasDimensionResolve";
 
 type WS = WrapperStyle;
 
@@ -10,13 +15,11 @@ function normalizeSpaceValue(raw: unknown): string | undefined {
 }
 
 function normalizeWrapperWidthMode(raw: unknown): WrapperWidthMode {
-  if (raw === "hug" || raw === "fill" || raw === "fixed") return raw;
-  return "fill";
+  return normalizeWrapperDimensionMode(raw, "fill");
 }
 
 function normalizeWrapperHeightMode(raw: unknown): WrapperHeightMode {
-  if (raw === "hug" || raw === "fill" || raw === "fixed") return raw;
-  return "hug";
+  return normalizeWrapperDimensionMode(raw, "hug");
 }
 
 /** 将 SpacingValue 映射为 CSS padding 简写（供 wrapperStyle.padding 等复用） */
@@ -131,23 +134,24 @@ export function wrapperStyleToCss(ws: WS | undefined, options?: WrapperStyleToCs
   }
 
   const widthMode = normalizeWrapperWidthMode(ws.widthMode);
-  if (widthMode === "fill") {
-    s.width = "100%";
-  } else if (widthMode === "fixed") {
-    const w = typeof ws.width === "string" ? ws.width.trim() : "";
-    if (w) s.width = w;
-  } else {
-    s.width = "auto";
-    s.maxWidth = "100%";
-  }
+  Object.assign(
+    s,
+    resolveWrapperWidthCss({
+      mode: widthMode,
+      fixedWidth: ws.width,
+      fallbackMode: "fill",
+    })
+  );
 
   const heightMode = normalizeWrapperHeightMode(ws.heightMode);
-  if (heightMode === "fill") {
-    s.height = "100%";
-  } else if (heightMode === "fixed") {
-    const h = typeof ws.height === "string" ? ws.height.trim() : "";
-    if (h) s.height = h;
-  }
+  Object.assign(
+    s,
+    resolveWrapperHeightCss({
+      mode: heightMode,
+      fixedHeight: ws.height,
+      fallbackMode: "hug",
+    })
+  );
   /** contentAlign.horizontal → text-align（文本排版对齐） */
   const ca = ws.contentAlign as { horizontal?: string } | undefined;
   if (ca?.horizontal === "center") s.textAlign = "center";

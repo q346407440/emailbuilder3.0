@@ -426,7 +426,7 @@ test("layoutRowChildTdWidthStyle：满宽行内 hug 仅 nowrap（列宽由 td wi
       gapModeAuto: false,
       childCount: 2,
     }),
-    { width: "120px", whiteSpace: "nowrap" }
+    { width: "120px" }
   );
   assert.deepEqual(
     layoutRowChildTdWidthStyle("hug", undefined, {

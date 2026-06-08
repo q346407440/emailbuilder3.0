@@ -18,6 +18,8 @@ export type ColorFieldProps = {
   hint?: string;
   disabled?: boolean;
   headerExtra?: ReactNode;
+  error?: string;
+  warning?: string;
 };
 
 /** SDS ColorPicker 回调中的颜色对象 → 统一输出 rgba() */
@@ -60,7 +62,16 @@ const ColorSwatchTrigger = forwardRef<
 /**
  * 颜色编辑：点击色块展开 SDS ColorPicker（与 Shoplazza 后台限时促销「配色 · 自定义」交互一致）。
  */
-export function ColorField({ label, value, onChange, hint, disabled, headerExtra }: ColorFieldProps) {
+export function ColorField({
+  label,
+  value,
+  onChange,
+  hint,
+  disabled,
+  headerExtra,
+  error,
+  warning,
+}: ColorFieldProps) {
   const triggerWrapRef = useRef<HTMLDivElement>(null);
 
   const pickerValue = useMemo(
@@ -79,7 +90,7 @@ export function ColorField({ label, value, onChange, hint, disabled, headerExtra
   });
 
   return (
-    <Field label={label} hint={hint} headerExtra={headerExtra}>
+    <Field label={label} hint={hint} headerExtra={headerExtra} error={error} warning={warning}>
       <div className={`color-field ${disabled ? "color-field--disabled" : ""}`}>
         <ColorPicker
           value={pickerValue}

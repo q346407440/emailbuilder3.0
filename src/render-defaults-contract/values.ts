@@ -23,6 +23,9 @@ export function normalizeLayoutStackDirection(raw: unknown): LayoutStackDirectio
 /** 按钮胶囊内边距 */
 export const BUTTON_INNER_PADDING = "8px 12px";
 
+/** 按钮胶囊行高（须在 td anti-strut line-height:0 下显式写入，否则垂直 padding 不生效） */
+export const BUTTON_INNER_LINE_HEIGHT = "normal";
+
 /** 图片 / 容器背景图加载前或透明区域兜底色 */
 export const IMAGE_BACKGROUND_FALLBACK_COLOR = "#f0f0f0";
 
@@ -57,6 +60,7 @@ export const RENDER_DEFAULT_VALUES = {
   PROJECT_BACKGROUND_CONTENT_ALIGN,
   PROJECT_TEXT_CONTENT_ALIGN_VERTICAL,
   BUTTON_INNER_PADDING,
+  BUTTON_INNER_LINE_HEIGHT,
   IMAGE_BACKGROUND_FALLBACK_COLOR,
   FIXED_TEXT_LINE_HEIGHT,
   EMAIL_ROOT_FIXED_WIDTH,

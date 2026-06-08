@@ -43,6 +43,7 @@ describe("validateEmailMeta", () => {
     assert.deepEqual(
       validateEmailMeta({
         schemaVersion: "1.0.0",
+        publishStatus: "published",
         displayName: "名",
         delivery: { subject: "主题" },
       }),

@@ -13,8 +13,8 @@ function sampleManifest(): LayoutManifest {
     schemaVersion: LAYOUT_MANIFEST_SCHEMA_VERSION,
     activeLayoutVariantId: "default",
     variants: [
-      { id: "default", label: "默认", createdAt: "2026-01-01T00:00:00.000Z" },
-      { id: "alt", label: "备选", createdAt: "2026-01-02T00:00:00.000Z" },
+      { id: "default", label: "默认", createdAt: "2026-01-01T00:00:00.000Z", publishStatus: "published" },
+      { id: "alt", label: "备选", createdAt: "2026-01-02T00:00:00.000Z", publishStatus: "published" },
     ],
   };
 }

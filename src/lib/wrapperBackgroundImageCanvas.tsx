@@ -36,8 +36,9 @@ export type RenderWrapperBackgroundImageCanvasShellProps = {
 /**
  * 底图叠放画布壳：外层 div +（可选 link）+ 底图 table/td + 叠放子内容。
  * layout / grid / image / emailRoot 共用；布局派生见 resolveWrapperBackgroundImageCanvasLayout。
+ * 须作为 React 组件渲染（`<WrapperBackgroundImageCanvasShell />`），禁止在条件分支里当普通函数调用。
  */
-export function renderWrapperBackgroundImageCanvasShell(
+export function WrapperBackgroundImageCanvasShell(
   props: RenderWrapperBackgroundImageCanvasShellProps
 ): ReactElement {
   const { layout, className, dataProps, onClick, onLinkNavigate, children } = props;
@@ -56,6 +57,7 @@ export function renderWrapperBackgroundImageCanvasShell(
     bgPresentationFields,
     bgTableBorderCollapse,
     bgTableHeightFromTd,
+    fillStretchHeight,
     enableHugIntrinsicHeight,
   } = layout;
 
@@ -103,7 +105,11 @@ export function renderWrapperBackgroundImageCanvasShell(
     if (!Number.isFinite(px) || px <= 0) return undefined;
     return `${Math.round(px * 100) / 100}px`;
   }, [enableHugIntrinsicHeight, hostWidth, intrinsicRatio]);
-  const canvasHeight = fixedCanvasHeight ?? autoHugHeight;
+  const canvasHeight =
+    fixedCanvasHeight ?? autoHugHeight ?? (fillStretchHeight ? "100%" : undefined);
+  const linkBlockStyle = fillStretchHeight
+    ? { display: "block" as const, textDecoration: "none" as const, height: "100%" }
+    : { display: "block" as const, textDecoration: "none" as const };
 
   const contentNode = (
     <table
@@ -148,7 +154,7 @@ export function renderWrapperBackgroundImageCanvasShell(
       {link ? (
         <a
           href={link}
-          style={{ display: "block", textDecoration: "none" }}
+          style={linkBlockStyle}
           onClick={onLinkNavigate}
           onAuxClick={onLinkNavigate}
         >

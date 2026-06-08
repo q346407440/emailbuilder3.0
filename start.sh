@@ -13,6 +13,12 @@ if [[ -f .env ]]; then
   set +a
 fi
 
+if [[ -z "${PEXELS_API_KEY:-}" || "${PEXELS_API_KEY}" =~ ^[[:space:]]*$ ]]; then
+  echo "[start] 警告: PEXELS_API_KEY 未配置，AI 以图生成将全部使用占位图"
+else
+  echo "[start] PEXELS_API_KEY 已加载（AI 配图可用）"
+fi
+
 kill_port() {
   local port="$1"
   local pids
@@ -28,6 +34,11 @@ kill_port() {
 kill_port 5180
 # 本仓库 Hono API 默认端口（见 server/index.ts / EMAIL_API_PORT）
 kill_port 8787
+
+AI_LLM_LOG="$ROOT/logs/ai-pipeline-llm.jsonl"
+mkdir -p "$ROOT/logs"
+: > "$AI_LLM_LOG"
+echo "[start] 已清空 AI LLM 交换日志: logs/ai-pipeline-llm.jsonl"
 
 echo "[start] 启动 Vite http://127.0.0.1:5180 与 API http://127.0.0.1:8787 …"
 exec npm run dev:all

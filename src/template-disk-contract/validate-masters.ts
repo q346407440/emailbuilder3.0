@@ -8,6 +8,7 @@ import {
   type NestedDiskValidationIssue,
 } from "./types";
 import { isForbiddenFlatDiskWire } from "./validate";
+import { validateOptionalDeletedAtField } from "../lib/logicalDelete";
 import { validateNestedBlockNode } from "./validate-masters-shared";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -64,6 +65,8 @@ export function validateNestedMasterDisk(value: unknown): NestedDiskValidationIs
     if (typeof value.rootBlockId !== "string" || !value.rootBlockId.trim()) {
       issues.push({ path: "rootBlockId", reason: "rootBlockId 为必填" });
     }
+    const deletedAtIssue = validateOptionalDeletedAtField(value.deletedAt, "deletedAt");
+    if (deletedAtIssue) issues.push(deletedAtIssue);
   } else {
     if (typeof value.sampleBlockId !== "string" || !value.sampleBlockId.trim()) {
       issues.push({ path: "sampleBlockId", reason: "sampleBlockId 为必填" });

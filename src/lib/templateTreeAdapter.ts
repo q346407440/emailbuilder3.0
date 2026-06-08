@@ -261,6 +261,7 @@ export function serializeEditorMasterToDisk(
       rootBlockId: section.rootBlockId,
       catalogRootBlockId: section.catalogRootBlockId,
       root,
+      ...(section.deletedAt ? { deletedAt: section.deletedAt } : {}),
     };
   }
 
@@ -294,6 +295,7 @@ export function nestedMasterToEditorMaster(
       catalogRootBlockId: master.catalogRootBlockId,
       blocks: graph.blocks,
       blockMeta: graph.blockMeta,
+      ...(master.deletedAt ? { deletedAt: master.deletedAt } : {}),
     };
   }
   const blockMaster = master as NestedBlockMaster;

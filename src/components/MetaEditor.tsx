@@ -7,7 +7,13 @@ import {
   metaToEditorForm,
   type MetaEditorFormSnapshot,
 } from "../lib/metaEditorPersist";
-import { getEmailMeta, getSmtpTestStatus, putEmailMeta, sendTestEmail, type SmtpTestStatus } from "../api/client";
+import {
+  getEmailMeta,
+  getSmtpTestStatus,
+  putEmailMeta,
+  sendTestEmail,
+  type SmtpTestStatus,
+} from "../api/client";
 import { SendTestEmailModal } from "./SendTestEmailModal";
 import { Field } from "./ui/Field";
 import { InspectorPanelSection } from "./ui/InspectorPanelSection";

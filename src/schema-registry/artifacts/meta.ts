@@ -8,7 +8,7 @@ export const metaArtifact: SchemaArtifactDef = {
   diskPatterns: ["data/emails/*/meta.json"],
   validate: (raw) => validateEmailMeta(raw),
   migrateScripts: {
-    preview: "migrate:meta-schema-version",
-    write: "migrate:meta-schema-version:write",
+    preview: "migrate:publish-status",
+    write: "migrate:publish-status:write",
   },
 };

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { LayoutManifest, LayoutVariantEntry } from "../layout-variant-contract/types";
 import { LAYOUT_MANIFEST_SCHEMA_VERSION } from "../layout-variant-contract/types";
+import { validatePublishStatusField } from "../publish-status-contract/validate";
 import { isLogicallyDeleted, validateOptionalDeletedAtField } from "./logicalDelete";
 import {
   listVisibleLayoutVariants,
@@ -75,6 +76,8 @@ export function validateLayoutManifest(manifest: LayoutManifest): Array<{ path: 
       const issue = validateOptionalDeletedAtField(v.deletedAt, `variants[${i}].deletedAt`);
       if (issue) issues.push(issue);
     }
+    const publishIssue = validatePublishStatusField(v.publishStatus, `variants[${i}].publishStatus`);
+    if (publishIssue) issues.push(publishIssue);
   }
   return issues;
 }

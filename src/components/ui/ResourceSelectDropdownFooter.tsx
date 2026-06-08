@@ -27,7 +27,7 @@ export function ResourceSelectDropdownFooter({
   }));
 
   return (
-    <>
+    <div className="resource-select-dropdown">
       {menu}
       <div
         className="resource-select-dropdown__footer"
@@ -40,6 +40,6 @@ export function ResourceSelectDropdownFooter({
           className="resource-select-dropdown__actions"
         />
       </div>
-    </>
+    </div>
   );
 }

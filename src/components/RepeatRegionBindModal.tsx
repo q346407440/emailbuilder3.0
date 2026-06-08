@@ -28,6 +28,7 @@ import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerRadioCell } from "./ui/SelectablePickerRadioCell";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 import { PickerTreeTable } from "./ui/PickerTreeTable";
+import { toastWarning } from "../lib/appToast";
 
 // 单层绑定向导：列表变量 → 字段映射（嵌套通过选中内层容器再绑定，不在此弹窗多层配置）。
 type WizardStepId = "parentSlot" | "parentMap";
@@ -175,7 +176,7 @@ export function RepeatRegionBindModal({
   const goNextWizardStep = () => {
     const err = validateWizardStep(currentWizardStep?.id);
     if (err) {
-      window.alert(err);
+      toastWarning(err);
       return;
     }
     setWizardStepIndex((i) => Math.min(i + 1, wizardSteps.length - 1));
@@ -309,7 +310,7 @@ export function RepeatRegionBindModal({
                     onClick={() => {
                       const err = validateWizardStep(currentWizardStep?.id);
                       if (err) {
-                        window.alert(err);
+                        toastWarning(err);
                         return;
                       }
                       onApply();

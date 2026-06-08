@@ -109,6 +109,20 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
       null
     );
   });
+
+  it("heightMode=fill 时启用 fillStretchHeight", () => {
+    const layout = resolveWrapperBackgroundImageCanvasLayout({
+      wrapperStyle: {
+        widthMode: "fill",
+        heightMode: "fill",
+        backgroundImage: { src: "https://example.com/x.jpg", fit: "cover" },
+      },
+    });
+    assert.ok(layout);
+    assert.equal(layout.fillStretchHeight, true);
+    assert.equal(layout.fixedCanvasHeight, undefined);
+    assert.equal(layout.outerBoxCss.height, "100%");
+  });
 });
 
 describe("overlayCellAlignForWrapperBackground", () => {

@@ -1,3 +1,4 @@
+import type { PublishStatus } from "../publish-status-contract/types";
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
 import type { VisibilityRule } from "../visibility-contract/types";
 import type { ThemeRef } from "./themeRef";
@@ -472,6 +473,8 @@ export type EmailPayload = {
 export type EmailListItem = {
   emailKey: string;
   displayName: string;
+  /** 模板层发布状态（来自 meta.json） */
+  publishStatus: PublishStatus;
   templateId: string;
   templateVersion: number;
   hasPayload: boolean;

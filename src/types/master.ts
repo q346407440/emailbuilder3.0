@@ -28,6 +28,8 @@ export type SectionMaster = {
   catalogRootBlockId: string;
   blocks: EmailTemplate["blocks"];
   blockMeta: EmailTemplate["blockMeta"];
+  /** 逻辑删除时间（ISO）；模块库列表不展示，落盘文件保留 */
+  deletedAt?: string;
 };
 
 export type MasterKind = "blocks" | "sections";

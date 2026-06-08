@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ShopPrimaryButton, ShopSecondaryButton } from "./ShopFormControls";
+import { ShopDangerButton, ShopPrimaryButton, ShopSecondaryButton } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
 
 export type ConfirmDialogOptions = {
@@ -106,22 +106,26 @@ export function ConfirmDialogProvider({ children }: ProviderProps) {
           maskClosable={pending.maskClosable ?? true}
           closable
           destroyOnClose
+          wrapClassName="confirm-dialog-wrap"
           onCancel={() => finish(false)}
           footer={
-            <div className="shop-section-modal__footer-actions">
+            <div className="shop-action-button-group shop-section-modal__footer-actions">
               <ShopSecondaryButton onClick={() => finish(false)}>
                 {pending.cancelLabel ?? "取消"}
               </ShopSecondaryButton>
-              <ShopPrimaryButton
-                className={pending.danger ? "confirm-dialog__confirm--danger" : undefined}
-                onClick={() => finish(true)}
-              >
-                {pending.confirmLabel ?? "确定"}
-              </ShopPrimaryButton>
+              {pending.danger ? (
+                <ShopDangerButton onClick={() => finish(true)}>
+                  {pending.confirmLabel ?? "确定"}
+                </ShopDangerButton>
+              ) : (
+                <ShopPrimaryButton onClick={() => finish(true)}>
+                  {pending.confirmLabel ?? "确定"}
+                </ShopPrimaryButton>
+              )}
             </div>
           }
         >
-          <div className="confirm-dialog__body">{pending.message}</div>
+          {pending.message}
         </ShopSectionModal>
       ) : null}
     </ConfirmDialogContext.Provider>

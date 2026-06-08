@@ -22,11 +22,15 @@ describe("layout manifest helpers", () => {
   const base = {
     schemaVersion: LAYOUT_MANIFEST_SCHEMA_VERSION,
     activeLayoutVariantId: "default",
-    variants: [{ id: "default", label: "默认" }],
+    variants: [{ id: "default", label: "默认", publishStatus: "published" }],
   };
 
   it("追加新版式并可设为当前", () => {
-    const next = appendLayoutVariant(base, { id: "card", label: "卡片版" }, { makeActive: true });
+    const next = appendLayoutVariant(
+      base,
+      { id: "card", label: "卡片版", publishStatus: "draft" },
+      { makeActive: true }
+    );
     assert.equal(next.variants.length, 2);
     assert.equal(next.activeLayoutVariantId, "card");
   });

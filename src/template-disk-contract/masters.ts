@@ -26,6 +26,8 @@ export type NestedSectionMaster = {
   rootBlockId: string;
   catalogRootBlockId: string;
   root: NestedEmailBlock;
+  /** 逻辑删除时间（ISO）；存在则不在模块库列表展示 */
+  deletedAt?: string;
 };
 
 export type NestedMaster = NestedBlockMaster | NestedSectionMaster;

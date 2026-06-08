@@ -4,7 +4,8 @@
     "loyaltyAbnormalConfigItems",
     "loyaltyMerchantProductList",
     "loyaltyMerchantComplementSpuList",
-    "qwe"
+    "qwe",
+    "loyaltyMerchantSimilarSpuList"
   ],
   "slots": {
     "loyaltyAbnormalConfigItems": {
@@ -285,6 +286,125 @@
       "dataSource": {
         "type": "custom"
       }
+    },
+    "loyaltyMerchantSimilarSpuList": {
+      "label": "相似品列表",
+      "valueType": "collection",
+      "description": "双层 SPU 树：通过「选择商品」确定主 SPU，每条下由 mock 生成相似 SPU 子列表（5→4→3→2→1 循环）",
+      "itemFields": [
+        {
+          "key": "imageSrc",
+          "label": "商品图",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "imageAlt",
+          "label": "图片替代文字",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "name",
+          "label": "商品名",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "salePrice",
+          "label": "现价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "originalPrice",
+          "label": "原价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "badge",
+          "label": "角标",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "href",
+          "label": "商品链接",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "similarSpus",
+          "label": "相似品",
+          "valueType": "collection",
+          "required": false,
+          "itemFields": [
+            {
+              "key": "imageSrc",
+              "label": "商品图",
+              "valueType": "url",
+              "required": true
+            },
+            {
+              "key": "imageAlt",
+              "label": "图片替代文字",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "name",
+              "label": "商品名",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "salePrice",
+              "label": "现价",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "originalPrice",
+              "label": "原价",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "badge",
+              "label": "角标",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "href",
+              "label": "商品链接",
+              "valueType": "url",
+              "required": true
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 5
+        }
+      ],
+      "dataSource": {
+        "type": "remote",
+        "provider": "builtin",
+        "catalog": "products",
+        "sort": "catalogOrder",
+        "productConfig": {
+          "rowGranularity": "spu",
+          "rangeMode": "allProducts",
+          "productSelectionScope": "spuOnly",
+          "selectedSpuIds": [],
+          "skuSelection": [],
+          "selectedCollectionIds": []
+        }
+      },
+      "sceneCollectionPresetId": "loyalty-merchant-similar-spu-list",
+      "scene": "loyalty-merchant-admin",
+      "minItems": 10,
+      "maxItems": 10
     }
   },
   "values": {
@@ -866,6 +986,388 @@
         "badge": "—",
         "href": "https://example.com/products/zen-diffuser",
         "complementSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Pulse 智能手表 42mm 星空灰",
+            "name": "Pulse 智能手表",
+            "salePrice": "$149.00",
+            "originalPrice": "$199.00",
+            "badge": "新品",
+            "href": "https://example.com/products/pulse-watch"
+          }
+        ]
+      }
+    ],
+    "loyaltyMerchantSimilarSpuList": [
+      {
+        "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Aura 无线耳机 — 曜石黑",
+        "name": "Aura 无线耳机",
+        "salePrice": "$79.00",
+        "originalPrice": "$99.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/aura-earbuds",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Grip 手机支架 铝合金银",
+            "name": "Grip 手机支架",
+            "salePrice": "$19.00",
+            "originalPrice": "$29.00",
+            "badge": "—",
+            "href": "https://example.com/products/grip-stand"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Snap 便携相机 标准套装",
+            "name": "Snap 便携相机",
+            "salePrice": "$259.00",
+            "originalPrice": "$299.00",
+            "badge": "限时",
+            "href": "https://example.com/products/snap-camera"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Glow 护肤套装",
+            "name": "Glow 护肤套装",
+            "salePrice": "$45.00",
+            "originalPrice": "$60.00",
+            "badge": "—",
+            "href": "https://example.com/products/glow-skincare"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Stride 运动鞋 US8 黑白",
+            "name": "Stride 运动鞋",
+            "salePrice": "$89.00",
+            "originalPrice": "$120.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/stride-shoes"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/7856674/pexels-photo-7856674.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Story 精选套装 卷一平装",
+            "name": "Story 精选套装",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "badge": "—",
+            "href": "https://example.com/products/story-set"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Pulse 智能手表 42mm 星空灰",
+        "name": "Pulse 智能手表",
+        "salePrice": "$149.00",
+        "originalPrice": "$199.00",
+        "badge": "新品",
+        "href": "https://example.com/products/pulse-watch",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Snap 便携相机 标准套装",
+            "name": "Snap 便携相机",
+            "salePrice": "$259.00",
+            "originalPrice": "$299.00",
+            "badge": "限时",
+            "href": "https://example.com/products/snap-camera"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Glow 护肤套装",
+            "name": "Glow 护肤套装",
+            "salePrice": "$45.00",
+            "originalPrice": "$60.00",
+            "badge": "—",
+            "href": "https://example.com/products/glow-skincare"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Stride 运动鞋 US8 黑白",
+            "name": "Stride 运动鞋",
+            "salePrice": "$89.00",
+            "originalPrice": "$120.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/stride-shoes"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/7856674/pexels-photo-7856674.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Story 精选套装 卷一平装",
+            "name": "Story 精选套装",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "badge": "—",
+            "href": "https://example.com/products/story-set"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Grip 手机支架 铝合金银",
+        "name": "Grip 手机支架",
+        "salePrice": "$19.00",
+        "originalPrice": "$29.00",
+        "badge": "—",
+        "href": "https://example.com/products/grip-stand",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Glow 护肤套装",
+            "name": "Glow 护肤套装",
+            "salePrice": "$45.00",
+            "originalPrice": "$60.00",
+            "badge": "—",
+            "href": "https://example.com/products/glow-skincare"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Stride 运动鞋 US8 黑白",
+            "name": "Stride 运动鞋",
+            "salePrice": "$89.00",
+            "originalPrice": "$120.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/stride-shoes"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/7856674/pexels-photo-7856674.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Story 精选套装 卷一平装",
+            "name": "Story 精选套装",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "badge": "—",
+            "href": "https://example.com/products/story-set"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Snap 便携相机 标准套装",
+        "name": "Snap 便携相机",
+        "salePrice": "$259.00",
+        "originalPrice": "$299.00",
+        "badge": "限时",
+        "href": "https://example.com/products/snap-camera",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Stride 运动鞋 US8 黑白",
+            "name": "Stride 运动鞋",
+            "salePrice": "$89.00",
+            "originalPrice": "$120.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/stride-shoes"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/7856674/pexels-photo-7856674.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Story 精选套装 卷一平装",
+            "name": "Story 精选套装",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "badge": "—",
+            "href": "https://example.com/products/story-set"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Glow 护肤套装",
+        "name": "Glow 护肤套装",
+        "salePrice": "$45.00",
+        "originalPrice": "$60.00",
+        "badge": "—",
+        "href": "https://example.com/products/glow-skincare",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/7856674/pexels-photo-7856674.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Story 精选套装 卷一平装",
+            "name": "Story 精选套装",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "badge": "—",
+            "href": "https://example.com/products/story-set"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Stride 运动鞋 US8 黑白",
+        "name": "Stride 运动鞋",
+        "salePrice": "$89.00",
+        "originalPrice": "$120.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/stride-shoes",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Brew 咖啡机 哑光白",
+            "name": "Brew 咖啡机",
+            "salePrice": "$129.00",
+            "originalPrice": "$159.00",
+            "badge": "新品",
+            "href": "https://example.com/products/brew-coffee"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181376/pexels-photo-1181376.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Nova 轻薄本 16GB 512GB",
+            "name": "Nova 轻薄本",
+            "salePrice": "$899.00",
+            "originalPrice": "$999.00",
+            "badge": "—",
+            "href": "https://example.com/products/nova-laptop"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Zen 香薰机",
+            "name": "Zen 香薰机",
+            "salePrice": "$39.00",
+            "originalPrice": "$49.00",
+            "badge": "—",
+            "href": "https://example.com/products/zen-diffuser"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Aura 无线耳机 — 曜石黑",
+            "name": "Aura 无线耳机",
+            "salePrice": "$79.00",
+            "originalPrice": "$99.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/aura-earbuds"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Pulse 智能手表 42mm 星空灰",
+            "name": "Pulse 智能手表",
+            "salePrice": "$149.00",
+            "originalPrice": "$199.00",
+            "badge": "新品",
+            "href": "https://example.com/products/pulse-watch"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/7856674/pexels-photo-7856674.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Story 精选套装 卷一平装",
+        "name": "Story 精选套装",
+        "salePrice": "$32.00",
+        "originalPrice": "$42.00",
+        "badge": "—",
+        "href": "https://example.com/products/story-set",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181376/pexels-photo-1181376.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Nova 轻薄本 16GB 512GB",
+            "name": "Nova 轻薄本",
+            "salePrice": "$899.00",
+            "originalPrice": "$999.00",
+            "badge": "—",
+            "href": "https://example.com/products/nova-laptop"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Zen 香薰机",
+            "name": "Zen 香薰机",
+            "salePrice": "$39.00",
+            "originalPrice": "$49.00",
+            "badge": "—",
+            "href": "https://example.com/products/zen-diffuser"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Aura 无线耳机 — 曜石黑",
+            "name": "Aura 无线耳机",
+            "salePrice": "$79.00",
+            "originalPrice": "$99.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/aura-earbuds"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Pulse 智能手表 42mm 星空灰",
+            "name": "Pulse 智能手表",
+            "salePrice": "$149.00",
+            "originalPrice": "$199.00",
+            "badge": "新品",
+            "href": "https://example.com/products/pulse-watch"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Brew 咖啡机 哑光白",
+        "name": "Brew 咖啡机",
+        "salePrice": "$129.00",
+        "originalPrice": "$159.00",
+        "badge": "新品",
+        "href": "https://example.com/products/brew-coffee",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Zen 香薰机",
+            "name": "Zen 香薰机",
+            "salePrice": "$39.00",
+            "originalPrice": "$49.00",
+            "badge": "—",
+            "href": "https://example.com/products/zen-diffuser"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Aura 无线耳机 — 曜石黑",
+            "name": "Aura 无线耳机",
+            "salePrice": "$79.00",
+            "originalPrice": "$99.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/aura-earbuds"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Pulse 智能手表 42mm 星空灰",
+            "name": "Pulse 智能手表",
+            "salePrice": "$149.00",
+            "originalPrice": "$199.00",
+            "badge": "新品",
+            "href": "https://example.com/products/pulse-watch"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181376/pexels-photo-1181376.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Nova 轻薄本 16GB 512GB",
+        "name": "Nova 轻薄本",
+        "salePrice": "$899.00",
+        "originalPrice": "$999.00",
+        "badge": "—",
+        "href": "https://example.com/products/nova-laptop",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Aura 无线耳机 — 曜石黑",
+            "name": "Aura 无线耳机",
+            "salePrice": "$79.00",
+            "originalPrice": "$99.00",
+            "badge": "热卖",
+            "href": "https://example.com/products/aura-earbuds"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "imageAlt": "Pulse 智能手表 42mm 星空灰",
+            "name": "Pulse 智能手表",
+            "salePrice": "$149.00",
+            "originalPrice": "$199.00",
+            "badge": "新品",
+            "href": "https://example.com/products/pulse-watch"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "imageAlt": "Zen 香薰机",
+        "name": "Zen 香薰机",
+        "salePrice": "$39.00",
+        "originalPrice": "$49.00",
+        "badge": "—",
+        "href": "https://example.com/products/zen-diffuser",
+        "similarSpus": [
           {
             "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
             "imageAlt": "Pulse 智能手表 42mm 星空灰",

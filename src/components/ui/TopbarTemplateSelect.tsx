@@ -1,10 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import type { EmailListItem } from "../../types/email";
+import { isPublishedPublishStatus, type PublishStatus } from "../../publish-status-contract";
+import { normalizePublishStatus } from "../../lib/emailPublishStatus";
 import { logicalDeleteConfirmOptions } from "../../lib/logicalDeleteConfirm";
 import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
 import { useConfirmDialog } from "./ConfirmDialogProvider";
 import { TopbarResourceField } from "./TopbarResourceField";
+import { TOPBAR_RESOURCE_DROPDOWN_STYLE } from "./topbarResourceSelectLayout";
 import { ResourceSelectDropdownFooter } from "./ResourceSelectDropdownFooter";
+import { ResourceSelectOptionLabel } from "./ResourceSelectOptionLabel";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
 
@@ -12,6 +16,7 @@ type TopbarTemplateSelectProps = {
   items: EmailListItem[];
   value: string | null;
   disabled?: boolean;
+  busy?: boolean;
   renaming?: boolean;
   creating?: boolean;
   onSelect: (emailKey: string) => void;
@@ -19,12 +24,15 @@ type TopbarTemplateSelectProps = {
   onDelete?: () => Promise<void>;
   deleting?: boolean;
   onOpenCreate?: () => void;
+  onOpenCopy?: () => void;
+  onSetPublishStatus?: (status: PublishStatus) => Promise<void>;
 };
 
 export function TopbarTemplateSelect({
   items,
   value,
   disabled,
+  busy,
   renaming,
   creating,
   onSelect,
@@ -32,6 +40,8 @@ export function TopbarTemplateSelect({
   onDelete,
   deleting,
   onOpenCreate,
+  onOpenCopy,
+  onSetPublishStatus,
 }: TopbarTemplateSelectProps) {
   const { confirm } = useConfirmDialog();
   const [selectOpen, setSelectOpen] = useState(false);
@@ -43,6 +53,9 @@ export function TopbarTemplateSelect({
     () => items.find((it) => it.emailKey === value) ?? null,
     [items, value]
   );
+
+  const templatePublished =
+    currentItem !== null && isPublishedPublishStatus(normalizePublishStatus(currentItem.publishStatus));
 
   const handleTemplatePick = useCallback(
     (raw: unknown) => {
@@ -70,9 +83,8 @@ export function TopbarTemplateSelect({
     if (!currentItem || !onDelete) return;
     const ok = await confirm(
       logicalDeleteConfirmOptions({
-        title: "逻辑删除邮件模板",
-        resourcePhrase: `邮件模板「${currentItem.displayName}」`,
-        fileHint: `data/emails/${currentItem.emailKey}/meta.json`,
+        kind: "emailTemplate",
+        name: currentItem.displayName,
       })
     );
     if (ok) void onDelete();
@@ -93,24 +105,50 @@ export function TopbarTemplateSelect({
     }
   };
 
+  const selectDisabled = disabled || busy;
+  const actionBusy = busy || creating || deleting || renaming;
+
   const resourceActions = [
     {
       id: "create",
       label: "新建",
-      disabled: disabled || creating || !onOpenCreate,
+      disabled: selectDisabled || creating || !onOpenCreate,
       onClick: () => onOpenCreate?.(),
+    },
+    {
+      id: "copy",
+      label: "复制",
+      disabled: selectDisabled || creating || !currentItem || !onOpenCopy,
+      onClick: () => onOpenCopy?.(),
     },
     {
       id: "rename",
       label: "重命名",
-      disabled: disabled || !currentItem || creating || deleting,
+      disabled: selectDisabled || !currentItem || actionBusy,
       onClick: openRename,
     },
+    ...(onSetPublishStatus
+      ? [
+          templatePublished
+            ? {
+                id: "unpublish",
+                label: "撤回发布",
+                disabled: selectDisabled || actionBusy || !currentItem,
+                onClick: () => void onSetPublishStatus("draft"),
+              }
+            : {
+                id: "publish",
+                label: "发布模板",
+                disabled: selectDisabled || actionBusy || !currentItem,
+                onClick: () => void onSetPublishStatus("published"),
+              },
+        ]
+      : []),
     {
       id: "delete",
       label: "删除",
       danger: true,
-      disabled: disabled || !currentItem || !onDelete || creating || deleting,
+      disabled: selectDisabled || !currentItem || !onDelete || actionBusy,
       onClick: () => void confirmDelete(),
     },
   ];
@@ -119,29 +157,35 @@ export function TopbarTemplateSelect({
     <>
       <TopbarResourceField label="邮件模板" variant="email-template">
         <ShopSelect
+          className="topbar__select"
           value={value ?? undefined}
           placeholder={items.length ? undefined : "暂无模板"}
-          disabled={disabled}
+          disabled={selectDisabled}
           open={selectOpen}
           onDropdownVisibleChange={setSelectOpen}
-          popupMatchSelectWidth
+          popupMatchSelectWidth={false}
+          dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
           getPopupContainer={() => document.body}
           dropdownRender={(menu) => (
             <ResourceSelectDropdownFooter
               menu={menu}
               actions={resourceActions}
               actionsAriaLabel="邮件模板操作"
-              busy={creating || deleting || renaming}
+              busy={actionBusy}
               onAfterAction={() => setSelectOpen(false)}
             />
           )}
           onChange={handleTemplatePick}
         >
-          {items.map((it) => (
-            <ShopSelect.Option key={it.emailKey} value={it.emailKey}>
-              {it.displayName?.trim() || it.emailKey}
-            </ShopSelect.Option>
-          ))}
+          {items.map((it) => {
+            const published = isPublishedPublishStatus(normalizePublishStatus(it.publishStatus));
+            const label = it.displayName?.trim() || it.emailKey;
+            return (
+              <ShopSelect.Option key={it.emailKey} value={it.emailKey}>
+                <ResourceSelectOptionLabel label={label} published={published} />
+              </ShopSelect.Option>
+            );
+          })}
         </ShopSelect>
       </TopbarResourceField>
 

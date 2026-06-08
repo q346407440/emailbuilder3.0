@@ -1,23 +1,40 @@
 import { useCallback, useMemo, useState } from "react";
+import type { AiStepUiState } from "../../layout-variant-ai-contract/progress";
 import type { LayoutManifest } from "../../layout-variant-contract/types";
+import { isPublishedPublishStatus, type PublishStatus } from "../../publish-status-contract";
+import { normalizePublishStatus } from "../../lib/emailPublishStatus";
 import { logicalDeleteConfirmOptions } from "../../lib/logicalDeleteConfirm";
 import { sortVisibleLayoutVariantsByCreatedDesc } from "../../lib/layoutVariantLogicalDelete";
 import { useConfirmDialog } from "./ConfirmDialogProvider";
 import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
 import { TopbarResourceField } from "./TopbarResourceField";
+import { TOPBAR_RESOURCE_DROPDOWN_STYLE } from "./topbarResourceSelectLayout";
 import { ResourceSelectDropdownFooter } from "./ResourceSelectDropdownFooter";
+import { ResourceSelectOptionLabel } from "./ResourceSelectOptionLabel";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
+import {
+  LayoutVariantCreateModal,
+  type LayoutVariantCreateModalMode,
+  type LayoutVariantCreateSubmit,
+} from "./LayoutVariantCreateModal";
 
 type TopbarLayoutVariantSelectProps = {
   manifest: LayoutManifest | null;
   value: string | null;
   disabled?: boolean;
   busy?: boolean;
+  aiPipelineSteps?: AiStepUiState[] | null;
   onSelect: (layoutVariantId: string) => void;
-  onCreate: (label: string) => Promise<void>;
+  onCreate: (
+    label: string,
+    options?: { copyFromLayoutVariantId?: string; designImageFile?: File }
+  ) => Promise<void>;
+  /** 新建版式弹窗关闭时清理 AI 进度（如失败后点取消） */
+  onCreateModalClosed?: () => void;
   onRename: (label: string) => Promise<void>;
   onDelete?: () => Promise<void>;
+  onSetPublishStatus?: (status: PublishStatus) => Promise<void>;
 };
 
 /** 场景级版式切换（大结构变体） */
@@ -26,14 +43,18 @@ export function TopbarLayoutVariantSelect({
   value,
   disabled,
   busy,
+  aiPipelineSteps,
   onSelect,
   onCreate,
+  onCreateModalClosed,
   onRename,
   onDelete,
+  onSetPublishStatus,
 }: TopbarLayoutVariantSelectProps) {
   const { confirm } = useConfirmDialog();
   const [selectOpen, setSelectOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [createModalMode, setCreateModalMode] = useState<LayoutVariantCreateModalMode>("create");
   const [renameOpen, setRenameOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftError, setDraftError] = useState<string | null>(null);
@@ -49,7 +70,14 @@ export function TopbarLayoutVariantSelect({
     return options.find((v) => v.id === activeId) ?? options[0] ?? null;
   }, [manifest, options, value]);
 
+  const copySourceLabel = currentVariant?.label?.trim() || currentVariant?.id;
+
   const canDeleteLayout = options.length > 1 && Boolean(currentVariant);
+  const currentPublishStatus = currentVariant
+    ? normalizePublishStatus(currentVariant.publishStatus)
+    : null;
+  const layoutPublished =
+    currentPublishStatus !== null && isPublishedPublishStatus(currentPublishStatus);
 
   const handlePick = useCallback(
     (raw: unknown) => {
@@ -73,16 +101,15 @@ export function TopbarLayoutVariantSelect({
     setDraftError(null);
   };
 
-  const closeCreate = () => {
-    if (busy) return;
-    setCreateOpen(false);
-    setDraftError(null);
+  const openCreateModal = (mode: LayoutVariantCreateModalMode) => {
+    setCreateModalMode(mode);
+    setCreateModalOpen(true);
   };
 
-  const openCreate = () => {
-    setDraftName("");
-    setDraftError(null);
-    setCreateOpen(true);
+  const closeCreateModal = () => {
+    if (busy) return;
+    setCreateModalOpen(false);
+    onCreateModalClosed?.();
   };
 
   const submitRename = async () => {
@@ -104,27 +131,25 @@ export function TopbarLayoutVariantSelect({
     if (!currentVariant || !onDelete || !canDeleteLayout) return;
     const ok = await confirm(
       logicalDeleteConfirmOptions({
-        title: "逻辑删除版式",
-        resourcePhrase: `版式「${currentVariant.label}」`,
-        fileHint: "layout-manifest.json 中对应 variants 项的 deletedAt",
+        kind: "layoutVariant",
+        name: currentVariant.label,
       })
     );
     if (ok) void onDelete();
   };
 
-  const submitCreate = async () => {
-    const normalized = draftName.trim();
-    if (!normalized) {
-      setDraftError("版式名称不能为空");
-      return;
+  const submitCreateModal = async (payload: LayoutVariantCreateSubmit) => {
+    if (payload.kind === "copy") {
+      await onCreate(
+        payload.label,
+        currentVariant ? { copyFromLayoutVariantId: currentVariant.id } : undefined
+      );
+    } else if (payload.kind === "ai") {
+      await onCreate(payload.label, { designImageFile: payload.imageFile });
+    } else {
+      await onCreate(payload.label);
     }
-    setDraftError(null);
-    try {
-      await onCreate(normalized);
-      setCreateOpen(false);
-    } catch {
-      setDraftError("创建失败，请稍后重试");
-    }
+    setCreateModalOpen(false);
   };
 
   if (!manifest) return null;
@@ -136,20 +161,43 @@ export function TopbarLayoutVariantSelect({
     {
       id: "create",
       label: "新建",
-      disabled: disabled || busy,
-      onClick: openCreate,
+      disabled: selectDisabled,
+      onClick: () => openCreateModal("create"),
+    },
+    {
+      id: "copy",
+      label: "复制",
+      disabled: selectDisabled || !currentVariant,
+      onClick: () => openCreateModal("copy"),
     },
     {
       id: "rename",
       label: "重命名",
-      disabled: disabled || busy || !currentVariant,
+      disabled: selectDisabled || !currentVariant,
       onClick: openRename,
     },
+    ...(onSetPublishStatus
+      ? [
+          layoutPublished
+            ? {
+                id: "unpublish",
+                label: "撤回发布",
+                disabled: selectDisabled || !currentVariant,
+                onClick: () => void onSetPublishStatus("draft"),
+              }
+            : {
+                id: "publish",
+                label: "发布版式",
+                disabled: selectDisabled || !currentVariant,
+                onClick: () => void onSetPublishStatus("published"),
+              },
+        ]
+      : []),
     {
       id: "delete",
       label: "删除",
       danger: true,
-      disabled: disabled || busy || !canDeleteLayout || !onDelete,
+      disabled: selectDisabled || !canDeleteLayout || !onDelete,
       onClick: () => void confirmDelete(),
     },
   ];
@@ -163,7 +211,8 @@ export function TopbarLayoutVariantSelect({
           value={selectValue}
           open={selectOpen}
           onDropdownVisibleChange={setSelectOpen}
-          popupMatchSelectWidth
+          popupMatchSelectWidth={false}
+          dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
           onChange={handlePick}
           placeholder="选择版式"
           getPopupContainer={() => document.body}
@@ -177,50 +226,27 @@ export function TopbarLayoutVariantSelect({
             />
           )}
         >
-          {options.map((v) => (
-            <ShopSelect.Option key={v.id} value={v.id}>
-              {v.label?.trim() || v.id}
-            </ShopSelect.Option>
-          ))}
+          {options.map((v) => {
+            const published = isPublishedPublishStatus(normalizePublishStatus(v.publishStatus));
+            const label = v.label?.trim() || v.id;
+            return (
+              <ShopSelect.Option key={v.id} value={v.id}>
+                <ResourceSelectOptionLabel label={label} published={published} />
+              </ShopSelect.Option>
+            );
+          })}
         </ShopSelect>
       </TopbarResourceField>
 
-      {createOpen ? (
-        <ShopSectionModal
-          visible
-          title="新建版式结构"
-          onCancel={closeCreate}
-          maskClosable={!busy}
-          closable={!busy}
-          destroyOnClose
-          footer={
-            <div className="shop-section-modal__footer-actions">
-              <ShopSecondaryButton onClick={closeCreate} disabled={busy}>
-                取消
-              </ShopSecondaryButton>
-              <ShopPrimaryButton onClick={() => void submitCreate()} loading={busy}>
-                创建
-              </ShopPrimaryButton>
-            </div>
-          }
-        >
-          <div className="inspector-field">
-            <span className="inspector-field__label">版式名称</span>
-            <ShopInput
-              autoFocus
-              value={draftName}
-              maxLength={80}
-              placeholder="例如：居中流式版"
-              onChange={(e) => setDraftName(e.target.value)}
-              onPressEnter={() => void submitCreate()}
-            />
-            <span className="topbar__create-hint">
-              将创建空白版式（最小画布 + 默认样式预设）；单文件场景会先迁移为 default 版式再创建新版式。
-            </span>
-            {draftError ? <span className="topbar__rename-error">{draftError}</span> : null}
-          </div>
-        </ShopSectionModal>
-      ) : null}
+      <LayoutVariantCreateModal
+        visible={createModalOpen}
+        mode={createModalMode}
+        copySourceLabel={createModalMode === "copy" ? copySourceLabel : undefined}
+        busy={busy}
+        aiPipelineSteps={aiPipelineSteps}
+        onCancel={closeCreateModal}
+        onSubmit={submitCreateModal}
+      />
 
       {renameOpen ? (
         <ShopSectionModal

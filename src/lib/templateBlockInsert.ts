@@ -1,6 +1,8 @@
 import type { EmailBlock, EmailTemplate } from "../types/email";
 import type { TokenPresets } from "../types/tokenPreset";
+import type { BlockMaster } from "../types/master";
 import { BLOCK_CATALOG_ENTRIES, type BlockCatalogEntry } from "./blockDefaults";
+import { buildCatalogSampleBlock } from "./buildCatalogSampleBlock";
 import { prepareCatalogBlockForInsert } from "./prepareCatalogBlockForInsert";
 import { uniqueTemplateBlockId } from "./templateBlockId";
 
@@ -11,7 +13,7 @@ type InsertTarget = {
   insertIndex: number;
 };
 
-function resolveInsertTarget(
+export function resolveInsertTarget(
   template: EmailTemplate,
   selectedBlockId: string | null,
   mode: InsertBlockMode
@@ -55,12 +57,14 @@ export function insertCatalogBlockIntoTemplate(args: {
   entry: BlockCatalogEntry;
   /** 用于将样例 $themeRef 物化为当前邮件样式档位的字面量；不传则用插入兜底值。 */
   tokenPresets?: TokenPresets | null;
+  /** 运营保存的 block 母版（masterId → BlockMaster）；缺省则仅使用代码出厂默认。 */
+  blockMastersById?: Readonly<Record<string, BlockMaster>> | null;
 }): { template: EmailTemplate; insertedBlockId: string } {
-  const { template, selectedBlockId, mode, entry, tokenPresets } = args;
+  const { template, selectedBlockId, mode, entry, tokenPresets, blockMastersById } = args;
   const { parentId, insertIndex } = resolveInsertTarget(template, selectedBlockId, mode);
   const next = structuredClone(template) as EmailTemplate;
   const newId = uniqueTemplateBlockId(next, entry.runtimeType);
-  const rawBlock = entry.buildSampleBlock(newId, parentId);
+  const rawBlock = buildCatalogSampleBlock(entry, newId, parentId, blockMastersById);
   const newBlock = prepareCatalogBlockForInsert(
     {
       ...structuredClone(rawBlock),

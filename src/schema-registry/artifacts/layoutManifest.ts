@@ -9,4 +9,8 @@ export const layoutManifestArtifact: SchemaArtifactDef = {
   diskPatterns: ["data/emails/*/layout-manifest.json"],
   validate: (raw) =>
     validateLayoutManifest(raw as LayoutManifest).map((i) => ({ path: i.path, reason: i.reason })),
+  migrateScripts: {
+    preview: "migrate:publish-status",
+    write: "migrate:publish-status:write",
+  },
 };

@@ -127,7 +127,7 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     id: "inject.buttonInnerPadding",
     kind: "injectedAtRender",
     title: "按钮内边距",
-    summary: "按钮胶囊内边距由渲染层统一固定，不写入 JSON。",
+    summary: "按钮胶囊内边距与行高由渲染层统一固定（行高避免继承 td line-height:0 导致垂直 padding 失效），不写入 JSON。",
     valueKey: "BUTTON_INNER_PADDING",
     implementation: "src/render-defaults-contract/values.ts",
   },
@@ -277,7 +277,7 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     blockTypes: ["button", "divider", "progress"],
     jsonPath:
       "props.buttonStyle.widthMode | props.buttonStyle.width | props.lineWidthMode | props.lineWidth | props.barWidthMode | props.barWidth",
-    implementation: "src/components/EmailPreview.tsx · componentBodyWidthCss",
+    implementation: "src/lib/canvasDimensionResolve.ts · resolveComponentBodyWidthCss",
   },
   {
     id: "semantic.layoutContentAlignHorizontal",

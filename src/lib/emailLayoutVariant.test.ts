@@ -12,8 +12,8 @@ const manifest: LayoutManifest = {
   schemaVersion: "1.0.0",
   activeLayoutVariantId: "card",
   variants: [
-    { id: "card", label: "卡片分段" },
-    { id: "centered", label: "居中流式" },
+    { id: "card", label: "卡片分段", publishStatus: "published" },
+    { id: "centered", label: "居中流式", publishStatus: "published" },
   ],
 };
 

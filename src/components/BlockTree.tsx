@@ -29,6 +29,8 @@ type Props = {
   onSelect: (ref: VirtualBlockRef | null) => void;
   variant?: "panel" | "embedded";
   title?: string;
+  blockErrorIds?: ReadonlySet<string>;
+  blockWarnIds?: ReadonlySet<string>;
 };
 
 function RepeatTreeTag({ template, tag }: { template: EmailTemplate; tag: RepeatTreeBlockTag }) {
@@ -59,6 +61,8 @@ function Row({
   repeatTag,
   repeatGroupStripe,
   template,
+  hasValidationError,
+  hasValidationWarning,
 }: {
   blockTreeRowId: string;
   depth: number;
@@ -71,6 +75,8 @@ function Row({
   repeatTag: RepeatTreeBlockTag | null;
   repeatGroupStripe: RepeatTreeBlockTag | null;
   template: EmailTemplate;
+  hasValidationError?: boolean;
+  hasValidationWarning?: boolean;
 }) {
   const stripePalette = repeatGroupStripe ? repeatTreeTagPalette(repeatGroupStripe.colorIndex) : null;
 
@@ -78,6 +84,8 @@ function Row({
     <div
       className={`block-tree__row ${selected ? "block-tree__row--selected" : ""} ${
         repeatGroupStripe ? "block-tree__row--repeat-group" : ""
+      } ${hasValidationError ? "block-tree__row--has-error" : ""} ${
+        hasValidationWarning && !hasValidationError ? "block-tree__row--has-warn" : ""
       }`}
       data-block-tree-row={blockTreeRowId}
       style={{
@@ -101,6 +109,11 @@ function Row({
       <ShopSecondaryButton className="block-tree__label" onClick={onClick}>
         <span className="block-tree__label-inner">
           <span className="block-tree__label-text">{label}</span>
+          {hasValidationError ? (
+            <span className="block-tree__issue-dot block-tree__issue-dot--error" aria-hidden />
+          ) : hasValidationWarning ? (
+            <span className="block-tree__issue-dot block-tree__issue-dot--warn" aria-hidden />
+          ) : null}
           {repeatTag ? <RepeatTreeTag template={template} tag={repeatTag} /> : null}
         </span>
       </ShopSecondaryButton>
@@ -137,6 +150,8 @@ export function BlockTree({
   onSelect,
   variant = "panel",
   title = "区块结构",
+  blockErrorIds,
+  blockWarnIds,
 }: Props) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -253,6 +268,8 @@ export function BlockTree({
           repeatTag={repeatTag}
           repeatGroupStripe={repeatGroupStripe}
           template={sourceTemplate}
+          hasValidationError={blockErrorIds?.has(physicalId)}
+          hasValidationWarning={blockWarnIds?.has(physicalId)}
         />
         {hasKids && isOpen(blockId)
           ? children.map((child) => renderNode(child, depth + 1))

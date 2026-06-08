@@ -46,4 +46,5 @@ export const NESTED_SECTION_MASTER_ENVELOPE_KEYS = new Set([
   "rootBlockId",
   "catalogRootBlockId",
   "root",
+  "deletedAt",
 ]);

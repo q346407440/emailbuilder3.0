@@ -41,9 +41,9 @@ describe("fetchTemplatesAndValidatePayload", () => {
       schemaVersion: "1.0.0",
       activeLayoutVariantId: "default",
       variants: [
-        { id: "default", label: "默认" },
-        { id: "123", label: "123", deletedAt: "2026-05-29T06:45:47.850Z" },
-        { id: "spu-sku", label: "SPU+SKU" },
+        { id: "default", label: "默认", publishStatus: "published" },
+        { id: "123", label: "123", deletedAt: "2026-05-29T06:45:47.850Z", publishStatus: "published" },
+        { id: "spu-sku", label: "SPU+SKU", publishStatus: "published" },
       ],
     };
     const tpl: EmailTemplate = {

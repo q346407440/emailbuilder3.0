@@ -4,7 +4,8 @@ import type { ProjectIconAsset, ProjectIconManifest } from "../types/iconAsset";
 import { listProjectIconAssets } from "../api/client";
 import { readIconBlockProps } from "../lib/iconBlock";
 import { Field } from "./ui/Field";
-import { ShopInput, ShopSelect } from "./ui/ShopFormControls";
+import { ShopSelect } from "./ui/ShopFormControls";
+import { UrlAssetUploadInput } from "./ui/UrlAssetUploadInput";
 
 type IconSrcUiMode = "url" | "library";
 
@@ -118,10 +119,11 @@ export function IconSrcEditor({
           }
           headerExtra={srcHeaderExtra}
         >
-          <ShopInput
+          <UrlAssetUploadInput
+            uploadKind="icon"
             value={srcValue}
             disabled={srcLocked}
-            onChange={(e) => onPatch({ "props.src": e.target.value })}
+            onChange={(next) => onPatch({ "props.src": next })}
           />
         </Field>
       ) : null}

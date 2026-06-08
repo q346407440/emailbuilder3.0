@@ -5,6 +5,9 @@ import {
   EMAIL_CANVAS_AUTO_SCROLL_ON_BLOCK_SELECT,
   EMAIL_CANVAS_SCROLL_OVERFLOW_X,
   EMAIL_CANVAS_SCROLL_OVERFLOW_Y,
+  EMAIL_CANVAS_VIEWPORT_DESKTOP_PX,
+  EMAIL_CANVAS_VIEWPORT_MOBILE_PX,
+  resolveCanvasPreviewViewportWidth,
 } from "./values";
 
 test("画布选中联动：禁止自动 scrollIntoView", () => {
@@ -14,6 +17,13 @@ test("画布选中联动：禁止自动 scrollIntoView", () => {
 test("画布滚动区：纵向可滚、横向 hidden", () => {
   assert.equal(EMAIL_CANVAS_SCROLL_OVERFLOW_Y, "auto");
   assert.equal(EMAIL_CANVAS_SCROLL_OVERFLOW_X, "hidden");
+});
+
+test("预览视窗宽：桌面与版心同源，移动 375", () => {
+  assert.equal(EMAIL_CANVAS_VIEWPORT_DESKTOP_PX, 600);
+  assert.equal(EMAIL_CANVAS_VIEWPORT_MOBILE_PX, 375);
+  assert.equal(resolveCanvasPreviewViewportWidth("desktop"), 600);
+  assert.equal(resolveCanvasPreviewViewportWidth("mobile"), 375);
 });
 
 test("EDITOR_CANVAS_RULE_IDS 无重复", () => {
