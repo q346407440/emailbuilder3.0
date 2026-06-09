@@ -15,7 +15,8 @@ export function buildPromptExampleUsageNotice(): string {
 - **助手函数**请用 **COLORS + 字面量 px** 写 template 树；**禁止** \`$themeRef\`、\`bindings\`、\`themeRef()\`、\`themeBinding()\`（tokenPresets 仍须输出，但 buildS* 不绑主题）。
 - 尖括号 \`<…>\`、省略号 \`…\` 处必须依据**附带设计图**与 **user text 正文**填写。
 - **禁止**照抄示例里的占位符字面量；**禁止**因示例出现过某 slotId、颜色、字号、模块名就在每个模板里复用同一套。
-- 仅 **user text** 里的 **slot 对照表**（\`PEXELS.*\` / \`ICON.*\` 变量名）与块 id 前缀 \`P\` 为本次运行真值；须原样引用变量名，**勿**写 URL 字面量或 \`const PEXELS\` / \`const ICON\`。`;
+- 仅 **user text** 里的 **slot 对照表**（\`PEXELS.*\` / \`ICON["…"]\` 变量名）与块 id 前缀 \`P\` 为本次运行真值；须原样引用变量名，**勿**写 URL 字面量或 \`const PEXELS\` / \`const ICON\`。
+- **ICON 槽 id 含连字符**（如 \`icon-instagram\`）必须用 **括号访问** \`ICON["icon-instagram"]\`；**禁止** \`ICON.icon-instagram\`（JS 会当成减法导致运行失败）。`;
 }
 
 /** MR:AssetSlots — 阶段①专用：示例说明（无 PEXELS 注入）。 */
@@ -37,6 +38,11 @@ export function buildAssetSlotsSchemaExampleSection(): string {
       "slotId": "<语义化 id，如 hero / block1 / keynote>",
       "query": "<英文 Pexels 搜索词>",
       "targetWidth": "<整数像素，可选>"
+    },
+    {
+      "slotId": "<supply-primer 等产品缩略图 id>",
+      "query": "<英文：单品描述，如 light blue paint primer can product>",
+      "targetWidth": 200
     }
   ],
   "iconSlots": [
@@ -53,10 +59,11 @@ export function buildAssetSlotsSchemaExampleSection(): string {
 
 | 字段 | 怎么填 |
 |------|--------|
-| imageSlots | 设计图里**每一张需要 Pexels 的摄影图**各一条；**每图一槽** |
+| imageSlots | 设计图里**每一张需要 Pexels 的摄影图**各一条；**每图一槽**（含首屏/模块大图 **与** 商品宫格内每个产品缩略图） |
 | imageSlots.slotId | 语义化命名（hero、block1、ugc1、keynote…），与手工 mjs 的 \`PEXELS.*\` 键一致即可 |
 | imageSlots.query | **英文**、可搜；描述画面，**不是 URL** |
 | imageSlots.targetWidth | 横图约 600、方图/商品约 400（可按视觉微调） |
+| **商品/工具缩略图** | 设计图 **PAINTING ESSENTIALS / 产品网格** 等模块里**每个产品图各一条** slot；slotId 如 \`supply-ceiling-paint\`、\`supply-primer\`；query 描述单品（paint can / roller kit）；targetWidth 约 **130–200** |
 | iconSlots | 信任标、社媒、品牌标等；**禁止 URL** |
 | iconSlots.pack + iconQuery | tabler / simple-icons / lucide + 包内图标名 |
 | 纯文字 logo / wordmark | **不要**占 imageSlot（阶段②用 text 写） |
@@ -69,6 +76,7 @@ export function buildAssetSlotsApiDomainSection(): string {
 
 - **只输出** \`imageSlots\`、\`iconSlots\` 两个顶层键
 - 有几张图 / 几个标就几个 slot；slotId 在同一 JSON 内唯一
+- **场景大图与产品缩略图都要列**：模块 hero / 卧室图 / 玄关图 **以及** 商品宫格里每个油漆罐、工具包等 **各占一条 imageSlot**；勿只列 4 张场景图而漏产品区
 - query / iconQuery 只写搜索条件，**禁止** images.pexels.com / cdn.jsdelivr.net
 - 颜色、文案、模块结构、tokenPresets：**不要在本阶段输出**（阶段② \`MR:MjsGenerate\` 再看设计图写 mjs）`;
 }
@@ -100,7 +108,8 @@ export function buildMjsApiDomainSection(): string {
 - **禁止** \`props.mainAlign\`、\`props.crossAlign\`（已废弃，写了必 validate 失败）
 
 ### 图源与图标
-- 只用 user 消息注入的 \`PEXELS.*\`、\`ICON.*\` 变量名
+- 只用 user 消息注入的 \`PEXELS.*\`、\`ICON["…"]\` 变量名
+- **ICON 槽 id 含连字符** → 必须 \`ICON["icon-instagram"]\`；**禁止** \`ICON.icon-instagram\`（运行时会 ReferenceError）
 - 禁止在 mjs 里写 https:// 字面量
 
 ### 常见反模式
@@ -177,8 +186,8 @@ function gridBlock(id, name, columns, children, opts = {}) {
   };
 }
 
-/** 色卡单元：blob layout + 名称 text（供 grid 每格复用） */
-function colorSwatch(id, name, color) {
+/** 色卡单元：blobSize 为色块直径，按设计图传入 */
+function colorSwatch(id, name, color, blobSize) {
   return {
     id,
     type: 'layout',
@@ -186,8 +195,7 @@ function colorSwatch(id, name, color) {
     props: { direction: 'vertical', gapMode: 'fixed', gap: '8px' },
     wrapperStyle: {
       contentAlign: { horizontal: 'center', vertical: 'top' },
-      widthMode: 'fixed',
-      width: '<按设计图像素>',
+      widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
       borderRadius: { mode: 'unified', radius: '0' },
@@ -199,9 +207,9 @@ function colorSwatch(id, name, color) {
         blockMeta: { blockType: 'layout.container', name: '色卡blob' },
         wrapperStyle: {
           widthMode: 'fixed',
-          width: '<Npx>',
+          width: blobSize,
           heightMode: 'fixed',
-          height: '<Npx>',
+          height: blobSize,
           backgroundColor: color,
           border: borderNone(),
           borderRadius: { mode: 'unified', radius: '9999px' },
@@ -226,15 +234,24 @@ gridBlock(\`\${P}-s4-colors\`, '色卡网格', 2, [
 **✅ 正确（每格一个 layout 单元）：**
 \`\`\`javascript
 gridBlock(\`\${P}-s4-colors\`, '色卡网格', 2, [
-  colorSwatch(\`\${P}-s4-s1\`, 'Daily Greens', '#809678'),
-  colorSwatch(\`\${P}-s4-s2\`, 'Deep Dive', '#365D73'),
-  colorSwatch(\`\${P}-s4-s3\`, 'Goodnight Moon', '#243447'),
-  colorSwatch(\`\${P}-s4-s4\`, 'OMGreen', '#B3CBB9'),
+  colorSwatch(\`\${P}-s4-s1\`, 'Daily Greens', '#809678', '<按设计图色块直径 px>'),
+  colorSwatch(\`\${P}-s4-s2\`, 'Deep Dive', '#365D73', '<按设计图色块直径 px>'),
+  colorSwatch(\`\${P}-s4-s3\`, 'Goodnight Moon', '#243447', '<按设计图色块直径 px>'),
+  colorSwatch(\`\${P}-s4-s4\`, 'OMGreen', '#B3CBB9', '<按设计图色块直径 px>'),
 ], { alignH: 'left', gap: '16px' })
 \`\`\`
 
 - children 数量通常为 columns 的整数倍（2 列 × 2 行 = 4 格）
-- 权益三列等同理：每格 \`layout\` 包 icon + text，勿在 grid 下直接平铺裸 icon/text`;
+- 权益三列等同理：每格 \`layout\` 包 icon + text，勿在 grid 下直接平铺裸 icon/text
+- **产品宫格**：每格用 \`productCard(id, cardName, productName, PEXELS['supply-…'], '英文 alt', imgWidth, imgHeight)\`；**缩略图宽高须按设计图填写**，禁止照抄示例占位；阶段①须已为每个产品图声明 imageSlot
+
+\`\`\`javascript
+gridBlock(\`\${P}-s5-products\`, '产品网格', 3, [
+  productCard(\`\${P}-s5-p1\`, '天花板漆', 'Ceiling Paint', PEXELS['supply-ceiling-paint'], 'ceiling paint can', '<w>', '<h>'),
+  productCard(\`\${P}-s5-p2\`, '室内底漆', 'Interior Primer', PEXELS['supply-primer'], 'interior primer can', '<w>', '<h>'),
+  productCard(\`\${P}-s5-p3\`, '工具包', '5-Piece Paint Kit', PEXELS['supply-paint-kit'], 'paint roller brush kit', '<w>', '<h>'),
+], { gap: '16px' })
+\`\`\``;
 }
 
 /** text / button / layout 三种形态对照（防混写）。 */
@@ -281,6 +298,8 @@ export function buildMjsBlockTypeCheatSheetSection(): string {
 /** 助手函数 + buildS* + 落盘：字面量写法（无 themeRef/bindings）。 */
 export function buildMjsApiHelperSnippetsSection(): string {
   return `## 助手函数（template 树只用 COLORS + 字面量 px；勿写 themeRef / bindings）
+
+**摄影图 / 产品缩略图尺寸**：\`coverImage\` / \`imageContainer\` / \`barcodeImage\` 的 height，以及 \`productCard\` 的 imgWidth/imgHeight，**只在 buildS* 调用处按设计图写 px**；助手定义内禁止默认 \`'100px'\` / \`'240px'\` 等可照抄常数。
 
 \`\`\`javascript
 function borderNone() {
@@ -440,16 +459,60 @@ function coverImage(id, name, src, alt, height) {
   };
 }
 
-/** 条形码 / 纯色条也用 image + backgroundImage（勿写成无底图的 layout） */
-function barcodeImage(id, name, height = '80px') {
+/** 条形码 / 纯色条也用 image + backgroundImage；height 按设计图传入 */
+function barcodeImage(id, name, height) {
   return coverImage(id, name, '#', 'barcode', height);
+}
+
+/** imgWidth/imgHeight 按设计图产品缩略图区域传入 */
+function productCard(id, cardName, productName, imageSrc, imageAlt, imgWidth, imgHeight) {
+  const alt = imageAlt ?? productName;
+  return {
+    id,
+    type: 'layout',
+    blockMeta: { blockType: 'layout.container', name: cardName },
+    props: { direction: 'vertical', gapMode: 'fixed', gap: '12px' },
+    wrapperStyle: {
+      contentAlign: { horizontal: 'center', vertical: 'top' },
+      widthMode: 'hug',
+      heightMode: 'hug',
+      border: borderNone(),
+      borderRadius: { mode: 'unified', radius: '0' },
+    },
+    children: [
+      {
+        id: \`\${id}-img\`,
+        type: 'image',
+        blockMeta: { blockType: 'content.image', name: \`\${productName}图\` },
+        wrapperStyle: {
+          contentAlign: { horizontal: 'center', vertical: 'top' },
+          widthMode: 'fixed',
+          width: imgWidth,
+          heightMode: 'fixed',
+          height: imgHeight,
+          border: borderNone(),
+          borderRadius: { mode: 'unified', radius: '8px' },
+          backgroundImage: {
+            src: imageSrc,
+            alt,
+            fit: 'cover',
+            position: 'center',
+            border: borderNone(),
+            borderRadius: { mode: 'unified', radius: '8px' },
+          },
+        },
+      },
+      textBlock(\`\${id}-name\`, '产品名称', productName, { fontSize: '14px' }),
+      buttonBlock(\`\${id}-cta\`, '购买按钮', 'Shop now', { fontSize: '12px', widthMode: 'hug' }),
+    ],
+  };
 }
 
 function buildS1() {
   const sec = sectionShell(\`\${P}-s1\`, '<模块名>', { padTop: '0', bg: COLORS.surface });
   sec.children = [
     textBlock(\`\${P}-s1-title\`, '<标题>', '<文案>', { fontSize: '24px', bold: true }),
-    coverImage(\`\${P}-s1-img\`, '<图片名>', PEXELS.<slotId>, '<alt>', '240px'),
+    coverImage(\`\${P}-s1-img\`, '<图片名>', PEXELS.<slotId>, '<alt>', '<按设计图高度 px>'),
     buttonBlock(\`\${P}-s1-cta\`, '<按钮名>', '<按钮文案>'),
   ];
   return sec;

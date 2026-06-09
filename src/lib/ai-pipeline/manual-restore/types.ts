@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { MjsGenerateMode } from "../../../layout-variant-ai-contract/mjsGenerateMode";
 import type { EmailBlock } from "../../../types/email";
 import type { PipelineProgressReporter } from "../ports/PipelineProgressReporter";
 
@@ -10,6 +11,8 @@ export const ManualRestoreImageSlotSchema = z.object({
   query: z.string().min(1),
   targetWidth: z.number().int().positive().optional(),
   height: z.string().optional(),
+  required: z.boolean().optional(),
+  usage: z.string().optional(),
 });
 
 export const ManualRestoreIconSlotSchema = z.object({
@@ -17,6 +20,9 @@ export const ManualRestoreIconSlotSchema = z.object({
   pack: z.enum(["tabler", "simple-icons", "lucide"]),
   iconQuery: z.string().min(1),
   colorHex: z.string().optional(),
+  required: z.boolean().optional(),
+  usage: z.string().optional(),
+  hasBox: z.boolean().optional(),
 });
 
 /** 阶段① MR:AssetSlots（mjs demo）：仅需搜图槽位，不含 colors/sections。 */
@@ -27,6 +33,14 @@ export const AssetSlotsBlueprintSchema = z.object({
 
 export type AssetSlotsBlueprint = z.infer<typeof AssetSlotsBlueprintSchema>;
 
+export const ManualRestoreDividerBlueprintSchema = z.object({
+  target: z.string().min(1),
+  kind: z.enum(["top-divider", "bottom-divider", "box-border"]),
+  color: z.string().optional(),
+  width: z.string().optional(),
+  height: z.string().optional(),
+});
+
 export const ManualRestoreSectionBlueprintSchema = z.object({
   sectionId: z.string().regex(/^s\d+$/),
   name: z.string().min(1),
@@ -34,10 +48,13 @@ export const ManualRestoreSectionBlueprintSchema = z.object({
   pageInline: z.boolean().optional(),
   padTop: z.string().optional(),
   padBottom: z.string().optional(),
+  targetHeight: z.string().optional(),
+  gap: z.string().optional(),
   summary: z.string().min(1),
   texts: z.array(z.string()).default([]),
   imageSlotIds: z.array(z.string()).default([]),
   iconSlotIds: z.array(z.string()).default([]),
+  visualChecks: z.array(z.string()).default([]),
 });
 
 export const ManualRestoreBlueprintSchema = z.object({
@@ -61,13 +78,46 @@ export const ManualRestoreBlueprintSchema = z.object({
     body: z.string(),
     caption: z.string(),
   }),
+  canvas: z
+    .object({
+      sourceImageWidth: z.number().int().positive().optional(),
+      sourceImageHeight: z.number().int().positive().optional(),
+      emailRootWidth: z.string().default("600px"),
+      scalePolicy: z.string().optional(),
+    })
+    .default({ emailRootWidth: "600px" }),
   emailRootBackground: z.string(),
   imageSlots: z.array(ManualRestoreImageSlotSchema).default([]),
   iconSlots: z.array(ManualRestoreIconSlotSchema).default([]),
+  dividers: z.array(ManualRestoreDividerBlueprintSchema).default([]),
+  visualChecks: z.array(z.string()).default([]),
   sections: z.array(ManualRestoreSectionBlueprintSchema).min(1),
 });
 
 export type ManualRestoreBlueprint = z.infer<typeof ManualRestoreBlueprintSchema>;
+
+export const MjsVisualLintIssueCodeSchema = z.enum([
+  "asset.placeholderSrc",
+  "asset.missingRequiredLogo",
+  "asset.missingRequiredIcon",
+  "typography.footerTooLarge",
+  "layout.heroTooTall",
+  "layout.defaultSizeLikelyCopied",
+  "layout.unsupportedAutoGap",
+  "icon.missingBox",
+  "icon.emptyAppGlyph",
+  "divider.strokeUsedAsDivider",
+]);
+
+export const MjsVisualLintIssueSchema = z.object({
+  severity: z.enum(["error", "warning"]),
+  code: MjsVisualLintIssueCodeSchema,
+  path: z.string().optional(),
+  message: z.string().min(1),
+  suggestion: z.string().optional(),
+});
+
+export type MjsVisualLintIssue = z.infer<typeof MjsVisualLintIssueSchema>;
 
 export type ResolvedManualRestoreAssets = {
   images: Record<string, { url: string; alt: string }>;
@@ -133,6 +183,8 @@ export type ManualRestoreRunInput = {
   progress?: PipelineProgressReporter;
   /** layout-only：覆盖默认 scripts/ 下 mjs 路径 */
   mjsPath?: string;
+  /** 首轮 MR:MjsGenerate 策略；默认 delta-first（mother + slot patch） */
+  mjsGenerateMode?: MjsGenerateMode;
 };
 
 /** 豆包一次性写 mjs → node 执行 的 demo 结果。 */

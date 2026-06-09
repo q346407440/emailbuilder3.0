@@ -1,4 +1,5 @@
 import type { InjectedMjsAssets } from "./injectedMjsAssets";
+import type { ManualRestoreBlueprint } from "./types";
 import {
   buildMjsImageAsContainerSection,
   buildMjsValidateContractSection,
@@ -11,8 +12,16 @@ import {
   buildMjsHorizontalLayoutSection,
   buildPromptExampleUsageNotice,
 } from "./promptsApiFixedContext";
+import { formatVisualBlueprintForPrompt } from "./promptsVisualBlueprint";
+import { buildMjsVisualQualitySection } from "./promptsMjsRules";
 
-export function buildMjsGeneratorSystemPrompt(injected: InjectedMjsAssets): string {
+export function buildMjsGeneratorSystemPrompt(
+  injected: InjectedMjsAssets,
+  visualBlueprint?: ManualRestoreBlueprint
+): string {
+  const blueprintSection = visualBlueprint
+    ? `## visual blueprint 摘要（本次视觉规格真源）\n${formatVisualBlueprintForPrompt(visualBlueprint)}\n\n必须按 blueprint 实现 section 顺序、字号层级、间距、边线、资产与 visualChecks。`
+    : "## visual blueprint\n\n本次未注入 visual blueprint；仍须按设计图估算，不得沿用示例默认尺寸。";
   return `你是 Easy-Email 邮件模板还原工程师。根据设计图输出 **mjs 脚本的 body 段**（HTTP 回复 content；豆包侧**不**执行、**不**落盘）。
 
 程序会把你的 body 包进完整可执行脚本：header（shebang、路径、PEXELS/ICON）与 footer（meta、writeFileSync）**由程序拼接**，你**不要**输出它们。
@@ -36,6 +45,8 @@ ${injected.slotGuide}
 
 body 内引用 \`PEXELS.*\`、\`ICON.*\`、模板字符串 \`\${P}-…\`（P 由程序注入 header）。
 
+${blueprintSection}
+
 ${buildMjsImageAsContainerSection()}
 
 ## body 骨架（从 COLORS 或助手函数起，到 template 定义结束）
@@ -57,27 +68,25 @@ ${buildMjsValidateContractSection()}
 
 ${buildMjsApiHelperSnippetsSection()}
 
+${buildMjsVisualQualitySection()}
+
 只输出 body 源码。**不要** shebang、**不要** import、**不要** writeFileSync、**不要** markdown 围栏。`;
 }
 
 export function buildMjsGeneratorUserText(opts: {
   idPrefix: string;
-  injected: InjectedMjsAssets;
 }): string {
   return `请根据附带的设计图，写出 mjs 脚本的 **body 段**（程序会自动包 header/footer）。
 
 ## 运行参数（程序注入 header，body 内请用 \`\${P}-…\`）
 - 块 id 前缀 P = '${opts.idPrefix}'
 
-## 可用资产槽（只引用变量名；勿写 const PEXELS/ICON、勿写 URL）
-${opts.injected.slotGuide}
-
 ## 你需要做的
 1. 只输出 body：从 COLORS / 助手函数开始，到 \`const template = …\` 结束
 2. **COLORS、文案、buildS1…buildSn 均从设计图提取**，勿抄 system 结构示例里的占位符
-3. 引用 PEXELS.*、ICON.* — slotId 必须与上表一致
+3. 引用 PEXELS.*、ICON["…"] — slotId 必须与上表一致；ICON 含连字符时用括号访问
 4. **template 树只用字面量**（COLORS + \`'Npx'\`），**禁止** \`$themeRef\` / \`bindings\` / \`mainAlign\` / \`crossAlign\`
-5. **优先复用** sectionShell / textBlock / buttonBlock / rowLayout / gridBlock / colorSwatch / imageContainer / coverImage / barcodeImage
+5. **优先复用** sectionShell / textBlock / buttonBlock / rowLayout / gridBlock / colorSwatch / productCard / imageContainer / coverImage / barcodeImage
 6. **grid 矩阵**：每格放 **layout 复合单元**（色卡用 colorSwatch），勿在 grid 下直接平铺裸 text
 7. **imageContainer**：alignH/alignV **无默认值**，按设计图逐张传；图内色名角标常见 left+top
 

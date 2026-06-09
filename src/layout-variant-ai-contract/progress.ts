@@ -18,10 +18,11 @@ export const MANUAL_RESTORE_MJS_MAX_ATTEMPTS = 3;
 
 /** 以图 AI 创建（豆包 mjs 管线）前端步骤。 */
 export const MANUAL_RESTORE_MJS_UI_STEPS_INITIAL: readonly AiPipelineUiStep[] = [
-  { id: "MR:AssetSlots", label: "识别图片与图标槽位" },
+  { id: "MR:VisualBlueprint", label: "识别视觉规格" },
   { id: "MR:ResolveAssets", label: "搜索远程素材（Pexels/CDN）" },
   { id: "MR:MjsGenerate", label: "豆包生成还原脚本" },
   { id: "MR:RunValidate", label: "执行脚本并校验" },
+  { id: "MR:VisualLint", label: "检查视觉质量门" },
   { id: "MR:Persist", label: "落盘新版式" },
 ] as const;
 

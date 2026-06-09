@@ -105,17 +105,17 @@ describe("reduceAiPipelineProgress", () => {
     });
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
-      stepId: "MR:AssetSlots",
-      entryId: "MR:AssetSlots",
+      stepId: "MR:VisualBlueprint",
+      entryId: "MR:VisualBlueprint",
       status: "running",
-      label: "识别图片与图标槽位 — 豆包 MR:AssetSlots…",
+      label: "识别视觉规格 — 豆包 MR:VisualBlueprint…",
     });
     assert.equal(steps.length, 1);
     assert.equal(steps[0]?.status, "running");
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
-      stepId: "MR:AssetSlots",
-      entryId: "MR:AssetSlots",
+      stepId: "MR:VisualBlueprint",
+      entryId: "MR:VisualBlueprint",
       status: "success",
     });
     steps = reduceAiPipelineProgress(steps, {
@@ -134,8 +134,9 @@ describe("reduceAiPipelineProgress", () => {
       type: "plan",
       steps: [...MANUAL_RESTORE_MJS_UI_STEPS_INITIAL],
     });
-    assert.equal(steps.length, 5);
-    assert.equal(steps[0]?.id, "MR:AssetSlots");
+    assert.equal(steps.length, 6);
+    assert.equal(steps[0]?.id, "MR:VisualBlueprint");
+    assert.equal(steps[4]?.id, "MR:VisualLint");
   });
 
   it("append 重试行接在列表末尾（不插入同 stepId 旧行之后）", () => {

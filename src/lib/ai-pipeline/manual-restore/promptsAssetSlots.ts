@@ -19,5 +19,8 @@ ${buildAssetSlotsApiDomainSection()}`;
 export function buildAssetSlotsUserText(): string {
   return `请根据附带的设计图，输出资产槽 JSON（**仅** imageSlots 与 iconSlots 两个顶层键）。
 
-字段结构与取值规则见 system。只输出 JSON，不要解释。`;
+字段结构与取值规则见 system。只输出 JSON，不要解释。
+
+**务必扫描**：除各模块大图外，若设计图有 **产品网格 / 商品缩略图 / 油漆罐 / 工具包** 等，每个可见产品图 **单独一条** imageSlot（含 query 与 targetWidth）。`;
 }
+

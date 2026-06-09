@@ -198,6 +198,8 @@ export function buildMjsValidateContractSection(): string {
 - **应用商店/下载徽章**（外层 \`image\` fixed 宽如 \`160px\` + 内层 \`rowLayout\` fill + icon hug）：badge 内 **text 必须 \`fill\`**，**勿**传 \`widthMode: 'hug'\`
 - 同上 hug 父级内，子级 **image（content.image）** 也**禁止 \`fill\`** → 用 \`fixed\` + \`wrapperStyle.width: '<Npx>'\`（按设计图），或 \`hug\`
 - **产品图包在 hug 容器内**（如 \`product-img-wrap\`）时，内层 image 勿默认 fill
+- **productCard 助手**：七参数 \`(id, cardName, productName, imageSrc, imageAlt, imgWidth, imgHeight)\`；\`-img\` 子块必须是 \`type: 'image'\` + \`wrapperStyle.backgroundImage.src\` ← \`PEXELS.*\`；**禁止** gray \`layout.container\` 占位
+- **摄影图/产品图尺寸**：\`coverImage\` / \`imageContainer\` / \`productCard\` 的 height/width **只在 buildS* 调用时按设计图写 px**；助手定义里**禁止**默认 \`'100px'\` / \`'240px'\` 等可照抄常数
 - **胶囊标签 / 社媒按钮组**等「**父 layout 自身** \`widthMode: hug\` + padding + 背景」的短文案结构：
   - 父：\`layout.container\` + \`widthMode: hug\` + \`padding\` + \`backgroundColor\` + \`borderRadius\`
   - 子 text：**\`widthMode: hug\`**
@@ -235,7 +237,7 @@ ${buildMjsStrokeGuidanceSection()}
 - text：\`props.textBody.paragraphs[].runs[].text\`
 - image（**容器**）：\`wrapperStyle.backgroundImage.src\` ← PEXELS.*；图内叠字用 \`children\`（见上文「图片是容器」）
 - 纯底图无叠放才可 \`children: []\` 或省略 children
-- icon：\`props.src\` ← ICON.* 变量
+- icon：\`props.src\` ← \`ICON["slot-id"]\`（连字符槽禁止 \`ICON.icon-xxx\` 点号访问）
 - root：\`type: 'emailRoot'\`；template 必填 templateId、templateVersion、locale
 - **禁止**在 mjs 里写 images.pexels.com / cdn.jsdelivr.net 字面量（资产已注入）`;
 }

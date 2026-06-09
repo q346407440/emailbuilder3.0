@@ -12,6 +12,7 @@ import {
   isAiPipelineError,
 } from "../src/layout-variant-ai-contract/errors";
 import { runManualRestoreViaDoubao } from "../src/lib/ai-pipeline/manual-restore/runManualRestoreViaDoubao";
+import type { MjsGenerateMode } from "../src/layout-variant-ai-contract/mjsGenerateMode";
 import { LlmStageFailure } from "../src/lib/ai-pipeline/llmRetryFeedback";
 import { parseTemplateFromDisk } from "../src/lib/templateTreeAdapter";
 import type { PipelineProgressReporter } from "../src/lib/ai-pipeline/ports/PipelineProgressReporter";
@@ -23,6 +24,7 @@ export type LayoutVariantAiGenerateInput = {
   imageBuffer: Buffer;
   mimeType: string;
   emailBaseDir: string;
+  mjsGenerateMode?: MjsGenerateMode;
 };
 
 export type LayoutVariantAiGenerateOptions = {
@@ -121,6 +123,7 @@ export async function generateLayoutVariantFromDesignImage(
       stagingDir,
       layoutVariantId: input.layoutVariantId,
       progress: options.progress,
+      mjsGenerateMode: input.mjsGenerateMode,
     });
 
     const templateRaw = JSON.parse(
