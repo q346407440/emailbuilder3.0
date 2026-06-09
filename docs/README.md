@@ -25,9 +25,20 @@
 | [源头驱动的契约式开发.md](./源头驱动的契约式开发.md) | 方法论：四层模型、五条主张、与 skills/rules 的关系 |
 | [变更先改源头执行规范.md](./变更先改源头执行规范.md) | 操作层：8 步流程、分场景指引、完成标准与评审 |
 | [AI Coding 硬约束落地清单.md](./AI%20Coding%20硬约束落地清单.md) | 工程约束 P0/P1/P2 检查项与成熟度判断 |
+| [可拔插式代码开发规范.md](./可拔插式代码开发规范.md) | 通用方法论：函数级可拔插（单一职责、显式 IO、组合优于堆分支）；与源头驱动配套 |
 | [project-plan.md](./project-plan.md) | 项目规划与历史对话备忘（**非** API/JSON 契约） |
 
-Agent 默认执行摘要见 Cursor rule：**`.cursor/rules/easy-email-source-first-contract.mdc`**（`alwaysApply`）。
+## 方法论文档与 Cursor Rules
+
+| 文档 | 粒度 | Cursor Rule | alwaysApply |
+|------|------|-------------|-------------|
+| [可拔插式代码开发规范.md](./可拔插式代码开发规范.md) | 函数 / 小功能 | `easy-email-pluggable-code.mdc` | ✅ |
+| [源头驱动的契约式开发.md](./源头驱动的契约式开发.md) | 契约 / 方法论 | `easy-email-source-first-contract.mdc` | ✅ |
+| [变更先改源头执行规范.md](./变更先改源头执行规范.md) | 变更流程 | ↑ 同上 | ✅ |
+| [AI Coding 硬约束落地清单.md](./AI%20Coding%20硬约束落地清单.md) | 工程底座 | ↑ 同上 | ✅ |
+| — | 仓库分层与复用 | `easy-email-design-reuse.mdc` | ✅ |
+
+日常写码：**可拔插** → **分层复用**；改共享契约：**源头驱动** rule。Agent 默认加载上述 `alwaysApply` rules。
 
 ## 结构迁移脚本
 

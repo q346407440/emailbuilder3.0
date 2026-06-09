@@ -60,6 +60,8 @@
 - **先找后写**：动手前先在仓库内搜索是否已有 **契约 / `src/lib` / 组件 / hook / server 模块 / 迁移脚本**；能扩展则扩展，避免平行造第二套相似实现。
 - **全栈同一套领域逻辑**：合并、校验、路径解析、repeat/派生列表解析等**只写一份**（`src/lib` + `src/*-contract/`），前端、server、脚本**共用**；禁止在 route handler 或页面里重写等价规则。
 
+与 **`easy-email-pluggable-code`** 分工：本 rule 管**放哪一层**；可拔插 rule 管**函数怎么写**（单一职责、纯函数、组合优于堆分支）。详文 `docs/可拔插式代码开发规范.md`。
+
 ## 分层与职责
 
 | 区域 | 职责 |
@@ -106,17 +108,69 @@
 MCP 报 profile 占用冲突时，按技能 **`easy-email-frontend-chrome-verify`** 附录「MCP profile 冲突」处理。
 ---
 
-## Rule 4: 源头驱动契约式变更（Easy-Email）
+## Rule 4: 可拔插式编码（Easy-Email）
+
+> 来源：`.cursor/rules/easy-email-pluggable-code.mdc`
+
+## 与本仓库其他 rule 的分工
+
+| Rule | 粒度 | 回答的问题 |
+|------|------|------------|
+| **本 rule** | **函数 / 小功能 / 装配** | 这段逻辑怎么写才可加、可换、可删？ |
+| **`easy-email-design-reuse`** | 仓库分层与复用 | 放哪一层、先找谁、禁止双写？ |
+| **`easy-email-source-first-contract`** | 契约变更与真源 | 共享事实改哪、按什么顺序改全链路？ |
+
+详文：`docs/可拔插式代码开发规范.md`。与源头驱动配套：**可拔插**管日常怎么写函数；**源头驱动**管改 schema/契约时怎么不漏改。
+
+## 写每一个函数时默认遵守
+
+1. **一个函数一件事**；名称与签名 honest 反映职责。
+2. **输入输出显式**：参数 + 返回值；避免隐式全局、隐式环境依赖。
+3. **规则写纯函数，IO 写薄 wrapper**：业务判断进 `src/lib`；HTTP/落盘/React 副作用在边界。
+4. **新逻辑 Prefer 新函数 + 装配**，不在旧函数里无限加 `if` / `switch`；重复分支收敛为策略表/查表。
+5. **删逻辑要删干净**：移除调用 → 删函数与测试 → 编译/lint/单测暴露残留；禁止留 dead branch 或未使用 helper。
+
+## 写每一个功能时默认遵守
+
+- 功能 = **若干小函数 + 一处装配**（页面 handler、route、脚本入口），不是单个巨函数。
+- **新增功能** Prefer 新增代码；**修改规则** Prefer 换/改纯函数，而不是让旧函数承担两套语义。
+- 入口（`App.tsx`、`server/index.ts`、页面容器）**只调度**；变长时先怀疑是否该下沉为 `src/lib` 纯函数。
+
+## 动手前四个问题（答不清先别堆代码）
+
+1. 这个函数是否只做一件事？
+2. 输入输出是否显式？
+3. 核心规则能否脱离全系统单测？
+4. 删除它时影响范围是否清晰？
+
+## 禁止（AI 与人工均适用）
+
+- 在现有函数末尾「继续追加」几十行完成任务，而不拆函数。
+- 为一个小需求改共享 helper 语义，波及其他调用方。
+- 删功能只删 UI/入口，留下 helper、分支或空壳测试。
+- 在 route / 页面 / `App.tsx` 写大段本属 `src/lib` 的业务规则。
+
+## 完成标准（函数级任务）
+
+- 关键规则有可单独测试的纯函数（或薄 wrapper + 纯函数）。
+- 删该功能时可列举要删的函数与装配点，且无已知隐式依赖。
+- 不只「当前路径能跑」；必要时补对应单测。
+
+以下**不算完成**：逻辑堆在入口大函数；删功能后残留 dead code；修 A 场景误伤 B 场景且无测试约束。
+---
+
+## Rule 5: 源头驱动契约式变更（Easy-Email）
 
 > 来源：`.cursor/rules/easy-email-source-first-contract.mdc`
 
 ## 与本仓库其他 rule 的分工
 
-- **`easy-email-design-reuse`**：代码怎么写（分层、复用、先找后写）。
+- **`easy-email-pluggable-code`**：日常**怎么写函数/小功能**（单一职责、纯函数与 IO 分离、组合优于堆分支、删干净）。
+- **`easy-email-design-reuse`**：代码**放哪一层**（分层、复用、先找后写、禁止双写）。
 - **本 rule**：改动**按什么路径走完**（先真源 → 派生 → 消费层 → 验证），避免只修报错点。
 - **领域细节**（按图还原、block 语义、落盘 API）：读对应 **`.cursor/skills/`**，不在此重复字段表。
 
-理念与检查清单详文：`docs/源头驱动的契约式开发.md`、`docs/变更先改源头执行规范.md`、`docs/AI Coding 硬约束落地清单.md`。
+理念与检查清单详文：`docs/源头驱动的契约式开发.md`、`docs/变更先改源头执行规范.md`、`docs/AI Coding 硬约束落地清单.md`。函数级编码习惯见 `docs/可拔插式代码开发规范.md` 与 **`easy-email-pluggable-code`**。
 
 ## 五条核心（执行时默认遵守）
 
@@ -195,7 +249,7 @@ MCP 报 profile 占用冲突时，按技能 **`easy-email-frontend-chrome-verify
 | 场景版式（含单版式 `default`） | `layout-manifest.json` + `layouts/<id>/`（template + tokenPresets）；新建场景须自带 manifest | 顶栏版式切换（多版式时）、`useEmailDiskPersist` 多版式 payload 预检 |
 ---
 
-## Rule 5: 同步 Claude 规则与技能
+## Rule 6: 同步 Claude 规则与技能
 
 > 来源：`.cursor/rules/sync-claude-after-cursor-guidance-change.mdc`
 
