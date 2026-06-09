@@ -79,6 +79,11 @@ type AttemptFailure = {
   rawContent?: string;
 };
 
+/** 单次 attempt 步骤函数的结果：成功（产出 mjs + stdout）或需重试（携带最新源码与失败原因）。终止性失败直接 throw。 */
+type AttemptOutcome =
+  | { kind: "success"; mjsSource: string; mjsStdout: string }
+  | { kind: "retry"; mjsSource: string; lastFailure: AttemptFailure };
+
 function isPatchRetryKind(kind: FailureKind | undefined): boolean {
   return kind === "validate" || kind === "visual" || kind === "node" || kind === "patch";
 }
@@ -242,6 +247,616 @@ function isVisualGateAcceptable(
 
 function visualGateErrors(gate: VisualGateResult): string[] {
   return [...gate.blocking, ...gate.warnings];
+}
+
+type MjsStepProgress = ReturnType<PipelineProgressReporter["forStep"]>;
+type MjsLlmClient = ReturnType<typeof wrapLlmClientWithQueue>;
+
+/**
+ * 单次 mjs attempt 步骤函数的显式依赖（run 作用域内一次性构造，跨 attempt 不变）。
+ * 把原本由闭包隐式捕获的 IO / 进度 / LLM 客户端收敛为显式入参，便于复用与隔离。
+ */
+type MjsAttemptContext = {
+  mjsGenerateMode: MjsGenerateMode;
+  imageDataUrl: string;
+  logDir: string;
+  mjsPath: string;
+  mjsScaffold: MjsScaffoldContext;
+  injectedAssets: InjectedMjsAssets;
+  visualBlueprint: ManualRestoreBlueprint;
+  generateLlm: MjsLlmClient;
+  deltaLlm: MjsLlmClient;
+  patchLlm: MjsLlmClient;
+  generateStep: MjsStepProgress;
+  validateStep: MjsStepProgress;
+  stepDone: (
+    label: string,
+    startMs: number,
+    detail?: string,
+    timingOpts?: MjsRunTimingRecordOpts
+  ) => void;
+  runValidate: (source: string) => ReturnType<typeof runMjsAndValidate>;
+  runVisualLintGate: (
+    templatePath: string,
+    attempt: number,
+    label: string,
+    blueprint: ManualRestoreBlueprint
+  ) => VisualGateResult;
+};
+
+/**
+ * patch 修复分支：autofix → validate → 视觉门 → 豆包 patch → apply → validate → 视觉门。
+ * 仅在已有可执行 mjs 且上轮失败可 patch 时调用（见 canUsePatchRetryPath）。
+ */
+async function runPatchRepairAttempt(
+  ctx: MjsAttemptContext,
+  attempt: number,
+  baseSource: string,
+  incoming: AttemptFailure
+): Promise<AttemptOutcome> {
+  let mjsSource = baseSource;
+  let lastFailure: AttemptFailure = incoming;
+  const tAutofix = stepStart();
+  console.log(`${LOG_TAG}   程序 autofix（尝试 ${attempt}）…`);
+  ctx.generateStep.logDetail(mjsAttemptDetail("程序 autofix", attempt), {
+    attempt,
+    ...MJS_PROGRESS_OPTS,
+  });
+  let patchErrors: string[] = lastFailure.errors;
+  const beforeAutofix = mjsSource;
+  const autofix = applyMjsAutofix(mjsSource, lastFailure.errors);
+  mjsSource = finalizeMjsSource(autofix.source, lastFailure.errors);
+  const autofixApplied = mjsSource !== beforeAutofix;
+
+  if (autofixApplied || autofix.fixes.length > 0) {
+    fs.writeFileSync(path.join(ctx.logDir, `03-autofix-attempt-${attempt}.mjs`), mjsSource);
+    ctx.stepDone(
+      `  程序 autofix 完成（尝试 ${attempt}）`,
+      tAutofix,
+      autofix.fixes.join(" · "),
+      { stepId: "MR:MjsGenerate", attempt }
+    );
+
+    const tNodeAutofix = stepStart();
+    const autofixRun = ctx.runValidate(mjsSource);
+    fs.writeFileSync(
+      path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}-autofix.log`),
+      autofixRun.mjsStdout
+    );
+    ctx.stepDone( `  node+validate（autofix 后，尝试 ${attempt}）`, tNodeAutofix);
+
+    if (autofixRun.ok) {
+      ctx.validateStep.start(attempt, {
+        detail: mjsAttemptDetail("node 执行 mjs（autofix 后）", attempt),
+        ...MJS_PROGRESS_OPTS,
+      });
+      ctx.validateStep.succeed();
+      const visualGate = ctx.runVisualLintGate(
+        autofixRun.templatePath,
+        attempt,
+        "检查视觉质量门（autofix 后）",
+        ctx.visualBlueprint
+      );
+      if (visualGate.accept) {
+        ctx.generateStep.succeed();
+        return { kind: "success", mjsSource, mjsStdout: autofixRun.mjsStdout };
+      }
+      patchErrors = visualGateErrors(visualGate);
+      lastFailure = { kind: "visual", errors: patchErrors, rawContent: mjsSource };
+      ctx.generateStep.logDetail(
+        mjsAttemptDetail(
+          `visual lint 未通过（error ${visualGate.blocking.length} / warning ${visualGate.warnings.length}），继续 patch`,
+          attempt
+        ),
+        { attempt, ...MJS_PROGRESS_OPTS }
+      );
+    } else {
+      patchErrors = autofixRun.allIssues;
+      lastFailure = {
+        kind: autofixRun.nodeFailed ? "node" : "validate",
+        errors: autofixRun.allIssues,
+        rawContent: mjsSource,
+      };
+      if (!autofixRun.nodeFailed) {
+        writeValidateErrorLog(ctx.logDir, attempt, autofixRun.allIssues);
+      }
+      ctx.generateStep.logDetail(
+        mjsAttemptDetail(
+          `autofix 后 validate 仍失败（${autofixRun.allIssues.length} 条），继续 patch`,
+          attempt
+        ),
+        { attempt, ...MJS_PROGRESS_OPTS }
+      );
+    }
+  } else {
+    ctx.stepDone( `  程序 autofix 无改动（尝试 ${attempt}）`, tAutofix);
+  }
+
+  const tPatchLlm = stepStart();
+  console.log(`${LOG_TAG}   豆包 MR:MjsPatch API（尝试 ${attempt}）…`);
+  ctx.generateStep.logDetail(mjsAttemptDetail("豆包 MR:MjsPatch API", attempt), {
+    attempt,
+    ...MJS_PROGRESS_OPTS,
+  });
+  // patch 始终基于 autofix 后的 mjsSource（非上一轮原始稿）
+  const snippets = buildMjsErrorSnippets(mjsSource, patchErrors);
+  const rawPatch = await ctx.patchLlm.complete([
+    { role: "system", content: buildMjsPatchSystemPrompt(ctx.visualBlueprint) },
+    {
+      role: "user",
+      content: buildMjsPatchUserText(mjsSource, patchErrors, snippets),
+    },
+  ]);
+  ctx.stepDone( `  豆包 Patch API 返回（尝试 ${attempt}）`, tPatchLlm);
+  fs.writeFileSync(path.join(ctx.logDir, `04-patch-raw-attempt-${attempt}.txt`), rawPatch);
+
+  const tApply = stepStart();
+  const patches = parseMjsPatchesFromLlm(rawPatch);
+  const applied = applyMjsPatches(mjsSource, patches);
+  if (!isMjsPatchMergeClean(applied, patches.length)) {
+    const mergeIssue = applied.hasPatchArtifacts
+      ? "merge 后残留 patch 标记"
+      : applied.applied === 0
+        ? "补丁未命中任何 SEARCH 块"
+        : `补丁未全部命中（${applied.applied}/${patches.length}）`;
+    ctx.stepDone(
+      `  ${mergeIssue}，继续 patch 修复（尝试 ${attempt}）`,
+      tApply,
+      [...applied.failures, mergeIssue].slice(0, 3).join("; "),
+      { stepId: "MR:MjsGenerate", attempt }
+    );
+    ctx.generateStep.failAttempt(attempt, {
+      detail: mjsAttemptDetail(`${mergeIssue}，继续 patch 修复`, attempt),
+      ...MJS_PROGRESS_OPTS,
+    });
+    lastFailure = {
+      kind: "patch",
+      errors: [mergeIssue, ...applied.failures, ...lastFailure.errors.slice(0, 10)],
+      rawContent: rawPatch,
+    };
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(rawPatch, null, "补丁未命中", applied.failures)
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+  mjsSource = finalizeMjsSource(applied.source);
+  ctx.stepDone(
+    `  应用补丁 ${applied.applied} 处（尝试 ${attempt}）`,
+    tApply,
+    applied.failures.length > 0 ? applied.failures.join("; ") : undefined,
+    { stepId: "MR:MjsGenerate", attempt }
+  );
+  fs.writeFileSync(path.join(ctx.logDir, `05-patched-attempt-${attempt}.mjs`), mjsSource);
+  ctx.generateStep.succeed();
+
+  ctx.validateStep.start(attempt, {
+    detail: mjsAttemptDetail("node 执行 mjs（patch 后）", attempt),
+    ...MJS_PROGRESS_OPTS,
+  });
+  const tNode = stepStart();
+  console.log(`${LOG_TAG}   node 执行 mjs（patch 后，尝试 ${attempt}）…`);
+  const patchRun = ctx.runValidate(mjsSource);
+  fs.writeFileSync(
+    path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}.log`),
+    patchRun.mjsStdout
+  );
+  ctx.stepDone( `  node 执行完成（patch 后，尝试 ${attempt}）`, tNode);
+
+  if (!patchRun.ok && patchRun.nodeFailed) {
+    ctx.validateStep.failAttempt(attempt, {
+      detail: mjsAttemptDetail("patch 后 mjs 执行失败", attempt),
+      ...MJS_PROGRESS_OPTS,
+    });
+    lastFailure = { kind: "node", errors: patchRun.allIssues, rawContent: mjsSource };
+    ctx.stepDone(`  mjs 执行失败（patch 后，尝试 ${attempt}）`, tNode, undefined, {
+      stepId: "MR:RunValidate",
+      attempt,
+    });
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(
+          mjsSource,
+          null,
+          "patch 后 mjs 执行失败",
+          patchRun.allIssues
+        )
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+
+  const tValidate = stepStart();
+  if (!patchRun.ok) {
+    ctx.validateStep.failAttempt(attempt, {
+      detail: mjsAttemptDetail("validate 未通过（patch 后）", attempt),
+      ...MJS_PROGRESS_OPTS,
+    });
+    lastFailure = { kind: "validate", errors: patchRun.allIssues };
+    writeValidateErrorLog(ctx.logDir, attempt, patchRun.allIssues);
+    ctx.stepDone(`  validate 未通过（patch 后，尝试 ${attempt}）`, tValidate, undefined, {
+      stepId: "MR:RunValidate",
+      attempt,
+    });
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(
+          mjsSource,
+          null,
+          "validate 未通过",
+          patchRun.allIssues.slice(0, 25)
+        )
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+  ctx.stepDone( `  validate 通过（patch 后，尝试 ${attempt}）`, tValidate);
+  ctx.validateStep.succeed();
+  const patchVisualGate = ctx.runVisualLintGate(
+    patchRun.templatePath,
+    attempt,
+    "检查视觉质量门（patch 后）",
+    ctx.visualBlueprint
+  );
+  if (!patchVisualGate.accept) {
+    lastFailure = {
+      kind: "visual",
+      errors: visualGateErrors(patchVisualGate),
+      rawContent: mjsSource,
+    };
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(
+          mjsSource,
+          null,
+          "visual lint 未通过",
+          patchVisualGate.blocking.slice(0, 25)
+        )
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+  ctx.generateStep.succeed();
+  return { kind: "success", mjsSource, mjsStdout: patchRun.mjsStdout };
+}
+
+/**
+ * 生成分支：delta-first 底稿+patch / 整段生成 → 后处理 → proactive/reactive autofix → validate → 视觉门。
+ */
+async function runGenerateAttempt(
+  ctx: MjsAttemptContext,
+  attempt: number,
+  baseSource: string,
+  incoming: AttemptFailure | null
+): Promise<AttemptOutcome> {
+  let mjsSource = baseSource;
+  let lastFailure: AttemptFailure | null = incoming;
+  const allowFullBodyGenerate = ctx.mjsGenerateMode !== "delta-first";
+  const regenHint =
+    allowFullBodyGenerate && lastFailure?.kind === "generate" && lastFailure.errors.length > 0
+      ? buildMjsFullRegenHint({
+          previousOutput: lastFailure.rawContent ?? mjsSource,
+          errors: lastFailure.errors,
+        })
+      : "";
+
+  const tryDeltaFirst =
+    ctx.mjsGenerateMode === "delta-first" && attempt === 1 && !regenHint;
+  let rawMjs = "";
+  let post: MjsPostProcessResult | null = null;
+
+  if (tryDeltaFirst) {
+    const motherBody = buildMotherMjsBody();
+    fs.writeFileSync(path.join(ctx.logDir, "01-mother-body.mjs"), motherBody);
+
+    const tDeltaLlm = stepStart();
+    console.log(`${LOG_TAG}   豆包 MR:MjsGenerate API（尝试 1 · 底稿+patch）…`);
+    const rawDelta = await ctx.deltaLlm.complete([
+      { role: "system", content: buildMjsDeltaSystemPrompt(ctx.injectedAssets, ctx.visualBlueprint) },
+      {
+        role: "user",
+        content: [
+          { type: "image_url", image_url: { url: ctx.imageDataUrl } },
+          {
+            type: "text",
+            text: buildMjsDeltaUserText({
+              idPrefix: ctx.mjsScaffold.idPrefix,
+              motherBody,
+            }),
+          },
+        ],
+      },
+    ]);
+    ctx.stepDone("  豆包 API 返回（底稿+patch）", tDeltaLlm, undefined, {
+      stepId: "MR:MjsGenerate",
+      attempt,
+    });
+    fs.writeFileSync(path.join(ctx.logDir, `01-llm-delta-attempt-${attempt}.txt`), rawDelta);
+
+    const tApplyDelta = stepStart();
+    const deltaPatches = parseMjsPatchesFromLlm(rawDelta);
+    const deltaApplied = applyMjsPatches(motherBody, deltaPatches);
+    fs.writeFileSync(
+      path.join(ctx.logDir, `01-delta-merged-attempt-${attempt}.mjs`),
+      deltaApplied.source
+    );
+
+    if (isMjsPatchMergeClean(deltaApplied, deltaPatches.length)) {
+      rawMjs = rawDelta;
+      post = tryPostProcessMjsFromBody(deltaApplied.source, ctx.injectedAssets, ctx.mjsScaffold);
+      ctx.stepDone(
+        `  底稿 merge ${deltaApplied.applied} 处补丁（尝试 ${attempt}）`,
+        tApplyDelta,
+        undefined,
+        { stepId: "MR:MjsGenerate", attempt }
+      );
+    } else {
+      const mergeIssue = deltaApplied.hasPatchArtifacts
+        ? "merge 后残留 patch 标记"
+        : deltaApplied.applied === 0
+          ? "patch 未命中"
+          : `patch 未全部命中（${deltaApplied.applied}/${deltaPatches.length}）`;
+      ctx.stepDone(
+        `  底稿 ${mergeIssue}，继续 patch 修复（尝试 ${attempt}）`,
+        tApplyDelta,
+        [...deltaApplied.failures, mergeIssue].slice(0, 3).join("; "),
+        { stepId: "MR:MjsGenerate", attempt }
+      );
+      ctx.generateStep.logDetail(
+        mjsAttemptDetail(`底稿 ${mergeIssue}，继续 patch 修复`, attempt),
+        { attempt, ...MJS_PROGRESS_OPTS }
+      );
+      const partialPost = tryPostProcessMjsFromBody(
+        deltaApplied.source,
+        ctx.injectedAssets,
+        ctx.mjsScaffold
+      );
+      mjsSource = partialPost.source;
+      lastFailure = {
+        kind: "patch",
+        errors: [mergeIssue, ...deltaApplied.failures, ...partialPost.errors],
+        rawContent: rawDelta,
+      };
+      if (attempt >= MAX_MJS_ATTEMPTS) {
+        throw new LlmStageFailure(
+          feedbackFromLlmAttempt(rawDelta, null, mergeIssue, deltaApplied.failures)
+        );
+      }
+      return { kind: "retry", mjsSource, lastFailure: lastFailure! };
+    }
+  }
+
+  if (!post) {
+    if (!allowFullBodyGenerate) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(
+          mjsSource,
+          null,
+          "底稿 patch 未产出可执行 mjs",
+          lastFailure?.errors ?? []
+        )
+      );
+    }
+    const tLlm = stepStart();
+    console.log(
+      `${LOG_TAG}   豆包 MR:MjsGenerate API（尝试 ${attempt}${regenHint ? " · 整段重写" : tryDeltaFirst ? " · 整段生成" : " · 首次"}）…`
+    );
+    rawMjs = await ctx.generateLlm.complete([
+      { role: "system", content: buildMjsGeneratorSystemPrompt(ctx.injectedAssets, ctx.visualBlueprint) },
+      {
+        role: "user",
+        content: [
+          { type: "image_url", image_url: { url: ctx.imageDataUrl } },
+          {
+            type: "text",
+            text:
+              buildMjsGeneratorUserText({
+                idPrefix: ctx.mjsScaffold.idPrefix,
+              }) + regenHint,
+          },
+        ],
+      },
+    ]);
+    ctx.stepDone(`  豆包 API 返回（尝试 ${attempt}）`, tLlm, undefined, {
+      stepId: "MR:MjsGenerate",
+      attempt,
+    });
+    fs.writeFileSync(path.join(ctx.logDir, `01-llm-raw-attempt-${attempt}.txt`), rawMjs);
+    post = tryPostProcessMjs(rawMjs, ctx.injectedAssets, ctx.mjsScaffold);
+  }
+
+  const tPost = stepStart();
+  if (!post.ok && post.source === "") {
+    ctx.stepDone( `  程序处理 mjs 失败（尝试 ${attempt}）`, tPost);
+    const detail = mjsAttemptDetail("程序处理 mjs 失败", attempt);
+    ctx.generateStep.failAttempt(attempt, { detail, ...MJS_PROGRESS_OPTS });
+    lastFailure = {
+      kind: "generate",
+      errors: post.errors,
+      rawContent: rawMjs,
+    };
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(rawMjs, null, post.errors[0] ?? "提取 mjs 失败", post.errors)
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure: lastFailure! };
+  }
+
+  mjsSource = post.source;
+  if (post.ok) {
+    const tProactiveAutofix = stepStart();
+    const proactive = applyMjsAutofix(mjsSource, []);
+    if (proactive.changed) {
+      mjsSource = finalizeMjsSource(proactive.source, []);
+      fs.writeFileSync(
+        path.join(ctx.logDir, `03-autofix-proactive-attempt-${attempt}.mjs`),
+        mjsSource
+      );
+      ctx.stepDone(
+        `  程序 proactive autofix（尝试 ${attempt}）`,
+        tProactiveAutofix,
+        proactive.fixes.join(" · "),
+        { stepId: "MR:MjsGenerate", attempt }
+      );
+    } else {
+      ctx.stepDone(`  程序 proactive autofix 无改动（尝试 ${attempt}）`, tProactiveAutofix);
+    }
+    ctx.stepDone( `  程序处理并写入 mjs（尝试 ${attempt}）`, tPost, ctx.mjsPath);
+    ctx.generateStep.succeed();
+  } else {
+    ctx.stepDone(
+      `  程序处理 mjs 失败（尝试 ${attempt}）`,
+      tPost,
+      post.errors.join(" · "),
+      { stepId: "MR:MjsGenerate", attempt }
+    );
+    fs.writeFileSync(path.join(ctx.logDir, `01-postprocess-warn-attempt-${attempt}.txt`), post.errors.join("\n"));
+    const detail = mjsAttemptDetail(
+      `程序处理 mjs 失败（${post.errors[0] ?? "完整性校验未通过"}）`,
+      attempt
+    );
+    ctx.generateStep.failAttempt(attempt, { detail, ...MJS_PROGRESS_OPTS });
+    lastFailure = { kind: "node", errors: post.errors, rawContent: rawMjs };
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(mjsSource, null, post.errors[0] ?? "mjs 执行失败", post.errors)
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+
+  ctx.validateStep.start(attempt, {
+    detail: mjsAttemptDetail("node 执行 mjs", attempt),
+    ...MJS_PROGRESS_OPTS,
+  });
+  const tNode = stepStart();
+  console.log(`${LOG_TAG}   node 执行 mjs（尝试 ${attempt}）…`);
+  const genRun = ctx.runValidate(mjsSource);
+  fs.writeFileSync(path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}.log`), genRun.mjsStdout);
+  ctx.stepDone( `  node 执行完成（尝试 ${attempt}）`, tNode);
+
+  const runIssues = mergeRunIssues(post, genRun.allIssues);
+
+  if (genRun.nodeFailed && !genRun.ok) {
+    ctx.validateStep.failAttempt(attempt, {
+      detail: mjsAttemptDetail("mjs 执行失败", attempt),
+      ...MJS_PROGRESS_OPTS,
+    });
+    lastFailure = { kind: "node", errors: runIssues, rawContent: rawMjs };
+    ctx.stepDone( `  mjs 执行失败（尝试 ${attempt}）`, tNode);
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(mjsSource, null, "mjs 执行失败", runIssues)
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+
+  const tValidate = stepStart();
+  if (!genRun.ok) {
+    const tReactiveAutofix = stepStart();
+    const reactive = tryReactiveAutofixBeforeRetry(mjsSource, runIssues);
+    mjsSource = reactive.source;
+    if (reactive.changed) {
+      fs.writeFileSync(
+        path.join(ctx.logDir, `03-autofix-reactive-attempt-${attempt}.mjs`),
+        reactive.source
+      );
+      ctx.stepDone(
+        `  程序 reactive autofix（尝试 ${attempt}）`,
+        tReactiveAutofix,
+        reactive.fixes.join(" · "),
+        { stepId: "MR:MjsGenerate", attempt }
+      );
+      const retryRun = ctx.runValidate(mjsSource);
+      fs.writeFileSync(
+        path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}-autofix.log`),
+        retryRun.mjsStdout
+      );
+      if (retryRun.ok) {
+        ctx.stepDone(`  validate 通过（reactive autofix 后，尝试 ${attempt}）`, tValidate);
+        ctx.validateStep.succeed();
+        const retryVisualGate = ctx.runVisualLintGate(
+          retryRun.templatePath,
+          attempt,
+          "检查视觉质量门（reactive autofix 后）",
+          ctx.visualBlueprint
+        );
+        if (!retryVisualGate.accept) {
+          lastFailure = {
+            kind: "visual",
+            errors: visualGateErrors(retryVisualGate),
+            rawContent: mjsSource,
+          };
+          if (attempt >= MAX_MJS_ATTEMPTS) {
+            throw new LlmStageFailure(
+              feedbackFromLlmAttempt(
+                mjsSource,
+                null,
+                "visual lint 未通过",
+                retryVisualGate.blocking.slice(0, 25)
+              )
+            );
+          }
+          return { kind: "retry", mjsSource, lastFailure };
+        }
+        ctx.generateStep.succeed();
+        return { kind: "success", mjsSource, mjsStdout: retryRun.mjsStdout };
+      }
+      runIssues.splice(0, runIssues.length, ...mergeRunIssues(post, retryRun.allIssues));
+    } else {
+      ctx.stepDone(`  程序 reactive autofix 无改动（尝试 ${attempt}）`, tReactiveAutofix);
+    }
+
+    ctx.validateStep.failAttempt(attempt, {
+      detail: mjsAttemptDetail("validate 未通过", attempt),
+      ...MJS_PROGRESS_OPTS,
+    });
+    lastFailure = { kind: "validate", errors: runIssues, rawContent: rawMjs };
+    writeValidateErrorLog(ctx.logDir, attempt, runIssues);
+    ctx.stepDone( `  validate 未通过（尝试 ${attempt}）`, tValidate);
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(
+          mjsSource,
+          null,
+          "validate 未通过",
+          runIssues.slice(0, 25)
+        )
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+  ctx.stepDone( `  validate 通过（尝试 ${attempt}）`, tValidate);
+  ctx.validateStep.succeed();
+  const genVisualGate = ctx.runVisualLintGate(
+    genRun.templatePath,
+    attempt,
+    "检查视觉质量门",
+    ctx.visualBlueprint
+  );
+  if (!genVisualGate.accept) {
+    lastFailure = {
+      kind: "visual",
+      errors: visualGateErrors(genVisualGate),
+      rawContent: mjsSource,
+    };
+    if (attempt >= MAX_MJS_ATTEMPTS) {
+      throw new LlmStageFailure(
+        feedbackFromLlmAttempt(
+          mjsSource,
+          null,
+          "visual lint 未通过",
+          genVisualGate.blocking.slice(0, 25)
+        )
+      );
+    }
+    return { kind: "retry", mjsSource, lastFailure };
+  }
+  ctx.generateStep.succeed();
+  return { kind: "success", mjsSource, mjsStdout: genRun.mjsStdout };
 }
 
 async function createVisualBlueprint(opts: {
@@ -563,6 +1178,24 @@ export async function runManualRestoreViaDoubao(
         let mjsStdout = "";
         let lastFailure: AttemptFailure | null = null;
 
+        const attemptCtx: MjsAttemptContext = {
+          mjsGenerateMode,
+          imageDataUrl,
+          logDir,
+          mjsPath,
+          mjsScaffold,
+          injectedAssets,
+          visualBlueprint,
+          generateLlm,
+          deltaLlm,
+          patchLlm,
+          generateStep,
+          validateStep,
+          stepDone,
+          runValidate,
+          runVisualLintGate,
+        };
+
         for (let attempt = 1; attempt <= MAX_MJS_ATTEMPTS; attempt += 1) {
           const tAttempt = stepStart();
           let attemptOk = false;
@@ -594,565 +1227,16 @@ export async function runManualRestoreViaDoubao(
               });
             }
 
-            if (useValidatePatchPath) {
-              const tAutofix = stepStart();
-              console.log(`${LOG_TAG}   程序 autofix（尝试 ${attempt}）…`);
-              generateStep.logDetail(mjsAttemptDetail("程序 autofix", attempt), {
-                attempt,
-                ...MJS_PROGRESS_OPTS,
-              });
-              let patchErrors: string[] = lastFailure!.errors;
-              const beforeAutofix = mjsSource;
-              const autofix = applyMjsAutofix(mjsSource, lastFailure!.errors);
-              mjsSource = finalizeMjsSource(autofix.source, lastFailure!.errors);
-              const autofixApplied = mjsSource !== beforeAutofix;
-
-              if (autofixApplied || autofix.fixes.length > 0) {
-                fs.writeFileSync(path.join(logDir, `03-autofix-attempt-${attempt}.mjs`), mjsSource);
-                stepDone(
-                  `  程序 autofix 完成（尝试 ${attempt}）`,
-                  tAutofix,
-                  autofix.fixes.join(" · "),
-                  { stepId: "MR:MjsGenerate", attempt }
-                );
-
-                const tNodeAutofix = stepStart();
-                const autofixRun = runValidate(mjsSource);
-                fs.writeFileSync(
-                  path.join(logDir, `02-mjs-run-attempt-${attempt}-autofix.log`),
-                  autofixRun.mjsStdout
-                );
-                stepDone( `  node+validate（autofix 后，尝试 ${attempt}）`, tNodeAutofix);
-
-                if (autofixRun.ok) {
-                  validateStep.start(attempt, {
-                    detail: mjsAttemptDetail("node 执行 mjs（autofix 后）", attempt),
-                    ...MJS_PROGRESS_OPTS,
-                  });
-                  validateStep.succeed();
-                  const visualGate = runVisualLintGate(
-                    autofixRun.templatePath,
-                    attempt,
-                    "检查视觉质量门（autofix 后）",
-                    visualBlueprint
-                  );
-                  if (visualGate.accept) {
-                    mjsStdout = autofixRun.mjsStdout;
-                    generateStep.succeed();
-                    attemptOk = true;
-                    break;
-                  }
-                  patchErrors = visualGateErrors(visualGate);
-                  lastFailure = { kind: "visual", errors: patchErrors, rawContent: mjsSource };
-                  generateStep.logDetail(
-                    mjsAttemptDetail(
-                      `visual lint 未通过（error ${visualGate.blocking.length} / warning ${visualGate.warnings.length}），继续 patch`,
-                      attempt
-                    ),
-                    { attempt, ...MJS_PROGRESS_OPTS }
-                  );
-                } else {
-                  patchErrors = autofixRun.allIssues;
-                  lastFailure = {
-                    kind: autofixRun.nodeFailed ? "node" : "validate",
-                    errors: autofixRun.allIssues,
-                    rawContent: mjsSource,
-                  };
-                  if (!autofixRun.nodeFailed) {
-                    writeValidateErrorLog(logDir, attempt, autofixRun.allIssues);
-                  }
-                  generateStep.logDetail(
-                    mjsAttemptDetail(
-                      `autofix 后 validate 仍失败（${autofixRun.allIssues.length} 条），继续 patch`,
-                      attempt
-                    ),
-                    { attempt, ...MJS_PROGRESS_OPTS }
-                  );
-                }
-              } else {
-                stepDone( `  程序 autofix 无改动（尝试 ${attempt}）`, tAutofix);
-              }
-
-              const tPatchLlm = stepStart();
-              console.log(`${LOG_TAG}   豆包 MR:MjsPatch API（尝试 ${attempt}）…`);
-              generateStep.logDetail(mjsAttemptDetail("豆包 MR:MjsPatch API", attempt), {
-                attempt,
-                ...MJS_PROGRESS_OPTS,
-              });
-              // patch 始终基于 autofix 后的 mjsSource（非上一轮原始稿）
-              const snippets = buildMjsErrorSnippets(mjsSource, patchErrors);
-              const rawPatch = await patchLlm.complete([
-                { role: "system", content: buildMjsPatchSystemPrompt(visualBlueprint) },
-                {
-                  role: "user",
-                  content: buildMjsPatchUserText(mjsSource, patchErrors, snippets),
-                },
-              ]);
-              stepDone( `  豆包 Patch API 返回（尝试 ${attempt}）`, tPatchLlm);
-              fs.writeFileSync(path.join(logDir, `04-patch-raw-attempt-${attempt}.txt`), rawPatch);
-
-              const tApply = stepStart();
-              const patches = parseMjsPatchesFromLlm(rawPatch);
-              const applied = applyMjsPatches(mjsSource, patches);
-              if (!isMjsPatchMergeClean(applied, patches.length)) {
-                const mergeIssue = applied.hasPatchArtifacts
-                  ? "merge 后残留 patch 标记"
-                  : applied.applied === 0
-                    ? "补丁未命中任何 SEARCH 块"
-                    : `补丁未全部命中（${applied.applied}/${patches.length}）`;
-                stepDone(
-                  `  ${mergeIssue}，继续 patch 修复（尝试 ${attempt}）`,
-                  tApply,
-                  [...applied.failures, mergeIssue].slice(0, 3).join("; "),
-                  { stepId: "MR:MjsGenerate", attempt }
-                );
-                generateStep.failAttempt(attempt, {
-                  detail: mjsAttemptDetail(`${mergeIssue}，继续 patch 修复`, attempt),
-                  ...MJS_PROGRESS_OPTS,
-                });
-                lastFailure = {
-                  kind: "patch",
-                  errors: [mergeIssue, ...applied.failures, ...lastFailure!.errors.slice(0, 10)],
-                  rawContent: rawPatch,
-                };
-                if (attempt >= MAX_MJS_ATTEMPTS) {
-                  throw new LlmStageFailure(
-                    feedbackFromLlmAttempt(rawPatch, null, "补丁未命中", applied.failures)
-                  );
-                }
-                continue;
-              }
-              mjsSource = finalizeMjsSource(applied.source);
-              stepDone(
-                `  应用补丁 ${applied.applied} 处（尝试 ${attempt}）`,
-                tApply,
-                applied.failures.length > 0 ? applied.failures.join("; ") : undefined,
-                { stepId: "MR:MjsGenerate", attempt }
-              );
-              fs.writeFileSync(path.join(logDir, `05-patched-attempt-${attempt}.mjs`), mjsSource);
-              generateStep.succeed();
-
-              validateStep.start(attempt, {
-                detail: mjsAttemptDetail("node 执行 mjs（patch 后）", attempt),
-                ...MJS_PROGRESS_OPTS,
-              });
-              const tNode = stepStart();
-              console.log(`${LOG_TAG}   node 执行 mjs（patch 后，尝试 ${attempt}）…`);
-              const patchRun = runValidate(mjsSource);
-              fs.writeFileSync(
-                path.join(logDir, `02-mjs-run-attempt-${attempt}.log`),
-                patchRun.mjsStdout
-              );
-              stepDone( `  node 执行完成（patch 后，尝试 ${attempt}）`, tNode);
-
-              if (!patchRun.ok && patchRun.nodeFailed) {
-                validateStep.failAttempt(attempt, {
-                  detail: mjsAttemptDetail("patch 后 mjs 执行失败", attempt),
-                  ...MJS_PROGRESS_OPTS,
-                });
-                lastFailure = { kind: "node", errors: patchRun.allIssues, rawContent: mjsSource };
-                stepDone(`  mjs 执行失败（patch 后，尝试 ${attempt}）`, tNode, undefined, {
-                  stepId: "MR:RunValidate",
-                  attempt,
-                });
-                if (attempt >= MAX_MJS_ATTEMPTS) {
-                  throw new LlmStageFailure(
-                    feedbackFromLlmAttempt(
-                      mjsSource,
-                      null,
-                      "patch 后 mjs 执行失败",
-                      patchRun.allIssues
-                    )
-                  );
-                }
-                continue;
-              }
-
-              const tValidate = stepStart();
-              if (!patchRun.ok) {
-                validateStep.failAttempt(attempt, {
-                  detail: mjsAttemptDetail("validate 未通过（patch 后）", attempt),
-                  ...MJS_PROGRESS_OPTS,
-                });
-                lastFailure = { kind: "validate", errors: patchRun.allIssues };
-                writeValidateErrorLog(logDir, attempt, patchRun.allIssues);
-                stepDone(`  validate 未通过（patch 后，尝试 ${attempt}）`, tValidate, undefined, {
-                  stepId: "MR:RunValidate",
-                  attempt,
-                });
-                if (attempt >= MAX_MJS_ATTEMPTS) {
-                  throw new LlmStageFailure(
-                    feedbackFromLlmAttempt(
-                      mjsSource,
-                      null,
-                      "validate 未通过",
-                      patchRun.allIssues.slice(0, 25)
-                    )
-                  );
-                }
-                continue;
-              }
-              stepDone( `  validate 通过（patch 后，尝试 ${attempt}）`, tValidate);
-              validateStep.succeed();
-              const patchVisualGate = runVisualLintGate(
-                patchRun.templatePath,
-                attempt,
-                "检查视觉质量门（patch 后）",
-                visualBlueprint
-              );
-              if (!patchVisualGate.accept) {
-                lastFailure = {
-                  kind: "visual",
-                  errors: visualGateErrors(patchVisualGate),
-                  rawContent: mjsSource,
-                };
-                if (attempt >= MAX_MJS_ATTEMPTS) {
-                  throw new LlmStageFailure(
-                    feedbackFromLlmAttempt(
-                      mjsSource,
-                      null,
-                      "visual lint 未通过",
-                      patchVisualGate.blocking.slice(0, 25)
-                    )
-                  );
-                }
-                continue;
-              }
-              generateStep.succeed();
-              mjsStdout = patchRun.mjsStdout;
+            const outcome: AttemptOutcome = useValidatePatchPath
+              ? await runPatchRepairAttempt(attemptCtx, attempt, mjsSource, lastFailure!)
+              : await runGenerateAttempt(attemptCtx, attempt, mjsSource, lastFailure);
+            mjsSource = outcome.mjsSource;
+            if (outcome.kind === "success") {
+              mjsStdout = outcome.mjsStdout;
               attemptOk = true;
               break;
             }
-
-            const allowFullBodyGenerate = mjsGenerateMode !== "delta-first";
-            const regenHint =
-              allowFullBodyGenerate && lastFailure?.kind === "generate" && lastFailure.errors.length > 0
-                ? buildMjsFullRegenHint({
-                    previousOutput: lastFailure.rawContent ?? mjsSource,
-                    errors: lastFailure.errors,
-                  })
-                : "";
-
-            const tryDeltaFirst =
-              mjsGenerateMode === "delta-first" && attempt === 1 && !regenHint;
-            let rawMjs = "";
-            let post: MjsPostProcessResult | null = null;
-
-            if (tryDeltaFirst) {
-              const motherBody = buildMotherMjsBody();
-              fs.writeFileSync(path.join(logDir, "01-mother-body.mjs"), motherBody);
-
-              const tDeltaLlm = stepStart();
-              console.log(`${LOG_TAG}   豆包 MR:MjsGenerate API（尝试 1 · 底稿+patch）…`);
-              const rawDelta = await deltaLlm.complete([
-                { role: "system", content: buildMjsDeltaSystemPrompt(injectedAssets, visualBlueprint) },
-                {
-                  role: "user",
-                  content: [
-                    { type: "image_url", image_url: { url: imageDataUrl } },
-                    {
-                      type: "text",
-                      text: buildMjsDeltaUserText({
-                        idPrefix: mjsScaffold.idPrefix,
-                        motherBody,
-                      }),
-                    },
-                  ],
-                },
-              ]);
-              stepDone("  豆包 API 返回（底稿+patch）", tDeltaLlm, undefined, {
-                stepId: "MR:MjsGenerate",
-                attempt,
-              });
-              fs.writeFileSync(path.join(logDir, `01-llm-delta-attempt-${attempt}.txt`), rawDelta);
-
-              const tApplyDelta = stepStart();
-              const deltaPatches = parseMjsPatchesFromLlm(rawDelta);
-              const deltaApplied = applyMjsPatches(motherBody, deltaPatches);
-              fs.writeFileSync(
-                path.join(logDir, `01-delta-merged-attempt-${attempt}.mjs`),
-                deltaApplied.source
-              );
-
-              if (isMjsPatchMergeClean(deltaApplied, deltaPatches.length)) {
-                rawMjs = rawDelta;
-                post = tryPostProcessMjsFromBody(deltaApplied.source, injectedAssets, mjsScaffold);
-                stepDone(
-                  `  底稿 merge ${deltaApplied.applied} 处补丁（尝试 ${attempt}）`,
-                  tApplyDelta,
-                  undefined,
-                  { stepId: "MR:MjsGenerate", attempt }
-                );
-              } else {
-                const mergeIssue = deltaApplied.hasPatchArtifacts
-                  ? "merge 后残留 patch 标记"
-                  : deltaApplied.applied === 0
-                    ? "patch 未命中"
-                    : `patch 未全部命中（${deltaApplied.applied}/${deltaPatches.length}）`;
-                stepDone(
-                  `  底稿 ${mergeIssue}，继续 patch 修复（尝试 ${attempt}）`,
-                  tApplyDelta,
-                  [...deltaApplied.failures, mergeIssue].slice(0, 3).join("; "),
-                  { stepId: "MR:MjsGenerate", attempt }
-                );
-                generateStep.logDetail(
-                  mjsAttemptDetail(`底稿 ${mergeIssue}，继续 patch 修复`, attempt),
-                  { attempt, ...MJS_PROGRESS_OPTS }
-                );
-                const partialPost = tryPostProcessMjsFromBody(
-                  deltaApplied.source,
-                  injectedAssets,
-                  mjsScaffold
-                );
-                mjsSource = partialPost.source;
-                lastFailure = {
-                  kind: "patch",
-                  errors: [mergeIssue, ...deltaApplied.failures, ...partialPost.errors],
-                  rawContent: rawDelta,
-                };
-                if (attempt >= MAX_MJS_ATTEMPTS) {
-                  throw new LlmStageFailure(
-                    feedbackFromLlmAttempt(rawDelta, null, mergeIssue, deltaApplied.failures)
-                  );
-                }
-                continue;
-              }
-            }
-
-            if (!post) {
-              if (!allowFullBodyGenerate) {
-                throw new LlmStageFailure(
-                  feedbackFromLlmAttempt(
-                    mjsSource,
-                    null,
-                    "底稿 patch 未产出可执行 mjs",
-                    lastFailure?.errors ?? []
-                  )
-                );
-              }
-              const tLlm = stepStart();
-              console.log(
-                `${LOG_TAG}   豆包 MR:MjsGenerate API（尝试 ${attempt}${regenHint ? " · 整段重写" : tryDeltaFirst ? " · 整段生成" : " · 首次"}）…`
-              );
-              rawMjs = await generateLlm.complete([
-                { role: "system", content: buildMjsGeneratorSystemPrompt(injectedAssets, visualBlueprint) },
-                {
-                  role: "user",
-                  content: [
-                    { type: "image_url", image_url: { url: imageDataUrl } },
-                    {
-                      type: "text",
-                      text:
-                        buildMjsGeneratorUserText({
-                          idPrefix: mjsScaffold.idPrefix,
-                        }) + regenHint,
-                    },
-                  ],
-                },
-              ]);
-              stepDone(`  豆包 API 返回（尝试 ${attempt}）`, tLlm, undefined, {
-                stepId: "MR:MjsGenerate",
-                attempt,
-              });
-              fs.writeFileSync(path.join(logDir, `01-llm-raw-attempt-${attempt}.txt`), rawMjs);
-              post = tryPostProcessMjs(rawMjs, injectedAssets, mjsScaffold);
-            }
-
-            const tPost = stepStart();
-            if (!post.ok && post.source === "") {
-              stepDone( `  程序处理 mjs 失败（尝试 ${attempt}）`, tPost);
-              const detail = mjsAttemptDetail("程序处理 mjs 失败", attempt);
-              generateStep.failAttempt(attempt, { detail, ...MJS_PROGRESS_OPTS });
-              lastFailure = {
-                kind: "generate",
-                errors: post.errors,
-                rawContent: rawMjs,
-              };
-              if (attempt >= MAX_MJS_ATTEMPTS) {
-                throw new LlmStageFailure(
-                  feedbackFromLlmAttempt(rawMjs, null, post.errors[0] ?? "提取 mjs 失败", post.errors)
-                );
-              }
-              continue;
-            }
-
-            mjsSource = post.source;
-            if (post.ok) {
-              const tProactiveAutofix = stepStart();
-              const proactive = applyMjsAutofix(mjsSource, []);
-              if (proactive.changed) {
-                mjsSource = finalizeMjsSource(proactive.source, []);
-                fs.writeFileSync(
-                  path.join(logDir, `03-autofix-proactive-attempt-${attempt}.mjs`),
-                  mjsSource
-                );
-                stepDone(
-                  `  程序 proactive autofix（尝试 ${attempt}）`,
-                  tProactiveAutofix,
-                  proactive.fixes.join(" · "),
-                  { stepId: "MR:MjsGenerate", attempt }
-                );
-              } else {
-                stepDone(`  程序 proactive autofix 无改动（尝试 ${attempt}）`, tProactiveAutofix);
-              }
-              stepDone( `  程序处理并写入 mjs（尝试 ${attempt}）`, tPost, mjsPath);
-              generateStep.succeed();
-            } else {
-              stepDone(
-                `  程序处理 mjs 失败（尝试 ${attempt}）`,
-                tPost,
-                post.errors.join(" · "),
-                { stepId: "MR:MjsGenerate", attempt }
-              );
-              fs.writeFileSync(path.join(logDir, `01-postprocess-warn-attempt-${attempt}.txt`), post.errors.join("\n"));
-              const detail = mjsAttemptDetail(
-                `程序处理 mjs 失败（${post.errors[0] ?? "完整性校验未通过"}）`,
-                attempt
-              );
-              generateStep.failAttempt(attempt, { detail, ...MJS_PROGRESS_OPTS });
-              lastFailure = { kind: "node", errors: post.errors, rawContent: rawMjs };
-              if (attempt >= MAX_MJS_ATTEMPTS) {
-                throw new LlmStageFailure(
-                  feedbackFromLlmAttempt(mjsSource, null, post.errors[0] ?? "mjs 执行失败", post.errors)
-                );
-              }
-              continue;
-            }
-
-            validateStep.start(attempt, {
-              detail: mjsAttemptDetail("node 执行 mjs", attempt),
-              ...MJS_PROGRESS_OPTS,
-            });
-            const tNode = stepStart();
-            console.log(`${LOG_TAG}   node 执行 mjs（尝试 ${attempt}）…`);
-            const genRun = runValidate(mjsSource);
-            fs.writeFileSync(path.join(logDir, `02-mjs-run-attempt-${attempt}.log`), genRun.mjsStdout);
-            stepDone( `  node 执行完成（尝试 ${attempt}）`, tNode);
-
-            const runIssues = mergeRunIssues(post, genRun.allIssues);
-
-            if (genRun.nodeFailed && !genRun.ok) {
-              validateStep.failAttempt(attempt, {
-                detail: mjsAttemptDetail("mjs 执行失败", attempt),
-                ...MJS_PROGRESS_OPTS,
-              });
-              lastFailure = { kind: "node", errors: runIssues, rawContent: rawMjs };
-              stepDone( `  mjs 执行失败（尝试 ${attempt}）`, tNode);
-              if (attempt >= MAX_MJS_ATTEMPTS) {
-                throw new LlmStageFailure(
-                  feedbackFromLlmAttempt(mjsSource, null, "mjs 执行失败", runIssues)
-                );
-              }
-              continue;
-            }
-
-            const tValidate = stepStart();
-            if (!genRun.ok) {
-              const tReactiveAutofix = stepStart();
-              const reactive = tryReactiveAutofixBeforeRetry(mjsSource, runIssues);
-              mjsSource = reactive.source;
-              if (reactive.changed) {
-                fs.writeFileSync(
-                  path.join(logDir, `03-autofix-reactive-attempt-${attempt}.mjs`),
-                  reactive.source
-                );
-                stepDone(
-                  `  程序 reactive autofix（尝试 ${attempt}）`,
-                  tReactiveAutofix,
-                  reactive.fixes.join(" · "),
-                  { stepId: "MR:MjsGenerate", attempt }
-                );
-                const retryRun = runValidate(mjsSource);
-                fs.writeFileSync(
-                  path.join(logDir, `02-mjs-run-attempt-${attempt}-autofix.log`),
-                  retryRun.mjsStdout
-                );
-                if (retryRun.ok) {
-                  stepDone(`  validate 通过（reactive autofix 后，尝试 ${attempt}）`, tValidate);
-                  validateStep.succeed();
-                  const retryVisualGate = runVisualLintGate(
-                    retryRun.templatePath,
-                    attempt,
-                    "检查视觉质量门（reactive autofix 后）",
-                    visualBlueprint
-                  );
-                  if (!retryVisualGate.accept) {
-                    lastFailure = {
-                      kind: "visual",
-                      errors: visualGateErrors(retryVisualGate),
-                      rawContent: mjsSource,
-                    };
-                    if (attempt >= MAX_MJS_ATTEMPTS) {
-                      throw new LlmStageFailure(
-                        feedbackFromLlmAttempt(
-                          mjsSource,
-                          null,
-                          "visual lint 未通过",
-                          retryVisualGate.blocking.slice(0, 25)
-                        )
-                      );
-                    }
-                    continue;
-                  }
-                  generateStep.succeed();
-                  mjsStdout = retryRun.mjsStdout;
-                  attemptOk = true;
-                  break;
-                }
-                runIssues.splice(0, runIssues.length, ...mergeRunIssues(post, retryRun.allIssues));
-              } else {
-                stepDone(`  程序 reactive autofix 无改动（尝试 ${attempt}）`, tReactiveAutofix);
-              }
-
-              validateStep.failAttempt(attempt, {
-                detail: mjsAttemptDetail("validate 未通过", attempt),
-                ...MJS_PROGRESS_OPTS,
-              });
-              lastFailure = { kind: "validate", errors: runIssues, rawContent: rawMjs };
-              writeValidateErrorLog(logDir, attempt, runIssues);
-              stepDone( `  validate 未通过（尝试 ${attempt}）`, tValidate);
-              if (attempt >= MAX_MJS_ATTEMPTS) {
-                throw new LlmStageFailure(
-                  feedbackFromLlmAttempt(
-                    mjsSource,
-                    null,
-                    "validate 未通过",
-                    runIssues.slice(0, 25)
-                  )
-                );
-              }
-              continue;
-            }
-            stepDone( `  validate 通过（尝试 ${attempt}）`, tValidate);
-            validateStep.succeed();
-            const genVisualGate = runVisualLintGate(
-              genRun.templatePath,
-              attempt,
-              "检查视觉质量门",
-              visualBlueprint
-            );
-            if (!genVisualGate.accept) {
-              lastFailure = {
-                kind: "visual",
-                errors: visualGateErrors(genVisualGate),
-                rawContent: mjsSource,
-              };
-              if (attempt >= MAX_MJS_ATTEMPTS) {
-                throw new LlmStageFailure(
-                  feedbackFromLlmAttempt(
-                    mjsSource,
-                    null,
-                    "visual lint 未通过",
-                    genVisualGate.blocking.slice(0, 25)
-                  )
-                );
-              }
-              continue;
-            }
-            generateStep.succeed();
-            mjsStdout = genRun.mjsStdout;
-            attemptOk = true;
-            break;
+            lastFailure = outcome.lastFailure;
           } finally {
             stepDone(
               `尝试 ${attempt} ${attemptOk ? "成功" : "结束（将重试或失败）"}`,
