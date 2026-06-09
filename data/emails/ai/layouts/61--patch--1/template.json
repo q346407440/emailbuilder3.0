@@ -1,0 +1,1929 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "ai",
+  "templateId": "ai",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "ai-root",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "画布根"
+    },
+    "props": {
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "ai-s1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "顶部栏+导航栏+首屏图"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s1-top",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "顶部提示栏"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "backgroundColor": "#FFFFFF",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s1-top-left",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "左侧提示"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "You can still get a voucher on your next purchase."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-top-right",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "右侧链接"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "View this email online"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "right",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "ai-s1-nav",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "导航栏"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "24px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "backgroundColor": "#000000",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s1-nav-logo",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "阿迪达斯logo"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "60px",
+                  "heightMode": "fixed",
+                  "height": "32px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "#",
+                    "alt": "adidas logo",
+                    "fit": "contain",
+                    "position": "center",
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    }
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-nav-men",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "导航-男士"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "MEN"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "14px",
+                  "color": "#FFFFFF",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-nav-women",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "导航-女士"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "WOMEN"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "14px",
+                  "color": "#FFFFFF",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-nav-kids",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "导航-儿童"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "KIDS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "14px",
+                  "color": "#FFFFFF",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-nav-store",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "导航-门店"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "STORE FINDER"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "14px",
+                  "color": "#FFFFFF",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "ai-s1-hero",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "首屏主图"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": "8px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "right",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "480px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "8px"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/15981465/pexels-photo-15981465.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+                "alt": "two happy young people wearing adidas sportswear laughing outdoors",
+                "fit": "cover",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "8px"
+                }
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s1-hero-badge",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "右上角adiclub标识"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "adiclub"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "32px",
+                  "color": "#FFFFFF",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "right",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ai-s2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "生日券提示模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "32px",
+            "left": "20px"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s2-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "主标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "YOUR BIRTHDAY\nVOUCHER IS STILL HERE"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "48px",
+              "color": "#000000",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s2-desc1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "描述1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "We hope you've had an unforgettable birthday. And remember, you can still get 15% off your next order."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#000000",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s2-desc2",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "描述2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Head over to our website and find what's next"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#000000",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s2-cta",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "立即购买按钮"
+            },
+            "props": {
+              "text": "SHOP NOW →",
+              "link": {
+                "href": "#",
+                "type": "external"
+              },
+              "buttonStyle": {
+                "fontSize": "16px",
+                "textColor": "#FFFFFF",
+                "backgroundColor": "#000000",
+                "bold": false,
+                "italic": false,
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                },
+                "widthMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "widthMode": "fixed",
+              "width": "220px",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "ai-s3",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "优惠码模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#F5F3EE",
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "32px",
+            "left": "20px"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s3-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "优惠标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "15% OFF. JUST FOR\nYOU."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "48px",
+              "color": "#000000",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s3-desc1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "兑换说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "To redeem offer, enter promo code below during online checkout."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#000000",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s3-desc2",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "有效期说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Limited time offer valid until October 08, 2025."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#000000",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s3-code-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "优惠码与兑换按钮行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "16px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s3-code",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "优惠码容器"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "220px",
+                  "heightMode": "fixed",
+                  "height": "48px",
+                  "backgroundColor": "#FFFFFF",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s3-code-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "优惠码"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "BDAY-SMLS-DVS"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#000000",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s3-cta",
+                "type": "button",
+                "blockMeta": {
+                  "blockType": "action.button",
+                  "name": "在线兑换按钮"
+                },
+                "props": {
+                  "text": "REDEEM ONLINE →",
+                  "link": {
+                    "href": "#",
+                    "type": "external"
+                  },
+                  "buttonStyle": {
+                    "fontSize": "16px",
+                    "textColor": "#FFFFFF",
+                    "backgroundColor": "#000000",
+                    "bold": false,
+                    "italic": false,
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    },
+                    "widthMode": "hug"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "280px",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ai-s4",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "阿迪达斯APP推广模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "border": {
+            "mode": "unified",
+            "width": "1px",
+            "style": "solid",
+            "color": "#000000"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "32px",
+            "left": "20px"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s4-app-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "APP推广行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "24px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s4-app-logo",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "阿迪达斯APPlogo"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "backgroundImage": {
+                    "src": "#",
+                    "alt": "",
+                    "fit": "contain",
+                    "position": "center",
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "0"
+                    }
+                  },
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "100px",
+                  "heightMode": "fixed",
+                  "height": "100px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "16px"
+                  },
+                  "backgroundColor": "#000000"
+                }
+              },
+              {
+                "id": "ai-s4-app-text",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "APP推广文字"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s4-app-title",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "APP标题"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "THE WORLD\nOF ADIDAS APPS"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "32px",
+                      "color": "#000000",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s4-app-link",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "发现链接"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "DISCOVER"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "20px",
+                      "color": "#000000",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ai-s5",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "社交媒体模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "border": {
+            "mode": "unified",
+            "width": "1px",
+            "style": "solid",
+            "color": "#F5F3EE"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "32px",
+            "left": "20px"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s5-social",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "社交媒体图标行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "48px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s5-ig",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "Instagram图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/brand-instagram.svg",
+                  "size": "32px",
+                  "color": "#000000"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s5-yt",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "Youtube图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/brand-youtube.svg",
+                  "size": "32px",
+                  "color": "#000000"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s5-x",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "X图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/brand-x.svg",
+                  "size": "32px",
+                  "color": "#000000"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s5-pin",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "Pinterest图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/brand-pinterest.svg",
+                  "size": "32px",
+                  "color": "#000000"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ai-s6",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "页脚模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "border": {
+            "mode": "unified",
+            "width": "1px",
+            "style": "solid",
+            "color": "#F5F3EE"
+          },
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s6-links",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "页脚链接行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "16px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s6-link-privacy",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "隐私声明"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Privacy Statement"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s6-link-support",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "支持"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Support"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s6-link-account",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "我的账户"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "My Account"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s6-link-unsubscribe",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "退订"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Unsubscribe"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "ai-s6-link-site",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "官网"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "adidas.com"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#000000",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "ai-s6-terms",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "条款说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "*Limited time offer valid for 8 days from the date of this email. Discount applied to product price at checkout and gives maximum discount value of $400. Must be logged in to adiClub account for voucher to apply to purchase. Cannot be combined with other vouchers or discount codes. Not valid on adidas gift cards and select products. Valid on domestic US orders and participating US stores only. adidas reserves the right to end or change promotions at any time."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s6-copyright",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "版权信息"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "© 2025 adidas America, Inc. adidas and the 3-Stripes mark are registered trademarks of adidas America 5055 N. Greeley Avenue Portland, OR 97217 www.adidas.com"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

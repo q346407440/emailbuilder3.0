@@ -1,0 +1,3444 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "engagement_post_purchase_doubao_test_v2",
+  "templateId": "engagement_post_purchase_doubao_test_v2",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "engageme-root",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "画布根"
+    },
+    "props": {
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "engageme-s1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "顶部通知栏"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#E4212D",
+          "padding": {
+            "mode": "separate",
+            "top": "12px",
+            "right": "20px",
+            "bottom": "12px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s1-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "奖励通知行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "12px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s1-amount",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "奖励金额"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "$2"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "24px",
+                  "color": "#FFFFFF",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s1-divider",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "分割线"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "1px",
+                  "heightMode": "fixed",
+                  "height": "32px",
+                  "backgroundColor": "rgba(255,255,255,0.3)",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s1-text-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "通知文案"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "2px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s1-title",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "用户名"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Smiles Davis"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "16px",
+                      "color": "#FFFFFF",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "engageme-s1-subtitle",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "提示文案"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Redeem your well-earned $2 now!"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "engageme-s1-member-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "会员标识"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "4px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "right",
+                    "vertical": "center"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s1-star",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "会员星标"
+                    },
+                    "props": {
+                      "src": "",
+                      "size": "24px",
+                      "color": "#FFFFFF"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "engageme-s1-member",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "会员文字"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Member"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#FFFFFF",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "engageme-s2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "首屏美容区"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "0",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s2-title-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "美容标题行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "8px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s2-scissors",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "剪刀图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/scissors.svg",
+                  "size": "32px",
+                  "color": "#E4212D"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s2-title",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "美容标题"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "GROOMING"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "32px",
+                  "color": "#E4212D",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "engageme-s2-subtitle",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "副标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Freshen up your pup"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "28px",
+              "color": "#E4212D",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s2-hero",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "首图"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "height": "380px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/19145876/pexels-photo-19145876.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+                "alt": "groomer brushing dog",
+                "fit": "cover",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "engageme-s3",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "美容提示区"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s3-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "提示标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Here's how to know when your pup is overdue for a visit"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "20px",
+              "color": "#E4212D",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s3-content",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "提示内容行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "20px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s3-yorkie-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "约克夏图片容器"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fixed",
+                  "width": "160px",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s3-yorkie",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "约克夏图片"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/6734032/pexels-photo-6734032.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "yorkshire terrier",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "0"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "engageme-s3-list-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "提示列表"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "20px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s3-item1",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "提示项1"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "12px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "engageme-s3-badge1",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "序号徽章"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "widthMode": "fixed",
+                          "width": "28px",
+                          "heightMode": "fixed",
+                          "height": "28px",
+                          "backgroundColor": "#E4212D",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "9999px"
+                          },
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "center"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "engageme-s3-badge1-text",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "序号1"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "1"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": "16px",
+                              "color": "#FFFFFF",
+                              "bold": true,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "engageme-s3-text1",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "提示1文字"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "You can hear the \"click clack\" of their nails on the floor"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "16px",
+                          "color": "#111111",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "engageme-s3-item2",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "提示项2"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "12px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "engageme-s3-badge2",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "序号徽章"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "widthMode": "fixed",
+                          "width": "28px",
+                          "heightMode": "fixed",
+                          "height": "28px",
+                          "backgroundColor": "#E4212D",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "9999px"
+                          },
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "center"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "engageme-s3-badge2-text",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "序号2"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "2"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": "16px",
+                              "color": "#FFFFFF",
+                              "bold": true,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "engageme-s3-text2",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "提示2文字"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "They are scratching their ears & biting at their nails"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "16px",
+                          "color": "#111111",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "engageme-s3-item3",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "提示项3"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "12px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "engageme-s3-badge3",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "序号徽章"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "widthMode": "fixed",
+                          "width": "28px",
+                          "heightMode": "fixed",
+                          "height": "28px",
+                          "backgroundColor": "#E4212D",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "9999px"
+                          },
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "center"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "engageme-s3-badge3-text",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "序号3"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "3"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": "16px",
+                              "color": "#FFFFFF",
+                              "bold": true,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "hug",
+                              "heightMode": "hug",
+                              "border": {
+                                "mode": "unified",
+                                "width": "0",
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)"
+                              },
+                              "borderRadius": {
+                                "mode": "unified",
+                                "radius": "0"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "engageme-s3-text3",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "提示3文字"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "That \"wet dog\" smell won't go away"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "16px",
+                          "color": "#111111",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "engageme-s4",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "掉毛服务区"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": "0",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s4-shedding-img",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "掉毛服务图"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "height": "280px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/6131578/pexels-photo-6131578.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+                "alt": "groomer holding corgi",
+                "fit": "cover",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                }
+              }
+            }
+          },
+          {
+            "id": "engageme-s4-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Keep your house fur-free this shedding season"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "28px",
+              "color": "#E4212D",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s4-desc",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "描述"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Our FURminator services help reduce shedding up to 90% with a low-shed shampoo, deShedding conditioner, blow-out & extra brushing.**"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#111111",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s4-cta",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "预约按钮"
+            },
+            "props": {
+              "text": "Book now",
+              "link": {
+                "href": "#",
+                "type": "external"
+              },
+              "buttonStyle": {
+                "fontSize": "16px",
+                "textColor": "#FFFFFF",
+                "backgroundColor": "#2563EB",
+                "bold": false,
+                "italic": false,
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "4px"
+                },
+                "widthMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fixed",
+              "width": "200px",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "engageme-s5",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "会员福利区"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#F5F5F5",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "16px"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s5-reward-img",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "福利图"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": "8px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "240px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "8px"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/6131576/pexels-photo-6131576.jpeg?auto=compress&cs=tinysrgb&h=350",
+                "alt": "groomer trimming french bulldog nails",
+                "fit": "cover",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "8px"
+                }
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s5-badge",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "新会员福利徽章"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "backgroundColor": "#2563EB",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "9999px"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s5-badge-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "徽章文字"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "NEW MEMBER BENEFIT"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "engageme-s5-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "福利标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Salon Reward Certificates"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "24px",
+              "color": "#E4212D",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s5-desc",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "福利描述"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Earn up to two $10 certificates per year. Just purchase a bath or groom & you'll receive your certificate the following month via email & the app.†"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "16px",
+              "color": "#111111",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s5-cta-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "按钮行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "16px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s5-cta1",
+                "type": "button",
+                "blockMeta": {
+                  "blockType": "action.button",
+                  "name": "预约按钮"
+                },
+                "props": {
+                  "text": "Book now",
+                  "link": {
+                    "href": "#",
+                    "type": "external"
+                  },
+                  "buttonStyle": {
+                    "fontSize": "16px",
+                    "textColor": "#FFFFFF",
+                    "backgroundColor": "#E4212D",
+                    "bold": false,
+                    "italic": false,
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "4px"
+                    },
+                    "widthMode": "hug"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s5-cta2",
+                "type": "button",
+                "blockMeta": {
+                  "blockType": "action.button",
+                  "name": "查看福利按钮"
+                },
+                "props": {
+                  "text": "View all benefits",
+                  "link": {
+                    "href": "#",
+                    "type": "external"
+                  },
+                  "buttonStyle": {
+                    "fontSize": "16px",
+                    "textColor": "#FFFFFF",
+                    "backgroundColor": "#E4212D",
+                    "bold": false,
+                    "italic": false,
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "4px"
+                    },
+                    "widthMode": "hug"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "engageme-s6",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "优惠券区"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#E4212D",
+          "padding": {
+            "mode": "separate",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s6-content",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "优惠券内容"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s6-text-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "文案容器"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "12px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s6-title-row",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "优惠券标题行"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "engageme-s6-scissors",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "剪刀图标"
+                        },
+                        "props": {
+                          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/scissors.svg",
+                          "size": "24px",
+                          "color": "#FFFFFF"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      },
+                      {
+                        "id": "engageme-s6-title",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "优惠券标题"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "GROOMING"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": "20px",
+                          "color": "#FFFFFF",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "mode": "unified",
+                            "width": "0",
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)"
+                          },
+                          "borderRadius": {
+                            "mode": "unified",
+                            "radius": "0"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "engageme-s6-amount",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "优惠金额"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Save $20"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "36px",
+                      "color": "#FFFFFF",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "engageme-s6-subtitle",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "优惠说明"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "on your pup's next bath or groom"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "18px",
+                      "color": "#FFFFFF",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "engageme-s6-expiry",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "有效期"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "thru 12/15‡‡"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "engageme-s6-cta1",
+                    "type": "button",
+                    "blockMeta": {
+                      "blockType": "action.button",
+                      "name": "领券按钮"
+                    },
+                    "props": {
+                      "text": "Get coupon",
+                      "link": {
+                        "href": "#",
+                        "type": "external"
+                      },
+                      "buttonStyle": {
+                        "fontSize": "16px",
+                        "textColor": "#2563EB",
+                        "backgroundColor": "#FFFFFF",
+                        "bold": false,
+                        "italic": false,
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "4px"
+                        },
+                        "widthMode": "hug"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "engageme-s6-cta2",
+                    "type": "button",
+                    "blockMeta": {
+                      "blockType": "action.button",
+                      "name": "预约按钮"
+                    },
+                    "props": {
+                      "text": "Book now",
+                      "link": {
+                        "href": "#",
+                        "type": "external"
+                      },
+                      "buttonStyle": {
+                        "fontSize": "16px",
+                        "textColor": "#2563EB",
+                        "backgroundColor": "#FFFFFF",
+                        "bold": false,
+                        "italic": false,
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "4px"
+                        },
+                        "widthMode": "hug"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "engageme-s6-img-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "图片容器"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fixed",
+                  "width": "300px",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "engageme-s6-coupon-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "优惠券图片"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "height": "380px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/6816837/pexels-photo-6816837.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "groomer grooming terrier",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "0"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "engageme-s7",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "页脚区"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "engageme-s7-logo-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "logo行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "16px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s7-logo1",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "PetSmart logo"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "PETSMART"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "24px",
+                  "color": "#E4212D",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-divider",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "分割线"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "1px",
+                  "heightMode": "fixed",
+                  "height": "24px",
+                  "backgroundColor": "#666666",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-logo2",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Treats logo"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Treats rewards"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "20px",
+                  "color": "#E4212D",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "engageme-s7-icon-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "图标行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "24px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s7-icon-location",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "位置图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/map-pin.svg",
+                  "size": "20px",
+                  "color": "#111111"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-icon-ig",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "Instagram图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/instagram.svg",
+                  "size": "20px",
+                  "color": "#111111"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-icon-fb",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "Facebook图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/facebook.svg",
+                  "size": "20px",
+                  "color": "#111111"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-icon-yt",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "Youtube图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/youtube.svg",
+                  "size": "20px",
+                  "color": "#111111"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-icon-appstore",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "AppStore图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/apple.svg",
+                  "size": "20px",
+                  "color": "#111111"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-icon-googleplay",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "GooglePlay图标"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/googleplay.svg",
+                  "size": "20px",
+                  "color": "#111111"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "engageme-s7-divider-line",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "分割线"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "1px",
+              "backgroundColor": "#E5E5E5",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-address",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "地址"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "PetSmart, 19601 N 27th Ave, Phoenix, AZ 85027, 888-839-9638."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-trademark",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "商标声明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "All featured trademarks, service marks and logos are the property of their respective owners. Prices and availability of products and services are subject to change without notice and selection may vary by location."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-noreply",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "回复提示"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Please do not reply directly to this message as we are not able to respond to messages sent to this address. For questions or concerns, please visit the Contact Us page on our site or app to reach our Customer Care team."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-rewards",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "奖励说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Treats Rewards points and redeemable dollars featured in this email reflect your account activity as of 9/3/24. Points history is available to view here. Treats Rewards terms & conditions apply. See petsmart.com/treats-rewards for details. Prices and selection may vary by store and online. While supplies last."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-terms1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "条款1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "**Terms & conditions apply. Click here for complete details."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-terms2",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "条款2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "†Terms & conditions apply. Click here for complete details."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-terms3",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "条款3"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "‡‡Offer valid through 12/15/24 in stores only with Treats Rewards. Excludes Quick Wash. Must use Treats Rewards ID in stores at checkout to receive discount. Prices vary by store and may be higher for weekend appointments. At the sole discretion of PetSmart. Some pets, health & vaccination requirements apply for all services."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#666666",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "engageme-s7-footer-links",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "页脚链接"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "8px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "engageme-s7-link1",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "浏览器查看"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "view in browser"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#111111",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-link-divider1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "分割线"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "1px",
+                  "heightMode": "fixed",
+                  "height": "12px",
+                  "backgroundColor": "#666666",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-link2",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "隐私政策"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "privacy policy"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#111111",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-link-divider2",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "分割线"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "1px",
+                  "heightMode": "fixed",
+                  "height": "12px",
+                  "backgroundColor": "#666666",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              {
+                "id": "engageme-s7-link3",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "退订"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "unsubscribe"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#111111",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

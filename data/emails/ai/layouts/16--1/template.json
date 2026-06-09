@@ -1,0 +1,3181 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "ai",
+  "templateId": "ai",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "ai-root",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "画布根"
+    },
+    "props": {
+      "padding": {
+        "mode": "unified",
+        "unified": "0"
+      },
+      "backgroundColor": "#F7EEE2",
+      "width": "600px",
+      "border": {
+        "mode": "unified",
+        "width": "0",
+        "style": "solid",
+        "color": "rgba(0,0,0,0)"
+      },
+      "gapMode": "fixed",
+      "gap": "0"
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "ai-s1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "首屏模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#F7EEE2",
+          "padding": {
+            "mode": "separate",
+            "top": "0",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s1-hero",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "首屏主图"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "height": "380px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/5482774/pexels-photo-5482774.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+                "alt": "woman high fiving dalmatian dog at home",
+                "fit": "cover",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                }
+              }
+            }
+          },
+          {
+            "id": "ai-s1-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "首屏标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Don't forget to checkout so you can start improving your pup's health and mobility in as little as 3 weeks!*"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "22px",
+              "color": "#1A3D37",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s1-guide-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "健康指南行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "24px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s1-guide-img",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "健康指南封面"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "80px",
+                  "heightMode": "fixed",
+                  "height": "100px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "4px"
+                  },
+                  "backgroundImage": {
+                    "src": "https://images.pexels.com/photos/5163801/pexels-photo-5163801.jpeg?auto=compress&cs=tinysrgb&h=130",
+                    "alt": "pet joint health guide ebook cover",
+                    "fit": "cover",
+                    "position": "center",
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "4px"
+                    }
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-guide-text",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "健康指南文字"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Joint Health Guide"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "18px",
+                  "color": "#1A3D37",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "ai-s1-product-row",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "产品行"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "24px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s1-product-img",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "关节支持产品图"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "100px",
+                  "heightMode": "fixed",
+                  "height": "100px",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "4px"
+                  },
+                  "backgroundImage": {
+                    "src": "https://images.pexels.com/photos/17820730/pexels-photo-17820730.jpeg?auto=compress&cs=tinysrgb&h=130",
+                    "alt": "green dog hip and joint supplement jar product",
+                    "fit": "cover",
+                    "position": "center",
+                    "border": {
+                      "mode": "unified",
+                      "width": "0",
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)"
+                    },
+                    "borderRadius": {
+                      "mode": "unified",
+                      "radius": "4px"
+                    }
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              {
+                "id": "ai-s1-product-text",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "产品文字"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Advanced Hip & Joint Support for Large Breeds"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "18px",
+                  "color": "#1A3D37",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "ai-s1-cta",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "结账按钮"
+            },
+            "props": {
+              "text": "CHECKOUT NOW",
+              "link": {
+                "href": "#",
+                "type": "external"
+              },
+              "buttonStyle": {
+                "fontSize": "16px",
+                "textColor": "#FFFFFF",
+                "backgroundColor": "#1A3D37",
+                "bold": false,
+                "italic": false,
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "9999px"
+                },
+                "widthMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fixed",
+              "width": "300px",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "ai-s2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "用户评价模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#F7EEE2",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s2-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "模块标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "You're checking out Wuffes because you want the best for your pup and you're in the right place!"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "22px",
+              "color": "#1A3D37",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s2-desc",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "统计说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "99% of Wuffes joint chews customers saw improved mobility and decreased joint discomfort with 90 days of consistent use.*"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s2-ugc-grid",
+            "type": "grid",
+            "blockMeta": {
+              "blockType": "layout.grid",
+              "name": "用户评价网格"
+            },
+            "props": {
+              "columns": 3,
+              "gap": "12px",
+              "cellWidthMode": "auto",
+              "cellHeightMode": "content-max"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "padding": {
+                "mode": "unified",
+                "unified": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s2-card1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "用户评价卡片1"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "backgroundColor": "#FFFFFF",
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "1px",
+                    "style": "solid",
+                    "color": "#1A3D37"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "8px"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s2-card1-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "用户图1"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "120px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/7053469/pexels-photo-7053469.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "white terrier dog with pet supplement bottle",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card1-title",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评价标题1"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Our Georgina seems livelier than ever!"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#1A3D37",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card1-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评价内容1"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "This multivitamin works wonders, we've seen a huge improvement across energy levels, digestion (yep, no more runny poops) and overall happiness"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card1-stars",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评分1"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "⭐⭐⭐⭐⭐"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card1-author",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "作者1"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Tanesha"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s2-card2",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "用户评价卡片2"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "backgroundColor": "#FFFFFF",
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "1px",
+                    "style": "solid",
+                    "color": "#1A3D37"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "8px"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s2-card2-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "用户图2"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "120px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/34664698/pexels-photo-34664698.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "golden retriever dog playing in water with pet supplement products",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card2-title",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评价标题2"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "We started giving our Jason this multivitamin, AND the oil"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#1A3D37",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card2-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评价内容2"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "the Wuffes joint chews moves around with newfound ease. I was so happy when I started to notice an improvement, I could've cried. Thanks so much Wuffes, you made one happy dog momma."
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card2-stars",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评分2"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "⭐⭐⭐⭐⭐"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card2-author",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "作者2"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Levi"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s2-card3",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "用户评价卡片3"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "backgroundColor": "#FFFFFF",
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "1px",
+                    "style": "solid",
+                    "color": "#1A3D37"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "8px"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s2-card3-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "用户图3"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": "8px"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "120px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "8px"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/36952295/pexels-photo-36952295.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "german shepherd mix dog with pet supplement bottle",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "8px"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card3-title",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评价标题3"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Say goodbye to dry skin and dull fur!"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#1A3D37",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card3-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评价内容3"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "We started giving Lucie this multivitamin about a couple of weeks ago and noticed less itching and way shinier fur even at 11 years old!"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card3-stars",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评分3"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "⭐⭐⭐⭐⭐"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s2-card3-author",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "作者3"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Mike"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ai-s3",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "兽医推荐模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#F7EEE2",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s3-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "模块标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Recommended by Vets"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "22px",
+              "color": "#1A3D37",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s3-desc1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "说明1"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Veterinarians across the nation are raving about the results they've seen when recommending Wuffes products to their patients."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s3-desc2",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "说明2"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Just imagine the results your pup could see to improve their quality of life."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s3-vet1-card",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "兽医推荐卡片1"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "backgroundColor": "#24594F",
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "8px"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s3-vet1-img-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "兽医图1容器"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "180px",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s3-vet1-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "兽医图1"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/6234980/pexels-photo-6234980.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "female veterinarian in white coat on farm",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "0"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s3-vet1-content",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "兽医1内容"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s3-vet1-quote",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "引言"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "\""
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "32px",
+                      "color": "#9AE564",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s3-vet1-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "推荐内容"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "I 100% approve of the ingredients and the quality, and I haven't found one that I like any more than this. If you have a big dog, the other huge plus is that you only have to give one chew a day. Super convenient, you can trust this product. I highly recommend!"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s3-vet1-stars",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评分"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "⭐⭐⭐⭐⭐"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s3-vet1-author",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "作者"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Dr. Carin Beene\nDVM"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "ai-s3-vet2-card",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "兽医推荐卡片2"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": "0"
+            },
+            "wrapperStyle": {
+              "backgroundColor": "#24594F",
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "8px"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s3-vet2-img-wrap",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "兽医图2容器"
+                },
+                "props": {},
+                "wrapperStyle": {
+                  "widthMode": "fixed",
+                  "width": "180px",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s3-vet2-img",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "兽医图2"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "height": "220px",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/31043312/pexels-photo-31043312.jpeg?auto=compress&cs=tinysrgb&h=130",
+                        "alt": "female veterinarian in black scrubs smiling",
+                        "fit": "cover",
+                        "position": "center",
+                        "border": {
+                          "mode": "unified",
+                          "width": "0",
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)"
+                        },
+                        "borderRadius": {
+                          "mode": "unified",
+                          "radius": "0"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s3-vet2-content",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "兽医2内容"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  },
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s3-vet2-quote",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "引言"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "\""
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "32px",
+                      "color": "#9AE564",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s3-vet2-text",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "推荐内容"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "I've had incredible results with my patients and with my own pet. There are higher concentrations of ingredients that I recommend such as MSM and glucosamine."
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s3-vet2-stars",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "评分"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "⭐⭐⭐⭐⭐"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s3-vet2-author",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "作者"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Dr. Dawn Filos\nDVM"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "14px",
+                      "color": "#FFFFFF",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ai-s4",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "担保模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#F7EEE2",
+          "padding": {
+            "mode": "separate",
+            "top": "24px",
+            "right": "20px",
+            "bottom": "24px",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s4-dog-img",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "狗狗玩耍图"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": "8px"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "280px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "8px"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/32383212/pexels-photo-32383212.jpeg?auto=compress&cs=tinysrgb&h=350",
+                "alt": "border collie dog catching frisbee on grass lawn",
+                "fit": "cover",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "8px"
+                }
+              }
+            }
+          },
+          {
+            "id": "ai-s4-title",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "担保标题"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Our 90 Day Guarantee"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "22px",
+              "color": "#1A3D37",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s4-desc",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "担保说明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "With our 90-day money back guarantee, there is ZERO risk in trying out the brand trusted by thousands of pet parents, vets, and pet experts."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "14px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s4-badge",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "担保徽章"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "widthMode": "fixed",
+              "width": "200px",
+              "heightMode": "fixed",
+              "height": "120px",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/29082285/pexels-photo-29082285.jpeg?auto=compress&cs=tinysrgb&h=130",
+                "alt": "cartoon bulldog running illustration",
+                "fit": "contain",
+                "position": "center",
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "0"
+                }
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            }
+          },
+          {
+            "id": "ai-s4-cta",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "结账按钮"
+            },
+            "props": {
+              "text": "CHECKOUT NOW",
+              "link": {
+                "href": "#",
+                "type": "external"
+              },
+              "buttonStyle": {
+                "fontSize": "16px",
+                "textColor": "#FFFFFF",
+                "backgroundColor": "#1A3D37",
+                "bold": false,
+                "italic": false,
+                "border": {
+                  "mode": "unified",
+                  "width": "0",
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)"
+                },
+                "borderRadius": {
+                  "mode": "unified",
+                  "radius": "9999px"
+                },
+                "widthMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fixed",
+              "width": "300px",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s4-disclaimer",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "免责声明"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "*Based on an independent survey conducted in 2024 (n=200)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "ai-s5",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "页脚模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": "16px"
+        },
+        "wrapperStyle": {
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "backgroundColor": "#FFFFFF",
+          "padding": {
+            "mode": "separate",
+            "top": "32px",
+            "right": "20px",
+            "bottom": "0",
+            "left": "20px"
+          },
+          "border": {
+            "mode": "unified",
+            "width": "0",
+            "style": "solid",
+            "color": "rgba(0,0,0,0)"
+          },
+          "borderRadius": {
+            "mode": "unified",
+            "radius": "0"
+          }
+        },
+        "children": [
+          {
+            "id": "ai-s5-logo",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "品牌Logo"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "wuffes"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "24px",
+              "color": "#1A3D37",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s5-footer-grid",
+            "type": "grid",
+            "blockMeta": {
+              "blockType": "layout.grid",
+              "name": "页脚功能网格"
+            },
+            "props": {
+              "columns": 3,
+              "gap": "16px",
+              "cellWidthMode": "auto",
+              "cellHeightMode": "content-max"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "padding": {
+                "mode": "unified",
+                "unified": "0"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s5-col1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "担保列"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s5-icon1",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "担保图标"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/calendar-check.svg",
+                      "size": "32px",
+                      "color": "#1A3D37"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s5-text1",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "担保文字"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "90 Day Guarantee"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s5-col2",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "订阅列"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s5-icon2",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "订阅图标"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/coins.svg",
+                      "size": "32px",
+                      "color": "#1A3D37"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s5-text2",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "订阅文字"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Subscribe & Save"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "ai-s5-col3",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "用户列"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "ai-s5-icon3",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "用户图标"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/paw.svg",
+                      "size": "32px",
+                      "color": "#1A3D37"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "ai-s5-text3",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "用户文字"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "+770K Happy Pet Parents"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": "12px",
+                      "color": "#1A3D37",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "mode": "unified",
+                        "width": "0",
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)"
+                      },
+                      "borderRadius": {
+                        "mode": "unified",
+                        "radius": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "ai-s5-social-bar",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "社交栏"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "backgroundColor": "#1A3D37",
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              },
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              }
+            },
+            "children": [
+              {
+                "id": "ai-s5-social-text",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "社交链接"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Facebook | Facebook Group | Instagram | Website"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": "12px",
+                  "color": "#9AE564",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "mode": "unified",
+                    "width": "0",
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)"
+                  },
+                  "borderRadius": {
+                    "mode": "unified",
+                    "radius": "0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "ai-s5-copyright",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "版权信息"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "© 2025 wuffes. All Rights Reserved."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s5-address",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "地址"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Wuffes 1603 Capital Ave Ste 31A, 125 Cheney, NY 82001"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          },
+          {
+            "id": "ai-s5-unsubscribe",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "退订链接"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "No longer want to receive these emails? Unsubscribe"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": "12px",
+              "color": "#555555",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "mode": "unified",
+                "width": "0",
+                "style": "solid",
+                "color": "rgba(0,0,0,0)"
+              },
+              "borderRadius": {
+                "mode": "unified",
+                "radius": "0"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
