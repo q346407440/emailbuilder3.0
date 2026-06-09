@@ -83,6 +83,40 @@ describe("applyBlockField · layout direction", () => {
   });
 });
 
+describe("applyBlockField · wrapperStyle.padding", () => {
+  it("子路径写入 unified 时补齐 mode", () => {
+    const template = layoutRowTemplate("vertical");
+    const payload = { schemaVersion: "1.0.0" as const, slots: {}, values: {} };
+    const { template: next } = applyBlockField(
+      template,
+      payload,
+      "row",
+      "wrapperStyle.padding.unified",
+      "8px"
+    );
+    assert.deepEqual(next.blocks.row.wrapperStyle?.padding, {
+      mode: "unified",
+      unified: "8px",
+    });
+  });
+
+  it("写入整段 padding 对象时补齐 mode", () => {
+    const template = layoutRowTemplate("vertical");
+    const payload = { schemaVersion: "1.0.0" as const, slots: {}, values: {} };
+    const { template: next } = applyBlockField(
+      template,
+      payload,
+      "row",
+      "wrapperStyle.padding",
+      { unified: "12px" }
+    );
+    assert.deepEqual(next.blocks.row.wrapperStyle?.padding, {
+      mode: "unified",
+      unified: "12px",
+    });
+  });
+});
+
 describe("readFieldDisplay · collection slotPath", () => {
   it("变量集合字段按 slotPath 回显当前生效值", () => {
     const template = layoutRowTemplate("vertical");

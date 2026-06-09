@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { AiStepUiState } from "../../layout-variant-ai-contract/progress";
+import type { MjsGenerateMode } from "../../layout-variant-ai-contract/mjsGenerateMode";
 import type { LayoutManifest } from "../../layout-variant-contract/types";
 import { isPublishedPublishStatus, type PublishStatus } from "../../publish-status-contract";
 import { normalizePublishStatus } from "../../lib/emailPublishStatus";
@@ -28,7 +29,11 @@ type TopbarLayoutVariantSelectProps = {
   onSelect: (layoutVariantId: string) => void;
   onCreate: (
     label: string,
-    options?: { copyFromLayoutVariantId?: string; designImageFile?: File }
+    options?: {
+      copyFromLayoutVariantId?: string;
+      designImageFile?: File;
+      mjsGenerateMode?: MjsGenerateMode;
+    }
   ) => Promise<void>;
   /** 新建版式弹窗关闭时清理 AI 进度（如失败后点取消） */
   onCreateModalClosed?: () => void;
@@ -145,7 +150,10 @@ export function TopbarLayoutVariantSelect({
         currentVariant ? { copyFromLayoutVariantId: currentVariant.id } : undefined
       );
     } else if (payload.kind === "ai") {
-      await onCreate(payload.label, { designImageFile: payload.imageFile });
+      await onCreate(payload.label, {
+        designImageFile: payload.imageFile,
+        mjsGenerateMode: payload.mjsGenerateMode,
+      });
     } else {
       await onCreate(payload.label);
     }

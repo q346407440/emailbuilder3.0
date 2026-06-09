@@ -53,7 +53,10 @@ import {
   derivePublicTokenPresetId,
 } from "./lib/newPublicTokenPresetDefaults";
 import { isLogicallyDeleted } from "./lib/logicalDelete";
-import { listVisibleLayoutVariants } from "./lib/layoutVariantLogicalDelete";
+import {
+  listVisibleLayoutVariants,
+  resolveEffectiveLayoutVariantId,
+} from "./lib/layoutVariantLogicalDelete";
 import { resolveDesignTokens } from "./lib/resolveTokenPreset";
 import { reconcileSelectedBlockRefAfterTemplateChange, type TemplateChangeOptions } from "./lib/templateBlockSelection";
 import { isThemeRef } from "./types/themeRef";
@@ -122,11 +125,12 @@ import {
   insertSectionIntoTemplate,
 } from "./lib/sectionMasterOps";
 import { toSectionCatalogItems } from "./lib/sectionCatalog";
-import { compareByCreatedAtDesc } from "./lib/sortByCreatedAt";
+import { sortEmailItemsByCreatedDesc } from "./lib/emailCatalogSort";
 import {
   reduceAiPipelineProgress,
   type AiStepUiState,
 } from "./layout-variant-ai-contract/progress";
+import type { MjsGenerateMode } from "./layout-variant-ai-contract/mjsGenerateMode";
 import "./app.css";
 import "./sds-admin-field-overrides.css";
 
@@ -195,13 +199,6 @@ function readTopbarLockFromUrl(): boolean {
   }
 }
 
-function readLayoutVariantFromUrl(manifest: LayoutManifest | null): string | null {
-  if (!manifest) return null;
-  const raw = readLayoutHintFromUrl();
-  if (!raw) return null;
-  return manifest.variants.some((v) => v.id === raw) ? raw : null;
-}
-
 function writeLayoutVariantToUrl(layoutVariantId: string | null): void {
   try {
     const url = new URL(window.location.href);
@@ -211,14 +208,6 @@ function writeLayoutVariantToUrl(layoutVariantId: string | null): void {
   } catch {
     /* 非浏览器环境忽略 */
   }
-}
-
-function sortEmailItemsByCreatedDesc(items: EmailListItem[]): EmailListItem[] {
-  return [...items].sort((a, b) =>
-    compareByCreatedAtDesc(a.createdAt, b.createdAt, () =>
-      b.emailKey.localeCompare(a.emailKey, "zh-CN", { numeric: true, sensitivity: "base" })
-    )
-  );
 }
 
 function isEmailItemsEqual(a: EmailListItem[], b: EmailListItem[]): boolean {
@@ -534,19 +523,15 @@ export default function App() {
       const visibleLayoutIds = manifest
         ? new Set(listVisibleLayoutVariants(manifest.variants).map((v) => v.id))
         : null;
-      const layoutFromHint =
+      const layoutHintVisible =
         manifest && layoutHint && visibleLayoutIds?.has(layoutHint) ? layoutHint : null;
-      const layoutId =
-        layoutFromHint ??
-        readLayoutVariantFromUrl(manifest) ??
-        manifest?.activeLayoutVariantId ??
-        null;
-      if (
-        manifest &&
-        layoutId &&
-        !listVisibleLayoutVariants(manifest.variants).some((v) => v.id === layoutId)
-      ) {
-        throw new Error(`未知版式：${layoutId}`);
+      let layoutId: string | null = null;
+      if (manifest) {
+        const resolved = resolveEffectiveLayoutVariantId(manifest, layoutHintVisible);
+        if (resolved.error) {
+          throw new Error(resolved.error);
+        }
+        layoutId = resolved.layoutVariantId;
       }
       const t = normalizeEmailRootBlock(await api.getTemplate(key, layoutId));
       let sceneTemplates: Array<{ layoutVariantId: string; template: EmailTemplate }> = [];
@@ -1170,7 +1155,11 @@ export default function App() {
   const createLayoutVariant = useCallback(
     async (
       label: string,
-      options?: { copyFromLayoutVariantId?: string; designImageFile?: File }
+      options?: {
+        copyFromLayoutVariantId?: string;
+        designImageFile?: File;
+        mjsGenerateMode?: MjsGenerateMode;
+      }
     ) => {
       if (!emailKey) return;
       if (!(await confirmDiscardLayoutDirty())) return;
@@ -1190,6 +1179,7 @@ export default function App() {
       try {
         const created = aiFromImage
           ? await api.createLayoutVariantFromDesignImage(emailKey, label, designImageFile!, {
+              mjsGenerateMode: options?.mjsGenerateMode,
               onProgress: (payload) => {
                 setAiPipelineSteps((prev) => reduceAiPipelineProgress(prev, payload));
               },

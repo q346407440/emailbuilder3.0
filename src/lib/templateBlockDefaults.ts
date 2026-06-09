@@ -3,6 +3,7 @@ import { normalizeTemplateContentAlignEffectiveness } from "./contentAlignConfig
 import { normalizeButtonContentAlign } from "./buttonContentAlign";
 import { ensureLayoutContentAlignPersisted } from "./layoutContentAlign";
 import { ensureWrapperContentAlignPersisted } from "./wrapperContentAlign";
+import { coercePaddingOnContainerIfChanged } from "./spacingValue";
 /**
  * 模板加载时补齐结构默认值与 contentAlign 有效性（禁止字段由 validate 报错，不在此静默删除）。
  */
@@ -27,6 +28,16 @@ export function normalizeTemplateBlockDefaults(template: EmailTemplate): boolean
         changed = true;
       } else if (ws.padding === undefined || ws.padding === null) {
         ws.padding = { mode: "unified", unified: "0" };
+        changed = true;
+      }
+    }
+    if (block.props && typeof block.props === "object" && !Array.isArray(block.props)) {
+      if (coercePaddingOnContainerIfChanged(block.props as Record<string, unknown>)) {
+        changed = true;
+      }
+    }
+    if (block.wrapperStyle && typeof block.wrapperStyle === "object") {
+      if (coercePaddingOnContainerIfChanged(block.wrapperStyle as Record<string, unknown>)) {
         changed = true;
       }
     }

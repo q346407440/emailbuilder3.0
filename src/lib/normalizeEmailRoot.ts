@@ -4,13 +4,12 @@ import type {
   EmailBlock,
   EmailTemplate,
   LayoutGapMode,
-  SpacingValue,
   WrapperStyle,
 } from "../types/email";
-import type { ThemeRef } from "../types/themeRef";
 import { isThemeRef } from "../types/themeRef";
 
 import { EMAIL_ROOT_FIXED_WIDTH } from "../render-defaults-contract/values";
+import { normalizeSpacingValueForStorage } from "./spacingValue";
 
 const ROOT_FIXED_WIDTH = EMAIL_ROOT_FIXED_WIDTH;
 const ROOT_DEFAULT_BG = "#ffffff";
@@ -51,32 +50,6 @@ function normalizeRootBorder(value: unknown): BorderValue {
   }
   const width = typeof raw.width === "string" && raw.width.trim() ? raw.width.trim() : "0";
   return { mode: "unified", width, style, color };
-}
-
-function normalizeSpacingSide(value: unknown): string | ThemeRef {
-  if (isThemeRef(value)) return value;
-  if (typeof value === "string" && value.trim()) return value.trim();
-  return "0";
-}
-
-function normalizeRootPadding(value: unknown): SpacingValue {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return { mode: "unified", unified: "0" };
-  }
-  const raw = value as Record<string, unknown>;
-  if (raw.mode === "separate") {
-    return {
-      mode: "separate",
-      top: normalizeSpacingSide(raw.top),
-      right: normalizeSpacingSide(raw.right),
-      bottom: normalizeSpacingSide(raw.bottom),
-      left: normalizeSpacingSide(raw.left),
-    };
-  }
-  return {
-    mode: "unified",
-    unified: normalizeSpacingSide(raw.unified),
-  };
 }
 
 function normalizeRootWrapperStyle(value: unknown): WrapperStyle {
@@ -125,7 +98,7 @@ export function normalizeEmailRootBlock(template: EmailTemplate): EmailTemplate 
         if (typeof w === "string" && w.trim()) return w.trim();
         return ROOT_FIXED_WIDTH;
       })(),
-      padding: normalizeRootPadding(rootPropsRaw.padding),
+      padding: normalizeSpacingValueForStorage(rootPropsRaw.padding),
       border: normalizeRootBorder(rootPropsRaw.border),
       gapMode: ((): LayoutGapMode => {
         const raw = rootPropsRaw.gapMode;

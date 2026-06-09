@@ -9,6 +9,7 @@ import type { BlockMaster, SectionMaster } from "../types/master";
 import { getApiBase } from "./apiBase";
 import { LAYOUT_VARIANT_AI_FROM_IMAGE_STREAM_IDLE_TIMEOUT_MS } from "../layout-variant-ai-contract/constants";
 import type { AiPipelineProgressPayload } from "../layout-variant-ai-contract/progress";
+import type { MjsGenerateMode } from "../layout-variant-ai-contract/mjsGenerateMode";
 
 const FETCH_TIMEOUT_MS = 60_000;
 
@@ -368,11 +369,17 @@ export async function createLayoutVariantFromDesignImage(
   emailKey: string,
   label: string,
   imageFile: File,
-  options?: { onProgress?: (payload: AiPipelineProgressPayload) => void }
+  options?: {
+    mjsGenerateMode?: MjsGenerateMode;
+    onProgress?: (payload: AiPipelineProgressPayload) => void;
+  }
 ): Promise<CreateLayoutVariantResult> {
   const form = new FormData();
   form.append("label", label.trim());
   form.append("image", imageFile, imageFile.name || "design.png");
+  if (options?.mjsGenerateMode) {
+    form.append("mjsGenerateMode", options.mjsGenerateMode);
+  }
   const r = await fetchApi(
     apiUrl(`/emails/${encodeURIComponent(emailKey)}/layout-variants/ai-from-image`),
     {

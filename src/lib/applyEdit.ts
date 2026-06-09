@@ -2,6 +2,10 @@ import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
 import { ensureLayoutContentAlignPersisted } from "./layoutContentAlign";
 import { deleteAtPath, getAtPath, setAtPath } from "./paths";
 import { interpolateTextValue } from "./interpolateText";
+import {
+  coercePaddingOnContainer,
+  isPaddingFieldSubPath,
+} from "./spacingValue";
 
 function clone<T>(v: T): T {
   return structuredClone(v);
@@ -36,8 +40,13 @@ export function applyBlockField(
   const [root, ...rest] = bindPath.split(".");
   const sub = rest.join(".");
   if (root === "props") {
-    if (sub) setAtPath(b.props as Record<string, unknown>, sub, value);
-    else Object.assign(b.props, value as object);
+    if (sub) {
+      if (value === null) deleteAtPath(b.props as Record<string, unknown>, sub);
+      else setAtPath(b.props as Record<string, unknown>, sub, value);
+    } else Object.assign(b.props, value as object);
+    if (isPaddingFieldSubPath(sub) || b.props.padding !== undefined) {
+      coercePaddingOnContainer(b.props as Record<string, unknown>);
+    }
     if (b.type === "layout" && sub === "direction") {
       ensureLayoutContentAlignPersisted(b);
     }
@@ -47,6 +56,9 @@ export function applyBlockField(
       if (value === null) deleteAtPath(b.wrapperStyle as Record<string, unknown>, sub);
       else setAtPath(b.wrapperStyle as Record<string, unknown>, sub, value);
     } else Object.assign(b.wrapperStyle, value as object);
+    if (isPaddingFieldSubPath(sub) || b.wrapperStyle.padding !== undefined) {
+      coercePaddingOnContainer(b.wrapperStyle as Record<string, unknown>);
+    }
   }
 
   return { template: t, payload };
@@ -64,6 +76,9 @@ export function applyRootCanvasField(
   if (rootKey !== "props") return t;
   const sub = rest.join(".");
   if (sub) setAtPath(root.props as Record<string, unknown>, sub, value);
+  if (isPaddingFieldSubPath(sub) || root.props.padding !== undefined) {
+    coercePaddingOnContainer(root.props as Record<string, unknown>);
+  }
   return t;
 }
 

@@ -60,15 +60,43 @@ export function wrapperContentAlignTableCellAttrs(contentAlign: WrapperContentAl
 }
 
 /**
- * grid 矩阵槽 `<td>`：应用栅格块 contentAlign 水平 + 竖直两轴。
+ * grid 矩阵槽 `<td>`：`align` / `valign` / `textAlign`（与纵排 layout 子槽同源）。
+ * 须同时写 HTML `align`/`valign`；fixed/hug 宽子块另需 {@link gridMatrixSlotChildWrapStyle} 才能在槽内水平居中。
+ */
+export function gridMatrixSlotTableCellAttrs(contentAlign: WrapperContentAlign | undefined): {
+  align: "left" | "center" | "right";
+  valign: TableCellVerticalAlign;
+  textAlign: "left" | "center" | "right";
+} {
+  return wrapperContentAlignTableCellAttrs(contentAlign);
+}
+
+/**
+ * grid 槽位内非 fill 宽子块：inline-block 收缩包裹，使槽位 `text-align` / `align` 对 fixed/hug 块级壳生效。
+ * fill 宽子块须铺满槽位，不包裹。
+ */
+export function gridMatrixSlotChildWrapStyle(
+  childWidthMode: unknown,
+  valign: TableCellVerticalAlign
+): CSSProperties | undefined {
+  if (normalizePresentationWidthMode(childWidthMode) === "fill") return undefined;
+  return {
+    display: "inline-block",
+    maxWidth: "100%",
+    verticalAlign: valign,
+  };
+}
+
+/**
+ * grid 矩阵槽 `<td>` 样式：水平 text-align + 竖直 vertical-align。
  */
 export function gridMatrixSlotContentAlignCss(
   contentAlign: WrapperContentAlign | undefined
 ): CSSProperties {
-  const { horizontal, vertical } = normalizeWrapperContentAlign(contentAlign);
+  const { textAlign, valign } = gridMatrixSlotTableCellAttrs(contentAlign);
   return {
-    textAlign: horizontal === "right" ? "right" : horizontal === "center" ? "center" : "left",
-    verticalAlign: tableValignFromContentVertical(vertical),
+    textAlign,
+    verticalAlign: valign,
   };
 }
 

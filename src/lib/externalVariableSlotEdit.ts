@@ -5,6 +5,10 @@ import {
   type StandardScalarValueType,
 } from "../payload-contract/standard-scalar-types";
 import { getAtPath, setAtPath } from "./paths";
+import {
+  coercePaddingOnContainer,
+  isPaddingFieldSubPath,
+} from "./spacingValue";
 
 const interpolationTokenRe = (slotId: string) =>
   new RegExp(`\\{\\{\\s*${slotId.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\s*\\}\\}`, "g");
@@ -38,9 +42,15 @@ function writeBindPathString(
   if (!subPath) return;
   if (root === "props") {
     setAtPath(block.props as Record<string, unknown>, subPath, value);
+    if (isPaddingFieldSubPath(subPath) || block.props.padding !== undefined) {
+      coercePaddingOnContainer(block.props as Record<string, unknown>);
+    }
   } else if (root === "wrapperStyle") {
     if (!block.wrapperStyle) block.wrapperStyle = {};
     setAtPath(block.wrapperStyle as Record<string, unknown>, subPath, value);
+    if (isPaddingFieldSubPath(subPath) || block.wrapperStyle.padding !== undefined) {
+      coercePaddingOnContainer(block.wrapperStyle as Record<string, unknown>);
+    }
   }
 }
 

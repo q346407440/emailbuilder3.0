@@ -73,6 +73,10 @@ import {
 import { listSceneScalarPresetSummaries } from "./sceneScalarPresetsStore";
 import { requireLayoutManifest } from "./ensureLayoutManifest";
 import { enrichLayoutManifestCreatedAt, statCreatedAtIso } from "./enrichLayoutManifest";
+import {
+  resolveEmailListCreatedAt,
+  sortEmailItemsByCreatedDesc,
+} from "../src/lib/emailCatalogSort";
 import { createDefaultTokenPresets } from "../src/lib/defaultTokenPresets";
 import { normalizePublishStatus } from "../src/lib/emailPublishStatus";
 import { isLogicallyDeleted, logicalDeleteTimestamp } from "../src/lib/logicalDelete";
@@ -82,6 +86,7 @@ import { buildRepeatPreviewModel, previewModelToFlatTemplate } from "../src/repe
 import { applyVisibilityRules } from "../src/lib/visibility";
 import { softDeleteLayoutVariant } from "../src/lib/layoutVariantLogicalDelete";
 import { createPipelineProgressReporter } from "../src/lib/ai-pipeline/ports/PipelineProgressReporter";
+import { parseMjsGenerateMode } from "../src/layout-variant-ai-contract/mjsGenerateMode";
 import {
   generateLayoutVariantFromDesignImage,
   validateDesignImageBuffer,
@@ -408,14 +413,9 @@ app.get("/api/v1/emails", async (c) => {
         metaMtimeMs,
         tokenPresetsMtimeMs
       );
-      const metaCreatedAtMs =
-        typeof meta?.createdAt === "string" ? Number(Date.parse(meta.createdAt)) : NaN;
-      const fallbackCreatedAt =
-        (await statCreatedAtIso(metaPath)) ?? (await statCreatedAtIso(base));
-      const createdAt =
-        Number.isFinite(metaCreatedAtMs) && metaCreatedAtMs > 0
-          ? meta!.createdAt
-          : fallbackCreatedAt;
+      const dirCreatedAt =
+        (await statCreatedAtIso(base)) ?? (await statCreatedAtIso(metaPath));
+      const createdAt = resolveEmailListCreatedAt(meta?.createdAt, dirCreatedAt);
       return {
         emailKey,
         displayName: meta?.displayName ?? emailKey,
@@ -431,7 +431,8 @@ app.get("/api/v1/emails", async (c) => {
       };
     })
   );
-  return c.json({ items: items.filter((item): item is NonNullable<typeof item> => item != null) });
+  const filtered = items.filter((item): item is NonNullable<typeof item> => item != null);
+  return c.json({ items: sortEmailItemsByCreatedDesc(filtered) });
 });
 
 /** Mock：商家邮件活动 V2 — 已发布模板列表 */
@@ -1383,6 +1384,8 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
     return c.json({ error: { code: "VALIDATION_FAILED", message: imageIssue } }, 400);
   }
 
+  const mjsGenerateMode = parseMjsGenerateMode(body.mjsGenerateMode);
+
   const base = emailBaseDir(DATA_ROOT, emailKey);
   let manifest: LayoutManifest;
   try {
@@ -1430,6 +1433,7 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
           imageBuffer,
           mimeType,
           emailBaseDir: base,
+          mjsGenerateMode,
         },
         { progress }
       );

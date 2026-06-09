@@ -3,6 +3,10 @@ import { isThemeRef } from "../types/themeRef";
 import { classifyField } from "./blockFieldClassification";
 import { getAtPath, setAtPath } from "./paths";
 import {
+  coercePaddingOnContainer,
+  isPaddingFieldSubPath,
+} from "./spacingValue";
+import {
   getBindingUiMeta,
   getThemeRestoreBinding,
   getThemeRestoreBindings,
@@ -43,10 +47,16 @@ export function setTemplateFieldOnly(template: EmailTemplate, blockId: string, b
   if (root === "props") {
     if (sub) setAtPath(b.props as Record<string, unknown>, sub, value);
     else Object.assign(b.props, value as object);
+    if (isPaddingFieldSubPath(sub) || b.props.padding !== undefined) {
+      coercePaddingOnContainer(b.props as Record<string, unknown>);
+    }
   } else if (root === "wrapperStyle") {
     if (!b.wrapperStyle) b.wrapperStyle = {};
     if (sub) setAtPath(b.wrapperStyle as Record<string, unknown>, sub, value);
     else Object.assign(b.wrapperStyle, value as object);
+    if (isPaddingFieldSubPath(sub) || b.wrapperStyle.padding !== undefined) {
+      coercePaddingOnContainer(b.wrapperStyle as Record<string, unknown>);
+    }
   }
   return t;
 }

@@ -40,7 +40,9 @@ import {
   wrapperHugWidthShrinkWrapCss,
 } from "../lib/emailTableLayout";
 import {
+  gridMatrixSlotChildWrapStyle,
   gridMatrixSlotContentAlignCss,
+  gridMatrixSlotTableCellAttrs,
   layoutPreviewHugOuterShellBoxStyle,
 } from "../lib/emailPresentationLayout";
 import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
@@ -451,6 +453,29 @@ type BlockViewProps = {
   canvasSelection: CanvasSelectionContext;
   onSelectBlock: (id: string | null) => void;
 };
+
+function renderGridMatrixSlotChild(params: {
+  childId: string;
+  template: EmailTemplate;
+  canvasSelection: CanvasSelectionContext;
+  onSelectBlock: (id: string | null) => void;
+  slotValign: ReturnType<typeof gridMatrixSlotTableCellAttrs>["valign"];
+}): ReactElement {
+  const { childId, template, canvasSelection, onSelectBlock, slotValign } = params;
+  const wrapStyle = gridMatrixSlotChildWrapStyle(
+    template.blocks[childId]?.wrapperStyle?.widthMode,
+    slotValign
+  );
+  const childView = (
+    <BlockView
+      id={childId}
+      template={template}
+      canvasSelection={canvasSelection}
+      onSelectBlock={onSelectBlock}
+    />
+  );
+  return wrapStyle ? <div style={wrapStyle}>{childView}</div> : childView;
+}
 
 function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewProps) {
   const b = template.blocks[id];
@@ -1193,6 +1218,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                 const rowFillStretch = rowsUseFillStretch[ri] && matrixFillStretch;
                 const cid = row[ci];
                 const slotContentAlign = gridSlotContentAlign;
+                const slotCellAlign = gridMatrixSlotTableCellAttrs(slotContentAlign);
                 return (
                   <Fragment key={`grid-cell-wrap-${ri}-${ci}`}>
                     {ci > 0 && gapPx > 0 ? (
@@ -1212,6 +1238,8 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                     {cid ? (
                       <td
                         className="email-preview-grid-slot"
+                        align={slotCellAlign.align}
+                        valign={slotCellAlign.valign}
                         style={{
                           ...tdBase(),
                           ...gridMatrixSlotContentAlignCss(slotContentAlign),
@@ -1228,12 +1256,13 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                           overflow: "hidden",
                         }}
                       >
-                        <BlockView
-                          id={cid}
-                          template={template}
-                          canvasSelection={canvasSelection}
-                          onSelectBlock={onSelectBlock}
-                        />
+                        {renderGridMatrixSlotChild({
+                          childId: cid,
+                          template,
+                          canvasSelection,
+                          onSelectBlock,
+                          slotValign: slotCellAlign.valign,
+                        })}
                       </td>
                     ) : (
                       <td

@@ -14,6 +14,8 @@ import {
   progressBarFillTdWidthAttr,
   verticalStackRowHeightStyle,
   gridMatrixSlotContentAlignCss,
+  gridMatrixSlotChildWrapStyle,
+  gridMatrixSlotTableCellAttrs,
   wrapperContentAlignTableCellAttrs,
 } from "./emailPresentationLayout";
 
@@ -22,6 +24,27 @@ describe("wrapperContentAlignTableCellAttrs", () => {
     assert.deepEqual(wrapperContentAlignTableCellAttrs({ horizontal: "center", vertical: "bottom" }), {
       align: "center",
       valign: "bottom",
+      textAlign: "center",
+    });
+  });
+});
+
+describe("gridMatrixSlotChildWrapStyle", () => {
+  it("fixed/hug 宽子块须 inline-block 包裹；fill 宽不包裹", () => {
+    assert.deepEqual(gridMatrixSlotChildWrapStyle("fixed", "top"), {
+      display: "inline-block",
+      maxWidth: "100%",
+      verticalAlign: "top",
+    });
+    assert.equal(gridMatrixSlotChildWrapStyle("fill", "top"), undefined);
+  });
+});
+
+describe("gridMatrixSlotTableCellAttrs", () => {
+  it("栅格槽位须含 HTML align/valign（fixed 宽子块居中依赖 align）", () => {
+    assert.deepEqual(gridMatrixSlotTableCellAttrs({ horizontal: "center", vertical: "top" }), {
+      align: "center",
+      valign: "top",
       textAlign: "center",
     });
   });
