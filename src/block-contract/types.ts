@@ -26,6 +26,50 @@ export const RUNTIME_TYPE_TO_SEMANTIC: Record<EmailBlock["type"], SemanticBlockT
   progress: "indicator.progress",
 };
 
+/** 全部合法运行时 type（派生自映射表键，供壳层校验与提示文案复用）。 */
+export const RUNTIME_BLOCK_TYPES = Object.keys(RUNTIME_TYPE_TO_SEMANTIC) as Array<
+  EmailBlock["type"]
+>;
+
+/**
+ * 运行时 type 别名表：LLM/外部输入常见的等价写法 → 合法运行时 type。
+ * 派生规则（不手维护第二份键表）：
+ * - `<type>Block` 后缀（textBlock→text）；
+ * - 语义类型当 runtime 用（content.text→text）；
+ * - 驼峰语义名（layoutContainer→layout）。
+ */
+const RUNTIME_TYPE_ALIASES: Record<string, EmailBlock["type"]> = (() => {
+  const aliases: Record<string, EmailBlock["type"]> = {};
+  for (const [runtimeType, semantic] of Object.entries(RUNTIME_TYPE_TO_SEMANTIC) as Array<
+    [EmailBlock["type"], SemanticBlockType]
+  >) {
+    aliases[`${runtimeType}Block`] = runtimeType;
+    aliases[semantic] = runtimeType;
+    // content.text → contentText 这类驼峰变体（layout.container→layoutContainer 等）
+    const camel = semantic.replace(/\.([a-z])/g, (_, c: string) => c.toUpperCase());
+    aliases[camel] = runtimeType;
+  }
+  return aliases;
+})();
+
+/** 非法运行时 type 的确定性归一：可归一返回合法 type，否则 null（交语义层处理）。 */
+export function normalizeRuntimeTypeAlias(type: string): EmailBlock["type"] | null {
+  if (type in RUNTIME_TYPE_TO_SEMANTIC) return type as EmailBlock["type"];
+  return RUNTIME_TYPE_ALIASES[type] ?? null;
+}
+
+/**
+ * 由运行时 type 推断 blockMeta.blockType（落盘语义）：
+ * emailRoot 的 blockMeta 约定写 layout.container（registry 解析时始终视 email.root），
+ * 其余按默认映射。未知 type 返回 null，不编造语义类型。
+ */
+export function inferSemanticBlockTypeForMeta(type: string): SemanticBlockType | null {
+  const normalized = normalizeRuntimeTypeAlias(type);
+  if (normalized === null) return null;
+  if (normalized === "emailRoot") return "layout.container";
+  return RUNTIME_TYPE_TO_SEMANTIC[normalized];
+}
+
 /**
  * 单 blockType 字段白名单契约。
  * `allowedPrefixes` 使用点路径前缀：允许该路径及其任意子路径（如 `wrapperStyle.padding` 含 `padding.top`）。

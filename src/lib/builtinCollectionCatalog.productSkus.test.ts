@@ -40,7 +40,6 @@ describe("projectBuiltinCatalogItemsFromRows · SKU 扁平行", () => {
       title: sku.title,
       href: sku.href,
       imageSrc: sku.imageSrc,
-      imageAlt: sku.imageAlt,
       salePrice: sku.salePrice,
       originalPrice: sku.originalPrice,
     };

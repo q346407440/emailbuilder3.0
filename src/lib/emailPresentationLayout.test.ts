@@ -17,6 +17,7 @@ import {
   gridMatrixSlotChildWrapStyle,
   gridMatrixSlotTableCellAttrs,
   wrapperContentAlignTableCellAttrs,
+  emailTextContentWrapCss,
 } from "./emailPresentationLayout";
 
 describe("wrapperContentAlignTableCellAttrs", () => {
@@ -152,6 +153,25 @@ describe("presentationLeafShellOuterBoxCss", () => {
     assert.equal(stripped.border, undefined);
     assert.equal(stripped.borderRadius, undefined);
     assert.equal(stripped.backgroundColor, undefined);
+  });
+});
+
+describe("emailTextContentWrapCss", () => {
+  it("fill/fixed 宽正文启用栏内断行", () => {
+    assert.deepEqual(emailTextContentWrapCss("fill"), {
+      overflowWrap: "anywhere",
+      wordBreak: "break-word",
+      maxWidth: "100%",
+    });
+    assert.deepEqual(emailTextContentWrapCss("fixed"), {
+      overflowWrap: "anywhere",
+      wordBreak: "break-word",
+      maxWidth: "100%",
+    });
+  });
+
+  it("hug 宽正文不写断行（单行收缩由 td nowrap 承担）", () => {
+    assert.deepEqual(emailTextContentWrapCss("hug"), {});
   });
 });
 

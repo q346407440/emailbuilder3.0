@@ -1,10 +1,9 @@
 import { resolveBlockContract } from "../block-contract/registry";
-import type { VirtualBlockRef } from "../repeat-binding-contract";
+import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
 import {
   findPreviewNodeByRef,
   previewModelToFlatTemplate,
   resolvePhysicalBlockId,
-  type RepeatPreviewModel,
 } from "../repeat-runtime";
 import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
 import type { TokenPresets } from "../types/tokenPreset";

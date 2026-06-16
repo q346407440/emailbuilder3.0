@@ -5,14 +5,12 @@ import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import {
   renameExternalVariableSlot,
   updateExternalVariableSlotLabel,
-  updateExternalVariableSlotValueType,
 } from "../lib/externalVariableSlotEdit";
-import { isSceneCollectionPresetManagedSlot } from "../lib/sceneCollectionPresetSlot";
+import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
 import {
-  isStandardScalarValueType,
-  type StandardScalarValueType,
-} from "../payload-contract/standard-scalar-types";
-import { StandardScalarValueTypeSelect } from "./StandardScalarValueTypeSelect";
+  builtinStructureScopeLabel,
+  getPayloadSlotBuiltinStructure,
+} from "../lib/builtinStructureSlot";
 import { Field } from "./ui/Field";
 import { ShopInput } from "./ui/ShopFormControls";
 
@@ -23,6 +21,8 @@ export type PayloadSlotMetaFieldsProps = {
   onPayloadChange: (next: EmailPayload) => void;
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onSlotIdChange?: (slotId: string) => void;
+  /** 内置 mock 变量：名称等元信息只读 */
+  labelReadonly?: boolean;
 };
 
 type MetaFieldVariant = "default" | "production";
@@ -34,6 +34,7 @@ export function usePayloadSlotMetaFields({
   onPayloadChange,
   onTemplatePayloadChange,
   onSlotIdChange,
+  labelReadonly = false,
 }: PayloadSlotMetaFieldsProps) {
   const [labelDraft, setLabelDraft] = useState(slot.label ?? "");
   const [slotIdDraft, setSlotIdDraft] = useState(slot.slotId);
@@ -46,6 +47,7 @@ export function usePayloadSlotMetaFields({
   }, [slot.slotId, slot.label]);
 
   const commitLabel = () => {
+    if (labelReadonly) return;
     const nextLabel = labelDraft.trim();
     if (nextLabel === (slot.label ?? "").trim()) return;
     const nextPayload = updateExternalVariableSlotLabel(payload, slot.slotId, nextLabel);
@@ -68,18 +70,6 @@ export function usePayloadSlotMetaFields({
     onSlotIdChange?.(nextId);
   };
 
-  const showValueTypeSelect = isStandardScalarValueType(slot.valueType);
-  const valueTypeDraft: StandardScalarValueType = isStandardScalarValueType(slot.valueType)
-    ? slot.valueType
-    : "string";
-
-  const handleValueTypeChange = (nextType: StandardScalarValueType) => {
-    if (nextType === slot.valueType) return;
-    const next = updateExternalVariableSlotValueType(template, payload, slot.slotId, nextType);
-    onPayloadChange(next.payload);
-    onTemplatePayloadChange?.(next);
-  };
-
   return {
     payload,
     labelDraft,
@@ -90,10 +80,8 @@ export function usePayloadSlotMetaFields({
     setMetaError,
     commitSlotId,
     metaError,
-    showValueTypeSelect,
-    valueTypeDraft,
-    handleValueTypeChange,
     slot,
+    labelReadonly,
   };
 }
 
@@ -106,6 +94,7 @@ export function PayloadSlotMetaNameField({ meta }: { meta: PayloadSlotMetaState 
       <ShopInput
         value={meta.labelDraft}
         placeholder={meta.slot.slotId}
+        disabled={meta.labelReadonly}
         onChange={(e) => meta.setLabelDraft(e.target.value)}
         onBlur={meta.commitLabel}
         onKeyDown={(e) => {
@@ -131,38 +120,32 @@ export function PayloadSlotMetaAttributesSection({
 }) {
   const showHints = variant !== "production";
   const slotDef = meta.payload.slots[meta.slot.slotId];
-  const slotIdReadonly = isSceneCollectionPresetManagedSlot(slotDef);
+  const structure = getPayloadSlotBuiltinStructure(slotDef);
+  const readonlySlotIdentity = true;
   return (
     <section className="inspector__section payload-inspector__attributes">
-      {meta.showValueTypeSelect ? (
-        <Field
-          label="变量类型"
-          {...(showHints
-            ? {
-                hint: "修改类型后会同步模板中的变量绑定，并按类型调整当前赋值形态。",
-              }
-            : {})}
-        >
-          <StandardScalarValueTypeSelect
-            value={meta.valueTypeDraft}
-            onChange={meta.handleValueTypeChange}
-          />
-        </Field>
-      ) : null}
+      <Field
+        label="变量类型"
+        {...(showHints
+          ? {
+              hint: "变量类型由内置数据结构决定，不可修改。",
+            }
+          : {})}
+      >
+        <ShopInput value={payloadSlotValueTypeLabel(meta.slot.valueType)} disabled />
+      </Field>
       <Field
         label="变量标识"
         {...(showHints
           ? {
-              hint: slotIdReadonly
-                ? "内置场景变量的标识不可修改。"
-                : "字母开头，仅含字母、数字与下划线；修改后会同步更新模板绑定与插值占位符。",
+              hint: "变量标识由系统固定；外部系统按此标识传入对应数据。",
             }
           : {})}
       >
         <ShopInput
           value={meta.slotIdDraft}
           placeholder="storeName"
-          disabled={slotIdReadonly}
+          disabled={readonlySlotIdentity}
           onChange={(e) => {
             meta.setSlotIdDraft(e.target.value);
             meta.setMetaError("");
@@ -177,6 +160,11 @@ export function PayloadSlotMetaAttributesSection({
           }}
         />
       </Field>
+      {structure ? (
+        <Field label="结构范围">
+          <ShopInput value={builtinStructureScopeLabel(structure)} disabled />
+        </Field>
+      ) : null}
       {meta.metaError ? <p className="payload-inspector__meta-error">{meta.metaError}</p> : null}
     </section>
   );
@@ -189,23 +177,21 @@ export function PayloadSlotMetaFields({
 }: PayloadSlotMetaFieldsProps & { variant?: MetaFieldVariant }) {
   const meta = usePayloadSlotMetaFields(props);
   const showHints = variant !== "production";
+  const slotDef = meta.payload.slots[meta.slot.slotId];
+  const structure = getPayloadSlotBuiltinStructure(slotDef);
+  const readonlySlotIdentity = true;
   return (
     <section className="payload-inspector__meta">
-      {meta.showValueTypeSelect ? (
-        <Field
-          label="变量类型"
-          {...(showHints
-            ? {
-                hint: "修改类型后会同步模板中的变量绑定，并按类型调整当前赋值形态。",
-              }
-            : {})}
-        >
-          <StandardScalarValueTypeSelect
-            value={meta.valueTypeDraft}
-            onChange={meta.handleValueTypeChange}
-          />
-        </Field>
-      ) : null}
+      <Field
+        label="变量类型"
+        {...(showHints
+          ? {
+              hint: "变量类型由内置数据结构决定，不可修改。",
+            }
+          : {})}
+      >
+        <ShopInput value={payloadSlotValueTypeLabel(meta.slot.valueType)} disabled />
+      </Field>
       <Field
         label="变量名称"
         {...(showHints
@@ -217,6 +203,7 @@ export function PayloadSlotMetaFields({
         <ShopInput
           value={meta.labelDraft}
           placeholder={meta.slot.slotId}
+          disabled={meta.labelReadonly}
           onChange={(e) => meta.setLabelDraft(e.target.value)}
           onBlur={meta.commitLabel}
           onKeyDown={(e) => {
@@ -232,13 +219,14 @@ export function PayloadSlotMetaFields({
         label="变量标识"
         {...(showHints
           ? {
-              hint: "字母开头，仅含字母、数字与下划线；修改后会同步更新模板绑定与插值占位符。",
+              hint: "变量标识由系统固定；外部系统按此标识传入对应数据。",
             }
           : {})}
       >
         <ShopInput
           value={meta.slotIdDraft}
           placeholder="storeName"
+          disabled={readonlySlotIdentity}
           onChange={(e) => {
             meta.setSlotIdDraft(e.target.value);
             meta.setMetaError("");
@@ -253,6 +241,11 @@ export function PayloadSlotMetaFields({
           }}
         />
       </Field>
+      {structure ? (
+        <Field label="结构范围">
+          <ShopInput value={builtinStructureScopeLabel(structure)} disabled />
+        </Field>
+      ) : null}
       {meta.metaError ? <p className="payload-inspector__meta-error">{meta.metaError}</p> : null}
     </section>
   );

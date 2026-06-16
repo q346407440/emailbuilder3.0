@@ -1,6 +1,7 @@
 import type { RepeatRuntimeContext } from "../repeat-binding-contract";
 import type { EmailPayload, RepeatRegionBinding } from "../types/email";
 import { applyCollectionItemVisibility } from "../lib/collectionItemVisibility";
+import { resolveRepeatExpansionMaxItems } from "../lib/collectionFixedLength";
 import { shouldResolveDerivedCollectionPerRow } from "../lib/derivedCollectionResolve";
 import { getAtPath } from "../lib/paths";
 import { resolveCollectionForContext } from "../lib/resolveBuiltinCollectionItems";
@@ -29,7 +30,8 @@ export function resolveRepeatItemsForExpansion(
     const raw = parentItem ? getAtPath(parentItem, repeat.itemPath) : undefined;
     if (!Array.isArray(raw)) return [];
     const items = raw.filter(isRecord);
-    return typeof repeat.maxItems === "number" ? items.slice(0, repeat.maxItems) : items;
+    const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
+    return maxItems !== undefined ? items.slice(0, maxItems) : items;
   }
 
   const derived = shouldResolveDerivedCollectionPerRow(repeat, payload, contexts);
@@ -40,9 +42,8 @@ export function resolveRepeatItemsForExpansion(
     if (resolved.ok) {
       const slotDef = payload.slots?.[repeat.slotId];
       const filtered = applyCollectionItemVisibility(resolved.items, slotDef?.itemVisibility);
-      return typeof repeat.maxItems === "number"
-        ? filtered.slice(0, repeat.maxItems)
-        : filtered;
+      const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
+      return maxItems !== undefined ? filtered.slice(0, maxItems) : filtered;
     }
   }
 
@@ -51,8 +52,8 @@ export function resolveRepeatItemsForExpansion(
   const items = raw.filter(isRecord);
   const slotDef = payload?.slots?.[repeat.slotId];
   const filtered = applyCollectionItemVisibility(items, slotDef?.itemVisibility);
-  if (typeof repeat.maxItems === "number") return filtered.slice(0, repeat.maxItems);
-  return filtered;
+  const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
+  return maxItems !== undefined ? filtered.slice(0, maxItems) : filtered;
 }
 
 /** 构建单项 repeat 运行时上下文路径 */
@@ -75,4 +76,28 @@ export function buildRepeatItemContext(
     { slotId: repeat.slotId, itemIndex, item, itemPath },
   ];
   return { itemPath, nextContexts };
+}
+
+export function repeatGroupSize(repeat: RepeatRegionBinding): number {
+  if (repeat.itemMode !== "group") return 1;
+  const raw = Number(repeat.groupSize ?? 1);
+  return Number.isFinite(raw) ? Math.max(1, Math.floor(raw)) : 1;
+}
+
+export function repeatItemIndexForGroup(repeat: RepeatRegionBinding, groupIndex: number, itemOffset = 0): number {
+  return groupIndex * repeatGroupSize(repeat) + Math.max(0, Math.floor(itemOffset));
+}
+
+export function repeatItemsForGroup(
+  repeat: RepeatRegionBinding,
+  items: Record<string, unknown>[],
+  groupIndex: number
+): Record<string, unknown>[] {
+  const size = repeatGroupSize(repeat);
+  return items.slice(groupIndex * size, groupIndex * size + size);
+}
+
+export function repeatGroupCount(repeat: RepeatRegionBinding, itemCount: number): number {
+  const size = repeatGroupSize(repeat);
+  return Math.ceil(itemCount / size);
 }

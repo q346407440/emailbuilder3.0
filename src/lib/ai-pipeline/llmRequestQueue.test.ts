@@ -1,6 +1,5 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import type { PipelineStepProgress } from "./ports/PipelineProgressReporter";
 import { llmExchangeContextStore } from "./llmCallContext";
 import { LlmRequestQueue, wrapLlmClientWithQueue } from "./llmRequestQueue";
 import type { LlmClient } from "./ports/LlmClient";
@@ -58,46 +57,34 @@ describe("LlmRequestQueue", () => {
     assert.deepEqual(order, ["first-start", "first-end", "retry", "normal"]);
   });
 
-  it("排队任务在出队前不触发 step.start", async () => {
+  it("wrapLlmClientWithQueue 透传调用上下文（attempt > 1 提升优先级）", async () => {
     const queue = new LlmRequestQueue(1);
+    const order: string[] = [];
     let releaseFirst!: () => void;
     const firstGate = new Promise<void>((resolve) => {
       releaseFirst = resolve;
     });
-    const startCount = { n: 0 };
-    const step: PipelineStepProgress = {
-      start: () => {
-        startCount.n += 1;
-      },
-      failAttempt: () => {},
-      retry: () => {},
-      logDetail: () => {},
-      succeed: () => {},
-      fail: () => {},
-    };
 
     const client: LlmClient = {
-      async complete() {
-        await firstGate;
+      async complete(messages) {
+        const text = messages[0]?.content;
+        if (text === "first") await firstGate;
+        order.push(String(text));
         return "{}";
       },
     };
     const wrapped = wrapLlmClientWithQueue(client, queue);
 
-    const first = llmExchangeContextStore.run({ stepProgress: step, attempt: 1 }, () =>
-      wrapped.complete([{ role: "user", content: "first" }])
+    const first = wrapped.complete([{ role: "user", content: "first" }]);
+    await delay(10);
+    const normal = wrapped.complete([{ role: "user", content: "normal" }]);
+    const retry = llmExchangeContextStore.run({ attempt: 2 }, () =>
+      wrapped.complete([{ role: "user", content: "retry" }])
     );
-    await delay(15);
-    assert.equal(startCount.n, 1);
-
-    const second = llmExchangeContextStore.run({ stepProgress: step, attempt: 1 }, () =>
-      wrapped.complete([{ role: "user", content: "second" }])
-    );
-    await delay(15);
-    assert.equal(startCount.n, 1, "第二个任务仍在排队时不应 start");
-
+    await delay(10);
     releaseFirst();
-    await Promise.all([first, second]);
-    assert.equal(startCount.n, 2);
+    await Promise.all([first, normal, retry]);
+
+    assert.deepEqual(order, ["first", "retry", "normal"]);
   });
 });

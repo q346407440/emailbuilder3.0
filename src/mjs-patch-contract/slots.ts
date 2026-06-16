@@ -37,3 +37,13 @@ export function wrapMjsSlot(id: MjsPatchSlotId, content: string): string {
 export function listMjsPatchSlotIdsForPrompt(): string {
   return MJS_PATCH_SLOT_IDS.map((id) => `\`${id}\``).join("、");
 }
+
+/** 提取 slot 锚点之间的当前源码（不含锚点行）；锚点缺失返回 null。 */
+export function extractMjsSlotContent(source: string, id: MjsPatchSlotId): string | null {
+  const begin = mjsSlotBeginMarker(id);
+  const end = mjsSlotEndMarker(id);
+  const beginIdx = source.indexOf(begin);
+  const endIdx = source.indexOf(end);
+  if (beginIdx < 0 || endIdx < 0 || endIdx <= beginIdx) return null;
+  return source.slice(beginIdx + begin.length, endIdx).trim();
+}

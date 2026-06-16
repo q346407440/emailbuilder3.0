@@ -13,9 +13,10 @@ function visibilityToBindingSpec(visibility: VisibilityRule): BindingSpec {
   return {
     slotId: visibility.slotId,
     mode: "variable",
-    valueType: visibility.valueType,
+    valueType: visibility.objectFieldKey?.trim() ? "object" : visibility.valueType,
     allowExternal: true,
     itemFields: visibility.itemFields as BindingCollectionField[] | undefined,
+    objectFields: visibility.objectFields as BindingCollectionField[] | undefined,
     minItems: visibility.minItems,
     maxItems: visibility.maxItems,
     label: visibility.label,
@@ -93,9 +94,26 @@ export function validateVisibilityRule(path: string, visibility: unknown): Paylo
     issues.push({
       path: `${path}.valueType`,
       reason:
-        "显隐条件变量不支持颜色型槽；请选用文本、链接、图片、数值、布尔或列表型业务变量",
+        "显隐条件变量不支持颜色型槽；请选用文本、链接、图片、数值、布尔、列表型业务变量，或对象变量的标量字段",
     });
     return issues;
+  }
+
+  const objectFieldKey = rule.objectFieldKey?.trim();
+  if (objectFieldKey) {
+    const objectFields = rule.objectFields ?? [];
+    const field = objectFields.find((item) => item.key === objectFieldKey);
+    if (!field) {
+      issues.push({
+        path: `${path}.objectFieldKey`,
+        reason: `objectFieldKey「${objectFieldKey}」未在 visibility.objectFields 中声明`,
+      });
+    } else if (field.valueType !== rule.valueType) {
+      issues.push({
+        path: `${path}.valueType`,
+        reason: `显隐 valueType 须与对象字段「${objectFieldKey}」的类型「${field.valueType}」一致`,
+      });
+    }
   }
 
   issues.push(...validateExternalVariableBindingSpec(path, visibilityToBindingSpec(rule)));

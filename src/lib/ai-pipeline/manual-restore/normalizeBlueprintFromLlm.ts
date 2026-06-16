@@ -1,3 +1,9 @@
+import {
+  EMAIL_CONTAINER_SPACING_MAX_PX,
+  parseSpacingPx,
+  formatSpacingPx,
+} from "../../spacingPxCap";
+
 /** 将豆包蓝图 JSON 规整为 ManualRestoreBlueprintSchema 可接受形态。 */
 export function normalizeBlueprintFromLlm(raw: unknown): unknown {
   if (!raw || typeof raw !== "object") return raw;
@@ -51,9 +57,11 @@ function normalizeSpacingMap(spacing: Record<string, unknown>): Record<string, s
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(spacing)) {
     let px = toPxString(v);
-    if (k === "section" || k === "pageInline") {
-      const m = /^(\d+(?:\.\d+)?)px$/.exec(px);
-      if (m && Number(m[1]) > 24) px = "24px";
+    // 容器间距契约上限（与 token-preset-contract validate 同源）：
+    // 设计图识别出的越界值在此 clamp，禁止流入生成 prompt 与 tokenPresets
+    const n = parseSpacingPx(px);
+    if (n != null && n > EMAIL_CONTAINER_SPACING_MAX_PX) {
+      px = formatSpacingPx(EMAIL_CONTAINER_SPACING_MAX_PX);
     }
     out[k] = px;
   }

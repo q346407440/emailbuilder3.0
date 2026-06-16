@@ -26,7 +26,7 @@ border: {
 **写在哪：**
 - 模块壳（白卡片/黄底卡片包图+文）→ 外层 \`layout.container\` 的 \`wrapperStyle.border\` + \`borderRadius\`
 - 按钮可见描边 → \`props.buttonStyle.border\`（**禁止**只写在 button 的 \`wrapperStyle\`）
-- 底图 \`backgroundImage\` 一般 \`borderNone()\`；框线通常在**包住图片的模块壳**上，而非底图对象本身
+- 底图 \`backgroundImage\` 不写 \`border\` / \`borderRadius\`；框线/圆角在**包住图片的模块壳** \`wrapperStyle\` 上
 
 **模块壳包图+文示例（设计图有圆角黑框时）：**
 \`\`\`javascript
@@ -177,7 +177,7 @@ export function buildMjsValidateContractSection(): string {
 - 禁止 **crossAlign**、**mainAlign**、**overlayInset** 等已废弃字段
 
 ### image / 条形码
-- \`type: 'image'\` **必须**有 \`wrapperStyle.backgroundImage\`（含 \`src\`、\`fit\`、\`position\`、\`border\`、\`borderRadius\`）
+- \`type: 'image'\` **必须**有 \`wrapperStyle.backgroundImage\`（含 \`src\`、\`fit\`、\`position\`）；圆角/描边写在 \`wrapperStyle.borderRadius\` / \`wrapperStyle.border\`
 - 条形码、纯色条也用 \`coverImage\` / \`barcodeImage\`，勿写成无底图的 layout
 
 ### icon

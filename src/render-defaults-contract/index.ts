@@ -11,6 +11,7 @@ export {
   EMAIL_CANVAS_TEXT_FONT_FAMILY,
   FIXED_TEXT_LINE_HEIGHT,
   IMAGE_BACKGROUND_FALLBACK_COLOR,
+  WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT,
   PREVIEW_BLOCK_OVERFLOW,
   PROJECT_BACKGROUND_CONTENT_ALIGN,
   PROJECT_LAYOUT_CONTENT_ALIGN,
@@ -20,6 +21,29 @@ export {
   projectLayoutContentAlign,
   projectTextContentAlign,
 } from "./values";
+export {
+  validateForbiddenBackgroundImageAlt,
+  stripForbiddenBackgroundImageAltFromBlock,
+  stripForbiddenBackgroundImageAltFromTemplate,
+  WRAPPER_BACKGROUND_IMAGE_ALT_BIND_PATH,
+  WRAPPER_BACKGROUND_IMAGE_ALT_FORBIDDEN_REASON,
+} from "./forbiddenBackgroundImageAlt";
+export {
+  backgroundImageFitUsesPosition,
+  effectiveBackgroundImageFit,
+  stripBackgroundImagePositionWhenContainFromBlock,
+  stripBackgroundImagePositionWhenContainFromTemplate,
+  validateForbiddenBackgroundImagePositionWhenContain,
+  WRAPPER_BACKGROUND_IMAGE_POSITION_BIND_PATH,
+  BACKGROUND_IMAGE_POSITION_FORBIDDEN_WHEN_CONTAIN_REASON,
+} from "./backgroundImageFitSemantics";
+export {
+  validateForbiddenBackgroundImageChrome,
+  stripForbiddenBackgroundImageChromeFromBlock,
+  stripForbiddenBackgroundImageChromeFromTemplate,
+  WRAPPER_BACKGROUND_IMAGE_CHROME_BIND_PATH_PREFIXES,
+  WRAPPER_BACKGROUND_IMAGE_CHROME_FORBIDDEN_REASON,
+} from "./forbiddenBackgroundImageChrome";
 export {
   FORBIDDEN_LEGACY_PROPS_RULES,
   validateForbiddenLegacyProps,

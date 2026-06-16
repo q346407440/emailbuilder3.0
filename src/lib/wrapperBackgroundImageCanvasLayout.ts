@@ -1,17 +1,10 @@
 import type { CSSProperties } from "react";
-import { IMAGE_BACKGROUND_FALLBACK_COLOR } from "../render-defaults-contract/values";
-import { projectLayoutContentAlign } from "../render-defaults-contract/values";
+import { IMAGE_BACKGROUND_FALLBACK_COLOR, WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT, projectLayoutContentAlign } from "../render-defaults-contract/values";
 import type { WrapperContentAlign, WrapperStyle } from "../types/email";
 import { overlayCellAlignFromLayoutContentAlign, type TableCellVerticalAlign } from "./emailTableLayout";
 import { normalizeCssLengthPx } from "./wrapperBackgroundImage";
 import type { WrapperBackgroundImagePresentationFields } from "./wrapperBackgroundImagePresentation";
-import {
-  borderCssHasVisibleWidth,
-  borderRadiusToCss,
-  borderToCss,
-  paddingToCss,
-  wrapperStyleToCss,
-} from "./wrapperStyleToCss";
+import { borderRadiusToCss, paddingToCss, wrapperStyleToCss } from "./wrapperStyleToCss";
 
 /** layout / grid / image / emailRoot 底图叠放画布：布局派生真源（padding 语义、td 对齐、外层盒模型）。 */
 export type WrapperBackgroundImageCanvasLayout = {
@@ -26,11 +19,8 @@ export type WrapperBackgroundImageCanvasLayout = {
   overlayHorizontalAlign: "left" | "center" | "right";
   overlayVerticalValign: TableCellVerticalAlign;
   outerBoxCss: CSSProperties;
-  bgPresentationFields: WrapperBackgroundImagePresentationFields & {
-    border?: unknown;
-    borderRadius?: unknown;
-  };
-  /** 底图承载 table 的 border-collapse；图级描边 >0 时用 separate，避免 collapse 把 td 撑出定高 outer */
+  bgPresentationFields: WrapperBackgroundImagePresentationFields;
+  /** 底图承载 table 的 border-collapse */
   bgTableBorderCollapse: "collapse" | "separate";
   /** 定高画布为 true：table 不写死 height，仅 td 定高，避免与 outer 盒双计高度后 overflow 裁切 */
   bgTableHeightFromTd: boolean;
@@ -84,11 +74,10 @@ export function resolveWrapperBackgroundImageCanvasLayout(
     hm === "fixed" && hRaw && hRaw !== "auto" ? normalizeCssLengthPx(hRaw) ?? hRaw : undefined;
   const fillStretchHeight = hm === "fill" && !fixedCanvasHeight;
 
-  const overlayBorderCss = borderToCss((background as { border?: unknown }).border);
-  const hasVisibleOverlayBorder = borderCssHasVisibleWidth(overlayBorderCss);
-  const bgTableBorderCollapse = hasVisibleOverlayBorder ? "separate" : "collapse";
+  const overlayBorderCss: CSSProperties = {};
+  const bgTableBorderCollapse = "collapse" as const;
   const bgTableHeightFromTd = !!fixedCanvasHeight;
-  const overlayRadiusCss = borderRadiusToCss((background as { borderRadius?: unknown }).borderRadius);
+  const overlayRadiusCss = borderRadiusToCss(wrapperStyle?.borderRadius);
   const overlayPaddingCss = paddingToCss(
     overlayPadding !== undefined ? overlayPadding : wrapperStyle?.padding
   );
@@ -111,7 +100,7 @@ export function resolveWrapperBackgroundImageCanvasLayout(
 
   const linkRaw = (background as { link?: unknown }).link;
   const link = typeof linkRaw === "string" && linkRaw.trim() ? linkRaw.trim() : undefined;
-  const altText = typeof background.alt === "string" ? background.alt.trim() : "";
+  const altText = WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT;
 
   return {
     src,
@@ -125,7 +114,11 @@ export function resolveWrapperBackgroundImageCanvasLayout(
     overlayHorizontalAlign,
     overlayVerticalValign,
     outerBoxCss,
-    bgPresentationFields: background,
+    bgPresentationFields: {
+      src,
+      fit: (background as { fit?: unknown }).fit,
+      position: (background as { position?: unknown }).position,
+    },
     bgTableBorderCollapse,
     bgTableHeightFromTd,
     fillStretchHeight,

@@ -34,10 +34,10 @@ describe("refineGroundingGridColumns", () => {
       { id: "i3", regionId: "s7", pack: "tabler", iconQuery: "building-store", colorHex: "#000", label: "shops" },
       { id: "i4", regionId: "s7", pack: "tabler", iconQuery: "shield-check", colorHex: "#000", label: "warranty" },
     ];
-    const textExtract: TextExtractResult = { regions: [] };
+    const textExtract: TextExtractResult = { schemaVersion: "1.0.0", regions: [] };
     assert.equal(inferGridColumnsForSection(trustSection, icons, textExtract), 4);
     const { grounding, adjustedSectionIds } = refineGroundingGridColumns(
-      { sections: [trustSection] },
+      { schemaVersion: "1.0.0", order: ["s7"], sections: [trustSection] },
       icons,
       textExtract
     );
@@ -47,9 +47,9 @@ describe("refineGroundingGridColumns", () => {
 
   it("社交区 4 配图槽推断 columns=4", () => {
     const { grounding } = refineGroundingGridColumns(
-      { sections: [socialSection] },
+      { schemaVersion: "1.0.0", order: [socialSection.sectionId], sections: [socialSection] },
       [],
-      { regions: [] }
+      { schemaVersion: "1.0.0", regions: [] }
     );
     assert.equal(grounding.sections[0].layoutHints?.gridColumns, 4);
   });

@@ -1,6 +1,7 @@
 import type {
   AiPipelineProgressPayload,
   AiPipelineStepEventFields,
+  AiPipelineStepStatus,
   AiPipelineUiStep,
 } from "../../../layout-variant-ai-contract/progress";
 
@@ -21,19 +22,9 @@ export type PipelineProgressReporter = {
   forStep(stepId: string): PipelineStepProgress;
 };
 
-type StepMeta = {
-  baseLabel: string;
-  activeEntryId: string;
-  seq: number;
-};
-
 function labelWithDetail(baseLabel: string, detail?: string): string | undefined {
   if (!detail?.trim()) return undefined;
   return `${baseLabel} — ${detail}`;
-}
-
-function buildEntryId(stepId: string, seq: number): string {
-  return seq === 1 ? stepId : `${stepId}~${seq}`;
 }
 
 export function createNoopPipelineProgressReporter(): PipelineProgressReporter {
@@ -52,116 +43,63 @@ export function createNoopPipelineProgressReporter(): PipelineProgressReporter {
   };
 }
 
+/**
+ * 一步一行 Reporter：同一 stepId 的全部事件都落在同一行上（状态原地变更），
+ * 不为重试追加新行；行的新增由 reducer 对未知 stepId 兜底。
+ */
 export function createPipelineProgressReporter(
   emit: (payload: AiPipelineProgressPayload) => void
 ): PipelineProgressReporter {
-  const stepMeta = new Map<string, StepMeta>();
+  const baseLabels = new Map<string, string>();
 
-  function ensureMeta(stepId: string): StepMeta {
-    const existing = stepMeta.get(stepId);
-    if (existing) return existing;
-    const created: StepMeta = { baseLabel: stepId, activeEntryId: stepId, seq: 1 };
-    stepMeta.set(stepId, created);
-    return created;
+  function baseLabelOf(stepId: string): string {
+    return baseLabels.get(stepId) ?? stepId;
   }
 
-  function appendEntry(
+  function emitStep(
     stepId: string,
-    status: "running" | "failed" | "success" | "pending",
-    attempt: number | undefined,
+    status: AiPipelineStepStatus,
+    attempt?: number,
     opts?: PipelineStepProgressOpts
-  ) {
-    const meta = ensureMeta(stepId);
-    meta.seq += 1;
-    meta.activeEntryId = buildEntryId(stepId, meta.seq);
-    stepMeta.set(stepId, meta);
+  ): void {
     emit({
       type: "step",
       stepId,
-      entryId: meta.activeEntryId,
-      append: true,
       status,
-      attempt,
-      label: labelWithDetail(meta.baseLabel, opts?.detail) ?? meta.baseLabel,
-      maxAttempts: opts?.maxAttempts,
+      // detail 缺省时回落基础文案，避免行内残留上一状态的细节文案
+      label: labelWithDetail(baseLabelOf(stepId), opts?.detail) ?? baseLabelOf(stepId),
+      ...(attempt !== undefined ? { attempt } : {}),
+      ...(opts?.maxAttempts !== undefined ? { maxAttempts: opts.maxAttempts } : {}),
     });
   }
 
   return {
     emitPlan(steps, opts) {
       for (const step of steps) {
-        stepMeta.set(step.id, {
-          baseLabel: step.label,
-          activeEntryId: step.id,
-          seq: 1,
-        });
+        baseLabels.set(step.id, step.label);
       }
       emit({ type: "plan", steps: [...steps], display: opts?.display ?? "pending" });
     },
     forStep(stepId) {
       return {
         start(attempt = 1, opts) {
-          if (attempt > 1) {
-            appendEntry(stepId, "running", attempt, opts);
-            return;
-          }
-          const meta = ensureMeta(stepId);
-          emit({
-            type: "step",
-            stepId,
-            entryId: meta.activeEntryId,
-            status: "running",
-            attempt,
-            label: labelWithDetail(meta.baseLabel, opts?.detail),
-            maxAttempts: opts?.maxAttempts,
-          });
+          emitStep(stepId, "running", attempt, opts);
         },
         failAttempt(attempt, opts) {
-          const meta = ensureMeta(stepId);
-          emit({
-            type: "step",
-            stepId,
-            entryId: meta.activeEntryId,
-            status: "failed",
-            attempt,
-            label: labelWithDetail(meta.baseLabel, opts?.detail),
-            maxAttempts: opts?.maxAttempts,
-          });
+          emitStep(stepId, "failed", attempt, opts);
         },
         retry(attempt, opts) {
-          appendEntry(stepId, "running", attempt, opts);
+          emitStep(stepId, "running", attempt, opts);
         },
         logDetail(detail, opts) {
-          const meta = ensureMeta(stepId);
-          emit({
-            type: "step",
-            stepId,
-            entryId: meta.activeEntryId,
-            status: "running",
-            label: labelWithDetail(meta.baseLabel, detail),
-            attempt: opts?.attempt,
-            maxAttempts: opts?.maxAttempts,
-          });
+          emitStep(stepId, "running", opts?.attempt, { ...opts, detail });
         },
         succeed() {
-          const meta = ensureMeta(stepId);
-          emit({
-            type: "step",
-            stepId,
-            entryId: meta.activeEntryId,
-            status: "success",
-          });
+          // 成功保留行内最后的文案（如「第 2 次重试」），仅翻转状态
+          emit({ type: "step", stepId, status: "success" });
         },
         fail(opts) {
-          const meta = ensureMeta(stepId);
-          emit({
-            type: "step",
-            stepId,
-            entryId: meta.activeEntryId,
-            status: "failed",
-            label: labelWithDetail(meta.baseLabel, opts?.detail),
-            maxAttempts: opts?.maxAttempts,
-          });
+          emitStep(stepId, "failed", opts?.attempt, opts);
         },
       };
     },

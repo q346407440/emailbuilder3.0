@@ -1,6 +1,28 @@
 import { validatePublishStatusField } from "../publish-status-contract/validate";
+import {
+  META_DELIVERY_PREHEADER_MAX_LENGTH,
+  META_DELIVERY_SUBJECT_MAX_LENGTH,
+  META_DESCRIPTION_MAX_LENGTH,
+  META_DISPLAY_NAME_MAX_LENGTH,
+} from "./field-limits";
 import { META_REMOVED_DELIVERY_KEYS, META_REMOVED_ROOT_KEYS } from "./removed-fields";
 import { META_SCHEMA_VERSION } from "./types";
+
+function validateOptionalStringMaxLength(
+  issues: MetaValidationIssue[],
+  path: string,
+  value: unknown,
+  maxLength: number
+): void {
+  if (value === undefined) return;
+  if (typeof value !== "string") {
+    issues.push({ path, reason: "必须为字符串" });
+    return;
+  }
+  if (value.length > maxLength) {
+    issues.push({ path, reason: `长度不能超过 ${maxLength} 个字符` });
+  }
+}
 
 export type MetaValidationIssue = {
   path: string;
@@ -38,12 +60,34 @@ export function validateEmailMeta(meta: unknown): MetaValidationIssue[] {
           issues.push({ path: `delivery.${key}`, reason: "已下线字段，请从 meta.json 移除" });
         }
       }
+      const deliveryRecord = delivery as Record<string, unknown>;
+      validateOptionalStringMaxLength(
+        issues,
+        "delivery.subject",
+        deliveryRecord.subject,
+        META_DELIVERY_SUBJECT_MAX_LENGTH
+      );
+      validateOptionalStringMaxLength(
+        issues,
+        "delivery.preheader",
+        deliveryRecord.preheader,
+        META_DELIVERY_PREHEADER_MAX_LENGTH
+      );
     }
   }
 
-  if (root.displayName !== undefined && (typeof root.displayName !== "string" || !root.displayName.trim())) {
-    issues.push({ path: "displayName", reason: "必须为非空字符串" });
+  if (root.displayName !== undefined) {
+    if (typeof root.displayName !== "string" || !root.displayName.trim()) {
+      issues.push({ path: "displayName", reason: "必须为非空字符串" });
+    } else if (root.displayName.length > META_DISPLAY_NAME_MAX_LENGTH) {
+      issues.push({
+        path: "displayName",
+        reason: `长度不能超过 ${META_DISPLAY_NAME_MAX_LENGTH} 个字符`,
+      });
+    }
   }
+
+  validateOptionalStringMaxLength(issues, "description", root.description, META_DESCRIPTION_MAX_LENGTH);
 
   const publishIssue = validatePublishStatusField(root.publishStatus, "publishStatus");
   if (publishIssue) issues.push(publishIssue);

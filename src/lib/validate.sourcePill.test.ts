@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { EmailBlock, EmailTemplate } from "../types/email";
-import { validateTemplateBindings } from "./validate";
+import type {
+  EmailBlock,
+  EmailTemplate,
+  WrapperBackgroundImage,
+} from "../types/email";
+import { validateTemplate, validateTemplateBindings } from "./validate";
 
 function makeTemplate(blocks: EmailTemplate["blocks"]): EmailTemplate {
   return {
@@ -26,6 +30,7 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
         parentId: null,
         children: [],
         wrapperStyle: {
+          // 故意保留非法字段以验证运行时校验拒绝（类型已移除该字段）
           backgroundImage: {
             src: "https://example.com/x.jpg",
             alt: "",
@@ -34,7 +39,7 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
             fit: "cover",
             borderRadius: { mode: "unified", radius: "0" },
             border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          },
+          } as unknown as WrapperBackgroundImage,
         },
         props: {},
         bindings: {
@@ -56,7 +61,7 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
     assert.ok(violation, "未捕获 theme 误用到 content 字段的违例");
   });
 
-  it("mode=variable 出现在 style 字段（image.wrapperStyle.backgroundImage.borderRadius.radius）应报错", () => {
+  it("backgroundImage.borderRadius bindings 应被禁止持久化校验捕获", () => {
     const t = makeTemplate({
       img: {
         id: "img",
@@ -64,15 +69,13 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
         parentId: null,
         children: [],
         wrapperStyle: {
+          // 故意保留非法字段以验证运行时校验拒绝（类型已移除该字段）
           backgroundImage: {
             src: "https://example.com/x.jpg",
-            alt: "",
-            link: "",
             position: "center",
             fit: "cover",
             borderRadius: { mode: "unified", radius: "8px" },
-            border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          },
+          } as unknown as WrapperBackgroundImage,
         },
         props: {},
         bindings: {
@@ -86,13 +89,13 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
         },
       },
     });
-    const issues = validateTemplateBindings(t);
+    const issues = validateTemplate(t);
     const violation = issues.find(
       (i) =>
         i.path === "blocks.img.bindings.wrapperStyle.backgroundImage.borderRadius.radius" &&
-        /内容（content）字段/.test(i.reason)
+        /border \/ borderRadius 已禁止持久化/.test(i.reason)
     );
-    assert.ok(violation, "未捕获 variable 误用到 style 字段的违例");
+    assert.ok(violation, "未捕获禁止持久化的图级圆角 binding");
   });
 
   it("mode=variable 在 content 字段（button.props.text）应通过", () => {

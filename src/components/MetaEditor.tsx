@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { message } from "@shoplazza/sds";
 import { captureEmailPreviewHtmlFromDom } from "../lib/captureEmailPreviewHtml";
+import { toUserFacingErrorMessage } from "../lib/userFacingError";
 import { resolveTestEmailSubject } from "../lib/emailDeliveryFields";
 import {
   buildMetaEditorPersistPatch,
@@ -17,7 +18,13 @@ import {
 import { SendTestEmailModal } from "./SendTestEmailModal";
 import { Field } from "./ui/Field";
 import { InspectorPanelSection } from "./ui/InspectorPanelSection";
-import { ShopInput, ShopTextArea } from "./ui/ShopFormControls";
+import { ShopCountInput, ShopCountTextArea } from "./ui/ShopFormControls";
+import {
+  META_DELIVERY_PREHEADER_MAX_LENGTH,
+  META_DELIVERY_SUBJECT_MAX_LENGTH,
+  META_DESCRIPTION_MAX_LENGTH,
+  META_DISPLAY_NAME_MAX_LENGTH,
+} from "../meta-contract/field-limits";
 
 /** 保存成功提示做节流，避免连续点击刷屏。 */
 const META_SAVE_TOAST_MIN_MS = 2400;
@@ -36,18 +43,33 @@ type Props = {
   onError?: (message: string) => void;
   /** panel: 左侧整栏；embedded: 作为右侧 inspector 内容区 */
   variant?: "panel" | "embedded";
+  /** embedded 场景是否渲染内部标题与保存按钮；弹窗中应由外层 header/footer 承担。 */
+  showEmbeddedHeader?: boolean;
   /** 顶栏触发发送测试邮件（仅 embedded 场景会使用） */
   openSendTestNonce?: number;
+  /** 外层 footer 触发保存 */
+  externalSaveNonce?: number;
+  /** 回传表单是否有未保存修改（给外层 footer 按钮禁用态） */
+  onDirtyChange?: (dirty: boolean) => void;
+  /** 回传保存中状态（给外层 footer 按钮 loading 态） */
+  onSavingChange?: (saving: boolean) => void;
   /** 回传当前是否可发送测试邮件（给顶栏按钮禁用态） */
   onSendTestCapabilityChange?: (capable: boolean) => void;
+  /** 模板信息保存成功后通知外层刷新列表等派生数据 */
+  onSaved?: () => void;
 };
 
 export function MetaEditor({
   emailKey,
   onError,
   variant = "panel",
+  showEmbeddedHeader = true,
   openSendTestNonce = 0,
+  externalSaveNonce = 0,
+  onDirtyChange,
+  onSavingChange,
   onSendTestCapabilityChange,
+  onSaved,
 }: Props) {
   const [form, setForm] = useState<MetaEditorFormSnapshot>(() => metaToEditorForm(null));
   const [savedForm, setSavedForm] = useState<MetaEditorFormSnapshot>(() => metaToEditorForm(null));
@@ -58,6 +80,7 @@ export function MetaEditor({
   const [savingMeta, setSavingMeta] = useState(false);
   const lastMetaToastAtRef = useRef(0);
   const prevOpenSendTestNonceRef = useRef(openSendTestNonce);
+  const prevExternalSaveNonceRef = useRef(externalSaveNonce);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +102,7 @@ export function MetaEditor({
         setLoaded(true);
       } catch (err) {
         if (cancelled) return;
-        onError?.(err instanceof Error ? err.message : String(err));
+        onError?.(toUserFacingErrorMessage(err, "加载模板信息失败，请刷新重试"));
         setLoaded(true);
       }
     })();
@@ -97,7 +120,7 @@ export function MetaEditor({
       } catch (err) {
         if (!cancelled) {
           setSmtpStatus({ configured: false });
-          onError?.(err instanceof Error ? err.message : String(err));
+          onError?.(toUserFacingErrorMessage(err, "获取邮件服务状态失败，请稍后重试"));
         }
       }
     })();
@@ -110,7 +133,7 @@ export function MetaEditor({
     const now = Date.now();
     if (now - lastMetaToastAtRef.current < META_SAVE_TOAST_MIN_MS) return;
     lastMetaToastAtRef.current = now;
-    message.info("元信息已写入 meta.json", 1.6);
+    message.info("模板信息已保存", 1.6);
   }
 
   function update<K extends keyof MetaEditorFormSnapshot>(key: K, value: MetaEditorFormSnapshot[K]) {
@@ -124,9 +147,10 @@ export function MetaEditor({
       await putEmailMeta(emailKey, buildMetaEditorPersistPatch(next));
       setSavedForm(next);
       notifyMetaPersisted();
+      onSaved?.();
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = toUserFacingErrorMessage(err, "保存失败，请稍后重试");
       onError?.(msg);
       message.error(msg);
       return false;
@@ -141,9 +165,26 @@ export function MetaEditor({
   const canSendTest = !disabled && Boolean(smtpStatus?.configured);
 
   useEffect(() => {
+    onDirtyChange?.(dirty);
+    return () => onDirtyChange?.(false);
+  }, [dirty, onDirtyChange]);
+
+  useEffect(() => {
+    onSavingChange?.(savingMeta);
+    return () => onSavingChange?.(false);
+  }, [savingMeta, onSavingChange]);
+
+  useEffect(() => {
     onSendTestCapabilityChange?.(canSendTest);
-    return () => onSendTestCapabilityChange?.(false);
   }, [canSendTest, onSendTestCapabilityChange]);
+
+  useEffect(() => {
+    const prev = prevExternalSaveNonceRef.current;
+    prevExternalSaveNonceRef.current = externalSaveNonce;
+    if (externalSaveNonce === prev) return;
+    if (!dirty || savingMeta) return;
+    void saveMeta(form);
+  }, [dirty, externalSaveNonce, form, savingMeta]);
 
   useEffect(() => {
     const prev = prevOpenSendTestNonceRef.current;
@@ -169,16 +210,16 @@ export function MetaEditor({
     }
     setSending(true);
     try {
-      const result = await sendTestEmail(emailKey, {
+      await sendTestEmail(emailKey, {
         to: args.to,
         html,
         subject,
         preheader,
       });
-      message.success(`测试邮件已发送${result.messageId ? `（${result.messageId}）` : ""}`, 3);
+      message.success("测试邮件已发送，请前往收件箱查看", 3);
       setSendTestOpen(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = toUserFacingErrorMessage(err, "发送失败，请稍后重试");
       message.error(msg);
       onError?.(msg);
     } finally {
@@ -190,41 +231,49 @@ export function MetaEditor({
     <div className={isEmbedded ? "meta-editor__scroll meta-editor__scroll--embedded" : "block-tree__scroll meta-editor__scroll"}>
         {dirty ? <p className="meta-editor__save-status meta-editor__save-status--dirty">有未保存修改</p> : null}
 
-        <InspectorPanelSection title="基础" className="meta-editor__section">
-          <Field label="显示名称" className="meta-editor__field">
-            <ShopInput
+        <InspectorPanelSection title="模板基础信息" className="meta-editor__section">
+          <Field label="邮件模板名称" className="meta-editor__field">
+            <ShopCountInput
+              name="displayName"
               value={form.displayName}
-              onChange={(e) => update("displayName", e.target.value)}
+              maxLength={META_DISPLAY_NAME_MAX_LENGTH}
+              onChange={(value) => update("displayName", value)}
               disabled={disabled}
               placeholder="邮件在列表中的名称"
             />
           </Field>
-          <Field label="说明" className="meta-editor__field">
-            <ShopTextArea
+          <Field label="模板说明" className="meta-editor__field">
+            <ShopCountTextArea
+              name="description"
               rows={2}
               value={form.description}
-              onChange={(e) => update("description", e.target.value)}
+              maxLength={META_DESCRIPTION_MAX_LENGTH}
+              onChange={(value) => update("description", value)}
               disabled={disabled}
               placeholder="可选，内部备注"
             />
           </Field>
         </InspectorPanelSection>
 
-        <InspectorPanelSection title="投递信息" className="meta-editor__section">
-          <Field label="主题行" className="meta-editor__field">
-            <ShopInput
+        <InspectorPanelSection title="发信信息" className="meta-editor__section">
+          <Field label="发信主题" className="meta-editor__field">
+            <ShopCountInput
+              name="subject"
               value={form.subject}
-              onChange={(e) => update("subject", e.target.value)}
+              maxLength={META_DELIVERY_SUBJECT_MAX_LENGTH}
+              onChange={(value) => update("subject", value)}
               disabled={disabled}
-              placeholder="收件箱第一行（subject）"
+              placeholder="收件箱第一行标题"
             />
           </Field>
-          <Field label="预览摘要" className="meta-editor__field">
-            <ShopInput
+          <Field label="发信预览摘要" className="meta-editor__field">
+            <ShopCountInput
+              name="preheader"
               value={form.preheader}
-              onChange={(e) => update("preheader", e.target.value)}
+              maxLength={META_DELIVERY_PREHEADER_MAX_LENGTH}
+              onChange={(value) => update("preheader", value)}
               disabled={disabled}
-              placeholder="收件箱第二行（preheader）"
+              placeholder="收件箱第二行摘要"
             />
           </Field>
         </InspectorPanelSection>
@@ -235,34 +284,27 @@ export function MetaEditor({
     <>
       {isEmbedded ? (
         <>
-          <div className="side-inspector__headrow meta-editor__headrow">
-            <h2 className="side-panel__title">邮件元信息</h2>
-            <div className="resource-text-actions meta-editor__head-actions" role="group" aria-label="元信息操作">
-              <button
-                type="button"
-                className="resource-text-action"
-                disabled={disabled || savingMeta || !dirty}
-                onClick={() => void saveMeta(form)}
-                title="保存元信息到 meta.json"
-              >
-                {savingMeta ? "保存中…" : "保存"}
-              </button>
-              <button
-                type="button"
-                className="resource-text-action"
-                disabled={disabled || savingMeta || !dirty}
-                onClick={() => setForm(savedForm)}
-                title="还原到最近一次已保存状态"
-              >
-                还原
-              </button>
+          {showEmbeddedHeader ? (
+            <div className="side-inspector__headrow meta-editor__headrow">
+              <h2 className="side-panel__title">模板信息</h2>
+              <div className="resource-text-actions meta-editor__head-actions" role="group" aria-label="模板信息操作">
+                <button
+                  type="button"
+                  className="resource-text-action"
+                  disabled={disabled || savingMeta || !dirty}
+                  onClick={() => void saveMeta(form)}
+                  title="保存模板信息"
+                >
+                  {savingMeta ? "保存中…" : "保存"}
+                </button>
+              </div>
             </div>
-          </div>
+          ) : null}
           {content}
         </>
       ) : (
-        <aside className="block-tree meta-editor" aria-label="邮件元信息">
-          <div className="block-tree__title">邮件元信息</div>
+        <aside className="block-tree meta-editor" aria-label="模板信息">
+          <div className="block-tree__title">模板信息</div>
           {content}
         </aside>
       )}

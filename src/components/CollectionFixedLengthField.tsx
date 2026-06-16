@@ -48,13 +48,7 @@ export function CollectionFixedLengthField({
   return (
     <Field
       label="列表长度"
-      hint={
-        disabled && disabledReason ? (
-          <p className="inspector__muted">{disabledReason}</p>
-        ) : (
-          hint ?? defaultHint
-        )
-      }
+      hint={disabled && disabledReason ? disabledReason : hint ?? defaultHint}
     >
       <ShopInput
         type="number"

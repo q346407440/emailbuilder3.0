@@ -25,7 +25,7 @@ import { runStageB3 } from "./stages/stageB3";
 import { runStageB4 } from "./stages/stageB4";
 import { refineGroundingGridColumns } from "./refineGroundingGridColumns";
 import { runStageCForSection } from "./stages/stageC";
-import type { GroundingSection, PipelinePorts, PipelineRunContext, PipelineRunInput, PipelineRunResult } from "./types";
+import type { GroundingSection, MapPipelineOutput, PipelinePorts, PipelineRunContext, PipelineRunInput, PipelineRunResult } from "./types";
 
 function bufferToDataUrl(buffer: Buffer, mimeType: string): string {
   const normalized = mimeType.trim() || "image/png";
@@ -176,7 +176,7 @@ async function runImageToLayoutVariantPipelineBody(
 
   const stepE = progress.forStep("E");
   stepE.start();
-  let mapped: PipelineRunResult;
+  let mapped: MapPipelineOutput;
   try {
     const draft = mergeSections({
       grounding: groundingForC,

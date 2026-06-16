@@ -26,7 +26,9 @@
 | [变更先改源头执行规范.md](./变更先改源头执行规范.md) | 操作层：8 步流程、分场景指引、完成标准与评审 |
 | [AI Coding 硬约束落地清单.md](./AI%20Coding%20硬约束落地清单.md) | 工程约束 P0/P1/P2 检查项与成熟度判断 |
 | [可拔插式代码开发规范.md](./可拔插式代码开发规范.md) | 通用方法论：函数级可拔插（单一职责、显式 IO、组合优于堆分支）；与源头驱动配套 |
-| [project-plan.md](./project-plan.md) | 项目规划与历史对话备忘（**非** API/JSON 契约） |
+| [prd.md](./prd.md) | 邮件编辑器产品需求说明（PRD） |
+| [step2-相似品搭配品-derivedFrom-执行计划.md](./step2-相似品搭配品-derivedFrom-执行计划.md) | 派生列表 A/B 执行计划（`easy-email-repeat-binding` 技能索引） |
+| [ai-email-generation-api/](./ai-email-generation-api/) | 以图 AI 创建版式方案与 API 参考 |
 
 ## 方法论文档与 Cursor Rules
 

@@ -35,10 +35,19 @@ export const REPEAT_BINDING_RULES: readonly RepeatBindingRule[] = [
   {
     id: "repeat.bindWizard.steps",
     kind: "bind-wizard",
-    title: "单层绑定向导两步",
+    title: "单层绑定向导三步",
     summary:
-      "RepeatRegionBindModal：步骤 1 列表变量 → 步骤 2 字段映射。已绑定宿主「编辑绑定」或 viewOnly「查看绑定」打开时直达步骤 2，可上一步改列表变量。无多层合一向导（UnifiedRepeatBindPlan 类型仍存，UI 未暴露 parentAndChild/childOnly）。",
+      "RepeatRegionBindModal：步骤 1 列表变量 → 步骤 2 重复方式 → 步骤 3 字段映射。已绑定宿主「编辑绑定」或 viewOnly「查看绑定」打开时直达字段映射，可上一步改重复方式与列表变量。无多层合一向导（UnifiedRepeatBindPlan 类型仍存，UI 未暴露 parentAndChild/childOnly）。",
     implementation: "src/components/RepeatRegionBindModal.tsx · buildWizardSteps",
+  },
+  {
+    id: "repeat.bindWizard.groupMode",
+    kind: "field-mapping",
+    title: "分组重复",
+    summary:
+      "repeat.itemMode=group 时，groupSize 表示一个复制体消费几条 collection 数据；fieldMappings.itemOffset 表示该目标字段读取本组第几条数据。未写 itemMode 时按 single 兼容旧模板。",
+    implementation:
+      "src/types/email.ts · src/components/RepeatRegionBindModal.tsx · src/repeat-runtime/repeatItemResolve.ts",
   },
   {
     id: "repeat.bindWizard.slotCandidates",

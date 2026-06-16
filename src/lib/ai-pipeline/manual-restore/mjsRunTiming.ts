@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
-import type { MjsGenerateMode } from "../../../layout-variant-ai-contract/mjsGenerateMode";
 import { stepElapsedSec } from "./stepTiming";
+
+export const MANUAL_RESTORE_MJS_STRATEGY = "draft-patch" as const;
 
 export type MjsRunTimingStep = {
   /** 步骤完成时刻（ISO） */
@@ -17,7 +18,7 @@ export type MjsRunTimingStep = {
 };
 
 export type MjsRunMetaFile = {
-  mjsGenerateMode: MjsGenerateMode;
+  strategy: typeof MANUAL_RESTORE_MJS_STRATEGY;
   emailKey: string;
   layoutVariantId: string | null;
   startedAt: string;
@@ -35,10 +36,10 @@ export type MjsRunTimingRecordOpts = {
   attempt?: number;
 };
 
-/** 写入 logs/manual-restore-mjs-<id>/00-run-meta.json，供两种生成模式对比耗时。 */
+/** 写入 logs/manual-restore-mjs-<id>/00-run-meta.json，记录底稿 patch 管线耗时。 */
 export function createMjsRunTiming(
   logDir: string,
-  meta: Pick<MjsRunMetaFile, "mjsGenerateMode" | "emailKey" | "layoutVariantId">
+  meta: Pick<MjsRunMetaFile, "emailKey" | "layoutVariantId">
 ): {
   record: (label: string, startMs: number, opts?: MjsRunTimingRecordOpts) => MjsRunTimingStep;
   finish: (opts: { ok: boolean; startMs: number; error?: string }) => MjsRunMetaFile;
@@ -49,6 +50,7 @@ export function createMjsRunTiming(
 
   const state: MjsRunMetaFile = {
     ...meta,
+    strategy: MANUAL_RESTORE_MJS_STRATEGY,
     startedAt,
     steps: [],
   };
@@ -93,7 +95,7 @@ export function createMjsRunTiming(
 function writeTimingSummaryTxt(logDir: string, meta: MjsRunMetaFile): void {
   const lines = [
     `# manual-restore mjs 用时摘要`,
-    `mode: ${meta.mjsGenerateMode}`,
+    `strategy: ${meta.strategy}`,
     `emailKey: ${meta.emailKey}`,
     `layoutVariantId: ${meta.layoutVariantId ?? "(none)"}`,
     `started: ${meta.startedAt}`,

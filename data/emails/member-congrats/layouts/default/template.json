@@ -179,20 +179,8 @@
                   },
                   "backgroundImage": {
                     "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
-                    "alt": "Store logo",
                     "link": "",
-                    "fit": "contain",
-                    "position": "center",
-                    "borderRadius": {
-                      "mode": "unified",
-                      "radius": "0"
-                    },
-                    "border": {
-                      "mode": "unified",
-                      "width": "0",
-                      "style": "solid",
-                      "color": "rgba(0,0,0,0)"
-                    }
+                    "fit": "contain"
                   },
                   "contentAlign": {
                     "horizontal": "left",
@@ -208,14 +196,6 @@
                     "fieldKind": "content",
                     "label": "店铺 Logo 地址",
                     "description": "邮件顶部居中展示的店铺标识图。"
-                  },
-                  "wrapperStyle.backgroundImage.alt": {
-                    "slotId": "storeLogoAlt",
-                    "mode": "variable",
-                    "valueType": "string",
-                    "allowExternal": true,
-                    "fieldKind": "content",
-                    "label": "店铺 Logo 替代文字"
                   }
                 }
               }
@@ -338,22 +318,9 @@
               },
               "backgroundImage": {
                 "src": "https://images.pexels.com/photos/2647990/pexels-photo-2647990.jpeg?auto=compress&cs=tinysrgb&w=800",
-                "alt": "Congratulations",
                 "link": "",
                 "fit": "cover",
-                "position": "center",
-                "borderRadius": {
-                  "mode": "unified",
-                  "radius": {
-                    "$themeRef": "tokens.radius.panel"
-                  }
-                },
-                "border": {
-                  "mode": "unified",
-                  "width": "0",
-                  "style": "solid",
-                  "color": "rgba(0,0,0,0)"
-                }
+                "position": "center"
               },
               "contentAlign": {
                 "horizontal": "left",
@@ -370,21 +337,7 @@
                 "label": "恭喜头图地址",
                 "description": "恭喜/升级主视觉横幅图，建议宽 600px 比例。"
               },
-              "wrapperStyle.backgroundImage.alt": {
-                "slotId": "heroCongratsImageAlt",
-                "mode": "variable",
-                "valueType": "string",
-                "allowExternal": true,
-                "fieldKind": "content",
-                "label": "恭喜头图替代文字"
-              },
               "wrapperStyle.borderRadius.radius": {
-                "slotId": "tokens.radius.panel",
-                "mode": "theme",
-                "tokenPath": "tokens.radius.panel",
-                "fieldKind": "style"
-              },
-              "wrapperStyle.backgroundImage.borderRadius.radius": {
                 "slotId": "tokens.radius.panel",
                 "mode": "theme",
                 "tokenPath": "tokens.radius.panel",

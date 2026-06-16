@@ -7,6 +7,7 @@ export const NESTED_BLOCK_SHELL_KEYS = new Set([
   "props",
   "bindings",
   "repeat",
+  "objectBind",
   "visibility",
   "children",
 ]);

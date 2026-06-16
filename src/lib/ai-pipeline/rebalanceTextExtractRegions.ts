@@ -28,7 +28,7 @@ function findProductSectionId(sections: GroundingSection[]): string | undefined 
 }
 
 function reindexParagraphs(regionId: string, paragraphs: TextExtractPayloadParsed["regions"][0]["paragraphs"]) {
-  return paragraphs.map((p, index, arr) => ({
+  return paragraphs.map((p, index) => ({
     ...p,
     textId: `${regionId}-t${index}`,
     role: p.role,

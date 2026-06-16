@@ -62,7 +62,6 @@ export function flattenBuiltinProductRow(product: BuiltinProductMock): Record<st
     skuCount: product.skus.length,
     skus: product.skus,
     imageSrc: featured.imageSrc,
-    imageAlt: featured.imageAlt,
     salePrice: featured.salePrice,
     originalPrice: featured.originalPrice,
     inventoryQuantity,
@@ -82,7 +81,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-midnight-neon",
     coverSrc: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "午夜霓虹封面",
     title: "午夜霓虹",
     description: "12 首电子氛围曲",
     href: "https://example.com/collections/midnight-neon",
@@ -91,7 +89,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-coastal-drive",
     coverSrc: "https://images.pexels.com/photos/1670921/pexels-photo-1670921.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "海岸公路封面",
     title: "海岸公路",
     description: "10 首独立流行",
     href: "https://example.com/collections/coastal-drive",
@@ -100,7 +97,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-golden-hour",
     coverSrc: "https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "金色时刻封面",
     title: "金色时刻",
     description: "8 首民谣",
     href: "https://example.com/collections/golden-hour",
@@ -109,7 +105,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-city-echoes",
     coverSrc: "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "城市回声封面",
     title: "城市回声",
     description: "14 首嘻哈节奏",
     href: "https://example.com/collections/city-echoes",
@@ -118,7 +113,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-quiet-keys",
     coverSrc: "https://images.pexels.com/photos/1670921/pexels-photo-1670921.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "静夜钢琴封面",
     title: "静夜钢琴",
     description: "9 首钢琴独奏",
     href: "https://example.com/collections/quiet-keys",
@@ -127,7 +121,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-summer-pulse",
     coverSrc: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "夏日脉冲封面",
     title: "夏日脉冲",
     description: "11 首舞曲",
     href: "https://example.com/collections/summer-pulse",
@@ -136,7 +129,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-forest-walk",
     coverSrc: "https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "深林漫步封面",
     title: "深林漫步",
     description: "7 首环境音乐",
     href: "https://example.com/collections/forest-walk",
@@ -145,7 +137,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-tape-memories",
     coverSrc: "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "复古磁带封面",
     title: "复古磁带",
     description: "13 首复古流行",
     href: "https://example.com/collections/tape-memories",
@@ -154,7 +145,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-star-voyage",
     coverSrc: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "星际航行封面",
     title: "星际航行",
     description: "10 首太空合成",
     href: "https://example.com/collections/star-voyage",
@@ -163,7 +153,6 @@ export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-dawn-overture",
     coverSrc: "https://images.pexels.com/photos/1670921/pexels-photo-1670921.jpeg?auto=compress&cs=tinysrgb&w=400",
-    coverAlt: "晨光序曲封面",
     title: "晨光序曲",
     description: "6 首古典跨界",
     href: "https://example.com/collections/dawn-overture",
@@ -186,9 +175,7 @@ const FIELD_ALIASES: Record<string, string[]> = {
   iconSrc: ["iconSrc", "imageSrc", "coverSrc"],
   name: ["name", "title"],
   imageSrc: ["imageSrc", "coverSrc", "iconSrc"],
-  imageAlt: ["imageAlt", "coverAlt"],
   coverSrc: ["coverSrc", "imageSrc", "iconSrc"],
-  coverAlt: ["coverAlt", "imageAlt"],
   salePrice: ["salePrice", "subtitle"],
   originalPrice: ["originalPrice"],
   offer: ["offer", "title"],
@@ -201,7 +188,7 @@ function pickSkuIndexedCatalogValue(
   fieldKey: string
 ): unknown {
   const m =
-    /^(skuImageAlt|skuImage|skuSalePrice|skuOriginalPrice|skuTitle|skuCode)(\d+)$/.exec(fieldKey);
+    /^(skuImage|skuSalePrice|skuOriginalPrice|skuTitle|skuCode)(\d+)$/.exec(fieldKey);
   if (!m) return undefined;
   const idx = Number(m[2]) - 1;
   if (!Number.isFinite(idx) || idx < 0) return undefined;
@@ -211,7 +198,6 @@ function pickSkuIndexedCatalogValue(
   if (!isSkuRow(sku)) return undefined;
   const propByPrefix: Record<string, keyof BuiltinProductSkuMock> = {
     skuImage: "imageSrc",
-    skuImageAlt: "imageAlt",
     skuSalePrice: "salePrice",
     skuOriginalPrice: "originalPrice",
     skuTitle: "title",

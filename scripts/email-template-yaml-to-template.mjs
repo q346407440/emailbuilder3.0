@@ -469,7 +469,7 @@ function ensureBackgroundBorder(kind, block) {
   }
   const wsb = block.wrapperStyle?.backgroundImage;
   if (wsb && typeof wsb === "object" && typeof wsb.src === "string" && wsb.src.trim()) {
-    block.wrapperStyle.backgroundImage = mergeDeep({ border: defaultBorder() }, wsb);
+    block.wrapperStyle.backgroundImage = wsb;
   }
   if (kind === "button") {
     const bs = block.props?.buttonStyle;

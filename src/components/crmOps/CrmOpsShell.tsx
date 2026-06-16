@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import {
-  buildEditorAbsoluteUrl,
   EMAIL_CAMPAIGN_PATH,
+  EMAIL_TEMPLATE_LIST_PATH,
   goToEmailCampaign,
+  goToEmailTemplateList,
   useAppPath,
 } from "../../lib/appNavigation";
 import { CrmOpsLocaleProvider } from "./CrmOpsLocaleProvider";
@@ -28,8 +29,9 @@ type NavItem =
       key: "templateEditor";
       label: string;
       icon: ReactNode;
-      kind: "external";
-      href: string;
+      kind: "internal";
+      onNavigate: () => void;
+      isActive: (pathname: string) => boolean;
     };
 
 const EDITOR_ENTRY_ICON = (
@@ -71,9 +73,11 @@ function buildNavItems(): NavItem[] {
     },
     {
       key: "templateEditor",
-      label: "邮件模板编辑",
-      kind: "external",
-      href: buildEditorAbsoluteUrl(),
+      label: "邮件模板",
+      kind: "internal",
+      onNavigate: goToEmailTemplateList,
+      isActive: (pathname) =>
+        pathname === EMAIL_TEMPLATE_LIST_PATH || pathname.startsWith(`${EMAIL_TEMPLATE_LIST_PATH}/`),
       icon: EDITOR_ENTRY_ICON,
     },
   ];
@@ -116,22 +120,6 @@ export function CrmOpsShell({ activeNav, children }: CrmOpsShellProps) {
         <aside className="crm-ops__sidebar">
           <nav className="crm-ops__nav" aria-label="CRM 导航">
             {navItems.map((item) => {
-              if (item.kind === "external") {
-                return (
-                  <a
-                    key={item.key}
-                    className="crm-ops__nav-link"
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="在新标签页打开邮件模板编辑器"
-                  >
-                    {item.icon}
-                    <span className="crm-ops__nav-label">{item.label}</span>
-                  </a>
-                );
-              }
-
               const active = activeNav === item.key || item.isActive(pathname);
               return (
                 <button

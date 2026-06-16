@@ -1,4 +1,8 @@
 import type { EmailPayload, PayloadSlotDefinition } from "../types/email";
+import {
+  getBuiltinStructureDefinition,
+  type BuiltinStructureDefinition,
+} from "../payload-contract/builtin-structure-catalog";
 import type { SceneCollectionPreset } from "../payload-contract/scene-collection-presets";
 import {
   buildPayloadSlotDefFromScenePreset,
@@ -14,6 +18,7 @@ import {
   parseScalarInitialValue,
   type StandardScalarValueType,
 } from "../payload-contract/standard-scalar-types";
+import { padOrTrimCollectionValues } from "./collectionDataSource";
 
 export type CreatePayloadSlotFieldErrors = {
   label?: string;
@@ -116,5 +121,70 @@ export function createCollectionPayloadSlotFromPreset(
   return {
     slotId,
     payload: next,
+  };
+}
+
+function fixedLengthFromBuiltinStructure(definition: BuiltinStructureDefinition): number | undefined {
+  if (definition.valueType !== "collection") return undefined;
+  if (definition.lengthPolicy?.kind === "locked") return definition.lengthPolicy.fixedLength;
+  return definition.lengthPolicy?.defaultLength ?? definition.seedValues?.length ?? 3;
+}
+
+export function createPayloadSlotFromBuiltinStructure(
+  payload: EmailPayload,
+  structureId: string
+): { payload: EmailPayload; slotId: string } | { error: string } {
+  const definition = getBuiltinStructureDefinition(structureId);
+  if (!definition) {
+    return { error: "内置变量结构不存在。" };
+  }
+
+  const slotId = proposeScenePresetInstanceSlotId(payload, definition.defaultSlotId);
+  if (!slotId) {
+    return {
+      error: `无法为「${definition.label}」分配变量标识，请删除部分同名变量后重试。`,
+    };
+  }
+
+  const label = scenePresetInstanceLabel(definition.label, definition.defaultSlotId, slotId);
+  const def: PayloadSlotDefinition = {
+    label,
+    valueType: definition.valueType,
+    description: definition.description,
+    builtinStructureId: definition.structureId,
+    builtinScope: definition.scope,
+    lengthPolicy: definition.lengthPolicy,
+  };
+
+  if (definition.valueType === "collection") {
+    const fixedLength = fixedLengthFromBuiltinStructure(definition);
+    def.itemFields = definition.itemFields ?? [];
+    if (fixedLength !== undefined) {
+      def.minItems = fixedLength;
+      def.maxItems = fixedLength;
+    }
+    if (definition.scope === "dedicated" && definition.dedicatedFor) {
+      def.scene = definition.dedicatedFor;
+      def.sceneCollectionPresetId = definition.structureId;
+    }
+  } else if (definition.valueType === "object") {
+    def.objectFields = definition.objectFields ?? [];
+    if (definition.scope === "dedicated" && definition.dedicatedFor) {
+      def.scene = definition.dedicatedFor;
+    }
+  }
+
+  const seedValue =
+    definition.valueType === "collection"
+      ? padOrTrimCollectionValues(
+          definition.seedValues ?? [],
+          fixedLengthFromBuiltinStructure(definition) ?? 0,
+          definition.itemFields ?? []
+        )
+      : definition.seedValue;
+
+  return {
+    slotId,
+    payload: registerPayloadSlot(payload, slotId, def, seedValue),
   };
 }

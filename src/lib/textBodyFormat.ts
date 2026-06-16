@@ -139,6 +139,37 @@ type WalkMarks = {
   fontSize: string;
 };
 
+function neutralWalkMarks(): WalkMarks {
+  return {
+    bold: false,
+    italic: false,
+    decoration: "none",
+    link: "",
+    color: "",
+    fontSize: "",
+  };
+}
+
+function runMarksFromWalk(
+  marks: WalkMarks,
+  defaults: TextBodyDefaults,
+  blockMarks: WalkMarks
+): Pick<TextRun, "bold" | "italic" | "decoration" | "link" | "color" | "fontSize"> {
+  return {
+    bold: marks.bold !== defaults.bold ? marks.bold : undefined,
+    italic: marks.italic !== defaults.italic ? marks.italic : undefined,
+    decoration:
+      marks.decoration !== defaults.decoration ? marks.decoration : undefined,
+    link: marks.link !== blockMarks.link ? marks.link : undefined,
+    color:
+      marks.color.trim() && marks.color !== blockMarks.color ? marks.color : undefined,
+    fontSize:
+      marks.fontSize.trim() && marks.fontSize !== blockMarks.fontSize
+        ? marks.fontSize
+        : undefined,
+  };
+}
+
 function walkNode(
   node: Node,
   marks: WalkMarks,
@@ -151,13 +182,7 @@ function walkNode(
     if (!text) return;
     const run: TextRun = {
       text,
-      bold: marks.bold !== defaults.bold ? marks.bold : undefined,
-      italic: marks.italic !== defaults.italic ? marks.italic : undefined,
-      decoration:
-        marks.decoration !== defaults.decoration ? marks.decoration : undefined,
-      link: marks.link !== blockMarks.link ? marks.link : undefined,
-      color: marks.color !== blockMarks.color ? marks.color : undefined,
-      fontSize: marks.fontSize !== blockMarks.fontSize ? marks.fontSize : undefined,
+      ...runMarksFromWalk(marks, defaults, blockMarks),
     };
     runs.push(run);
     return;
@@ -169,13 +194,7 @@ function walkNode(
   if (tag === "BR") {
     runs.push({
       text: "\n",
-      bold: marks.bold !== defaults.bold ? marks.bold : undefined,
-      italic: marks.italic !== defaults.italic ? marks.italic : undefined,
-      decoration:
-        marks.decoration !== defaults.decoration ? marks.decoration : undefined,
-      link: marks.link !== blockMarks.link ? marks.link : undefined,
-      color: marks.color !== blockMarks.color ? marks.color : undefined,
-      fontSize: marks.fontSize !== blockMarks.fontSize ? marks.fontSize : undefined,
+      ...runMarksFromWalk(marks, defaults, blockMarks),
     });
     return;
   }
@@ -258,11 +277,11 @@ export function parseHtmlToTextBody(html: string, defaults: TextBodyDefaults): T
     const el = node as HTMLElement;
     if (blockTags.has(el.tagName)) {
       const runs: TextRun[] = [];
-      walkNode(el, { ...blockMarks }, defaults, runs, blockMarks);
+      walkNode(el, neutralWalkMarks(), defaults, runs, blockMarks);
       flushRuns(runs);
     } else {
       const runs: TextRun[] = [];
-      walkNode(el, { ...blockMarks }, defaults, runs, blockMarks);
+      walkNode(el, neutralWalkMarks(), defaults, runs, blockMarks);
       if (runs.length) flushRuns(runs);
     }
   }

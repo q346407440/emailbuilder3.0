@@ -1,4 +1,5 @@
 import type { PayloadSlotDefinition } from "../types/email";
+import { isBuiltinStructureSlot } from "./builtinStructureSlot";
 
 /** 场景内置列表变量（由 API 提供目录与预览数据，非手贴 JSON） */
 export function isSceneCollectionPresetManagedSlot(
@@ -11,6 +12,7 @@ export function isSceneCollectionPresetManagedSlot(
 export function collectionSlotUsesJsonPasteDataSource(
   def: PayloadSlotDefinition | undefined
 ): boolean {
+  if (isBuiltinStructureSlot(def)) return false;
   if (isSceneCollectionPresetManagedSlot(def)) return false;
   if (def?.dataSource?.type === "remote" && def.dataSource.provider === "builtin") {
     return false;

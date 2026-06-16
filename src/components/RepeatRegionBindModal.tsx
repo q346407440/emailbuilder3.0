@@ -24,20 +24,23 @@ import {
   repeatTargetGroupHasChildMapping,
 } from "../lib/repeatTargetFieldMappingTree";
 import { Field } from "./ui/Field";
-import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
+import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerRadioCell } from "./ui/SelectablePickerRadioCell";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 import { PickerTreeTable } from "./ui/PickerTreeTable";
 import { toastWarning } from "../lib/appToast";
 
-// 单层绑定向导：列表变量 → 字段映射（嵌套通过选中内层容器再绑定，不在此弹窗多层配置）。
-type WizardStepId = "parentSlot" | "parentMap";
+type RepeatItemMode = "single" | "group";
+
+// 单层绑定向导：列表变量 → 重复方式 → 字段映射（嵌套通过选中内层容器再绑定，不在此弹窗多层配置）。
+type WizardStepId = "parentSlot" | "repeatMode" | "parentMap";
 
 type WizardStep = { id: WizardStepId; title: string };
 
 function buildWizardSteps(): WizardStep[] {
   return [
     { id: "parentSlot", title: "列表变量" },
+    { id: "repeatMode", title: "重复方式" },
     { id: "parentMap", title: "字段映射" },
   ];
 }
@@ -99,6 +102,8 @@ export type RepeatRegionBindModalProps = {
   visible: boolean;
   /** 复制体/行内字段「查看绑定」：直达字段映射且不可编辑 */
   viewOnly?: boolean;
+  /** 从「配置数据组绑定」已选列表变量时，跳过步骤 1「列表变量」 */
+  skipListSlotStep?: boolean;
   template: EmailTemplate;
   payload: EmailPayload;
   hasCurrentRepeat: boolean;
@@ -109,7 +114,10 @@ export type RepeatRegionBindModalProps = {
   parentRowTemplateLabel?: string;
   parentTargetFieldOptions: RepeatTargetFieldOption[];
   repeatSlotId: string;
+  repeatItemMode: RepeatItemMode;
+  repeatGroupSize: number;
   parentMappingDraft: Record<string, string>;
+  parentMappingOffsetDraft: Record<string, number>;
   repeatCandidate: RepeatCollectionCandidate | undefined;
   /** 嵌套 itemPath 绑定时，外层 repeat 配置（供 parent. 字段映射） */
   enclosingParentRepeat?: RepeatRegionBinding | null;
@@ -117,12 +125,16 @@ export type RepeatRegionBindModalProps = {
   onApply: () => void;
   onRemove?: () => void;
   onParentMappingDraftChange: (draft: Record<string, string>) => void;
+  onRepeatItemModeChange: (mode: RepeatItemMode) => void;
+  onRepeatGroupSizeChange: (groupSize: number) => void;
+  onParentMappingOffsetDraftChange: (draft: Record<string, number>) => void;
   onSlotChange: (slotId: string) => void;
 };
 
 export function RepeatRegionBindModal({
   visible,
   viewOnly = false,
+  skipListSlotStep = false,
   template,
   payload,
   hasCurrentRepeat,
@@ -131,13 +143,19 @@ export function RepeatRegionBindModal({
   parentRowTemplateLabel,
   parentTargetFieldOptions,
   repeatSlotId,
+  repeatItemMode,
+  repeatGroupSize,
   parentMappingDraft,
+  parentMappingOffsetDraft,
   repeatCandidate,
   enclosingParentRepeat = null,
   onClose,
   onApply,
   onRemove,
   onParentMappingDraftChange,
+  onRepeatItemModeChange,
+  onRepeatGroupSizeChange,
+  onParentMappingOffsetDraftChange,
   onSlotChange,
 }: RepeatRegionBindModalProps) {
   const mappingScalarFields = useMemo(
@@ -148,6 +166,7 @@ export function RepeatRegionBindModal({
               mode: "collection",
               slotId: repeatCandidate.slotId,
               prototypeChildIds: [],
+              fallbackChildIds: [],
               itemFields: repeatCandidate.itemFields,
               itemPath: repeatCandidate.itemPath,
               fieldMappings: [],
@@ -163,13 +182,23 @@ export function RepeatRegionBindModal({
 
   useEffect(() => {
     if (!visible) return;
-    // 已绑定编辑 / 行内「查看绑定」：直达字段映射；首次绑定从步骤 1 选列表变量。
+    // 已绑定编辑 / 行内「查看绑定」：直达字段映射；数据组入口已选变量：从「重复方式」开始；否则从步骤 1 选列表变量。
     const startOnFieldMapping = viewOnly || hasCurrentRepeat;
-    setWizardStepIndex(startOnFieldMapping ? wizardSteps.length - 1 : 0);
-  }, [visible, viewOnly, hasCurrentRepeat, wizardSteps.length]);
+    const startIndex = startOnFieldMapping
+      ? wizardSteps.length - 1
+      : skipListSlotStep
+        ? 1
+        : 0;
+    setWizardStepIndex(startIndex);
+  }, [visible, viewOnly, hasCurrentRepeat, skipListSlotStep, wizardSteps.length]);
+
+  const minWizardStepIndex = skipListSlotStep ? 1 : 0;
 
   const validateWizardStep = (stepId: WizardStepId | undefined): string | null => {
     if (stepId === "parentSlot" && !repeatSlotId) return "请选择列表变量。";
+    if (stepId === "repeatMode" && repeatItemMode === "group" && repeatGroupSize < 2) {
+      return "分组重复至少需要每组 2 条数据。";
+    }
     return null;
   };
 
@@ -219,7 +248,7 @@ export function RepeatRegionBindModal({
         ) : null}
         {viewOnly ? (
           <p className="repeat-region-bind-modal__section-hint inspector__muted" role="status">
-            列表变量：{repeatCandidate.label}（{repeatCandidate.slotId}）· 只读查看，修改请在列表宿主上点击「编辑绑定」。
+            列表变量：{repeatCandidate.label} · 当前为只读查看，如需修改请在所在列表容器上点击「编辑绑定」。
           </p>
         ) : null}
         <FieldMappingSplitPanel
@@ -232,7 +261,11 @@ export function RepeatRegionBindModal({
           prototypeChildIds={parentPrototypeChildIds}
           targetFieldOptions={parentTargetFieldOptions}
           mappingDraft={parentMappingDraft}
+          mappingOffsetDraft={parentMappingOffsetDraft}
+          itemMode={repeatItemMode}
+          groupSize={repeatGroupSize}
           onMappingDraftChange={onParentMappingDraftChange}
+          onMappingOffsetDraftChange={onParentMappingOffsetDraftChange}
           mappingAriaLabel="列表项字段映射"
           readOnly={viewOnly}
         />
@@ -247,6 +280,22 @@ export function RepeatRegionBindModal({
     switch (currentWizardStep?.id) {
       case "parentSlot":
         return parentSlotStep;
+      case "repeatMode":
+        return (
+          <>
+            {skipListSlotStep && repeatCandidate ? (
+              <p className="repeat-region-bind-modal__section-hint inspector__muted" role="status">
+                列表变量：{repeatCandidate.label}（<code>{repeatCandidate.slotId}</code>）· 已在「配置数据组绑定」中选择
+              </p>
+            ) : null}
+            <RepeatModeStep
+              itemMode={repeatItemMode}
+              groupSize={repeatGroupSize}
+              onItemModeChange={onRepeatItemModeChange}
+              onGroupSizeChange={onRepeatGroupSizeChange}
+            />
+          </>
+        );
       case "parentMap":
         return parentMappingStep;
       default:
@@ -292,10 +341,12 @@ export function RepeatRegionBindModal({
                 <ShopSecondaryButton htmlType="button" onClick={onClose}>
                   取消
                 </ShopSecondaryButton>
-                {wizardStepIndex > 0 ? (
+                {wizardStepIndex > minWizardStepIndex ? (
                   <ShopSecondaryButton
                     htmlType="button"
-                    onClick={() => setWizardStepIndex((i) => Math.max(0, i - 1))}
+                    onClick={() =>
+                      setWizardStepIndex((i) => Math.max(minWizardStepIndex, i - 1))
+                    }
                   >
                     上一步
                   </ShopSecondaryButton>
@@ -346,7 +397,70 @@ function MappingSplitColumnHead({ title }: { title: string }) {
   );
 }
 
-function FieldMappingSplitPanel({
+function RepeatModeStep({
+  itemMode,
+  groupSize,
+  onItemModeChange,
+  onGroupSizeChange,
+}: {
+  itemMode: RepeatItemMode;
+  groupSize: number;
+  onItemModeChange: (mode: RepeatItemMode) => void;
+  onGroupSizeChange: (groupSize: number) => void;
+}) {
+  return (
+    <div className="repeat-region-bind-modal__mode-step">
+      <p className="repeat-region-bind-modal__section-hint inspector__muted">
+        选择当前容器如何消费列表数据。普通列表用“每条数据复制一次”；栅格、左右错落等一个复制体内展示多条数据时，选择“每组数据复制一次”。
+      </p>
+      <div className="repeat-region-bind-modal__mode-options" role="radiogroup" aria-label="重复方式">
+        <button
+          type="button"
+          className={`repeat-region-bind-modal__mode-card${
+            itemMode === "single" ? " repeat-region-bind-modal__mode-card--active" : ""
+          }`}
+          onClick={() => onItemModeChange("single")}
+        >
+          <span className="repeat-region-bind-modal__mode-title">每条数据复制一次</span>
+          <span className="repeat-region-bind-modal__mode-desc">
+            适合单列卡片、单个图片区块等场景：A、B、C 会生成 3 个复制体。
+          </span>
+        </button>
+        <button
+          type="button"
+          className={`repeat-region-bind-modal__mode-card${
+            itemMode === "group" ? " repeat-region-bind-modal__mode-card--active" : ""
+          }`}
+          onClick={() => onItemModeChange("group")}
+        >
+          <span className="repeat-region-bind-modal__mode-title">每组数据复制一次</span>
+          <span className="repeat-region-bind-modal__mode-desc">
+            适合双列栅格或错落布局：A/B 共用第 1 个复制体，C/D 共用第 2 个复制体。
+          </span>
+        </button>
+      </div>
+      {itemMode === "group" ? (
+        <Field label="每组数据条数">
+          <ShopInput
+            type="number"
+            min={2}
+            step={1}
+            value={groupSize}
+            onChange={(event) => {
+              const next = Number(event.target.value);
+              onGroupSizeChange(Number.isFinite(next) ? Math.max(2, Math.floor(next)) : 2);
+            }}
+          />
+          <p className="repeat-region-bind-modal__section-hint inspector__muted">
+            后续字段映射可为每个内容区块选择“使用本组第几条数据”。
+          </p>
+        </Field>
+      ) : null}
+    </div>
+  );
+}
+
+export function FieldMappingSplitPanel({
   visible,
   template,
   payload,
@@ -356,7 +470,15 @@ function FieldMappingSplitPanel({
   prototypeChildIds,
   targetFieldOptions,
   mappingDraft,
+  mappingOffsetDraft,
+  itemMode,
+  groupSize,
   onMappingDraftChange,
+  onMappingOffsetDraftChange,
+  mappingAriaLabel = "行模板可映射项",
+  targetColumnTitle = "行模板可映射项",
+  sourceColumnTitle = "变量数据源",
+  buildPickerRows,
   readOnly = false,
 }: {
   visible: boolean;
@@ -368,8 +490,17 @@ function FieldMappingSplitPanel({
   prototypeChildIds: string[];
   targetFieldOptions: RepeatTargetFieldOption[];
   mappingDraft: Record<string, string>;
+  mappingOffsetDraft: Record<string, number>;
+  itemMode: RepeatItemMode;
+  groupSize: number;
   onMappingDraftChange: (draft: Record<string, string>) => void;
+  onMappingOffsetDraftChange: (draft: Record<string, number>) => void;
   mappingAriaLabel?: string;
+  targetColumnTitle?: string;
+  sourceColumnTitle?: string;
+  buildPickerRows?: (
+    itemFields: RepeatCollectionCandidate["itemFields"]
+  ) => import("../lib/collectionFieldMapping").CollectionFieldPickerOption[];
   readOnly?: boolean;
 }) {
   const navEntries = useMemo(
@@ -404,11 +535,22 @@ function FieldMappingSplitPanel({
   }, [navEntries, expandedGroups]);
 
   const activeLeaf = findRepeatTargetLeafByKey(navEntries, activeTargetKey);
+  const fallbackLeafKey = firstRepeatTargetLeafKey(navEntries);
+  const effectiveTargetKey =
+    activeLeaf?.key ?? (fallbackLeafKey || targetFieldOptions[0]?.key || "");
   const activeTarget =
-    targetFieldOptions.find((target) => target.key === activeTargetKey) ?? targetFieldOptions[0];
-  if (!activeTarget || !activeLeaf) return null;
+    targetFieldOptions.find((target) => target.key === effectiveTargetKey) ?? targetFieldOptions[0];
+
+  if (!activeTarget) {
+    return (
+      <p className="inspector__muted repeat-region-bind-modal__empty-hint">
+        当前容器内没有可映射的业务内容字段。
+      </p>
+    );
+  }
 
   const mappedKey = mappingDraft[activeTarget.key];
+  const mappedOffset = Math.max(0, Math.floor(mappingOffsetDraft[activeTarget.key] ?? 0));
 
   const toggleGroup = (groupKey: string) => {
     setExpandedGroups((prev) => {
@@ -422,9 +564,10 @@ function FieldMappingSplitPanel({
   return (
     <div className="repeat-region-bind-modal__mapping-split">
       <div className="repeat-region-bind-modal__mapping-col repeat-region-bind-modal__mapping-col--targets">
-        <MappingSplitColumnHead title="行模板可映射项" />
-        <nav className="repeat-region-bind-modal__mapping-tabs" aria-label="行模板可映射项">
-          {visibleNavEntries.map((entry) => {
+        <MappingSplitColumnHead title={targetColumnTitle} />
+        <nav className="repeat-region-bind-modal__mapping-tabs" aria-label={mappingAriaLabel}>
+          {visibleNavEntries.length > 0 ? (
+            visibleNavEntries.map((entry) => {
             if (entry.kind === "group") {
               const isExpanded = expandedGroups.has(entry.key);
               const mapped = repeatTargetGroupHasChildMapping(entry.key, navEntries, mappingDraft);
@@ -494,12 +637,65 @@ function FieldMappingSplitPanel({
                 </button>
               </div>
             );
-          })}
+          })
+          ) : (
+            targetFieldOptions.map((target) => {
+              const isActive = target.key === activeTarget.key;
+              const mapped = Boolean(mappingDraft[target.key]?.trim());
+              return (
+                <div
+                  key={target.key}
+                  className="repeat-region-bind-modal__mapping-tab-row repeat-region-bind-modal__mapping-tab-row--config"
+                >
+                  <span className="repeat-region-bind-modal__mapping-expand-placeholder" aria-hidden />
+                  <button
+                    type="button"
+                    className={`repeat-region-bind-modal__mapping-tab repeat-region-bind-modal__mapping-tab--config${
+                      isActive ? " repeat-region-bind-modal__mapping-tab--active" : ""
+                    }`}
+                    title={target.bindPath}
+                    onClick={() => setActiveTargetKey(target.key)}
+                  >
+                    <span className="repeat-region-bind-modal__mapping-tab-label">{target.label}</span>
+                    {mapped ? (
+                      <span className="repeat-region-bind-modal__mapping-tab-dot" aria-hidden />
+                    ) : null}
+                    <span className="repeat-region-bind-modal__mapping-kind-tag repeat-region-bind-modal__mapping-kind-tag--config">
+                      配置项
+                    </span>
+                  </button>
+                </div>
+              );
+            })
+          )}
         </nav>
       </div>
       <div className="repeat-region-bind-modal__mapping-col repeat-region-bind-modal__mapping-col--source">
-        <MappingSplitColumnHead title="变量数据源" />
+        <MappingSplitColumnHead title={sourceColumnTitle} />
         <div className="repeat-region-bind-modal__mapping-panel">
+          {itemMode === "group" ? (
+            <div className="repeat-region-bind-modal__item-offset-bar" aria-label="分组项位">
+              <span className="repeat-region-bind-modal__item-offset-label">当前字段使用</span>
+              {Array.from({ length: Math.max(1, groupSize) }).map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className={`repeat-region-bind-modal__item-offset-chip${
+                    mappedOffset === index ? " repeat-region-bind-modal__item-offset-chip--active" : ""
+                  }`}
+                  disabled={readOnly}
+                  onClick={() =>
+                    onMappingOffsetDraftChange({
+                      ...mappingOffsetDraft,
+                      [activeTarget.key]: index,
+                    })
+                  }
+                >
+                  第 {index + 1} 条
+                </button>
+              ))}
+            </div>
+          ) : null}
           <ItemFieldMappingPickerTable
             payload={payload}
             repeatCandidate={repeatCandidate}
@@ -507,6 +703,7 @@ function FieldMappingSplitPanel({
             itemFields={itemFields}
             mappedKey={mappedKey}
             readOnly={readOnly}
+            buildPickerRows={buildPickerRows}
             onSelectSource={(sourceKey) =>
               onMappingDraftChange({
                 ...mappingDraft,
@@ -760,6 +957,7 @@ function ItemFieldMappingPickerTable({
   enclosingParentRepeat,
   itemFields,
   mappedKey,
+  buildPickerRows,
   onSelectSource,
   readOnly = false,
 }: {
@@ -768,14 +966,19 @@ function ItemFieldMappingPickerTable({
   enclosingParentRepeat: RepeatRegionBinding | null;
   itemFields: RepeatCollectionCandidate["itemFields"];
   mappedKey: string | undefined;
+  buildPickerRows?: (
+    itemFields: RepeatCollectionCandidate["itemFields"]
+  ) => import("../lib/collectionFieldMapping").CollectionFieldPickerOption[];
   onSelectSource: (sourceKey: string) => void;
   readOnly?: boolean;
 }) {
   const options = useMemo(() => {
+    if (buildPickerRows) return buildPickerRows(itemFields);
     const repeatBinding: RepeatRegionBinding = {
       mode: "collection",
       slotId: repeatCandidate.slotId,
       prototypeChildIds: [],
+      fallbackChildIds: [],
       itemFields: repeatCandidate.itemFields,
       itemPath: repeatCandidate.itemPath,
       fieldMappings: [],
@@ -790,7 +993,7 @@ function ItemFieldMappingPickerTable({
         )
       : collectionSampleFromPayloadValues(payload, repeatCandidate.slotId, itemFields);
     return buildRepeatListScalarFieldPickerRows(sample, itemFields);
-  }, [payload, repeatCandidate, enclosingParentRepeat, itemFields]);
+  }, [payload, repeatCandidate, enclosingParentRepeat, itemFields, buildPickerRows]);
 
   return (
     <CollectionFieldPickerTable

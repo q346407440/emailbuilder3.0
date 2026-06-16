@@ -10,9 +10,9 @@ describe("wrapperContentAlign", () => {
   it("needsContentAlignPatch：缺对象或缺轴为 true", () => {
     assert.equal(needsContentAlignPatch(undefined), true);
     assert.equal(needsContentAlignPatch({}), true);
-    assert.equal(needsContentAlignPatch({ contentAlign: {} }), true);
+    assert.equal(needsContentAlignPatch({ contentAlign: { horizontal: "", vertical: "" } }), true);
     assert.equal(
-      needsContentAlignPatch({ contentAlign: { horizontal: "left" } }),
+      needsContentAlignPatch({ contentAlign: { horizontal: "left", vertical: "" } }),
       true
     );
   });
@@ -49,7 +49,7 @@ describe("wrapperContentAlign", () => {
   });
 
   it("hasExplicitHorizontalAlign", () => {
-    assert.equal(hasExplicitHorizontalAlign({ contentAlign: { horizontal: "center" } }), true);
-    assert.equal(hasExplicitHorizontalAlign({ contentAlign: { horizontal: "bogus" } }), false);
+    assert.equal(hasExplicitHorizontalAlign({ contentAlign: { horizontal: "center", vertical: "top" } }), true);
+    assert.equal(hasExplicitHorizontalAlign({ contentAlign: { horizontal: "bogus", vertical: "top" } }), false);
   });
 });

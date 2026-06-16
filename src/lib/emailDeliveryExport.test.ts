@@ -153,6 +153,33 @@ describe("applyEmailTextContentParagraphReset", () => {
     assert.equal(p.style.margin, "0px");
     assert.equal(p.style.padding, "0px");
   });
+
+  it("fill 宽正文写入栏内断行内联样式", () => {
+    if (typeof document === "undefined") return;
+    const root = document.createElement("div");
+    root.innerHTML = `
+      <div data-ee-width-mode="fill">
+        <div class="email-text-content"><p>https://example.com/long</p></div>
+      </div>`;
+    applyEmailTextContentParagraphReset(root);
+    const content = root.querySelector(".email-text-content") as HTMLElement;
+    assert.equal(content.style.overflowWrap, "anywhere");
+    assert.equal(content.style.wordBreak, "break-word");
+    assert.equal(content.style.maxWidth, "100%");
+  });
+
+  it("hug 宽正文不写栏内断行", () => {
+    if (typeof document === "undefined") return;
+    const root = document.createElement("div");
+    root.innerHTML = `
+      <div data-ee-width-mode="hug">
+        <div class="email-text-content"><p>短标签</p></div>
+      </div>`;
+    applyEmailTextContentParagraphReset(root);
+    const content = root.querySelector(".email-text-content") as HTMLElement;
+    assert.equal(content.style.overflowWrap, "");
+    assert.equal(content.style.wordBreak, "");
+  });
 });
 
 describe("hasExplicitCssLength", () => {

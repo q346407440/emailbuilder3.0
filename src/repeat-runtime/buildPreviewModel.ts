@@ -12,7 +12,13 @@ import {
   splitRepeatHostStaticSiblingChildren,
 } from "../lib/repeatRegion";
 import { refToStableKey } from "./repeatVirtualResolver";
-import { buildRepeatItemContext, resolveRepeatItemsForExpansion } from "./repeatItemResolve";
+import {
+  buildRepeatItemContext,
+  repeatGroupCount,
+  repeatItemsForGroup,
+  repeatItemIndexForGroup,
+  resolveRepeatItemsForExpansion,
+} from "./repeatItemResolve";
 import { clonePrototypeSubtreeSnapshot, snapshotBlockIdToPrototypeId } from "./repeatPrototypeSnapshot";
 import { formatRepeatItemDisplayName } from "../lib/repeatRegionTreeTags";
 
@@ -50,13 +56,16 @@ function virtualizeRepeatHostChildNodes(
     repeat.prototypeChildIds.length === 1 && repeat.prototypeChildIds[0] === protoId;
 
   if (selfRepeat) {
-    return items.flatMap((item, itemIndex) => {
+    return Array.from({ length: repeatGroupCount(repeat, items.length) }).flatMap((_, groupIndex) => {
+      const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+      const item = groupItems[0];
       const ctxItem = isRecord(item) ? item : {};
+      const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
       const { itemPath, nextContexts } = buildRepeatItemContext(
         repeat,
         contexts,
         ctxItem,
-        itemIndex
+        itemPathIndex
       );
       const itemNode = buildRepeatItemPreviewNode({
         template,
@@ -65,7 +74,8 @@ function virtualizeRepeatHostChildNodes(
         prototypeRootId: protoId,
         repeat,
         item: ctxItem,
-        itemIndex,
+        groupItems,
+        itemIndex: groupIndex,
         itemPath,
         contextStack: nextContexts,
       });
@@ -76,9 +86,17 @@ function virtualizeRepeatHostChildNodes(
   }
 
   const expandedMiddle: PreviewBlockNode[] = [];
-  items.forEach((item, itemIndex) => {
+  Array.from({ length: repeatGroupCount(repeat, items.length) }).forEach((_, groupIndex) => {
+    const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+    const item = groupItems[0];
     const ctxItem = isRecord(item) ? item : {};
-    const { itemPath, nextContexts } = buildRepeatItemContext(repeat, contexts, ctxItem, itemIndex);
+    const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
+    const { itemPath, nextContexts } = buildRepeatItemContext(
+      repeat,
+      contexts,
+      ctxItem,
+      itemPathIndex
+    );
     for (const prototypeChildId of repeat.prototypeChildIds) {
       const itemNode = buildRepeatItemPreviewNode({
         template,
@@ -87,7 +105,8 @@ function virtualizeRepeatHostChildNodes(
         prototypeRootId: prototypeChildId,
         repeat,
         item: ctxItem,
-        itemIndex,
+        groupItems,
+        itemIndex: groupIndex,
         itemPath,
         contextStack: nextContexts,
       });
@@ -135,13 +154,16 @@ function virtualizeNestedRepeatPreviewNode(
 
     if (selfRepeat) {
       const expandedSiblings: PreviewBlockNode[] = [];
-      items.forEach((item, itemIndex) => {
+      Array.from({ length: repeatGroupCount(repeat, items.length) }).forEach((_, groupIndex) => {
+        const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+        const item = groupItems[0];
         const ctxItem = isRecord(item) ? item : {};
+        const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
         const { itemPath, nextContexts } = buildRepeatItemContext(
           repeat,
           contexts,
           ctxItem,
-          itemIndex
+          itemPathIndex
         );
         const itemNode = buildRepeatItemPreviewNode({
           template,
@@ -150,7 +172,8 @@ function virtualizeNestedRepeatPreviewNode(
           prototypeRootId: protoId,
           repeat,
           item: ctxItem,
-          itemIndex,
+          groupItems,
+          itemIndex: groupIndex,
           itemPath,
           contextStack: nextContexts,
         });
@@ -169,13 +192,16 @@ function virtualizeNestedRepeatPreviewNode(
 
     if (!selfRepeat) {
       const expandedMiddle: PreviewBlockNode[] = [];
-      items.forEach((item, itemIndex) => {
+      Array.from({ length: repeatGroupCount(repeat, items.length) }).forEach((_, groupIndex) => {
+        const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+        const item = groupItems[0];
         const ctxItem = isRecord(item) ? item : {};
+        const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
         const { itemPath, nextContexts } = buildRepeatItemContext(
           repeat,
           contexts,
           ctxItem,
-          itemIndex
+          itemPathIndex
         );
         for (const prototypeChildId of repeat.prototypeChildIds) {
           const itemNode = buildRepeatItemPreviewNode({
@@ -185,7 +211,8 @@ function virtualizeNestedRepeatPreviewNode(
             prototypeRootId: prototypeChildId,
             repeat,
             item: ctxItem,
-            itemIndex,
+            groupItems,
+            itemIndex: groupIndex,
             itemPath,
             contextStack: nextContexts,
           });
@@ -238,6 +265,7 @@ function buildRepeatItemPreviewNode(opts: {
   prototypeRootId: string;
   repeat: NonNullable<EmailBlock["repeat"]>;
   item: Record<string, unknown>;
+  groupItems?: Record<string, unknown>[];
   itemIndex: number;
   itemPath: string;
   contextStack: RepeatRuntimeContext[];
@@ -257,6 +285,7 @@ function buildRepeatItemPreviewNode(opts: {
     repeatHostSourceId: opts.hostId,
     repeat: opts.repeat,
     item: opts.item,
+    groupItems: opts.groupItems,
     itemPath: opts.itemPath,
     itemIndex: opts.itemIndex,
     materializeRepeatItemBindings: false,
@@ -326,13 +355,16 @@ function buildPreviewNode(
     const originalChildren = sourceBlock.children ?? [];
     const expandedMiddle: PreviewBlockNode[] = [];
 
-    items.forEach((item, itemIndex) => {
+    Array.from({ length: repeatGroupCount(repeat, items.length) }).forEach((_, groupIndex) => {
+      const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+      const item = groupItems[0];
       const ctxItem = isRecord(item) ? item : {};
+      const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
       const { itemPath, nextContexts } = buildRepeatItemContext(
         repeat,
         contexts,
         ctxItem,
-        itemIndex
+        itemPathIndex
       );
       for (const prototypeChildId of repeat.prototypeChildIds) {
         const itemNode = buildRepeatItemPreviewNode({
@@ -342,7 +374,8 @@ function buildPreviewNode(
           prototypeRootId: prototypeChildId,
           repeat,
           item: ctxItem,
-          itemIndex,
+          groupItems,
+          itemIndex: groupIndex,
           itemPath,
           contextStack: nextContexts,
         });
@@ -403,13 +436,16 @@ function buildPreviewChildren(
         repeat.prototypeChildIds.length === 1 && repeat.prototypeChildIds[0] === childId;
       if (selfRepeat) {
         const items = resolveRepeatItemsForExpansion(repeat, payload, contexts);
-        items.forEach((item, itemIndex) => {
+        Array.from({ length: repeatGroupCount(repeat, items.length) }).forEach((_, groupIndex) => {
+          const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+          const item = groupItems[0];
           const ctxItem = isRecord(item) ? item : {};
+          const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
           const { itemPath, nextContexts } = buildRepeatItemContext(
             repeat,
             contexts,
             ctxItem,
-            itemIndex
+            itemPathIndex
           );
           const itemNode = buildRepeatItemPreviewNode({
             template,
@@ -418,7 +454,8 @@ function buildPreviewChildren(
             prototypeRootId: childId,
             repeat,
             item: ctxItem,
-            itemIndex,
+            groupItems,
+            itemIndex: groupIndex,
             itemPath,
             contextStack: nextContexts,
           });

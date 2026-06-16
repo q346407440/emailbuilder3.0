@@ -1,25 +1,28 @@
 import { ConfirmDialogProvider } from "./components/ui/ConfirmDialogProvider";
 import {
   useIsEmailCampaignCreateRoute,
-  useIsEditorRoute,
+  useIsEmailTemplateEditorRoute,
+  useIsEmailTemplateListRoute,
   useIsIntegrationRoute,
-  useLegacyEditorQueryRedirect,
 } from "./lib/appNavigation";
 import App from "./App";
 import { EmailCampaignPage } from "./pages/EmailCampaignPage";
 import { EmailCampaignCreatePage } from "./pages/EmailCampaignCreatePage";
+import { EmailTemplateListPage } from "./pages/EmailTemplateListPage";
 import { ExternalApiIntegrationPage } from "./pages/ExternalApiIntegrationPage";
 
 export default function AppShell() {
-  useLegacyEditorQueryRedirect();
   const isIntegration = useIsIntegrationRoute();
-  const isEditor = useIsEditorRoute();
+  const isTemplateList = useIsEmailTemplateListRoute();
+  const isEditor = useIsEmailTemplateEditorRoute();
   const isCreate = useIsEmailCampaignCreateRoute();
 
   return (
     <ConfirmDialogProvider>
       {isIntegration ? (
         <ExternalApiIntegrationPage />
+      ) : isTemplateList ? (
+        <EmailTemplateListPage />
       ) : isEditor ? (
         <App />
       ) : isCreate ? (

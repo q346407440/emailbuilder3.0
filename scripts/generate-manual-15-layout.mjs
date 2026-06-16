@@ -242,13 +242,10 @@ function bgImageBlock(id, src, alt, height, overlayChildren = [], vertical = 'ce
         alt,
         fit: 'cover',
         position: 'center',
-        border: borderNone(),
-        borderRadius: { mode: 'unified', radius: themeRef('tokens.radius.panel') },
       },
     },
     bindings: {
       ...themeBinding('props.gap', 'tokens.spacing.gap'),
-      ...themeBinding('wrapperStyle.backgroundImage.borderRadius.radius', 'tokens.radius.panel'),
       ...themeBinding('wrapperStyle.borderRadius.radius', 'tokens.radius.panel'),
     },
     children: overlayChildren,

@@ -148,7 +148,7 @@ function mapCompactNode(
   loweringSemantic: LoweringSemanticStats
 ): string | null {
   const blockId = `${idPrefix}-${sectionId}-b${seqRef.n++}`;
-  const runtimeType = COMPACT_KIND_TO_RUNTIME_TYPE[node.kind];
+  const runtimeType = COMPACT_KIND_TO_RUNTIME_TYPE[node.kind] as EmailBlock["type"];
   const textPara = findTextParagraph(draft, node.props?.textId as string | undefined);
   let imageSlotRole: ImageSlotRole | undefined;
 
@@ -215,7 +215,6 @@ function mapCompactNode(
       break;
     }
     case "content.text": {
-      const role = textPara?.role;
       const runBold =
         textPara?.textBody.paragraphs.some((p) => p.runs.some((r) => r.bold)) ?? false;
       const explicitColor =
@@ -235,7 +234,12 @@ function mapCompactNode(
         color: explicitColor ?? defaultBodyTextColor(draft.styleTokens),
         bold: coerceBoolean(props.bold, runBold),
         italic: coerceBoolean(props.italic, false),
-        decoration: coerceBoolean(props.decoration, "none"),
+        decoration:
+          props.decoration === "underline" ||
+          props.decoration === "line-through" ||
+          props.decoration === "overline"
+            ? props.decoration
+            : "none",
       };
       break;
     }
@@ -275,11 +279,8 @@ function mapCompactNode(
       });
       wrapperStyle.backgroundImage = {
         src: imageUrl,
-        alt: img?.alt ?? slotSpec?.imageQuery ?? section?.imageQuery ?? "",
         fit: imagePreset.backgroundImageFit,
         position: img?.position ?? "center",
-        border: defaultShellBorder(),
-        borderRadius: imageRadius,
       };
       if (parsePxValue(imageRadius.radius) > 0) {
         wrapperStyle.borderRadius = imageRadius;
@@ -374,7 +375,8 @@ function mapCompactNode(
       break;
   }
 
-  const block: EmailBlock = {
+  // type 与 props 由管线动态决定，判别联合无法静态关联，整体断言为 EmailBlock。
+  const block = {
     id: blockId,
     type: runtimeType,
     parentId,
@@ -382,7 +384,7 @@ function mapCompactNode(
     props,
     wrapperStyle: wrapperStyle as EmailBlock["wrapperStyle"],
     bindings: {},
-  };
+  } as EmailBlock;
 
   attachAgentThemeBindingsToBlock(block, agentStyleBoundPaths);
 

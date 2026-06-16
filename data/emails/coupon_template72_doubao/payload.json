@@ -1,5 +1,447 @@
 {
   "schemaVersion": "1.0.0",
-  "slots": {},
-  "values": {}
+  "slots": {
+    "productList": {
+      "label": "商品列表",
+      "valueType": "collection",
+      "description": "通用商品结构：SPU 行下嵌套规格 skus；选品与排序由上游接入方处理。",
+      "builtinStructureId": "collection.productSpuWithSkus",
+      "builtinScope": "general",
+      "lengthPolicy": {
+        "kind": "editable",
+        "defaultLength": 10
+      },
+      "itemFields": [
+        {
+          "key": "imageSrc",
+          "label": "商品图",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "name",
+          "label": "商品名",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "salePrice",
+          "label": "现价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "originalPrice",
+          "label": "原价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "badge",
+          "label": "角标",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "href",
+          "label": "商品链接",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "skus",
+          "label": "规格列表",
+          "valueType": "collection",
+          "itemFields": [
+            {
+              "key": "imageSrc",
+              "label": "规格图",
+              "valueType": "url",
+              "required": true
+            },
+            {
+              "key": "title",
+              "label": "规格名",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "href",
+              "label": "规格链接",
+              "valueType": "url",
+              "required": true
+            },
+            {
+              "key": "salePrice",
+              "label": "现价",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "originalPrice",
+              "label": "原价",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "inventoryQuantity",
+              "label": "库存",
+              "valueType": "number",
+              "required": true
+            },
+            {
+              "key": "totalSales",
+              "label": "销量",
+              "valueType": "number",
+              "required": true
+            }
+          ],
+          "minItems": 0,
+          "maxItems": 5
+        }
+      ],
+      "minItems": 10,
+      "maxItems": 10
+    },
+    "storeName": {
+      "label": "店铺名称",
+      "valueType": "string",
+      "description": "接入方传入的店铺名称。",
+      "builtinStructureId": "scalar.storeName",
+      "builtinScope": "general"
+    }
+  },
+  "values": {
+    "productList": [
+      {
+        "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 1",
+        "salePrice": "$49.00",
+        "originalPrice": "$69.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-1",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-1?sku=1",
+            "salePrice": "$29.00",
+            "originalPrice": "$39.00",
+            "inventoryQuantity": 100,
+            "totalSales": 20
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-1?sku=2",
+            "salePrice": "$30.00",
+            "originalPrice": "$40.00",
+            "inventoryQuantity": 99,
+            "totalSales": 21
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 3",
+            "href": "https://example.com/products/mock-1?sku=3",
+            "salePrice": "$31.00",
+            "originalPrice": "$41.00",
+            "inventoryQuantity": 98,
+            "totalSales": 22
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 4",
+            "href": "https://example.com/products/mock-1?sku=4",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "inventoryQuantity": 97,
+            "totalSales": 23
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 5",
+            "href": "https://example.com/products/mock-1?sku=5",
+            "salePrice": "$33.00",
+            "originalPrice": "$43.00",
+            "inventoryQuantity": 96,
+            "totalSales": 24
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 2",
+        "salePrice": "$53.00",
+        "originalPrice": "$73.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-2",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-2?sku=1",
+            "salePrice": "$32.00",
+            "originalPrice": "$42.00",
+            "inventoryQuantity": 97,
+            "totalSales": 25
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-2?sku=2",
+            "salePrice": "$33.00",
+            "originalPrice": "$43.00",
+            "inventoryQuantity": 96,
+            "totalSales": 26
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 3",
+            "href": "https://example.com/products/mock-2?sku=3",
+            "salePrice": "$34.00",
+            "originalPrice": "$44.00",
+            "inventoryQuantity": 95,
+            "totalSales": 27
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 4",
+            "href": "https://example.com/products/mock-2?sku=4",
+            "salePrice": "$35.00",
+            "originalPrice": "$45.00",
+            "inventoryQuantity": 94,
+            "totalSales": 28
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 3",
+        "salePrice": "$57.00",
+        "originalPrice": "$77.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-3",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-3?sku=1",
+            "salePrice": "$35.00",
+            "originalPrice": "$45.00",
+            "inventoryQuantity": 94,
+            "totalSales": 30
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-3?sku=2",
+            "salePrice": "$36.00",
+            "originalPrice": "$46.00",
+            "inventoryQuantity": 93,
+            "totalSales": 31
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 3",
+            "href": "https://example.com/products/mock-3?sku=3",
+            "salePrice": "$37.00",
+            "originalPrice": "$47.00",
+            "inventoryQuantity": 92,
+            "totalSales": 32
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 4",
+        "salePrice": "$61.00",
+        "originalPrice": "$81.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-4",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-4?sku=1",
+            "salePrice": "$38.00",
+            "originalPrice": "$48.00",
+            "inventoryQuantity": 91,
+            "totalSales": 35
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-4?sku=2",
+            "salePrice": "$39.00",
+            "originalPrice": "$49.00",
+            "inventoryQuantity": 90,
+            "totalSales": 36
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 5",
+        "salePrice": "$65.00",
+        "originalPrice": "$85.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-5",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-5?sku=1",
+            "salePrice": "$41.00",
+            "originalPrice": "$51.00",
+            "inventoryQuantity": 88,
+            "totalSales": 40
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 6",
+        "salePrice": "$69.00",
+        "originalPrice": "$89.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-6",
+        "skus": []
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181717/pexels-photo-1181717.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 7",
+        "salePrice": "$73.00",
+        "originalPrice": "$93.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-7",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181717/pexels-photo-1181717.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-7?sku=1",
+            "salePrice": "$47.00",
+            "originalPrice": "$57.00",
+            "inventoryQuantity": 82,
+            "totalSales": 50
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181722/pexels-photo-1181722.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 8",
+        "salePrice": "$77.00",
+        "originalPrice": "$97.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-8",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181722/pexels-photo-1181722.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-8?sku=1",
+            "salePrice": "$50.00",
+            "originalPrice": "$60.00",
+            "inventoryQuantity": 79,
+            "totalSales": 55
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-8?sku=2",
+            "salePrice": "$51.00",
+            "originalPrice": "$61.00",
+            "inventoryQuantity": 78,
+            "totalSales": 56
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 9",
+        "salePrice": "$81.00",
+        "originalPrice": "$101.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-9",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-9?sku=1",
+            "salePrice": "$53.00",
+            "originalPrice": "$63.00",
+            "inventoryQuantity": 76,
+            "totalSales": 60
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-9?sku=2",
+            "salePrice": "$54.00",
+            "originalPrice": "$64.00",
+            "inventoryQuantity": 75,
+            "totalSales": 61
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 3",
+            "href": "https://example.com/products/mock-9?sku=3",
+            "salePrice": "$55.00",
+            "originalPrice": "$65.00",
+            "inventoryQuantity": 74,
+            "totalSales": 62
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 10",
+        "salePrice": "$85.00",
+        "originalPrice": "$105.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-10",
+        "skus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 1",
+            "href": "https://example.com/products/mock-10?sku=1",
+            "salePrice": "$56.00",
+            "originalPrice": "$66.00",
+            "inventoryQuantity": 73,
+            "totalSales": 65
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 2",
+            "href": "https://example.com/products/mock-10?sku=2",
+            "salePrice": "$57.00",
+            "originalPrice": "$67.00",
+            "inventoryQuantity": 72,
+            "totalSales": 66
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 3",
+            "href": "https://example.com/products/mock-10?sku=3",
+            "salePrice": "$58.00",
+            "originalPrice": "$68.00",
+            "inventoryQuantity": 71,
+            "totalSales": 67
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "title": "规格 4",
+            "href": "https://example.com/products/mock-10?sku=4",
+            "salePrice": "$59.00",
+            "originalPrice": "$69.00",
+            "inventoryQuantity": 70,
+            "totalSales": 68
+          }
+        ]
+      }
+    ],
+    "storeName": "Mock Store"
+  },
+  "slotOrder": [
+    "productList",
+    "storeName"
+  ]
 }

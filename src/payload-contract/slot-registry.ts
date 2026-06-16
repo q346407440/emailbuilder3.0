@@ -1,4 +1,11 @@
-import type { BindingCollectionField, BindingSpec, EmailPayload, EmailTemplate, RepeatRegionBinding } from "../types/email";
+import type {
+  BindingCollectionField,
+  BindingSpec,
+  EmailPayload,
+  EmailTemplate,
+  ObjectRegionBinding,
+  RepeatRegionBinding,
+} from "../types/email";
 import type { ExternalSlotDefinition } from "./types";
 import { isSlotValueType } from "./value-types";
 
@@ -16,6 +23,7 @@ export function buildPayloadSlotRegistry(
       valueType,
       label: def.label,
       description: def.description,
+      objectFields: def.objectFields,
       itemFields: def.itemFields,
       minItems: def.minItems,
       maxItems: def.maxItems,
@@ -68,6 +76,16 @@ function repeatToSlotDefinition(repeat: RepeatRegionBinding): ExternalSlotDefini
   };
 }
 
+function objectBindToSlotDefinition(objectBind: ObjectRegionBinding): ExternalSlotDefinition {
+  return {
+    slotId: objectBind.slotId,
+    valueType: "object",
+    objectFields: objectBind.objectFields,
+    label: objectBind.label,
+    description: objectBind.description,
+  };
+}
+
 /** 多版式场景：合并各 template 的外部槽注册表（同 slotId 取先出现的定义） */
 export function buildUnionExternalSlotRegistry(
   templates: EmailTemplate[]
@@ -100,6 +118,20 @@ export function buildExternalSlotRegistry(
           maxItems: existing.maxItems ?? repeatSlot.maxItems,
           label: existing.label ?? repeatSlot.label,
           description: existing.description ?? repeatSlot.description,
+        });
+      }
+    }
+    if (block.objectBind?.mode === "object") {
+      const objectSlot = objectBindToSlotDefinition(block.objectBind);
+      const existing = registry.get(objectSlot.slotId);
+      if (!existing) {
+        registry.set(objectSlot.slotId, objectSlot);
+      } else if (existing.valueType === "object") {
+        registry.set(objectSlot.slotId, {
+          ...existing,
+          objectFields: existing.objectFields ?? objectSlot.objectFields,
+          label: existing.label ?? objectSlot.label,
+          description: existing.description ?? objectSlot.description,
         });
       }
     }

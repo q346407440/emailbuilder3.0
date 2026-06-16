@@ -1,4 +1,10 @@
-import type { EmailTemplate, RepeatFieldMapping, RepeatRegionBinding } from "../types/email";
+import type {
+  BindingCollectionScalarField,
+  EmailTemplate,
+  RepeatFieldMapping,
+  RepeatRegionBinding,
+} from "../types/email";
+import { findCollectionFieldByPath } from "../payload-contract/collection-item-fields";
 import { sanitizeListRepeatUserLabel } from "./repeatNestedBindingUi";
 
 function blockDisplayName(template: EmailTemplate, blockId: string): string {
@@ -11,16 +17,22 @@ export function repeatBindingDisplayCountLabel(
   itemCount: number,
   repeat: RepeatRegionBinding
 ): string {
+  const groupSize = repeat.itemMode === "group" ? Math.max(1, Math.floor(repeat.groupSize ?? 1)) : 1;
+  const displayCount = groupSize > 1 ? Math.ceil(itemCount / groupSize) : itemCount;
   const fixed =
     repeat.minItems != null && repeat.minItems === repeat.maxItems ? repeat.minItems : null;
   if (fixed != null) {
-    return `固定展示 ${fixed} 行`;
+    return groupSize > 1 ? `固定 ${fixed} 条数据，按每组 ${groupSize} 条展示` : `固定展示 ${fixed} 行`;
   }
   if (repeat.minItems != null && repeat.maxItems != null) {
-    return `约 ${repeat.minItems}–${repeat.maxItems} 行（当前数据 ${itemCount} 条）`;
+    return groupSize > 1
+      ? `约 ${repeat.minItems}–${repeat.maxItems} 条数据（当前 ${itemCount} 条，生成 ${displayCount} 组）`
+      : `约 ${repeat.minItems}–${repeat.maxItems} 行（当前数据 ${itemCount} 条）`;
   }
   if (itemCount > 0) {
-    return `随数据展示，当前 ${itemCount} 条`;
+    return groupSize > 1
+      ? `随数据展示，当前 ${itemCount} 条，生成 ${displayCount} 组`
+      : `随数据展示，当前 ${itemCount} 条`;
   }
   return "随数据条数展示（当前无数据）";
 }
@@ -34,6 +46,10 @@ export function repeatBindingRowStructureLabel(
   const prototypes = repeat.prototypeChildIds.filter((id) => Boolean(template.blocks[id]));
   if (prototypes.length === 0) {
     return "—";
+  }
+  const groupSize = repeat.itemMode === "group" ? Math.max(1, Math.floor(repeat.groupSize ?? 1)) : 1;
+  if (groupSize > 1) {
+    return `每 ${groupSize} 条数据复制当前区块，区块内按项位填充`;
   }
   if (prototypes.length === 1 && prototypes[0] === hostId) {
     return "每条数据复制当前区块";
@@ -60,6 +76,11 @@ export function repeatBindingLeadSentence(
     return `使用「${variableLabel}」中每条数据的「${nested}」子列表展开显示。`;
   }
   if (itemCount > 0) {
+    const groupSize =
+      repeat.itemMode === "group" ? Math.max(1, Math.floor(repeat.groupSize ?? 1)) : 1;
+    if (groupSize > 1) {
+      return `使用「${variableLabel}」共 ${itemCount} 条数据，每组 ${groupSize} 条填充同一个复制体。`;
+    }
     return `使用「${variableLabel}」共 ${itemCount} 条数据，${structure}。`;
   }
   return `已关联「${variableLabel}」，${structure}。`;
@@ -99,10 +120,8 @@ export function repeatBindingRelationOpsLabel(
   }
 }
 
-export type RepeatBindingPreviewField = {
-  key: string;
-  label: string;
-};
+/** 预览列字段：派生自 payload 真源 BindingCollectionField 的标量成员，携带 valueType 供预览正确渲染。 */
+export type RepeatBindingPreviewField = BindingCollectionScalarField;
 
 /** 预览区优先展示已映射到模板的列 */
 export function repeatBindingPreviewFields(repeat: RepeatRegionBinding): RepeatBindingPreviewField[] {
@@ -112,18 +131,27 @@ export function repeatBindingPreviewFields(repeat: RepeatRegionBinding): RepeatB
     const key = mapping.sourcePath;
     if (!key || seen.has(key)) continue;
     seen.add(key);
-    out.push({ key, label: mapping.label?.trim() || key });
+    const declared = findCollectionFieldByPath(repeat.itemFields, key);
+    const vt = mapping.valueType ?? declared?.valueType;
+    out.push({
+      key,
+      label: mapping.label?.trim() || key,
+      valueType: vt && vt !== "collection" ? vt : "string",
+    });
   }
   for (const field of repeat.itemFields ?? []) {
     if (field.valueType === "collection") continue;
     if (seen.has(field.key)) continue;
     seen.add(field.key);
-    out.push({ key: field.key, label: field.label?.trim() || field.key });
+    out.push({ key: field.key, label: field.label?.trim() || field.key, valueType: field.valueType });
   }
   return out;
 }
 
 export function repeatBindingOverviewRowCount(itemCount: number, repeat: RepeatRegionBinding): string {
+  const groupSize = repeat.itemMode === "group" ? Math.max(1, Math.floor(repeat.groupSize ?? 1)) : 1;
+  if (groupSize > 1 && itemCount > 0) return `${Math.ceil(itemCount / groupSize)} 组`;
+  if (groupSize > 1) return `每组 ${groupSize} 条`;
   const fixed =
     repeat.minItems != null && repeat.minItems === repeat.maxItems ? repeat.minItems : null;
   if (fixed != null) return `${fixed} 行`;
@@ -137,6 +165,8 @@ export function repeatBindingOverviewStructureShort(
   repeat: RepeatRegionBinding
 ): string {
   const prototypes = repeat.prototypeChildIds.filter((id) => Boolean(template.blocks[id]));
+  const groupSize = repeat.itemMode === "group" ? Math.max(1, Math.floor(repeat.groupSize ?? 1)) : 1;
+  if (groupSize > 1) return `每组 ${groupSize} 条`;
   if (prototypes.length === 1 && prototypes[0] === hostId) {
     return "复制当前区块";
   }
@@ -150,5 +180,9 @@ export function repeatBindingMappingRows(
   repeat: RepeatRegionBinding,
   formatLine: (mapping: RepeatFieldMapping) => string
 ): string[] {
-  return (repeat.fieldMappings ?? []).map((mapping) => formatLine(mapping));
+  return (repeat.fieldMappings ?? []).map((mapping) => {
+    const prefix =
+      repeat.itemMode === "group" ? `第 ${(mapping.itemOffset ?? 0) + 1} 条：` : "";
+    return `${prefix}${formatLine(mapping)}`;
+  });
 }

@@ -44,6 +44,7 @@ import {
   gridMatrixSlotContentAlignCss,
   gridMatrixSlotTableCellAttrs,
   layoutPreviewHugOuterShellBoxStyle,
+  emailTextContentWrapCss,
 } from "../lib/emailPresentationLayout";
 import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
 import { isRepeatExpansionGroupSelected, previewModelToFlatTemplate } from "../repeat-runtime";
@@ -87,6 +88,7 @@ import {
   resolvePreviewViewportClipCss,
   parseCssPx,
   isPreviewViewportNarrowerThanRoot,
+  canvasShellOverflowCss,
 } from "../lib/canvasDimensionResolve";
 import {
   CanvasDimensionPreviewProvider,
@@ -924,6 +926,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
     const decoration = props.decoration as CSSProperties["textDecoration"];
     const outerBoxCss: CSSProperties = {
       ...ws,
+      ...canvasShellOverflowCss(),
       fontFamily,
       fontSize,
       lineHeight: FIXED_TEXT_LINE_HEIGHT,
@@ -938,10 +941,12 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
       lineHeight: FIXED_TEXT_LINE_HEIGHT,
       ...(color ? { color } : {}),
     };
+    const textWrapCss = emailTextContentWrapCss(b.wrapperStyle?.widthMode);
     const innerStyle: CSSProperties = useBody
-      ? textTypography
+      ? { ...textTypography, ...textWrapCss }
       : {
           ...textTypography,
+          ...textWrapCss,
           fontStyle: italic ? "italic" : "normal",
           textDecoration:
             decoration === "underline" ||
@@ -1012,7 +1017,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
             whiteSpace: "normal",
           }}
         >
-          图片块缺少 wrapperStyle.backgroundImage.src
+          暂未设置图片，请在右侧面板中添加
         </span>
       ),
     });
@@ -1034,7 +1039,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
     const buttonFontSize = normalizeCssSize(bs?.fontSize) ?? "15px";
     const buttonBodyWidthCss = resolveComponentBodyWidthCss({
       mode: bs?.widthMode,
-      width: bs?.width,
+      fixedWidth: bs?.width,
       defaultMode: "hug",
     });
     return renderPresentationLeafShell({
@@ -1078,7 +1083,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
     const height = (props.height as string) ?? "1px";
     const lineWidthCss = resolveComponentBodyWidthCss({
       mode: props.lineWidthMode,
-      width: props.lineWidth,
+      fixedWidth: props.lineWidth,
       defaultMode: "fill",
     });
     return renderPresentationLeafShell({
@@ -1113,7 +1118,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
     const barRadiusCss = borderRadiusToCss(props.barBorderRadius ?? defaultBarRadius);
     const barWidthCss = resolveComponentBodyWidthCss({
       mode: props.barWidthMode,
-      width: props.barWidth,
+      fixedWidth: props.barWidth,
       defaultMode: "fill",
     });
     return renderPresentationLeafShell({
@@ -1360,7 +1365,7 @@ export function EmailPreview({
   const root = template.blocks[rootBlockId];
   if (!root) return <div>缺少根节点</div>;
 
-  const rootPropsWidth = root.props?.width;
+  const rootPropsWidth = (root.props as Record<string, unknown> | undefined)?.width;
   const rootConfiguredWidth =
     typeof rootPropsWidth === "string" && rootPropsWidth.trim()
       ? rootPropsWidth.trim()

@@ -11,6 +11,7 @@ import {
   type NestedSectionMaster,
   isNestedSectionMaster,
 } from "../template-disk-contract";
+import { inferSemanticBlockTypeForMeta } from "../block-contract/types";
 import type { EmailBlock, EmailTemplate } from "../types/email";
 import type { BlockMaster, SectionMaster } from "../types/master";
 import type { ValidationIssue } from "./validate";
@@ -23,19 +24,9 @@ function clone<T>(value: T): T {
 }
 
 function inferBlockMetaFromBlock(block: EmailBlock): { blockType: string; name: string } {
-  const typeToBlockType: Record<string, string> = {
-    emailRoot: "layout.container",
-    layout: "layout.container",
-    grid: "layout.grid",
-    text: "content.text",
-    image: "content.image",
-    icon: "content.icon",
-    button: "action.button",
-    divider: "separator.divider",
-    progress: "indicator.progress",
-  };
+  // 映射真源在 block-contract（emailRoot 落盘约定 layout.container）；未知 type 原样保留交校验层报错
   return {
-    blockType: typeToBlockType[block.type] ?? block.type,
+    blockType: inferSemanticBlockTypeForMeta(block.type) ?? block.type,
     name: block.id,
   };
 }
@@ -63,6 +54,7 @@ function graphBlockToNestedNode(
     nested.bindings = clone(block.bindings);
   }
   if (block.repeat) nested.repeat = clone(block.repeat);
+  if (block.objectBind) nested.objectBind = clone(block.objectBind);
   if (block.visibility) nested.visibility = clone(block.visibility);
 
   const childIds = block.children ?? [];
@@ -95,14 +87,19 @@ function nestedNodeToGraphBlock(
     ...(node.wrapperStyle ? { wrapperStyle: clone(node.wrapperStyle) } : {}),
     ...(node.bindings ? { bindings: clone(node.bindings) } : {}),
     ...(node.repeat ? { repeat: clone(node.repeat) } : {}),
+    ...(node.objectBind ? { objectBind: clone(node.objectBind) } : {}),
     ...(node.visibility ? { visibility: clone(node.visibility) } : {}),
   } as EmailBlock;
 
   acc.blocks[node.id] = block;
-  acc.blockMeta[node.id] = {
-    blockType: node.blockMeta.blockType,
-    name: node.blockMeta.name,
-  };
+  // blockMeta 缺失/不完整时推断兜底（与 graph→nested 方向对称）：
+  // 壳层校验仍会报必填错误，但深层校验得以继续运行而非构图中断
+  acc.blockMeta[node.id] = node.blockMeta
+    ? {
+        blockType: node.blockMeta.blockType ?? inferBlockMetaFromBlock(block).blockType,
+        name: node.blockMeta.name ?? block.id,
+      }
+    : inferBlockMetaFromBlock(block);
 
   return node.id;
 }
@@ -218,16 +215,22 @@ export function serializeMasterToDisk(master: NestedMaster): NestedMaster {
 }
 
 export function validateTemplateFromDisk(raw: unknown): ValidationIssue[] {
-  const diskIssues = validateNestedDisk(raw);
-  if (diskIssues.length > 0) {
-    return diskIssues.map((issue) => ({
-      path: issue.path,
-      reason: issue.reason,
-      level: "error" as const,
-    }));
+  const diskIssues: ValidationIssue[] = validateNestedDisk(raw).map((issue) => ({
+    path: issue.path,
+    reason: issue.reason,
+    level: "error" as const,
+  }));
+  // 壳层有错也尽量跑深层校验，一次性报全两层问题（错误分批暴露会拖长修复迭代，
+  // 且壳层短路会掩盖深层契约违规）。
+  let deepIssues: ValidationIssue[] = [];
+  try {
+    deepIssues = validateTemplate(nestedToEditorGraph(raw as NestedEmailTemplate));
+  } catch (error) {
+    // 壳层干净时构图失败是真异常须上抛；壳层已有错则视为结构性破损，壳层错误已覆盖根因
+    if (diskIssues.length === 0) throw error;
   }
-  const graph = nestedToEditorGraph(raw as NestedEmailTemplate);
-  return validateTemplate(graph);
+  const seen = new Set(diskIssues.map((i) => `${i.path}: ${i.reason}`));
+  return [...diskIssues, ...deepIssues.filter((i) => !seen.has(`${i.path}: ${i.reason}`))];
 }
 
 export function readTemplateGraphFromDiskRaw(raw: unknown): EmailTemplate {

@@ -13,6 +13,7 @@ import {
   validatePayloadAgainstTemplate as validatePayloadAgainstTemplateContract,
   validatePayloadAgainstTemplateUnion as validatePayloadAgainstTemplateUnionContract,
 } from "../payload-contract/validate";
+import { findObjectFieldByPath } from "../payload-contract/object-fields";
 import {
   COLLECTION_ITEM_FIELDS_NESTING_ERROR,
   isItemPathWithinCollectionListLevelMax,
@@ -22,6 +23,12 @@ import {
   resolveEffectiveBindingSlotValueType,
 } from "../payload-contract/repeat-list-item-binding";
 import { validateVariableBindingFieldCompatibility } from "../payload-contract/variable-slot-compatibility";
+import { validateForbiddenBackgroundImageAlt } from "../render-defaults-contract/forbiddenBackgroundImageAlt";
+import { validateForbiddenBackgroundImageChrome } from "../render-defaults-contract/forbiddenBackgroundImageChrome";
+import {
+  backgroundImageFitUsesPosition,
+  validateForbiddenBackgroundImagePositionWhenContain,
+} from "../render-defaults-contract/backgroundImageFitSemantics";
 import { validateForbiddenLegacyProps } from "../render-defaults-contract/forbiddenLegacyProps";
 import { validateRenderDefaultsForbiddenFields } from "../render-defaults-contract/validate";
 import { EMAIL_ROOT_FIXED_WIDTH, emailRootWidthMismatchReason } from "../render-defaults-contract/values";
@@ -43,7 +50,17 @@ export type ValidationIssue = {
   reason: string;
   /** 默认 error；warning 不参与 run-validate-all 失败计数（待全量迁移后改为 error） */
   level?: "error" | "warning";
+  /**
+   * live（默认）：编辑中即展示于校验面板与字段提示；
+   * save：仅保存 / API / validate:all 生效，编辑中不打扰用户补全配置。
+   */
+  phase?: "live" | "save";
 };
+
+/** 编辑器实时展示用：过滤掉保存时才提示的项 */
+export function validationIssuesForEditorDisplay(issues: ValidationIssue[]): ValidationIssue[] {
+  return issues.filter((issue) => issue.phase !== "save");
+}
 
 /** 与 run-validate-all / 落盘 API 一致：仅 level=warning 的不阻断读写 */
 export function isBlockingValidationIssue(issue: ValidationIssue): boolean {
@@ -228,13 +245,7 @@ function validateOptionalWrapperBackgroundImage(
     issues.push({
       path: `${path}.src`,
       reason: `${blockTypeLabel} 背景图若配置则 src 必须为非空字符串`,
-    });
-  } else {
-    validateBorderConfig(`${path}.border`, wsBg.border, issues, {
-      required: true,
-    });
-    validateBorderRadiusConfig(`${path}.borderRadius`, wsBg.borderRadius, issues, {
-      required: true,
+      phase: "save",
     });
   }
 
@@ -644,15 +655,6 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
           reason: "图片地址 src 必须为非空字符串",
         });
       } else {
-        validateBorderConfig(`blocks.${id}.wrapperStyle.backgroundImage.border`, wsBg.border, issues, {
-          required: true,
-        });
-        validateBorderRadiusConfig(
-          `blocks.${id}.wrapperStyle.backgroundImage.borderRadius`,
-          wsBg.borderRadius,
-          issues,
-          { required: true }
-        );
         const fit = wsBg.fit;
         if (fit !== undefined && fit !== "cover" && fit !== "contain") {
           issues.push({
@@ -660,11 +662,13 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
             reason: "仅允许 cover / contain",
           });
         }
-        validateRequiredString(
-          `blocks.${id}.wrapperStyle.backgroundImage.position`,
-          wsBg.position,
-          issues
-        );
+        if (backgroundImageFitUsesPosition(fit)) {
+          validateRequiredString(
+            `blocks.${id}.wrapperStyle.backgroundImage.position`,
+            wsBg.position,
+            issues
+          );
+        }
       }
     }
 
@@ -755,6 +759,8 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
             path: `blocks.${childId}.wrapperStyle.heightMode`,
             reason:
               "该 layout 位于 grid 内，建议改为 hug 以启用栅格统一自适应等高；固定高度仅在明确需要裁切时使用",
+            // 劝告式规则与阻断级别曾经矛盾：是否需要裁切属语义判断，降为 warning 不卡流程
+            level: "warning",
           });
         }
       }
@@ -1101,6 +1107,24 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
           reason: "fallbackChildIds 仅允许包含当前区块自身 id（旧版回退子区块写法已禁用）",
         });
       }
+      if (
+        block.repeat.itemMode !== undefined &&
+        block.repeat.itemMode !== "single" &&
+        block.repeat.itemMode !== "group"
+      ) {
+        issues.push({
+          path: `${path}.itemMode`,
+          reason: "itemMode 只能为 single 或 group",
+        });
+      }
+      const repeatGroupSize =
+        block.repeat.itemMode === "group" ? Math.max(1, Math.floor(block.repeat.groupSize ?? 1)) : 1;
+      if (block.repeat.itemMode === "group" && repeatGroupSize < 2) {
+        issues.push({
+          path: `${path}.groupSize`,
+          reason: "分组重复时 groupSize 必须至少为 2",
+        });
+      }
       for (const childId of block.repeat.fallbackChildIds) {
         if (!t.blocks[childId]) {
           issues.push({
@@ -1142,6 +1166,19 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
         : null;
       for (const mapping of block.repeat.fieldMappings ?? []) {
         const mappingPath = `${path}.fieldMappings.${mapping.id || mapping.targetBindPath}`;
+        const itemOffset = Math.max(0, Math.floor(mapping.itemOffset ?? 0));
+        if (mapping.itemOffset !== undefined && block.repeat.itemMode !== "group") {
+          issues.push({
+            path: `${mappingPath}.itemOffset`,
+            reason: "itemOffset 只能用于分组重复",
+          });
+        }
+        if (block.repeat.itemMode === "group" && itemOffset >= repeatGroupSize) {
+          issues.push({
+            path: `${mappingPath}.itemOffset`,
+            reason: "itemOffset 不能超过 groupSize 范围",
+          });
+        }
         const sourceField = resolveRepeatFieldMappingSourceMeta(
           block.repeat,
           enclosingParentRepeat,
@@ -1189,6 +1226,87 @@ export function validateTemplateBindings(t: EmailTemplate): ValidationIssue[] {
         });
       } else if (!prevType) {
         slotIdToType.set(block.repeat.slotId, "collection");
+      }
+    }
+    if (block.objectBind?.mode === "object") {
+      const path = `blocks.${blockId}.objectBind`;
+      if (block.repeat?.mode === "collection") {
+        issues.push({
+          path,
+          reason: "同一宿主不可同时配置列表重复（repeat）与对象绑定（objectBind）",
+        });
+      }
+      if (!isRepeatHostBlock(block)) {
+        issues.push({
+          path,
+          reason: "对象绑定只能配置在布局容器、栅格或图片区块上，不能配置在邮件根节点",
+        });
+      }
+      const objectIssues = validateExternalVariableBindingSpec(path, {
+        slotId: block.objectBind.slotId,
+        mode: "variable",
+        valueType: "object",
+        allowExternal: true,
+        label: block.objectBind.label,
+        description: block.objectBind.description,
+      });
+      for (const oi of objectIssues) issues.push(oi);
+      if (!block.objectBind.objectFields?.length) {
+        issues.push({
+          path: `${path}.objectFields`,
+          reason: "对象绑定须声明非空 objectFields",
+        });
+      }
+      const objectSubtreeIds = collectDescendantBlockIds(t, [blockId]);
+      for (const mapping of block.objectBind.fieldMappings ?? []) {
+        const mappingPath = `${path}.fieldMappings.${mapping.id || mapping.targetBindPath}`;
+        if (mapping.itemOffset !== undefined && mapping.itemOffset > 0) {
+          issues.push({
+            path: `${mappingPath}.itemOffset`,
+            reason: "对象字段映射不支持 itemOffset",
+          });
+        }
+        const sourceField = findObjectFieldByPath(block.objectBind.objectFields, mapping.sourcePath);
+        if (!sourceField) {
+          issues.push({
+            path: `${mappingPath}.sourcePath`,
+            reason: `映射来源字段「${mapping.sourcePath}」必须来自 objectFields`,
+          });
+        } else if (sourceField.valueType === "collection") {
+          issues.push({
+            path: `${mappingPath}.sourcePath`,
+            reason: "对象字段映射不支持子列表字段",
+          });
+        }
+        const targetBlock = t.blocks[mapping.targetBlockId];
+        if (!targetBlock) {
+          issues.push({
+            path: `${mappingPath}.targetBlockId`,
+            reason: `映射目标区块「${mapping.targetBlockId}」不存在`,
+          });
+          continue;
+        }
+        if (!objectSubtreeIds.has(mapping.targetBlockId)) {
+          issues.push({
+            path: `${mappingPath}.targetBlockId`,
+            reason: "映射目标字段必须位于当前对象绑定宿主子树内部",
+          });
+        }
+        if (classifyField(targetBlock.type, mapping.targetBindPath) !== "content") {
+          issues.push({
+            path: `${mappingPath}.targetBindPath`,
+            reason: "对象字段映射只能绑定业务内容字段，不能绑定样式或结构字段",
+          });
+        }
+      }
+      const prevObjectType = slotIdToType.get(block.objectBind.slotId);
+      if (prevObjectType && prevObjectType !== "object") {
+        issues.push({
+          path: `${path}.slotId`,
+          reason: `slotId「${block.objectBind.slotId}」在多处绑定中 valueType 不一致（${prevObjectType} vs object）`,
+        });
+      } else if (!prevObjectType) {
+        slotIdToType.set(block.objectBind.slotId, "object");
       }
     }
     if (block.visibility) {
@@ -1337,6 +1455,9 @@ export function validateTemplate(t: EmailTemplate): ValidationIssue[] {
   issues.push(...validateTemplateBindings(t));
   issues.push(...validateTemplateBlockContracts(t));
   issues.push(...validateRenderDefaultsForbiddenFields(t));
+  issues.push(...validateForbiddenBackgroundImageAlt(t));
+  issues.push(...validateForbiddenBackgroundImageChrome(t));
+  issues.push(...validateForbiddenBackgroundImagePositionWhenContain(t));
   issues.push(...validateForbiddenLegacyProps(t));
   return issues;
 }

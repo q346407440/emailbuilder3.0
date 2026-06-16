@@ -10,6 +10,9 @@ import type {
   SpacingValue,
 } from "../types/email";
 import { applyBlockField, bindingMeta } from "../lib/applyEdit";
+import { applyBackgroundImageFitChange } from "../lib/backgroundImageFitEdit";
+import { backgroundImageFitUsesPosition } from "../render-defaults-contract/backgroundImageFitSemantics";
+import { toUserFacingErrorMessage } from "../lib/userFacingError";
 import { readInspectorDisplayValue } from "../lib/inspectorBindingDisplay";
 import { applyBlockMetaName, blockDisplayName } from "../lib/blockMeta";
 import { Field } from "./ui/Field";
@@ -26,7 +29,7 @@ import {
   ShopSelect,
   ShopUnitInput,
 } from "./ui/ShopFormControls";
-import { blockBackgroundImageRenderable, layoutHasBackgroundImage } from "../lib/wrapperBackgroundImage";
+import { layoutHasBackgroundImage } from "../lib/wrapperBackgroundImage";
 import {
   getFillOptionTitle,
   getWrapperModeHint,
@@ -34,6 +37,13 @@ import {
 } from "../lib/wrapperFillConstraint";
 import { reconcileLayoutStructuralSubtreeInPlace } from "../lib/wrapperLayoutReconcile";
 import { RepeatRegionBindModal } from "./RepeatRegionBindModal";
+import { ObjectRegionBindModal } from "./ObjectRegionBindModal";
+import {
+  DataGroupBindEntryModal,
+  type DataGroupBindEntryCandidate,
+} from "./DataGroupBindEntryModal";
+import { buildDataGroupBindEntryCandidates } from "../lib/dataGroupBindEntryCandidates";
+import { ObjectRegionInspectorSummary } from "./ObjectRegionInspectorSummary";
 import { RepeatUnbindChoiceModal } from "./RepeatUnbindChoiceModal";
 import { ListBindInspectorEmpty } from "./ListBindInspectorEmpty";
 import { RepeatRegionInspectorSummary } from "./RepeatRegionInspectorSummary";
@@ -45,7 +55,7 @@ import {
 import { patchPayloadBuiltinCollectionSortPolicy } from "../lib/collectionBuiltinRulesPayload";
 import { patchPayloadCollectionSlot } from "../lib/collectionDataSource";
 import {
-  applyPayloadCollectionFixedLength,
+  applyCollectionFixedLengthChange,
   collectionFixedLengthEditability,
   readPayloadCollectionFixedLength,
 } from "../lib/collectionFixedLength";
@@ -89,7 +99,12 @@ import type { BlockMaster } from "../types/master";
 import { IconSrcEditor } from "./IconSrcEditor";
 import { InspectorFieldSource } from "./InspectorFieldSource";
 import { getInspectFieldBindMode, isInspectFollowLocked } from "../lib/inspectFieldBindMode";
-import { filterSlotsForVisibilityPicker } from "../payload-contract/variable-slot-compatibility";
+import {
+  buildVisibilitySlotCandidates,
+  findVisibilitySlotCandidate,
+  visibilityRuleFromCandidate,
+  visibilitySlotCandidateKey,
+} from "../lib/visibilitySlotCandidates";
 import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
 import {
   countRepeatExpansionGroupMembers,
@@ -98,6 +113,7 @@ import {
   resolvePhysicalBlockId,
   resolveRepeatContextForRef,
 } from "../repeat-runtime";
+import { repeatGroupSize as readRepeatGroupSize } from "../repeat-runtime/repeatItemResolve";
 import {
   buildRepeatPrototypeIdSet,
   collectionItemCount,
@@ -109,10 +125,19 @@ import {
   listNestedCollectionFields,
   removeUnifiedRepeatBinding,
 } from "../lib/repeatNestedBinding";
+import { mergeRepeatBindSlotCandidates } from "../lib/repeatBindSlotCandidates";
 import { resolveRepeatUnbindSelectionBlockId } from "../lib/repeatRegion";
 import type { TemplateChangeOptions } from "../lib/templateBlockSelection";
 import type { RepeatUnbindMode } from "../lib/repeatUnbindMode";
-import { mergeRepeatBindSlotCandidates } from "../lib/repeatBindSlotCandidates";
+import {
+  applyObjectRegionBinding,
+  isObjectBindMappedField,
+  removeObjectRegionBinding,
+} from "../lib/objectBindRegion";
+import {
+  buildObjectFieldMappings,
+  objectMappingDraftFromSaved,
+} from "../lib/objectFieldMapping";
 import {
   enrichNestedRepeatPreviewRowsForInspector,
   findEnclosingParentRepeatBinding,
@@ -132,8 +157,8 @@ import {
 } from "../lib/repeatMappableContentBindPaths";
 import { isThemeRef, parseThemeRefPath, type ThemeRef } from "../types/themeRef";
 import { previewThemeTokenValue } from "../lib/themeTokenCandidates";
-import type { SlotValueType } from "../payload-contract/types";
 import { findCollectionFieldByPath } from "../payload-contract/collection-item-fields";
+import { findObjectFieldByPath } from "../payload-contract/object-fields";
 import {
   getVisibilityOperatorSpec,
   getVisibilityOperatorsForValueType,
@@ -182,20 +207,14 @@ type RepeatCollectionCandidate = {
   maxItems?: number;
   description?: string;
 };
+type RepeatItemMode = "single" | "group";
 type RepeatTargetFieldOption = {
   key: string;
   blockId: string;
   bindPath: string;
   label: string;
 };
-type VisibilitySlotCandidate = {
-  slotId: string;
-  valueType: SlotValueType;
-  label: string;
-  description?: string;
-  minItems?: number;
-  maxItems?: number;
-};
+type VisibilitySlotCandidate = import("../lib/visibilitySlotCandidates").VisibilitySlotCandidate;
 const BORDER_DEFAULT_HINT = "默认值：宽度 0、样式实线、颜色透明。";
 const RADIUS_DEFAULT_HINT = "默认值：0。";
 const SPACING_DEFAULT_HINT = "默认值：0。";
@@ -254,6 +273,22 @@ function hasNestedRepeatUnder(template: EmailTemplate, hostId: string): boolean 
   return visit(hostId);
 }
 
+function buildObjectBindCandidates(
+  template: EmailTemplate,
+  payload: EmailPayload
+): import("./ObjectRegionBindModal").ObjectCollectionCandidate[] {
+  return collectPayloadVariableSlots(template, payload)
+    .filter((slot) => slot.valueType === "object")
+    .map((slot) => ({
+      key: slot.slotId,
+      slotId: slot.slotId,
+      label: slot.label ?? slot.slotId,
+      objectFields: slot.objectFields ?? [],
+      description: slot.description,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
 function buildRepeatCollectionCandidates(
   template: EmailTemplate,
   payload: EmailPayload
@@ -272,21 +307,11 @@ function buildRepeatCollectionCandidates(
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function buildVisibilitySlotCandidates(
+function buildVisibilitySlotCandidatesFromTemplate(
   template: EmailTemplate,
   payload: EmailPayload
 ): VisibilitySlotCandidate[] {
-  const fromCatalog = filterSlotsForVisibilityPicker(
-    collectPayloadVariableSlots(template, payload)
-  );
-  return fromCatalog.map((slot) => ({
-    slotId: slot.slotId,
-    valueType: slot.valueType as SlotValueType,
-    label: slot.label ?? slot.slotId,
-    description: slot.description,
-    minItems: slot.minItems,
-    maxItems: slot.maxItems,
-  }));
+  return buildVisibilitySlotCandidates(collectPayloadVariableSlots(template, payload));
 }
 
 function collectSubtreeBlockIds(template: EmailTemplate, rootIds: string[]): string[] {
@@ -331,16 +356,21 @@ function buildRepeatTargetFieldOptions(
 function buildRepeatFieldMappings(
   itemFields: RepeatCollectionCandidate["itemFields"],
   targetOptions: RepeatTargetFieldOption[],
-  draft: Record<string, string>
+  draft: Record<string, string>,
+  itemOffsetDraft: Record<string, number> = {},
+  itemMode: RepeatItemMode = "single"
 ): RepeatFieldMapping[] {
   return targetOptions.flatMap((target) => {
     const sourcePath = draft[target.key]?.trim();
     if (!sourcePath) return [];
     const sourceField = findCollectionFieldByPath(itemFields, sourcePath);
     if (!sourceField || sourceField.valueType === "collection") return [];
+    const itemOffset =
+      itemMode === "group" ? Math.max(0, Math.floor(itemOffsetDraft[target.key] ?? 0)) : 0;
     return {
-      id: `${target.blockId}.${target.bindPath}:${sourceField.key}`,
+      id: `${target.blockId}.${target.bindPath}:${itemOffset}:${sourceField.key}`,
       sourcePath,
+      ...(itemOffset > 0 ? { itemOffset } : {}),
       targetBlockId: target.blockId,
       targetBindPath: target.bindPath,
       label: sourceField.label || sourceField.key,
@@ -377,6 +407,69 @@ function repeatMappingDraftFromSaved(
     }
   }
   return draft;
+}
+
+function repeatMappingOffsetDraftFromSaved(
+  template: EmailTemplate,
+  targetOptions: RepeatTargetFieldOption[],
+  currentMappings?: RepeatFieldMapping[]
+): Record<string, number> {
+  const draft: Record<string, number> = {};
+  const prototypeSet = buildRepeatPrototypeIdSet(template);
+  const normalizedMappings = remapRepeatFieldMappingTargets(
+    currentMappings,
+    template,
+    prototypeSet
+  );
+  const currentByTarget = new Map(
+    normalizedMappings.map((mapping) => [
+      `${mapping.targetBlockId}:${mapping.targetBindPath}`,
+      Math.max(0, Math.floor(mapping.itemOffset ?? 0)),
+    ])
+  );
+
+  for (const target of targetOptions) {
+    const current = currentByTarget.get(target.key);
+    if (current !== undefined) draft[target.key] = current;
+  }
+  return draft;
+}
+
+function inferRepeatGroupSizeFromHost(template: EmailTemplate, hostId: string): number {
+  const children = template.blocks[hostId]?.children ?? [];
+  return Math.max(1, children.length || 1);
+}
+
+function inferRepeatTargetItemOffset(
+  template: EmailTemplate,
+  hostId: string,
+  targetBlockId: string
+): number {
+  const directChildren = template.blocks[hostId]?.children ?? [];
+  let current: string | null = targetBlockId;
+  let directChild: string | null = null;
+  while (current && current !== hostId) {
+    directChild = current;
+    current = template.blocks[current]?.parentId ?? null;
+  }
+  const index = directChild ? directChildren.indexOf(directChild) : -1;
+  return Math.max(0, index);
+}
+
+function inferRepeatMappingOffsetDraft(
+  template: EmailTemplate,
+  hostId: string,
+  targetOptions: RepeatTargetFieldOption[],
+  groupSize: number
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const target of targetOptions) {
+    out[target.key] = Math.min(
+      Math.max(0, groupSize - 1),
+      inferRepeatTargetItemOffset(template, hostId, target.blockId)
+    );
+  }
+  return out;
 }
 
 function normalizeBorderStyle(value: unknown): BorderStyleOption {
@@ -574,7 +667,18 @@ export function Inspector({
   const [repeatModalViewOnly, setRepeatModalViewOnly] = useState(false);
   const [repeatUnbindModalOpen, setRepeatUnbindModalOpen] = useState(false);
   const [repeatSlotId, setRepeatSlotId] = useState("");
+  const [repeatItemMode, setRepeatItemMode] = useState<RepeatItemMode>("single");
+  const [repeatGroupSize, setRepeatGroupSize] = useState(1);
   const [repeatMappingDraft, setRepeatMappingDraft] = useState<Record<string, string>>({});
+  const [repeatMappingOffsetDraft, setRepeatMappingOffsetDraft] = useState<Record<string, number>>({});
+  const [dataGroupEntryOpen, setDataGroupEntryOpen] = useState(false);
+  const [dataGroupEntryKey, setDataGroupEntryKey] = useState("");
+  const [repeatModalSkipSlotStep, setRepeatModalSkipSlotStep] = useState(false);
+  const [objectModalOpen, setObjectModalOpen] = useState(false);
+  const [objectModalViewOnly, setObjectModalViewOnly] = useState(false);
+  const [objectModalSkipSlotStep, setObjectModalSkipSlotStep] = useState(false);
+  const [objectSlotId, setObjectSlotId] = useState("");
+  const [objectMappingDraft, setObjectMappingDraft] = useState<Record<string, string>>({});
   const [textVarPillModalMeta, setTextVarPillModalMeta] = useState<TextBodyVariableRunMeta | null>(null);
   const [savingInsertDefault, setSavingInsertDefault] = useState(false);
   const inspectorTabContext = useMemo(() => {
@@ -641,7 +745,7 @@ export function Inspector({
     return previewModelToFlatTemplate(previewModel, template);
   }, [previewModel, template]);
   const visibilitySlotCandidates = useMemo(
-    () => buildVisibilitySlotCandidates(template, payload),
+    () => buildVisibilitySlotCandidatesFromTemplate(template, payload),
     [payload, template]
   );
   const externalVariableSlots = useMemo(
@@ -711,10 +815,12 @@ export function Inspector({
       ? null
       : resolveRepeatContextForRef(template, selectedBlockRef);
   const repeatCollectionCandidates = buildRepeatCollectionCandidates(template, payload);
+  const objectBindCandidates = buildObjectBindCandidates(template, payload);
   const currentRepeat = resolvedRepeatContext?.repeat ?? null;
   // 绑定目标 = 当前选中的可作宿主容器自身（self-repeat：绑哪个容器复制哪个）。
   const repeatBindHostId = !canvasMode && isRepeatHostBlock(block) ? id : "";
   const ownRepeat = !canvasMode ? block.repeat ?? null : null;
+  const ownObjectBind = !canvasMode ? block.objectBind ?? null : null;
   const repeatBindPrototypeChildIds = repeatBindHostId ? [repeatBindHostId] : [];
   // 外层 repeat：供「父项子列表」候选；行模板内子块查看绑定时跳过当前列表宿主本身。
   const enclosingParentRepeat = canvasMode
@@ -745,6 +851,10 @@ export function Inspector({
     enclosingParentRepeat,
     subListBindCandidates,
     repeatCollectionCandidates
+  );
+  const dataGroupEntryCandidates = useMemo(
+    () => buildDataGroupBindEntryCandidates(repeatBindCandidates, objectBindCandidates, payload),
+    [repeatBindCandidates, objectBindCandidates, payload]
   );
   const repeatCandidate = repeatBindCandidates.find((candidate) => candidate.key === repeatSlotId);
   // 字段映射目标：行模板子树内、且不落在更深层 repeat 子树内的内容字段（决策 H）。
@@ -795,26 +905,38 @@ export function Inspector({
         enclosingParentRepeat
       )
     : undefined;
-  /** 不可绑定时仅置灰按钮并用 title 说明，不再额外占一行提示文案 */
-  const repeatBindDisabledReason = (() => {
-    if (canvasMode) return "请先在画布中选中要作为行模板的区块。";
-    if (!repeatBindHostId) {
-      return "请选中布局容器、栅格或图片区块后再绑定；选中的容器即为列表行模板。";
+  const objectBindHostId = repeatBindHostId;
+  const objectTargetFieldOptions = objectBindHostId
+    ? buildRepeatTargetFieldOptions(template, [objectBindHostId])
+    : [];
+  const objectCandidate = objectBindCandidates.find((c) => c.key === objectSlotId);
+  const objectBindDisabledReason = (() => {
+    if (canvasMode) return "请先在画布中选中要绑定的容器。";
+    if (!objectBindHostId) {
+      return "请选中布局容器、栅格或图片区块后再绑定。";
     }
-    if (repeatBindCandidates.length === 0) {
-      return "当前没有可用列表变量，请先准备列表数据。";
+    if (dataGroupEntryCandidates.length === 0) {
+      return "当前没有可用的列表或对象变量，请先在数据变量面板添加。";
     }
     return null;
   })();
-  const repeatBindDisabled = Boolean(repeatBindDisabledReason);
+  const objectBindDisabled = Boolean(objectBindDisabledReason);
   const showRepeatRegionPanel =
     Boolean(resolvedRepeatContext) || (!canvasMode && block.type !== "emailRoot");
 
   const resetRepeatBindDrafts = (candidate: RepeatCollectionCandidate | undefined) => {
     if (!candidate || !repeatBindHostId) {
       setRepeatMappingDraft({});
+      setRepeatMappingOffsetDraft({});
       return;
     }
+    const savedMode = ownRepeat?.itemMode ?? "single";
+    const savedGroupSize = Math.max(
+      1,
+      Math.floor(ownRepeat?.groupSize ?? inferRepeatGroupSizeFromHost(template, repeatBindHostId))
+    );
+    setRepeatItemMode(savedMode);
+    setRepeatGroupSize(savedGroupSize);
     setRepeatMappingDraft(
       repeatMappingDraftFromSaved(
         template,
@@ -823,6 +945,7 @@ export function Inspector({
             mode: "collection",
             slotId: candidate.slotId,
             prototypeChildIds: [],
+              fallbackChildIds: [],
             itemFields: candidate.itemFields,
             itemPath: candidate.itemPath,
             fieldMappings: [],
@@ -833,9 +956,20 @@ export function Inspector({
         ownRepeat?.fieldMappings
       )
     );
+    const savedOffsets = repeatMappingOffsetDraftFromSaved(
+      template,
+      repeatTargetFieldOptions,
+      ownRepeat?.fieldMappings
+    );
+    setRepeatMappingOffsetDraft(
+      Object.keys(savedOffsets).length > 0 || savedMode === "single"
+        ? savedOffsets
+        : inferRepeatMappingOffsetDraft(template, repeatBindHostId, repeatTargetFieldOptions, savedGroupSize)
+    );
   };
 
   const openRepeatModal = (viewOnly = false) => {
+    setRepeatModalSkipSlotStep(false);
     setRepeatModalViewOnly(viewOnly);
 
     if (viewOnly && resolvedRepeatContext) {
@@ -854,6 +988,8 @@ export function Inspector({
       const targetOpts = buildRepeatTargetFieldOptions(template, protoIds).filter(
         (opt) => !hasIntermediateRepeatBetween(template, opt.blockId, hostId)
       );
+      setRepeatItemMode(hostRepeat.itemMode ?? "single");
+      setRepeatGroupSize(readRepeatGroupSize(hostRepeat));
       setRepeatMappingDraft(
         repeatMappingDraftFromSaved(
           template,
@@ -861,6 +997,9 @@ export function Inspector({
           targetOpts,
           hostRepeat.fieldMappings
         )
+      );
+      setRepeatMappingOffsetDraft(
+        repeatMappingOffsetDraftFromSaved(template, targetOpts, hostRepeat.fieldMappings)
       );
       setRepeatModalOpen(true);
       return;
@@ -876,9 +1015,110 @@ export function Inspector({
       (preferredSlot && repeatBindCandidates.some((c) => c.key === preferredSlot)
         ? preferredSlot
         : "") || (repeatBindCandidates.length === 1 ? repeatBindCandidates[0]!.key : "");
+    setRepeatItemMode(ownRepeat?.itemMode ?? "single");
+    setRepeatGroupSize(
+      Math.max(
+        1,
+        Math.floor(ownRepeat?.groupSize ?? inferRepeatGroupSizeFromHost(template, repeatBindHostId))
+      )
+    );
     setRepeatSlotId(initialSlotId);
     resetRepeatBindDrafts(repeatBindCandidates.find((c) => c.key === initialSlotId));
     setRepeatModalOpen(true);
+  };
+
+  const resetObjectBindDrafts = (candidate: import("./ObjectRegionBindModal").ObjectCollectionCandidate | undefined) => {
+    if (!candidate || !objectBindHostId) {
+      setObjectMappingDraft({});
+      return;
+    }
+    setObjectMappingDraft(
+      objectMappingDraftFromSaved(
+        candidate.objectFields,
+        objectTargetFieldOptions,
+        ownObjectBind?.fieldMappings
+      )
+    );
+  };
+
+  const openObjectModal = (viewOnly = false) => {
+    setObjectModalSkipSlotStep(false);
+    setObjectModalViewOnly(viewOnly);
+    const preferredSlot = ownObjectBind?.slotId ?? "";
+    const initialSlotId =
+      (preferredSlot && objectBindCandidates.some((c) => c.key === preferredSlot)
+        ? preferredSlot
+        : "") || (objectBindCandidates.length === 1 ? objectBindCandidates[0]!.key : "");
+    setObjectSlotId(initialSlotId);
+    resetObjectBindDrafts(objectBindCandidates.find((c) => c.key === initialSlotId));
+    setObjectModalOpen(true);
+  };
+
+  const openDataGroupBindConfigure = () => {
+    if (ownRepeat) {
+      openRepeatModal(false);
+      return;
+    }
+    if (ownObjectBind) {
+      openObjectModal(false);
+      return;
+    }
+    const initialKey = dataGroupEntryCandidates.length === 1 ? dataGroupEntryCandidates[0]!.key : "";
+    setDataGroupEntryKey(initialKey);
+    setDataGroupEntryOpen(true);
+  };
+
+  const continueDataGroupEntry = (candidate: DataGroupBindEntryCandidate) => {
+    setDataGroupEntryOpen(false);
+    if (candidate.valueType === "object") {
+      setObjectModalSkipSlotStep(true);
+      setObjectSlotId(candidate.slotId);
+      resetObjectBindDrafts(objectBindCandidates.find((c) => c.key === candidate.slotId));
+      setObjectModalOpen(true);
+      return;
+    }
+    setRepeatSlotId(candidate.key);
+    setRepeatModalSkipSlotStep(true);
+    resetRepeatBindDrafts(repeatBindCandidates.find((c) => c.key === candidate.key));
+    setRepeatModalOpen(true);
+  };
+
+  const applyObjectFromModal = () => {
+    const candidate = objectCandidate;
+    if (!candidate) {
+      message.error("请选择一个对象变量。");
+      return;
+    }
+    if (!objectBindHostId) {
+      message.error("无法确定绑定容器，请先在画布中选中布局容器、栅格或图片区块。");
+      return;
+    }
+    try {
+      onTemplateChange(
+        applyObjectRegionBinding(template, {
+          hostId: objectBindHostId,
+          slotId: candidate.slotId,
+          objectFields: candidate.objectFields,
+          fieldMappings: buildObjectFieldMappings(
+            candidate.objectFields,
+            objectTargetFieldOptions,
+            objectMappingDraft
+          ),
+          label: candidate.label,
+          description: candidate.description,
+        })
+      );
+      setObjectModalOpen(false);
+      message.success("对象绑定已应用");
+    } catch (error) {
+      message.error(toUserFacingErrorMessage(error, "对象绑定失败，请检查所选容器后重试。"));
+    }
+  };
+
+  const removeObjectBind = () => {
+    if (!objectBindHostId || !ownObjectBind) return;
+    onTemplateChange(removeObjectRegionBinding(template, objectBindHostId));
+    message.success("对象绑定已解除");
   };
 
   const applyRepeatFromModal = () => {
@@ -906,6 +1146,7 @@ export function Inspector({
                   mode: "collection",
                   slotId: candidate.slotId,
                   prototypeChildIds: [],
+                  fallbackChildIds: [],
                   itemFields: candidate.itemFields,
                   itemPath: candidate.itemPath,
                   fieldMappings: [],
@@ -913,8 +1154,12 @@ export function Inspector({
                 enclosingParentRepeat
               ),
               repeatTargetFieldOptions,
-              repeatMappingDraft
+              repeatMappingDraft,
+              repeatMappingOffsetDraft,
+              repeatItemMode
             ),
+            itemMode: repeatItemMode === "group" ? "group" : undefined,
+            groupSize: repeatItemMode === "group" ? repeatGroupSize : undefined,
             minItems: candidate.minItems,
             maxItems: candidate.maxItems,
             label: candidate.label,
@@ -926,7 +1171,7 @@ export function Inspector({
       setRepeatModalOpen(false);
       message.success("列表绑定已应用");
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "列表绑定失败，请检查重复宿主。");
+      message.error(toUserFacingErrorMessage(error, "列表绑定失败，请检查所选容器后重试。"));
     }
   };
 
@@ -955,6 +1200,43 @@ export function Inspector({
     resetRepeatBindDrafts(repeatBindCandidates.find((c) => c.key === slotId));
   };
 
+  const handleRepeatItemModeChange = (mode: RepeatItemMode) => {
+    setRepeatItemMode(mode);
+    if (mode === "group" && repeatBindHostId) {
+      const nextGroupSize = Math.max(2, repeatGroupSize);
+      setRepeatGroupSize(nextGroupSize);
+      setRepeatMappingOffsetDraft((current) =>
+        Object.keys(current).length > 0
+          ? current
+          : inferRepeatMappingOffsetDraft(
+              template,
+              repeatBindHostId,
+              repeatTargetFieldOptions,
+              nextGroupSize
+            )
+      );
+    }
+  };
+
+  const handleRepeatGroupSizeChange = (groupSize: number) => {
+    const nextGroupSize = Math.max(2, Math.floor(groupSize));
+    setRepeatGroupSize(nextGroupSize);
+    setRepeatMappingOffsetDraft((current) => {
+      const next: Record<string, number> = {};
+      for (const target of repeatTargetFieldOptions) {
+        const currentOffset = current[target.key];
+        next[target.key] =
+          currentOffset === undefined
+            ? Math.min(
+                nextGroupSize - 1,
+                inferRepeatTargetItemOffset(template, repeatBindHostId, target.blockId)
+              )
+            : Math.min(nextGroupSize - 1, Math.max(0, Math.floor(currentOffset)));
+      }
+      return next;
+    });
+  };
+
   const updateBlockVisibility = (nextVisibility: VisibilityRule | undefined) => {
     if (block.type === "emailRoot") return;
     const nextTemplate = structuredClone(template);
@@ -970,7 +1252,7 @@ export function Inspector({
 
   const visibilityRule = block.type === "emailRoot" ? undefined : block.visibility;
   const visibilityCandidate = visibilityRule
-    ? visibilitySlotCandidates.find((candidate) => candidate.slotId === visibilityRule.slotId)
+    ? findVisibilitySlotCandidate(visibilitySlotCandidates, visibilityRule)
     : undefined;
   const visibilityValueType = visibilityCandidate?.valueType ?? visibilityRule?.valueType;
   const visibilityOperators = visibilityValueType
@@ -980,18 +1262,8 @@ export function Inspector({
     visibilityValueType && visibilityRule
       ? getVisibilityOperatorSpec(visibilityValueType, visibilityRule.operator)
       : null;
-  const createVisibilityRule = (candidate: VisibilitySlotCandidate): VisibilityRule => {
-    const operator = getVisibilityOperatorsForValueType(candidate.valueType)[0]?.operator ?? "isNotEmpty";
-    return {
-      slotId: candidate.slotId,
-      valueType: candidate.valueType,
-      operator,
-      minItems: candidate.minItems,
-      maxItems: candidate.maxItems,
-      label: candidate.label,
-      description: candidate.description,
-    };
-  };
+  const createVisibilityRule = (candidate: VisibilitySlotCandidate): VisibilityRule =>
+    visibilityRuleFromCandidate(candidate);
   const commitBuiltinCollectionRules = (slotId: string, nextPayload: EmailPayload) => {
     onUpdate({ template, payload: nextPayload });
     onDiscardPayloadSlotDraft?.(slotId);
@@ -1024,6 +1296,18 @@ export function Inspector({
     );
   };
 
+  const formatObjectMappingLine = (mapping: {
+    sourcePath: string;
+    targetBlockId: string;
+    targetBindPath: string;
+  }) => {
+    const fieldLabel =
+      (ownObjectBind
+        ? findObjectFieldByPath(ownObjectBind.objectFields, mapping.sourcePath)?.label
+        : undefined) ?? mapping.sourcePath;
+    return `${fieldLabel} → ${targetFieldLabel(template, mapping.targetBlockId, mapping.targetBindPath)}`;
+  };
+
   const formatRepeatMappingLine = (mapping: {
     sourcePath: string;
     targetBlockId: string;
@@ -1043,8 +1327,20 @@ export function Inspector({
   };
 
   const repeatRegionPanel = showRepeatRegionPanel ? (
-      <InspectorPanelSection title="列表绑定">
-        {ownRepeat ? (
+      <InspectorPanelSection title="数据组绑定">
+        {ownObjectBind ? (
+          <ObjectRegionInspectorSummary
+            template={template}
+            hostId={id}
+            objectBind={ownObjectBind}
+            payload={payload}
+            formatMappingLine={formatObjectMappingLine}
+            onEdit={() => openObjectModal(false)}
+            editLabel="编辑绑定"
+            onUnbind={removeObjectBind}
+            unbindTitle="解除对象绑定后，容器内由绑定填充的字段将恢复为模板原值。"
+          />
+        ) : ownRepeat ? (
           <>
             <RepeatRegionInspectorSummary
               template={template}
@@ -1073,10 +1369,8 @@ export function Inspector({
               collectionFixedLengthDisabledReason={ownRepeatFixedLengthEdit?.editability.reason}
               onCollectionFixedLengthChange={(length: number) => {
                 if (!ownRepeatFixedLengthEdit?.editability.editable) return;
-                onUpdate({
-                  template,
-                  payload: applyPayloadCollectionFixedLength(payload, ownRepeat.slotId, length),
-                });
+                onDiscardPayloadSlotDraft?.(ownRepeat.slotId);
+                onUpdate(applyCollectionFixedLengthChange(template, payload, ownRepeat.slotId, length));
               }}
               previewValues={ownRepeatPreviewValues}
             />
@@ -1093,9 +1387,9 @@ export function Inspector({
               </p>
             ) : null}
             <ListBindInspectorEmpty
-              disabled={repeatBindDisabled}
-              disabledReason={repeatBindDisabledReason ?? undefined}
-              onConfigure={() => openRepeatModal(false)}
+              disabled={objectBindDisabled}
+              disabledReason={objectBindDisabledReason ?? undefined}
+              onConfigure={openDataGroupBindConfigure}
             />
           </>
         ) : currentRepeat ? (
@@ -1114,9 +1408,9 @@ export function Inspector({
           />
         ) : (
           <ListBindInspectorEmpty
-            disabled={repeatBindDisabled}
-            disabledReason={repeatBindDisabledReason ?? undefined}
-            onConfigure={() => openRepeatModal(false)}
+            disabled={objectBindDisabled}
+            disabledReason={objectBindDisabledReason ?? undefined}
+            onConfigure={openDataGroupBindConfigure}
           />
         )}
       </InspectorPanelSection>
@@ -1124,9 +1418,42 @@ export function Inspector({
 
   const repeatModal = (
     <>
+    <DataGroupBindEntryModal
+      visible={dataGroupEntryOpen}
+      candidates={dataGroupEntryCandidates}
+      selectedKey={dataGroupEntryKey}
+      onSelectKey={setDataGroupEntryKey}
+      onClose={() => setDataGroupEntryOpen(false)}
+      onContinue={continueDataGroupEntry}
+    />
+    <ObjectRegionBindModal
+      visible={objectModalOpen}
+      viewOnly={objectModalViewOnly}
+      skipObjectSlotStep={objectModalSkipSlotStep}
+      template={template}
+      payload={payload}
+      hasCurrentObjectBind={Boolean(ownObjectBind)}
+      objectCandidates={objectBindCandidates}
+      hostPrototypeChildIds={objectBindHostId ? [objectBindHostId] : []}
+      hostLabel={objectBindHostId ? blockDisplayName(template, objectBindHostId) : undefined}
+      targetFieldOptions={objectTargetFieldOptions}
+      objectSlotId={objectSlotId}
+      mappingDraft={objectMappingDraft}
+      objectCandidate={objectCandidate}
+      onClose={() => {
+        setObjectModalOpen(false);
+        setObjectModalViewOnly(false);
+        setObjectModalSkipSlotStep(false);
+      }}
+      onApply={applyObjectFromModal}
+      onRemove={ownObjectBind ? removeObjectBind : undefined}
+      onMappingDraftChange={setObjectMappingDraft}
+      onSlotChange={setObjectSlotId}
+    />
     <RepeatRegionBindModal
       visible={repeatModalOpen}
       viewOnly={repeatModalViewOnly}
+      skipListSlotStep={repeatModalSkipSlotStep}
       template={template}
       payload={payload}
       hasCurrentRepeat={Boolean(ownRepeat)}
@@ -1135,16 +1462,23 @@ export function Inspector({
       parentRowTemplateLabel={repeatModalRowTemplateLabel}
       parentTargetFieldOptions={repeatModalTargetFieldOptions}
       repeatSlotId={repeatSlotId}
+      repeatItemMode={repeatItemMode}
+      repeatGroupSize={repeatGroupSize}
       parentMappingDraft={repeatMappingDraft}
+      parentMappingOffsetDraft={repeatMappingOffsetDraft}
       repeatCandidate={repeatCandidate}
       enclosingParentRepeat={enclosingParentRepeat}
       onClose={() => {
         setRepeatModalOpen(false);
         setRepeatModalViewOnly(false);
+        setRepeatModalSkipSlotStep(false);
       }}
       onApply={applyRepeatFromModal}
       onRemove={ownRepeat ? removeRepeat : undefined}
       onParentMappingDraftChange={setRepeatMappingDraft}
+      onRepeatItemModeChange={handleRepeatItemModeChange}
+      onRepeatGroupSizeChange={handleRepeatGroupSizeChange}
+      onParentMappingOffsetDraftChange={setRepeatMappingOffsetDraft}
       onSlotChange={handleRepeatSlotChange}
     />
     <RepeatUnbindChoiceModal
@@ -1230,10 +1564,13 @@ export function Inspector({
   const repeatContentBindPaths = !canvasMode ? listRepeatMappableContentBindPaths(block) : [];
   const isRepeatContentLocked = (blockId: string, bindPath: string): boolean =>
     blockId === id && Boolean(resolvedRepeatContext) && repeatContentBindPaths.includes(bindPath);
+  const isObjectContentLocked = (blockId: string, bindPath: string): boolean =>
+    isObjectBindMappedField(template, blockId, bindPath);
   const isBindPathLocked = (blockId: string, bindPath: string): boolean => {
     const b = template.blocks[blockId];
     if (!b) return false;
     if (isRepeatContentLocked(blockId, bindPath)) return true;
+    if (isObjectContentLocked(blockId, bindPath)) return true;
     const mode = getInspectFieldBindMode(template, b, payload, blockId, bindPath);
     return mode === "themeFollow" || mode === "variableFollow";
   };
@@ -1269,7 +1606,7 @@ export function Inspector({
       bindPath={bindPath}
       onUpdate={onUpdate}
       onTemplateChange={onTemplateChange}
-      disabled={isRepeatContentLocked(targetBlock.id, bindPath)}
+      disabled={isRepeatContentLocked(targetBlock.id, bindPath) || isObjectContentLocked(targetBlock.id, bindPath)}
     />
   );
 
@@ -1381,16 +1718,18 @@ export function Inspector({
             hint="配置后仅当条件满足时显示当前区块及其子区块。"
           >
             <ShopSelect
-              value={visibilityRule.slotId}
+              value={visibilitySlotCandidateKey(
+                visibilityRule.slotId,
+                visibilityRule.objectFieldKey
+              )}
               onChange={(value) => {
-                const slotId = String(value);
-                const candidate = visibilitySlotCandidates.find((item) => item.slotId === slotId);
+                const candidate = visibilitySlotCandidates.find((item) => item.key === String(value));
                 if (!candidate) return;
                 updateBlockVisibility(createVisibilityRule(candidate));
               }}
             >
               {visibilitySlotCandidates.map((candidate) => (
-                <ShopSelect.Option key={candidate.slotId} value={candidate.slotId}>
+                <ShopSelect.Option key={candidate.key} value={candidate.key}>
                   {candidate.label} · {candidate.valueType}
                 </ShopSelect.Option>
               ))}
@@ -1818,14 +2157,8 @@ export function Inspector({
   };
 
   const renderWrapperPaddingEditor = (target: EmailBlock) => {
-    const bgOverlayPadding = blockBackgroundImageRenderable(target);
     return (
       <fieldset className="inspector-bound-fieldset">
-        {bgOverlayPadding ? (
-          <p className="inspector__muted">
-            已启用底图：容器内边距仅作用于叠放子内容。
-          </p>
-        ) : null}
         {renderSpacingEditor({
           labelPrefix: "容器",
           basePath: "wrapperStyle.padding",
@@ -1989,9 +2322,7 @@ export function Inspector({
   type IconUnitBindPath = Extract<IconBindPath, "props.size">;
   type LayoutContainerBgBindPath =
     | "wrapperStyle.backgroundImage.src"
-    | "wrapperStyle.backgroundImage.alt"
     | "wrapperStyle.backgroundImage.link";
-  type LayoutContainerBgSelectBindPath = "wrapperStyle.backgroundImage.fit";
   const overlayStackGapModeRow = (layoutBlock: OverlayStackBlock) => {
     const raw = rd(layoutBlock, "props.gapMode");
     const value = raw === "auto" ? "auto" : "fixed";
@@ -2089,26 +2420,38 @@ export function Inspector({
     );
   };
 
-  /** 容器背景图 / 图片块：画面位置只在 cover 裁切时控制裁切焦点。 */
+  /** 容器背景图 / 图片块：画面位置仅在 cover 裁切时展示与持久化。 */
   const layoutContainerBgPositionRow = (target: EmailBlock, label: string) => {
     const bindPath = "wrapperStyle.backgroundImage.position";
     const locked = isInspectFollowLocked(template, target, payload, bindPath);
-    const fit = rd(target, "wrapperStyle.backgroundImage.fit");
-    const containMode = fit === "contain";
     const bindHint = readDisplayHint(target, bindPath);
-    const fitHint = containMode
-      ? "完整显示（contain）不会裁切图片，画面位置不参与图像摆放；需要裁切焦点时请切换为 cover。"
-      : "控制 cover 裁切时保留画面的哪个方向。";
+    const fitHint = "控制 cover 裁切时保留画面的哪个方向。";
     return (
       <ImageObjectPositionGrid
         label={label}
         value={readDisplayString(target, bindPath)}
         hint={bindHint ? `${fitHint} ${bindHint}` : fitHint}
         onChange={(next) => pushBlock(target.id, bindPath, next)}
-        disabled={locked || containMode}
-        headerExtra={fieldBindHeader(target, bindPath)}
+        disabled={locked}
       />
     );
+  };
+
+  const layoutContainerBgFitSelectRow = (target: EmailBlock, label: string) => {
+    const bindPath = "wrapperStyle.backgroundImage.fit";
+    return renderSelectInputRow({
+      label,
+      value: readDisplayString(target, bindPath) || "cover",
+      hint: readDisplayHint(target, bindPath),
+      onChange: (next) =>
+        onUpdate(applyBackgroundImageFitChange(template, payload, target.id, next)),
+      disabled: isInspectFollowLocked(template, target, payload, bindPath),
+      headerExtra: fieldBindHeader(target, bindPath),
+      options: [
+        { value: "cover", label: "裁切铺满（cover）" },
+        { value: "contain", label: "完整显示（contain）" },
+      ],
+    });
   };
 
   const buttonTextRow = (
@@ -2405,7 +2748,6 @@ export function Inspector({
     renderTextInputRow({
       label,
       value: readDisplayString(target, bindPath),
-      maxLength: bindPath === "wrapperStyle.backgroundImage.alt" ? 100 : undefined,
       uploadAssetKind:
         bindPath === "wrapperStyle.backgroundImage.src" ? "image" : undefined,
       hint: readDisplayHint(target, bindPath),
@@ -2414,85 +2756,23 @@ export function Inspector({
       headerExtra: fieldBindHeader(target, bindPath),
     });
 
-  const layoutContainerBgSelectRow = (
-    target: EmailBlock,
-    label: string,
-    bindPath: LayoutContainerBgSelectBindPath,
-    options: Array<{ value: string; label: string }>
-  ) =>
-    renderSelectInputRow({
-      label,
-      value: readDisplayString(target, bindPath) || "cover",
-      hint: readDisplayHint(target, bindPath),
-      onChange: (next) => pushBlock(target.id, bindPath, next),
-      disabled: isInspectFollowLocked(template, target, payload, bindPath),
-      headerExtra: fieldBindHeader(target, bindPath),
-      options,
-    });
-
   const renderWrapperBackgroundImageStyleFields = (
     target: EmailBlock,
     opts: {
       fitLabel?: string;
       positionLabel?: string;
-      borderRadiusLabelPrefix?: string;
-      borderLabelPrefix?: string;
-      cropRegionHint?: boolean;
     } = {}
   ) => {
     const {
       fitLabel = "背景填充策略",
       positionLabel = "背景画面位置",
-      borderRadiusLabelPrefix = "背景",
-      borderLabelPrefix = "背景",
-      cropRegionHint = false,
     } = opts;
+    const fit = rd(target, "wrapperStyle.backgroundImage.fit");
+    const showPosition = backgroundImageFitUsesPosition(fit);
     return (
       <>
-        {cropRegionHint ? (
-          <p className="inspector__muted">
-            裁切范围由「布局」页宽高设置决定。
-          </p>
-        ) : null}
-        {layoutContainerBgSelectRow(target, fitLabel, "wrapperStyle.backgroundImage.fit", [
-          { value: "cover", label: "裁切铺满（cover）" },
-          { value: "contain", label: "完整显示（contain）" },
-        ])}
-        {layoutContainerBgPositionRow(target, positionLabel)}
-        <fieldset className="inspector-bound-fieldset">
-          {renderBorderRadiusEditor({
-            labelPrefix: borderRadiusLabelPrefix,
-            basePath: "wrapperStyle.backgroundImage.borderRadius",
-            value: rd(target, "wrapperStyle.backgroundImage.borderRadius"),
-            getHint: (path) => readDisplayHint(target, path),
-            onChange: (path, value) => pushBlock(target.id, path, value),
-            bindTargetBlock: target,
-            bindBasePath: "wrapperStyle.backgroundImage.borderRadius",
-            controlsDisabled: isInspectFollowLocked(
-              template,
-              target,
-              payload,
-              "wrapperStyle.backgroundImage.borderRadius"
-            ),
-          })}
-        </fieldset>
-        <fieldset className="inspector-bound-fieldset">
-          {renderBorderEditor({
-            labelPrefix: borderLabelPrefix,
-            basePath: "wrapperStyle.backgroundImage.border",
-            value: rd(target, "wrapperStyle.backgroundImage.border"),
-            getHint: (path) => readDisplayHint(target, path),
-            onChange: (path, value) => pushBlock(target.id, path, value),
-            bindTargetBlock: target,
-            bindBasePath: "wrapperStyle.backgroundImage.border",
-            controlsDisabled: isInspectFollowLocked(
-              template,
-              target,
-              payload,
-              "wrapperStyle.backgroundImage.border"
-            ),
-          })}
-        </fieldset>
+        {layoutContainerBgFitSelectRow(target, fitLabel)}
+        {showPosition ? layoutContainerBgPositionRow(target, positionLabel) : null}
       </>
     );
   };
@@ -2504,7 +2784,6 @@ export function Inspector({
       return (
         <>
           {layoutContainerBgTextRow(block, "背景图地址", "wrapperStyle.backgroundImage.src")}
-          {layoutContainerBgTextRow(block, "背景替代文本", "wrapperStyle.backgroundImage.alt")}
           {layoutContainerBgTextRow(block, "背景链接地址", "wrapperStyle.backgroundImage.link")}
           <div className="inspector-transform-actions">
             <ShopSecondaryButton
@@ -2538,12 +2817,9 @@ export function Inspector({
             const patch: Record<string, unknown> = {
               "wrapperStyle.backgroundImage": {
                 src: readVariableSeedString(block, "wrapperStyle.backgroundImage.src"),
-                alt: readVariableSeedString(block, "wrapperStyle.backgroundImage.alt"),
                 link: readVariableSeedString(block, "wrapperStyle.backgroundImage.link"),
                 fit: "cover",
                 position: "center",
-                border: { mode: "unified", width: "0", style: "solid", color: TRANSPARENT_BORDER_COLOR },
-                borderRadius: { mode: "unified", radius: "0" },
               },
             };
             pushBlockPatch(block.id, patch);
@@ -2665,14 +2941,6 @@ export function Inspector({
                       onChange={(next) => pushRoot("wrapperStyle.backgroundImage.src", next)}
                     />
                   </Field>
-                  <Field label="背景替代文本" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.alt")}>
-                    <ShopCountInput
-                      value={String(rd(root, "wrapperStyle.backgroundImage.alt") ?? "")}
-                      maxLength={100}
-                      disabled={isInspectFollowLocked(template, root, payload, "wrapperStyle.backgroundImage.alt")}
-                      onChange={(next) => pushRoot("wrapperStyle.backgroundImage.alt", next)}
-                    />
-                  </Field>
                   <Field label="背景链接地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.link")}>
                     <ShopInput
                       type="text"
@@ -2694,7 +2962,6 @@ export function Inspector({
                     onClick={() =>
                       pushRoot("wrapperStyle.backgroundImage", {
                         src: "",
-                        alt: "",
                         link: "",
                         fit: "cover",
                         position: "center",
@@ -2727,12 +2994,9 @@ export function Inspector({
                   error={getFieldError?.("props.backgroundColor")}
                   warning={getFieldWarning?.("props.backgroundColor")}
                 />
-              </section>
-              <h3 className="inspector__subtitle">画布描边</h3>
-              <section className="inspector__section">
                 <fieldset className="inspector-bound-fieldset">
                   {renderBorderEditor({
-                    labelPrefix: "",
+                    labelPrefix: "容器",
                     basePath: "props.border",
                     value: rd(root, "props.border"),
                     onChange: pushRoot,
@@ -2748,22 +3012,6 @@ export function Inspector({
             <>
               <h3 className="inspector__subtitle">组件 · 布局</h3>
               <section className="inspector__section">
-                <fieldset className="inspector-bound-fieldset">
-                  {blockBackgroundImageRenderable(root) ? (
-                    <p className="inspector__muted">
-                      已启用内容区底图：页面内边距仅作用于叠放内容。
-                    </p>
-                  ) : null}
-                  {renderSpacingEditor({
-                    labelPrefix: "页面",
-                    basePath: "props.padding",
-                    value: rd(root, "props.padding"),
-                    onChange: pushRoot,
-                    bindTargetBlock: root,
-                    bindBasePath: "props.padding",
-                    controlsDisabled: isInspectFollowLocked(template, root, payload, "props.padding"),
-                  })}
-                </fieldset>
                 {overlayStackGapModeRow(root)}
                 {rd(root, "props.gapMode") !== "auto"
                   ? renderUnitInputRow({
@@ -2779,6 +3027,17 @@ export function Inspector({
               </section>
               <h3 className="inspector__subtitle">外层容器 · 布局</h3>
               <section className="inspector__section">
+                <fieldset className="inspector-bound-fieldset">
+                  {renderSpacingEditor({
+                    labelPrefix: "页面",
+                    basePath: "props.padding",
+                    value: rd(root, "props.padding"),
+                    onChange: pushRoot,
+                    bindTargetBlock: root,
+                    bindBasePath: "props.padding",
+                    controlsDisabled: isInspectFollowLocked(template, root, payload, "props.padding"),
+                  })}
+                </fieldset>
                 {(() => {
                   const w = root.props.width;
                   const widthStr = typeof w === "string" ? w.trim() : "";
@@ -3107,7 +3366,7 @@ export function Inspector({
                   headerExtra: fieldBindHeader(block, "props.trackColor"),
                 })}
                 {renderColorInputRow({
-                  label: "已完成段颜色",
+                  label: "进度填充色",
                   value: readDisplayColorString(block, "props.fillColor") || "#C9A227",
                   onChange: (next) => pushBlock(block.id, "props.fillColor", next),
                   disabled: isInspectFollowLocked(template, block, payload, "props.fillColor"),
@@ -3209,7 +3468,7 @@ export function Inspector({
                         ? "整段正文跟随 payload 变量，此处只读预览合并结果；请在「变量赋值」中修改。"
                         : textBodyContentMode === "inlineVariable"
                           ? "正文可编辑；紫色边框胶囊内为 payload 变量回显（有链接时为蓝色下划线）。点击胶囊可改绑，变量值在「变量赋值」中修改。"
-                          : "在正文中选中范围即可设置粗斜体、装饰与链接；工具条与「样式」里的字号、文字颜色配合使用，避免在两处重复切换区块默认字符样式。"
+                          : "在正文中选中范围即可设置粗斜体、装饰、段内字号、字色与链接；「样式」里的字号、文字颜色为整块默认，与工具条段内样式配合使用。"
                   }
                   headerExtra={
                     textBodyForEditor ? (
@@ -3404,14 +3663,10 @@ export function Inspector({
             {block.type === "image" ? (
               <>
                 {layoutContainerBgTextRow(block, "图片地址", "wrapperStyle.backgroundImage.src")}
-                {layoutContainerBgTextRow(block, "替代文本", "wrapperStyle.backgroundImage.alt")}
                 {layoutContainerBgTextRow(block, "链接地址", "wrapperStyle.backgroundImage.link")}
                 {renderWrapperBackgroundImageStyleFields(block, {
                   fitLabel: "填充策略",
                   positionLabel: "画面位置",
-                  borderRadiusLabelPrefix: "图片",
-                  borderLabelPrefix: "图片",
-                  cropRegionHint: true,
                 })}
               </>
             ) : null}

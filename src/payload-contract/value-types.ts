@@ -9,6 +9,7 @@ export const SLOT_VALUE_TYPES: readonly SlotValueType[] = [
   "color",
   "number",
   "boolean",
+  "object",
   "collection",
 ] as const;
 

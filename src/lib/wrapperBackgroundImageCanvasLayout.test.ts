@@ -49,30 +49,30 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
     assert.equal(layout.overlayVerticalValign, "top");
   });
 
-  it("图级描边仅写入 overlayBorderCss，不打在外层盒（避免定高 + 双层 border 裁切）", () => {
+  it("外壳圆角继承到底图 td overlayRadiusCss", () => {
     const layout = resolveWrapperBackgroundImageCanvasLayout({
       wrapperStyle: {
         widthMode: "fill",
         heightMode: "fixed",
         height: "100px",
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        borderRadius: { mode: "unified", radius: "12px" },
         contentAlign: { horizontal: "left", vertical: "top" },
         backgroundImage: {
           src: "https://example.com/x.jpg",
           fit: "cover",
-          border: { mode: "unified", width: "3px", style: "solid", color: "#DC2626" },
         },
       },
     });
     assert.ok(layout);
-    assert.equal(layout.overlayBorderCss.border, "3px solid #DC2626");
-    assert.notEqual(layout.outerBoxCss.border, "3px solid #DC2626");
+    assert.equal(layout.overlayRadiusCss.borderRadius, "12px");
+    assert.equal(layout.overlayBorderCss.border, undefined);
+    assert.notEqual(layout.outerBoxCss.borderRadius, undefined);
     assert.equal(layout.fixedCanvasHeight, "100px");
-    assert.equal(layout.bgTableBorderCollapse, "separate");
+    assert.equal(layout.bgTableBorderCollapse, "collapse");
     assert.equal(layout.bgTableHeightFromTd, true);
   });
 
-  it("无定高或无图级描边时 table 布局默认值", () => {
+  it("无定高时 table 布局默认值", () => {
     const hug = resolveWrapperBackgroundImageCanvasLayout({
       wrapperStyle: {
         widthMode: "fill",
@@ -84,7 +84,7 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
     assert.equal(hug.bgTableHeightFromTd, false);
     assert.equal(hug.bgTableBorderCollapse, "collapse");
 
-    const fixedNoBorder = resolveWrapperBackgroundImageCanvasLayout({
+    const fixed = resolveWrapperBackgroundImageCanvasLayout({
       wrapperStyle: {
         widthMode: "fill",
         heightMode: "fixed",
@@ -92,13 +92,22 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
         backgroundImage: {
           src: "https://example.com/x.jpg",
           fit: "cover",
-          border: { mode: "unified", width: "0", style: "solid", color: "#000" },
         },
       },
     });
-    assert.ok(fixedNoBorder);
-    assert.equal(fixedNoBorder.bgTableHeightFromTd, true);
-    assert.equal(fixedNoBorder.bgTableBorderCollapse, "collapse");
+    assert.ok(fixed);
+    assert.equal(fixed.bgTableHeightFromTd, true);
+    assert.equal(fixed.bgTableBorderCollapse, "collapse");
+  });
+
+  it("无 alt 时使用渲染默认替代文本", () => {
+    const layout = resolveWrapperBackgroundImageCanvasLayout({
+      wrapperStyle: {
+        backgroundImage: { src: "https://example.com/x.jpg", fit: "cover" },
+      },
+    });
+    assert.ok(layout);
+    assert.equal(layout.altText, "此处是图片");
   });
 
   it("无有效 src 时返回 null", () => {

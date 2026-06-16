@@ -146,7 +146,6 @@ describe("repeat-list-item-binding", () => {
         wrapperStyle: {
           backgroundImage: {
             src: "https://example.com/a.jpg",
-            alt: "A",
             link: "https://example.com",
           },
         },
@@ -160,16 +159,8 @@ describe("repeat-list-item-binding", () => {
             slotPath: "0.imageSrc",
             itemFields: [
               { key: "imageSrc", label: "图", valueType: "image", required: true },
-              { key: "imageAlt", label: "替代文字", valueType: "string", required: true },
               { key: "href", label: "链接", valueType: "url", required: true },
             ],
-          },
-          "wrapperStyle.backgroundImage.alt": {
-            slotId: "products",
-            mode: "variable",
-            valueType: "collection",
-            allowExternal: true,
-            slotPath: "0.imageAlt",
           },
           "wrapperStyle.backgroundImage.link": {
             slotId: "products",
@@ -182,11 +173,6 @@ describe("repeat-list-item-binding", () => {
       },
     });
 
-    const altSpec = template.blocks.cell!.bindings!["wrapperStyle.backgroundImage.alt"]!;
-    assert.equal(
-      resolveEffectiveBindingSlotValueType(altSpec, { template, blockId: "cell" }),
-      "string"
-    );
     const linkSpec = template.blocks.cell!.bindings!["wrapperStyle.backgroundImage.link"]!;
     assert.equal(
       resolveEffectiveBindingSlotValueType(linkSpec, { template, blockId: "cell" }),

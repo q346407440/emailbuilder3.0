@@ -4,6 +4,7 @@ import type { EmailTemplate, EmailPayload } from "../types/email";
 import { validatePayloadAgainstTemplate } from "../payload-contract/validate";
 import { loadSceneCollectionPresetsFromDisk } from "../payload-contract/scene-collection-presets/loadFromDisk";
 import { createCollectionPayloadSlotFromPreset } from "./createPayloadSlot";
+import { createPayloadSlotFromBuiltinStructure } from "./createPayloadSlot";
 
 const emptyTemplate = { blocks: {} } as EmailTemplate;
 
@@ -21,19 +22,11 @@ describe("loyalty 内部后台场景列表预设（data/scene-collection-presets
     assert.equal(errors.length, 0, errors.join("\n"));
   });
 
-  it("包含 7 个内置列表变量", () => {
-    assert.equal(internal.length, 7);
+  it("包含 5 个内置列表变量预设（对象类型见 builtin-structure-catalog）", () => {
+    assert.equal(internal.length, 5);
     const labels = new Set(internal.map((p) => p.label));
-    assert.equal(labels.size, 7);
-    for (const name of [
-      "数据展示",
-      "未完成配置",
-      "收益预测",
-      "推荐订阅套餐",
-      "正向数据",
-      "正向GMV汇总",
-      "异常配置项",
-    ]) {
+    assert.equal(labels.size, 5);
+    for (const name of ["数据展示", "未完成配置", "收益预测", "正向数据", "异常配置项"]) {
       assert.ok(labels.has(name), `缺少预设：${name}`);
     }
   });
@@ -43,9 +36,7 @@ describe("loyalty 内部后台场景列表预设（data/scene-collection-presets
       "loyalty-internal-data-display": 3,
       "loyalty-internal-unfinished-config": 3,
       "loyalty-internal-revenue-forecast": 2,
-      "loyalty-internal-recommended-plan": 1,
       "loyalty-internal-positive-data": 4,
-      "loyalty-internal-positive-gmv-summary": 1,
       "loyalty-internal-abnormal-config": 4,
     };
     for (const [presetId, count] of Object.entries(expectedRows)) {
@@ -77,14 +68,7 @@ describe("loyalty 内部后台场景列表预设（data/scene-collection-presets
     );
   });
 
-  it("正向GMV汇总为单独一行", () => {
-    const preset = internal.find((p) => p.presetId === "loyalty-internal-positive-gmv-summary");
-    assert.ok(preset);
-    assert.equal(preset.seedValues.length, 1);
-    assert.equal(preset.seedValues[0]?.title, "使用会员折扣的GMV");
-  });
-
-  it("每个预设可登记且 payload 校验通过", () => {
+  it("每个列表预设可登记且 payload 校验通过", () => {
     let payload = basePayload();
     for (const preset of internal) {
       const result = createCollectionPayloadSlotFromPreset(payload, preset);
@@ -94,6 +78,23 @@ describe("loyalty 内部后台场景列表预设（data/scene-collection-presets
       assert.equal(issues.length, 0, `${preset.slotId}: ${issues.map((i) => i.reason).join("; ")}`);
       const rows = payload.values[preset.slotId] as unknown[];
       assert.equal(rows.length, preset.seedValues.length, preset.slotId);
+    }
+  });
+
+  it("对象类型内置结构可登记且 values 为单个对象", () => {
+    let payload = basePayload();
+    for (const structureId of [
+      "dedicated.loyalty.recommendedSubscriptionPlans",
+      "dedicated.loyalty.positiveGrowthGmvSummary",
+    ]) {
+      const result = createPayloadSlotFromBuiltinStructure(payload, structureId);
+      assert.ok("payload" in result, structureId);
+      payload = result.payload;
+      const slotId = result.slotId;
+      const issues = validatePayloadAgainstTemplate(emptyTemplate, payload);
+      assert.equal(issues.length, 0, `${slotId}: ${issues.map((i) => i.reason).join("; ")}`);
+      const value = payload.values[slotId];
+      assert.ok(value && typeof value === "object" && !Array.isArray(value), slotId);
     }
   });
 });

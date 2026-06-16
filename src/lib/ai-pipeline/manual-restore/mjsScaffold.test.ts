@@ -56,6 +56,8 @@ describe("mjsScaffold", () => {
       idPrefix: "demo",
       imagePath: "/tmp/design.png",
       designCopyPath: "/tmp/copy.png",
+      persistMode: "full-email",
+      outDirExpr: "join(EMAIL_DIR, 'layouts/default')",
     });
     assert.match(header, /const EMAIL = "demo_email"/);
     assert.match(header, /\/\/ __INJECTED_ASSETS__/);
@@ -76,6 +78,8 @@ describe("mjsScaffold", () => {
         idPrefix: "demo",
         imagePath: "/tmp/design.png",
         designCopyPath: "/tmp/copy.png",
+        persistMode: "full-email",
+        outDirExpr: "join(EMAIL_DIR, 'layouts/default')",
       },
       injected: {
         pexelsBlock: "const PEXELS = { hero: 'https://example.com/h.jpg' };",

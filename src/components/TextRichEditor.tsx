@@ -1,3 +1,4 @@
+import EraserOutlined from "@shoplazza/sds-icons/EraserOutlined";
 import {
   useEffect,
   useRef,
@@ -11,7 +12,7 @@ import type { EmailPayload, TextBody } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import type { TextBodyDefaults } from "../lib/textBodyFormat";
 import { TextBodyInlineVariableModal } from "./TextBodyInlineVariableModal";
-import { parseHtmlToTextBody, renderTextBodyToHtml } from "../lib/textBodyFormat";
+import { parseHtmlToTextBody, renderTextBodyToHtml, normalizeTextBody } from "../lib/textBodyFormat";
 import {
   parseEditorHtmlToTextBody,
   readLinkHrefFromVariablePill,
@@ -20,7 +21,7 @@ import {
   TEXT_BODY_VAR_PILL_CLASS,
   type TextBodyVariableRunMeta,
 } from "../lib/textBodyEditorFormat";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
+import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopUnitInput } from "./ui/ShopFormControls";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 import { useAdaptiveOverlayEdge } from "../hooks/useAdaptiveOverlayEdge";
 import { antdOverlayEdge } from "../lib/antdOverlayEdge";
@@ -128,6 +129,54 @@ function metaFromPillElement(
 
 const TEXT_BODY_VAR_PILL_SELECTED_CLASS = "text-rich-editor__var-pill--selected";
 const TEXT_COLOR_FALLBACK = "#000000";
+const RUN_FONT_SIZE_FALLBACK = "14px";
+
+function normalizeRunFontSizePx(raw: string): string | null {
+  const t = raw.trim();
+  if (/^\d+(\.\d+)?px$/.test(t)) return t;
+  const numeric = t.endsWith("px") ? t.slice(0, -2).trim() : t;
+  if (!/^\d+(\.\d+)?$/.test(numeric)) return null;
+  const n = Number(numeric);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return `${n}px`;
+}
+
+function resolveSingleFontSizeInRange(range: Range, root: HTMLElement): string | null {
+  if (range.collapsed) return null;
+  const sizes = new Set<string>();
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    if (!range.intersectsNode(node)) continue;
+    const fullText = node.textContent ?? "";
+    if (!fullText) continue;
+    const startOffset = node === range.startContainer ? range.startOffset : 0;
+    const endOffset = node === range.endContainer ? range.endOffset : fullText.length;
+    if (endOffset <= startOffset) continue;
+    const slice = fullText.slice(startOffset, endOffset);
+    if (!slice.trim()) continue;
+    const host = node.parentElement ?? root;
+    const computedSize = window.getComputedStyle(host).fontSize?.trim();
+    if (!computedSize) continue;
+    sizes.add(computedSize);
+    if (sizes.size > 1) return null;
+  }
+  return sizes.size === 1 ? normalizeRunFontSizePx([...sizes][0]!) : null;
+}
+
+function applyFontSizeToRange(range: Range, fontSize: string): void {
+  const frag = range.extractContents();
+  const span = document.createElement("span");
+  span.style.fontSize = fontSize;
+  span.appendChild(frag);
+  range.insertNode(span);
+  const sel = window.getSelection();
+  if (!sel) return;
+  const nextRange = document.createRange();
+  nextRange.selectNodeContents(span);
+  sel.removeAllRanges();
+  sel.addRange(nextRange);
+}
 
 function findVariablePillsInRange(range: Range, root: HTMLElement): HTMLElement[] {
   const pills: HTMLElement[] = [];
@@ -219,8 +268,28 @@ function resolveSingleTextColorInRange(range: Range, root: HTMLElement): string 
   return colors.size === 1 ? [...colors][0]! : null;
 }
 
+function textBodyJsonEqual(a: TextBody | null, b: TextBody | null): boolean {
+  if (!a || !b) return a === b;
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+/** 聚焦编辑时：DOM 解析结果已与 props 一致则勿重绘 innerHTML，避免光标跳回段首 */
+function editorDomSemanticallyMatchesProp(
+  el: HTMLElement,
+  propBody: TextBody,
+  defaults: TextBodyDefaults,
+  variableRuns: TextBodyVariableRunMeta[]
+): boolean {
+  const parsed = normalizeTextBody(
+    variableRuns.length > 0
+      ? parseEditorHtmlToTextBody(el.innerHTML, defaults, propBody, variableRuns)
+      : parseHtmlToTextBody(el.innerHTML, defaults)
+  );
+  return textBodyJsonEqual(parsed, normalizeTextBody(propBody));
+}
+
 /**
- * 结构化正文编辑器：contenteditable + execCommand，字符级粗斜体/装饰/链接。
+ * 结构化正文编辑器：contenteditable + execCommand，字符级粗斜体/装饰/链接/字色/段内字号。
  */
 export function TextRichEditor({
   editorKey,
@@ -259,6 +328,7 @@ export function TextRichEditor({
   const [variableModalOpen, setVariableModalOpen] = useState(false);
   const [variableSelectionPreview, setVariableSelectionPreview] = useState("");
   const [runColorDraft, setRunColorDraft] = useState("#ff1f1f");
+  const [runFontSizeDraft, setRunFontSizeDraft] = useState(RUN_FONT_SIZE_FALLBACK);
   const { open: colorPickerOpen, overlayEdge, overlayClassName, onVisibleChange } = useAdaptiveOverlayEdge({
     triggerRef: colorTriggerWrapRef,
     preferredEdge: "topLeft",
@@ -282,6 +352,11 @@ export function TextRichEditor({
       variableRuns.length > 0
         ? renderTextBodyToEditorHtml(textBody, defaults, variableRuns)
         : renderTextBodyToHtml(textBody, defaults);
+    if (document.activeElement === el) {
+      if (editorDomSemanticallyMatchesProp(el, textBody, defaults, variableRuns)) {
+        return;
+      }
+    }
     if (el.innerHTML !== html) {
       el.innerHTML = html;
     }
@@ -374,6 +449,45 @@ export function TextRichEditor({
       return;
     }
     setRunColorDraft(resolveSingleTextColorInRange(range, root) ?? TEXT_COLOR_FALLBACK);
+  };
+
+  const syncRunFontSizeDraftFromSelection = () => {
+    const root = ref.current;
+    const blockFallback = normalizeRunFontSizePx(defaults.fontSize?.trim() ?? "") ?? RUN_FONT_SIZE_FALLBACK;
+    if (!root) {
+      setRunFontSizeDraft(blockFallback);
+      return;
+    }
+    restoreSelection();
+    const sel = window.getSelection();
+    if (sel?.rangeCount && root.contains(sel.anchorNode)) {
+      selRange.current = sel.getRangeAt(0).cloneRange();
+    }
+    const range = selRange.current;
+    if (!range || !rangeInsideEditor(range, root)) {
+      setRunFontSizeDraft(blockFallback);
+      return;
+    }
+    setRunFontSizeDraft(resolveSingleFontSizeInRange(range, root) ?? blockFallback);
+  };
+
+  const applyRunFontSize = (raw: string) => {
+    const normalized = normalizeRunFontSizePx(raw);
+    if (!normalized) return;
+    const root = ref.current;
+    if (!root) return;
+    restoreSelection();
+    const rng = selRange.current;
+    if (!rng || !rangeInsideEditor(rng, root) || rng.collapsed) {
+      message.error("请先在正文中选中要改字号的文字。");
+      return;
+    }
+    const current = resolveSingleFontSizeInRange(rng, root);
+    if (current === normalized) return;
+    applyFontSizeToRange(rng, normalized);
+    selRange.current = null;
+    dirtyRef.current = true;
+    flush();
   };
 
   const exec = (command: string, value?: string) => {
@@ -639,7 +753,30 @@ export function TextRichEditor({
         aria-label="富文本样式工具条"
         onMouseDown={captureSelection}
       >
-        <div className="inspector-rich-toolbar__group" role="group" aria-label="文本样式">
+        <div
+          className="inspector-rich-toolbar__group inspector-rich-toolbar__group--wrap"
+          role="group"
+          aria-label="正文样式"
+        >
+          <div
+            className="inspector-rich-toolbar__font-size"
+            title="段内字号（选中文字后修改）"
+            onMouseDown={captureSelection}
+          >
+            <ShopUnitInput
+              value={runFontSizeDraft}
+              unit="px"
+              aria-label="段内字号"
+              onChange={setRunFontSizeDraft}
+              onBlur={() => applyRunFontSize(runFontSizeDraft)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                applyRunFontSize(runFontSizeDraft);
+                ref.current?.focus();
+              }}
+            />
+          </div>
           <ShopSecondaryButton
             className="inspector-rich-toolbar__btn"
             title="加粗"
@@ -658,8 +795,6 @@ export function TextRichEditor({
           >
             <span className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--italic">I</span>
           </ShopSecondaryButton>
-        </div>
-        <div className="inspector-rich-toolbar__group" role="group" aria-label="装饰与链接">
           <ShopSecondaryButton
             className="inspector-rich-toolbar__btn"
             title="下划线"
@@ -757,7 +892,10 @@ export function TextRichEditor({
             onMouseDown={captureSelection}
             onClick={() => exec("removeFormat")}
           >
-            <span className="inspector-rich-toolbar__icon">Clr</span>
+            <EraserOutlined
+              className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--sds"
+              aria-hidden
+            />
           </ShopSecondaryButton>
           {onInlineVariableFromSelection && payload ? (
             <ShopSecondaryButton
@@ -794,17 +932,11 @@ export function TextRichEditor({
         onKeyDown={onEditorKeyDown}
         onMouseUp={() => {
           captureSelection();
+          syncRunFontSizeDraftFromSelection();
           syncVariablePillSelectionHighlight(ref.current);
         }}
         onKeyUp={() => syncVariablePillSelectionHighlight(ref.current)}
       />
-      <p className="text-rich-editor__hint">
-        段落之间可用 Enter 分段；区块上的字号/颜色仍为整段默认。选中文字后可设置粗斜体、装饰、字色与链接；双击蓝色链接可编辑地址；快捷键 ⌘K / Ctrl+K
-        打开链接对话框。
-        {variableRuns.length > 0
-          ? " 紫色边框胶囊内为 payload 变量回显；有链接时为蓝色下划线文字。点击胶囊可改绑变量，Backspace 可删除。"
-          : null}
-      </p>
 
       <ShopSectionModal
         title="插入或编辑链接"
@@ -903,9 +1035,6 @@ export function TextRichEditor({
           onClose={closeVariableModal}
           onConfirmBind={(slot) => {
             commitInlineVariable(slot.slotId, slot.label ?? slot.slotId, "bind", slot.valueType);
-          }}
-          onConfirmCreate={({ slotId, label }) => {
-            commitInlineVariable(slotId, label, "create");
           }}
         />
       ) : null}

@@ -71,9 +71,14 @@ import {
   resolveSceneCollectionPresetRuntimeValues,
 } from "./sceneCollectionPresetsStore";
 import { listSceneScalarPresetSummaries } from "./sceneScalarPresetsStore";
-import { requireLayoutManifest } from "./ensureLayoutManifest";
-import { enrichLayoutManifestCreatedAt, statCreatedAtIso } from "./enrichLayoutManifest";
 import {
+  listBuiltinStructureDefinitions,
+  toBuiltinStructureSummary,
+} from "../src/payload-contract/builtin-structure-catalog";
+import { requireLayoutManifest } from "./ensureLayoutManifest";
+import { enrichLayoutManifestTimestamps, statCreatedAtIso } from "./enrichLayoutManifest";
+import {
+  compareEmailCatalogDesignByCreatedDesc,
   resolveEmailListCreatedAt,
   sortEmailItemsByCreatedDesc,
 } from "../src/lib/emailCatalogSort";
@@ -81,12 +86,12 @@ import { createDefaultTokenPresets } from "../src/lib/defaultTokenPresets";
 import { normalizePublishStatus } from "../src/lib/emailPublishStatus";
 import { isLogicallyDeleted, logicalDeleteTimestamp } from "../src/lib/logicalDelete";
 import { normalizePersistedEmailMeta } from "../src/meta-contract/normalize";
+import { META_DISPLAY_NAME_MAX_LENGTH } from "../src/meta-contract/field-limits";
 import { validateSchemaArtifact, type SchemaArtifactId } from "../src/schema-registry";
 import { buildRepeatPreviewModel, previewModelToFlatTemplate } from "../src/repeat-runtime";
 import { applyVisibilityRules } from "../src/lib/visibility";
 import { softDeleteLayoutVariant } from "../src/lib/layoutVariantLogicalDelete";
 import { createPipelineProgressReporter } from "../src/lib/ai-pipeline/ports/PipelineProgressReporter";
-import { parseMjsGenerateMode } from "../src/layout-variant-ai-contract/mjsGenerateMode";
 import {
   generateLayoutVariantFromDesignImage,
   validateDesignImageBuffer,
@@ -375,6 +380,127 @@ app.use(
   })
 );
 
+type EmailTemplateCatalogDesign = {
+  designId: string;
+  label: string;
+  publishStatus: string;
+  createdAt?: string;
+  updatedAt?: string;
+  isActive: boolean;
+};
+
+type EmailTemplateCatalogItem = {
+  emailKey: string;
+  displayName: string;
+  description: string;
+  publishStatus: string;
+  subject: string;
+  preheader: string;
+  contentDataSummary: {
+    slotCount: number;
+    valueCount: number;
+  };
+  activeLayoutVariantId: string;
+  createdAt?: string;
+  updatedAt?: string;
+  designs: EmailTemplateCatalogDesign[];
+};
+
+async function buildEmailTemplateCatalogItem(
+  emailKey: string
+): Promise<EmailTemplateCatalogItem | null> {
+  const base = path.join(DATA_ROOT, emailKey);
+  const metaPath = path.join(base, "meta.json");
+  const payloadPath = path.join(base, "payload.json");
+  const meta = await readJson<EmailMeta>(metaPath);
+  if (meta && isLogicallyDeleted(meta)) return null;
+  const manifest = await readLayoutManifestOptional(readJson, base);
+  if (!manifest) return null;
+
+  const payload = await readJson<EmailPayload>(payloadPath);
+  const enrichedManifest = await enrichLayoutManifestTimestamps(base, manifest);
+  const visibleVariants = listVisibleLayoutVariants(enrichedManifest.variants);
+  const designStats = await Promise.all(
+    visibleVariants.map(async (variant) => {
+      const ctx = resolveEmailFilePaths(base, enrichedManifest, variant.id);
+      const [templateMtimeMs, tokenPresetsMtimeMs] = await Promise.all([
+        statMtimeMs(ctx.templatePath),
+        statMtimeMs(ctx.tokenPresetsPath),
+      ]);
+      const variantUpdatedAtMs =
+        typeof variant.updatedAt === "string" ? Number(Date.parse(variant.updatedAt)) : NaN;
+      const effectiveVariantUpdatedAtMs = Math.max(
+        Number.isFinite(variantUpdatedAtMs) ? variantUpdatedAtMs : 0,
+        templateMtimeMs,
+        tokenPresetsMtimeMs
+      );
+      return {
+        variant,
+        updatedAtMs: effectiveVariantUpdatedAtMs,
+      };
+    })
+  );
+  const [payloadMtimeMs, metaMtimeMs] = await Promise.all([
+    statMtimeMs(payloadPath),
+    statMtimeMs(metaPath),
+  ]);
+  const metaUpdatedAtMs =
+    typeof meta?.updatedAt === "string" ? Number(Date.parse(meta.updatedAt)) : NaN;
+  const effectiveUpdatedAtMs = Math.max(
+    Number.isFinite(metaUpdatedAtMs) ? metaUpdatedAtMs : 0,
+    payloadMtimeMs,
+    metaMtimeMs,
+    ...designStats.map((item) => item.updatedAtMs)
+  );
+  const dirCreatedAt = (await statCreatedAtIso(base)) ?? (await statCreatedAtIso(metaPath));
+  const createdAt = resolveEmailListCreatedAt(meta?.createdAt, dirCreatedAt);
+  return {
+    emailKey,
+    displayName: meta?.displayName?.trim() || emailKey,
+    description: meta?.description?.trim() || "",
+    publishStatus: normalizePublishStatus(meta?.publishStatus),
+    subject: meta?.delivery?.subject?.trim() || "",
+    preheader: meta?.delivery?.preheader?.trim() || "",
+    contentDataSummary: {
+      slotCount: Object.keys(payload?.slots ?? {}).length,
+      valueCount: Object.keys(payload?.values ?? {}).length,
+    },
+    activeLayoutVariantId: enrichedManifest.activeLayoutVariantId,
+    createdAt,
+    updatedAt: effectiveUpdatedAtMs > 0 ? new Date(effectiveUpdatedAtMs).toISOString() : undefined,
+    designs: designStats
+      .sort((a, b) =>
+        compareEmailCatalogDesignByCreatedDesc(
+          { designId: a.variant.id, createdAt: a.variant.createdAt },
+          { designId: b.variant.id, createdAt: b.variant.createdAt }
+        )
+      )
+      .map(({ variant, updatedAtMs }) => ({
+        designId: variant.id,
+        label: variant.label?.trim() || variant.id,
+        publishStatus: normalizePublishStatus(variant.publishStatus),
+        createdAt: variant.createdAt,
+        updatedAt: updatedAtMs > 0 ? new Date(updatedAtMs).toISOString() : undefined,
+        isActive: variant.id === enrichedManifest.activeLayoutVariantId,
+      })),
+  };
+}
+
+app.get("/api/v1/email-templates/catalog", async (c) => {
+  let names: string[] = [];
+  try {
+    names = await fs.readdir(DATA_ROOT, { withFileTypes: true }).then((ents) =>
+      ents.filter((e) => e.isDirectory() && !e.name.startsWith("_")).map((e) => e.name)
+    );
+  } catch {
+    return c.json({ items: [] });
+  }
+
+  const items = await Promise.all(names.map((emailKey) => buildEmailTemplateCatalogItem(emailKey)));
+  const filtered = items.filter((item): item is EmailTemplateCatalogItem => item != null);
+  return c.json({ items: sortEmailItemsByCreatedDesc(filtered) });
+});
+
 app.get("/api/v1/emails", async (c) => {
   let names: string[] = [];
   try {
@@ -508,6 +634,17 @@ app.post("/api/v1/emails", async (c) => {
   if (!displayName) {
     return c.json(
       { error: { code: "VALIDATION_FAILED", message: "displayName 必须为非空字符串" } },
+      400
+    );
+  }
+  if (displayName.length > META_DISPLAY_NAME_MAX_LENGTH) {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: `displayName 长度不能超过 ${META_DISPLAY_NAME_MAX_LENGTH} 个字符`,
+        },
+      },
       400
     );
   }
@@ -1055,6 +1192,14 @@ app.get("/api/v1/scene-collection-presets", (c) => {
   return c.json({ scene: sceneCheck.scene, items });
 });
 
+app.get("/api/v1/builtin-structure-catalog", (c) => {
+  const scope = c.req.query("scope");
+  const items = listBuiltinStructureDefinitions()
+    .filter((item) => !scope || item.scope === scope)
+    .map(toBuiltinStructureSummary);
+  return c.json({ items });
+});
+
 app.get("/api/v1/scene-collection-presets/:presetId", async (c) => {
   ensureSceneCollectionPresetsWatcher();
   const sceneCheck = parseSceneQuery(c.req.query("scene"));
@@ -1158,7 +1303,7 @@ app.get("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
   if (!manifest) {
     return c.json({ error: { code: "NOT_FOUND", message: "本场景未启用版式变体" } }, 404);
   }
-  return c.json(await enrichLayoutManifestCreatedAt(base, manifest));
+  return c.json(await enrichLayoutManifestTimestamps(base, manifest));
 });
 
 app.put("/api/v1/emails/:emailKey/layout-manifest", async (c) => {
@@ -1384,8 +1529,6 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
     return c.json({ error: { code: "VALIDATION_FAILED", message: imageIssue } }, 400);
   }
 
-  const mjsGenerateMode = parseMjsGenerateMode(body.mjsGenerateMode);
-
   const base = emailBaseDir(DATA_ROOT, emailKey);
   let manifest: LayoutManifest;
   try {
@@ -1433,7 +1576,6 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
           imageBuffer,
           mimeType,
           emailBaseDir: base,
-          mjsGenerateMode,
         },
         { progress }
       );
@@ -1456,7 +1598,11 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
       scheduleEmailsChanged("api_write", emailKey);
       await stream.writeSSE({
         event: "done",
-        data: JSON.stringify({ ...created, mjsPath: generated.mjsPath }),
+        data: JSON.stringify({
+          ...created,
+          mjsPath: generated.mjsPath,
+          validationIssues: generated.validationIssues,
+        }),
       });
     } catch (e) {
       if (persistStarted) {
@@ -1501,17 +1647,19 @@ app.patch("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c)
 
   const labelProvided = typeof body.label === "string";
   const publishProvided = body.publishStatus !== undefined;
-  if (!labelProvided && !publishProvided) {
+  const descriptionProvided = typeof body.description === "string";
+  if (!labelProvided && !publishProvided && !descriptionProvided) {
     return c.json(
-      { error: { code: "VALIDATION_FAILED", message: "须提供 label 或 publishStatus" } },
+      { error: { code: "VALIDATION_FAILED", message: "须提供 label、description 或 publishStatus" } },
       400
     );
   }
 
   let nextManifest: LayoutManifest = manifest;
+  const updatedAt = new Date().toISOString();
 
   if (labelProvided) {
-    const label = body.label.trim();
+    const label = (body.label as string).trim();
     if (!label) {
       return c.json(
         { error: { code: "VALIDATION_FAILED", message: "label 必须为非空字符串" } },
@@ -1519,7 +1667,7 @@ app.patch("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c)
       );
     }
     try {
-      nextManifest = updateLayoutVariantLabel(nextManifest, layoutVariantId, label);
+      nextManifest = updateLayoutVariantLabel(nextManifest, layoutVariantId, label, updatedAt);
     } catch (e) {
       return c.json(
         {
@@ -1551,7 +1699,8 @@ app.patch("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c)
       nextManifest = updateLayoutVariantPublishStatus(
         nextManifest,
         layoutVariantId,
-        body.publishStatus as import("../src/publish-status-contract").PublishStatus
+        body.publishStatus as import("../src/publish-status-contract").PublishStatus,
+        updatedAt
       );
     } catch (e) {
       return c.json(
@@ -1566,12 +1715,12 @@ app.patch("/api/v1/emails/:emailKey/layout-variants/:layoutVariantId", async (c)
     }
   }
 
-  if (typeof body.description === "string") {
+  if (descriptionProvided) {
     const description = body.description.trim();
     nextManifest = {
       ...nextManifest,
       variants: nextManifest.variants.map((v) =>
-        v.id === layoutVariantId ? { ...v, description: description || undefined } : v
+        v.id === layoutVariantId ? { ...v, description: description || undefined, updatedAt } : v
       ),
     };
   }
@@ -1663,19 +1812,7 @@ app.get("/api/v1/emails/:emailKey/template", async (c) => {
   }
   const t = await readJson<NestedEmailTemplate>(resolved.ctx.templatePath);
   if (!t) return c.json({ error: { code: "NOT_FOUND", message: "模板文件不存在" } }, 404);
-  const blocking = blockingValidationIssues(validateTemplateFromDisk(t));
-  if (blocking.length) {
-    return c.json(
-      {
-        error: {
-          code: "VALIDATION_FAILED",
-          message: "模板校验未通过",
-          details: blocking,
-        },
-      },
-      422
-    );
-  }
+  // 读取不拦校验：编辑器须能打开无效版式以展示问题并切换离开；写入 PUT 仍校验
   return c.json(t);
 });
 
@@ -1916,6 +2053,17 @@ app.put("/api/v1/emails/:emailKey/meta", async (c) => {
       );
     }
     body.displayName = body.displayName.trim();
+    if (body.displayName.length > META_DISPLAY_NAME_MAX_LENGTH) {
+      return c.json(
+        {
+          error: {
+            code: "VALIDATION_FAILED",
+            message: `displayName 长度不能超过 ${META_DISPLAY_NAME_MAX_LENGTH} 个字符`,
+          },
+        },
+        400
+      );
+    }
   }
 
   const emailDir = emailBaseDir(DATA_ROOT, emailKey);

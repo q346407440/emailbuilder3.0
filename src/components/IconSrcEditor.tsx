@@ -142,11 +142,6 @@ export function IconSrcEditor({
               </ShopSelect.Option>
             ))}
           </ShopSelect>
-          {displaySrc ? (
-            <p className="inspector__muted" style={{ marginTop: 8 }}>
-              写入地址：{displaySrc}
-            </p>
-          ) : null}
         </Field>
       ) : null}
     </>

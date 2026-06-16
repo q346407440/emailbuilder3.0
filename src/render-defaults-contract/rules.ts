@@ -88,6 +88,44 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     implementation: "src/render-defaults-contract/forbiddenLegacyProps.ts",
   },
   {
+    id: "forbid.backgroundImageAlt",
+    kind: "forbiddenInJson",
+    title: "禁止 backgroundImage.alt",
+    summary:
+      "图片与容器底图不写替代文本；渲染层统一使用 WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT（此处是图片）。",
+    jsonPath: "wrapperStyle.backgroundImage.alt",
+    blockTypes: ["emailRoot", "layout", "grid", "image"],
+    implementation: "src/render-defaults-contract/forbiddenBackgroundImageAlt.ts",
+  },
+  {
+    id: "inject.backgroundImageAlt",
+    kind: "injectedAtRender",
+    title: "底图替代文本默认",
+    summary: "emailRoot/layout/grid/image 的 backgroundImage 在发信与画布渲染时注入固定替代文本。",
+    valueKey: "WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT",
+    implementation: "src/render-defaults-contract/values.ts",
+  },
+  {
+    id: "forbid.backgroundImagePositionWhenContain",
+    kind: "forbiddenInJson",
+    title: "contain 禁止 backgroundImage.position",
+    summary:
+      "完整显示（contain）时不写入 backgroundImage.position；画面位置仅在裁切铺满（cover）下可配置。",
+    jsonPath: "wrapperStyle.backgroundImage.position",
+    blockTypes: ["emailRoot", "layout", "grid", "image"],
+    implementation: "src/render-defaults-contract/backgroundImageFitSemantics.ts",
+  },
+  {
+    id: "forbid.backgroundImageChrome",
+    kind: "forbiddenInJson",
+    title: "禁止 backgroundImage.border / borderRadius",
+    summary:
+      "底图不写描边与圆角；外层 wrapperStyle.border / borderRadius + overflow:hidden 承接裁切视窗。",
+    jsonPath: "wrapperStyle.backgroundImage.border | wrapperStyle.backgroundImage.borderRadius",
+    blockTypes: ["emailRoot", "layout", "grid", "image"],
+    implementation: "src/render-defaults-contract/forbiddenBackgroundImageChrome.ts",
+  },
+  {
     id: "forbid.fitContentMode",
     kind: "forbiddenInJson",
     title: "禁止 fitContent 宽高模式",
@@ -200,15 +238,15 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
       "src/lib/wrapperBackgroundImageCanvasLayout.ts · resolveWrapperBackgroundImageCanvasLayout（omitPadding + td padding）",
   },
   {
-    id: "semantic.backgroundImageOverlayBorder",
+    id: "semantic.backgroundImageInheritWrapperChrome",
     kind: "specialSemantic",
-    title: "底图描边/圆角仅作用于底图 td",
+    title: "底图 td 圆角继承外层 wrapperStyle",
     summary:
-      "wrapperStyle.backgroundImage.border / borderRadius（图级描边与圆角）只写入底图承载 <td>，不打在外层 wrapper div；wrapperStyle.border / borderRadius 仍只作用于外层盒。禁止双层图级描边导致定高 outer overflow 裁切。",
-    jsonPath: "wrapperStyle.backgroundImage.border | wrapperStyle.backgroundImage.borderRadius",
+      "backgroundImage 禁止持久化 border / borderRadius；底图承载 <td> 的 overlayRadiusCss 从 wrapperStyle.borderRadius 派生，描边仅由外层 wrapperStyle.border 承接。",
+    jsonPath: "wrapperStyle.borderRadius | wrapperStyle.border",
     blockTypes: ["emailRoot", "layout", "grid", "image"],
     implementation:
-      "src/lib/wrapperBackgroundImageCanvasLayout.ts · overlayBorderCss / overlayRadiusCss；src/lib/wrapperBackgroundImageCanvas.tsx",
+      "src/lib/wrapperBackgroundImageCanvasLayout.ts · overlayRadiusCss；src/lib/wrapperBackgroundImageCanvas.tsx",
   },
   {
     id: "semantic.gridMatrixSlotVerticalAlign",
@@ -226,8 +264,8 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
     kind: "specialSemantic",
     title: "定高底图画布 table 高度由 td 撑开",
     summary:
-      "heightMode=fixed 且 backgroundImage 有效时：外层 div 取 wrapper 定高；内层底图 table 不写死 height，仅 td 使用定高。图级描边线宽 >0 时 table 使用 border-collapse: separate，避免 collapse 下 td 描边把 table 撑出 outer 后被 overflow:hidden 裁切（上下描边不对称、图像下移）。",
-    jsonPath: "wrapperStyle.heightMode | wrapperStyle.height | wrapperStyle.backgroundImage.border",
+      "heightMode=fixed 且 backgroundImage 有效时：外层 div 取 wrapper 定高；内层底图 table 不写死 height，仅 td 使用定高。",
+    jsonPath: "wrapperStyle.heightMode | wrapperStyle.height",
     blockTypes: ["emailRoot", "layout", "grid", "image"],
     implementation:
       "src/lib/wrapperBackgroundImageCanvasLayout.ts · bgTableHeightFromTd / bgTableBorderCollapse",
@@ -240,7 +278,7 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
       "emailRoot/layout/image 的 backgroundImage.fit 为 contain 时完整显示图片，backgroundImage.position 不参与小图在视窗内的摆放；fit 为 cover 时才作为裁切焦点映射到 td 的 background-position（发信 HTML 禁止 object-fit）。",
     jsonPath: "wrapperStyle.backgroundImage.position",
     blockTypes: ["emailRoot", "layout", "image"],
-    implementation: "src/lib/imageObjectPosition.ts · src/components/EmailPreview.tsx",
+    implementation: "src/render-defaults-contract/backgroundImageFitSemantics.ts · src/lib/imageObjectPosition.ts",
   },
   {
     id: "semantic.emailRootVerticalStack",

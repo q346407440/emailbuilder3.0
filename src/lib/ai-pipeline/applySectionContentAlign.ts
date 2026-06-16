@@ -8,7 +8,6 @@ import {
 export type { HorizontalAlign } from "./wrapperContentAlign";
 
 const DEFAULT_SECTION_ALIGN: HorizontalAlign = "center";
-const OVERLAY_IMAGE_DEFAULT_VERTICAL: VerticalAlign = "center";
 
 /** content.image 且含叠放子块（icon/text/button 等）。 */
 export function isOverlayImageNode(node: Pick<CompactNode, "kind" | "children">): boolean {

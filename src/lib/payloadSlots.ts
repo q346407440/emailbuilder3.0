@@ -12,6 +12,7 @@ export type ExternalVariableSlotInfo = {
   /** 绑定上携带的默认字面量（多处声明时应一致） */
   defaultValue?: unknown;
   itemFields?: BindingCollectionField[];
+  objectFields?: BindingCollectionField[];
   minItems?: number;
   maxItems?: number;
   dataSource?: CollectionDataSource;
@@ -34,6 +35,7 @@ function upsertSlot(
       existing.defaultValue = slot.defaultValue;
     }
     if (!existing.itemFields && slot.itemFields) existing.itemFields = slot.itemFields;
+    if (!existing.objectFields && slot.objectFields) existing.objectFields = slot.objectFields;
     if (existing.minItems === undefined && slot.minItems !== undefined) existing.minItems = slot.minItems;
     if (existing.maxItems === undefined && slot.maxItems !== undefined) existing.maxItems = slot.maxItems;
     if (!existing.dataSource && slot.dataSource) existing.dataSource = slot.dataSource;
@@ -169,6 +171,19 @@ export function collectExternalVariableSlots(template: EmailTemplate | null): Ex
         { blockId, bindPath: "repeat" }
       );
     }
+    if (block.objectBind?.mode === "object") {
+      upsertSlot(
+        byId,
+        {
+          slotId: block.objectBind.slotId,
+          valueType: "object",
+          label: block.objectBind.label,
+          description: block.objectBind.description,
+          objectFields: block.objectBind.objectFields,
+        },
+        { blockId, bindPath: "objectBind" }
+      );
+    }
     if (block.visibility) {
       upsertSlot(
         byId,
@@ -177,7 +192,8 @@ export function collectExternalVariableSlots(template: EmailTemplate | null): Ex
           valueType: block.visibility.valueType,
           label: block.visibility.label,
           description: block.visibility.description,
-          itemFields: block.visibility.itemFields as BindingCollectionField[] | undefined,
+          itemFields: block.visibility.itemFields,
+          objectFields: block.visibility.objectFields,
           minItems: block.visibility.minItems,
           maxItems: block.visibility.maxItems,
         },
@@ -251,6 +267,7 @@ export function collectPayloadVariableSlots(
       valueType: def.valueType,
       label: def.label,
       description: def.description,
+      objectFields: def.objectFields,
       itemFields: def.itemFields,
       minItems: def.minItems,
       maxItems: def.maxItems,

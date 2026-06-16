@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ShopFormControls";
+import { ShopCountInput, ShopPrimaryButton, ShopSecondaryButton } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
+import { META_DISPLAY_NAME_MAX_LENGTH } from "../../meta-contract/field-limits";
 
 export type EmailTemplateCreateModalMode = "create" | "copy";
 
@@ -79,12 +80,12 @@ export function EmailTemplateCreateModal({
     >
       <div className="inspector-field">
         <span className="inspector-field__label">模板名称</span>
-        <ShopInput
+        <ShopCountInput
           autoFocus
           value={draftName}
-          maxLength={80}
+          maxLength={META_DISPLAY_NAME_MAX_LENGTH}
           placeholder="请输入模板名称"
-          onChange={(e) => setDraftName(e.target.value)}
+          onChange={setDraftName}
           onPressEnter={() => void submit()}
         />
         {isCopy ? (
@@ -101,7 +102,7 @@ export function EmailTemplateCreateModal({
           </span>
         ) : (
           <span className="topbar__create-hint">
-            将自动在 data/emails 下创建场景目录；标识（emailKey）由名称推导，纯中文名称会使用自动编号。
+            模板标识将根据名称自动生成；纯中文名称会使用自动编号。
           </span>
         )}
         {draftError ? <span className="topbar__rename-error">{draftError}</span> : null}

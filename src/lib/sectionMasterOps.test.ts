@@ -9,6 +9,7 @@ import {
 } from "./sectionMasterOps";
 import { BLOCK_CATALOG_ENTRIES } from "./blockDefaults";
 import { insertCatalogBlockIntoTemplate } from "./templateBlockInsert";
+import type { EmailTemplate } from "../types/email";
 
 describe("deriveNewSectionMasterId", () => {
   it("生成 section.m 前缀 id，与名称无关", () => {
@@ -27,24 +28,24 @@ describe("section extract + insert", () => {
   it("保存并插入模块子树", () => {
     const layoutEntry = BLOCK_CATALOG_ENTRIES.find((e) => e.runtimeType === "layout");
     assert.ok(layoutEntry);
-    let template = {
-      schemaVersion: "4.0.0" as const,
+    let template: EmailTemplate = {
+      schemaVersion: "4.0.0",
       templateId: "t1",
       templateVersion: 1,
       rootBlockId: "root",
       blocks: {
         root: {
           id: "root",
-          type: "emailRoot" as const,
+          type: "emailRoot",
           parentId: null,
-          children: [] as string[],
-          wrapperStyle: { widthMode: "fill" as const, heightMode: "hug" as const },
+          children: [],
+          wrapperStyle: { widthMode: "fill", heightMode: "hug" },
           props: {
             backgroundColor: "#fff",
-            width: 600,
-            padding: { mode: "unified" as const, unified: "0" },
-            border: { width: 0, style: "none" as const, color: "#000" },
-            gapMode: "fixed" as const,
+            width: "600px",
+            padding: { mode: "unified", unified: "0" },
+            border: { mode: "unified", width: "0", style: "solid", color: "#000" },
+            gapMode: "fixed",
             gap: "0",
           },
           bindings: {},

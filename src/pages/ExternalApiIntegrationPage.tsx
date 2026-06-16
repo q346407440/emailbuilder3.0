@@ -17,6 +17,10 @@ import {
 import { collectPayloadVariableSlots } from "../lib/payloadSlots";
 import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
 import {
+  listBuiltinStructureDefinitions,
+} from "../payload-contract/builtin-structure-catalog";
+import { builtinStructureScopeLabel } from "../lib/builtinStructureSlot";
+import {
   buildExternalValuesOnlyBody,
   buildFullPayloadPutBody,
   buildGetMergedCurl,
@@ -77,6 +81,18 @@ function formatItemFieldsSummary(
 
 function defaultPayload(): EmailPayload {
   return { schemaVersion: "1.0.0", slots: {}, values: {} };
+}
+
+const builtinStructures = listBuiltinStructureDefinitions();
+
+function builtinStructureLengthLabel(
+  structure: (typeof builtinStructures)[number]
+): string {
+  if (structure.valueType !== "collection") return "单值";
+  if (structure.lengthPolicy?.kind === "locked") {
+    return `${structure.lengthPolicy.fixedLength} 项固定`;
+  }
+  return "可配置";
 }
 
 function syncIntegrationUrl(
@@ -356,16 +372,23 @@ export function ExternalApiIntegrationPage() {
     const nextPayload: EmailPayload = { ...payload, values };
     try {
       if (layoutManifest && layoutManifest.variants.length > 0) {
+        const skippedLayouts: string[] = [];
         const issues = await fetchTemplatesAndValidatePayload(
           layoutManifest,
           nextPayload,
           layoutVariantId,
           template,
-          (layoutId) => api.getTemplate(emailKey, layoutId)
+          (layoutId) => api.getTemplate(emailKey, layoutId),
+          (failure) => skippedLayouts.push(failure.layoutVariantId)
         );
         setValidationIssues(issues);
-        if (issues.length === 0) toastSuccess("校验通过：模拟入参符合全部版式 template");
-        else toastError(validationSaveBlockedMessage(issues));
+        if (issues.length === 0 && skippedLayouts.length === 0) {
+          toastSuccess("校验通过：模拟入参符合全部版式 template");
+        } else if (issues.length === 0) {
+          toastSuccess(`校验通过：已跳过 ${skippedLayouts.length} 个异常版式`);
+        } else {
+          toastError(validationSaveBlockedMessage(issues));
+        }
       } else {
         const issues = validatePayloadAgainstTemplate(template, nextPayload);
         setValidationIssues(issues);
@@ -529,6 +552,39 @@ export function ExternalApiIntegrationPage() {
               </dd>
             </div>
           </dl>
+        </section>
+
+        <section className="integration-panel">
+          <h2 className="integration-panel__title">变量结构目录（内置）</h2>
+          <p className="integration-panel__lead">
+            编辑器只允许从下列内置数据结构创建变量；通用结构面向所有接入方，专用结构仅供标注的后台使用。
+          </p>
+          <div className="integration-table-wrap">
+            <table className="integration-table">
+              <thead>
+                <tr>
+                  <th>默认 slotId</th>
+                  <th>名称</th>
+                  <th>类型</th>
+                  <th>范围</th>
+                  <th>长度</th>
+                </tr>
+              </thead>
+              <tbody>
+                {builtinStructures.map((structure) => (
+                  <tr key={structure.structureId}>
+                    <td>
+                      <code>{structure.defaultSlotId}</code>
+                    </td>
+                    <td>{structure.label}</td>
+                    <td>{payloadSlotValueTypeLabel(structure.valueType)}</td>
+                    <td>{builtinStructureScopeLabel(structure)}</td>
+                    <td>{builtinStructureLengthLabel(structure)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="integration-panel">

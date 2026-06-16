@@ -26,7 +26,7 @@ export type FieldSourceState = {
   source: FieldSource;
   /** 字段是否处于「跟随」态（输入框置灰的依据） */
   locked: boolean;
-  /** 已在子级解除跟随，可恢复 */
+  /** 已在子级解除跟随 */
   detached: boolean;
   /** 字段分类，决定胶囊菜单可选项 */
   fieldKind: FieldKind;

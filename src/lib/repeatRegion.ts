@@ -10,6 +10,7 @@ import type {
 import type { RepeatRuntimeContext } from "../repeat-binding-contract";
 import { collectionBindingUsesItemIndex } from "../payload-contract/repeat-list-item-binding";
 import { applyCollectionItemVisibility } from "./collectionItemVisibility";
+import { resolveRepeatExpansionMaxItems } from "./collectionFixedLength";
 import { isRepeatHostBlock } from "./repeatHostBlock";
 import {
   buildRepeatItemMaterializationSnapshots,
@@ -44,8 +45,8 @@ export function collectionItems(
   });
   const slotDef = payload?.slots?.[repeat.slotId];
   const filtered = applyCollectionItemVisibility(items, slotDef?.itemVisibility);
-  if (typeof repeat.maxItems === "number") return filtered.slice(0, repeat.maxItems);
-  return filtered;
+  const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
+  return maxItems !== undefined ? filtered.slice(0, maxItems) : filtered;
 }
 
 export type RepeatContextRelation = "host" | "row-template" | "mapped-field";

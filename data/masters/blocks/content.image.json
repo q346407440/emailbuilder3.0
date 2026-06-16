@@ -65,26 +65,15 @@
           },
           "borderRadius": {
             "mode": "unified",
-            "radius": "0"
+            "radius": {
+              "$themeRef": "tokens.radius.panel"
+            }
           },
           "backgroundImage": {
             "src": "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
-            "alt": "图片",
             "link": "",
             "fit": "cover",
-            "position": "center",
-            "borderRadius": {
-              "mode": "unified",
-              "radius": {
-                "$themeRef": "tokens.radius.panel"
-              }
-            },
-            "border": {
-              "mode": "unified",
-              "width": "0",
-              "style": "solid",
-              "color": "rgba(0,0,0,0)"
-            }
+            "position": "center"
           }
         },
         "bindings": {
@@ -94,7 +83,7 @@
             "tokenPath": "tokens.spacing.gap",
             "fieldKind": "style"
           },
-          "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "wrapperStyle.borderRadius.radius": {
             "slotId": "tokens.radius.panel",
             "mode": "theme",
             "tokenPath": "tokens.radius.panel",

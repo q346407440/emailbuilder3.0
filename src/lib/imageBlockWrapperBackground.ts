@@ -125,12 +125,9 @@ export function normalizeImageBlockToWrapperBackgroundShape(
 
   const backgroundImage: WrapperBackgroundImage = {
     src: typeof props.src === "string" ? props.src : "",
-    alt: typeof props.alt === "string" ? props.alt : "",
     link: typeof props.link === "string" ? props.link : "",
     fit,
     position,
-    borderRadius: props.borderRadius as WrapperBackgroundImage["borderRadius"],
-    border: props.border as WrapperBackgroundImage["border"],
   };
 
   const nextWs: WrapperStyle = {
@@ -139,15 +136,18 @@ export function normalizeImageBlockToWrapperBackgroundShape(
     heightMode: dim.heightMode ?? block.wrapperStyle?.heightMode ?? "hug",
     ...(dim.width !== undefined ? { width: dim.width } : {}),
     ...(dim.height !== undefined ? { height: dim.height } : {}),
+    ...(props.borderRadius !== undefined
+      ? { borderRadius: props.borderRadius as WrapperStyle["borderRadius"] }
+      : {}),
+    ...(props.border !== undefined ? { border: props.border as WrapperStyle["border"] } : {}),
     backgroundImage,
   };
 
   const nextBindings = remapBindingPaths(block.bindings, {
     "props.src": "wrapperStyle.backgroundImage.src",
-    "props.alt": "wrapperStyle.backgroundImage.alt",
     "props.link": "wrapperStyle.backgroundImage.link",
-    "props.borderRadius": "wrapperStyle.backgroundImage.borderRadius",
-    "props.border": "wrapperStyle.backgroundImage.border",
+    "props.borderRadius": "wrapperStyle.borderRadius",
+    "props.border": "wrapperStyle.border",
     "props.position": "wrapperStyle.backgroundImage.position",
     "props.fit": "wrapperStyle.backgroundImage.fit",
     "props.viewport.width": "wrapperStyle.width",

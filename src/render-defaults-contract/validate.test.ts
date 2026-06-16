@@ -22,14 +22,14 @@ test("栅格矩阵槽 contentAlign 特殊语义规则存在", () => {
   assert.match(rule?.summary ?? "", /矩阵格/);
 });
 
-test("底图描边与定高 table 特殊语义规则存在", () => {
-  const borderRule = getRenderDefaultRule("semantic.backgroundImageOverlayBorder");
-  assert.ok(borderRule);
-  assert.match(borderRule?.summary ?? "", /底图承载/);
+test("底图圆角继承与定高 table 特殊语义规则存在", () => {
+  const chromeRule = getRenderDefaultRule("semantic.backgroundImageInheritWrapperChrome");
+  assert.ok(chromeRule);
+  assert.match(chromeRule?.summary ?? "", /wrapperStyle\.borderRadius/);
 
   const tableRule = getRenderDefaultRule("semantic.backgroundImageFixedHeightTable");
   assert.ok(tableRule);
-  assert.match(tableRule?.summary ?? "", /border-collapse/);
+  assert.match(tableRule?.summary ?? "", /定高/);
 });
 
 test("forbidden 与 injected 规则均非空", () => {

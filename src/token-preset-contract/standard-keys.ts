@@ -25,6 +25,26 @@ export const TOKEN_PRESET_STANDARD_KEYS: readonly TokenPresetStandardKey[] =
     (TOKEN_PRESET_SCALE_ORDER[family] ?? []).map((scale) => ({ family, scale }))
   );
 
+/**
+ * 各标准 scale 的安全兜底默认值——生成管道补缺的最终回退（设计中性：圆角 0、常规字阶）。
+ * 调用方有更可信来源（如 visual blueprint 派生值）时应优先覆盖本表。
+ */
+export const TOKEN_PRESET_SCALE_FALLBACKS: Readonly<
+  Record<TokenPresetFamily, Readonly<Record<string, string>>>
+> = {
+  colors: { primary: "#111111", secondary: "#CCCCCC", surface: "#FFFFFF" },
+  spacing: { section: "0", gap: "16px", pageInline: "20px" },
+  typography: { display: "36px", h1: "24px", body: "16px", caption: "12px" },
+  radius: { panel: "0", cta: "0" },
+};
+
+/** prompt 用标准键白名单（如 `colors=primary/secondary/surface；spacing=…`）。 */
+export function listStandardTokenScalesForPrompt(): string {
+  return TOKEN_PRESET_FAMILY_ORDER.map(
+    (family) => `${family}=${(TOKEN_PRESET_SCALE_ORDER[family] ?? []).join("/")}`
+  ).join("；");
+}
+
 /** `presets.*.tokens` 在 ExpandedTheme 中的点路径，如 `colors.primary` */
 export function tokenStoragePath(family: TokenPresetFamily, scale: string): string {
   return `${family}.${scale}`;
@@ -48,7 +68,7 @@ export function sortTokenPresetScales(family: string, scales: Iterable<string>):
   return [...scales].sort((a, b) => compareByOrderList(known, a, b));
 }
 
-export function normalizeTokenPresetTokens<T extends Record<string, Record<string, string>>>(
+export function normalizeTokenPresetTokens<T extends Record<string, Record<string, string> | undefined>>(
   tokens: T
 ): T {
   const out = {} as T;

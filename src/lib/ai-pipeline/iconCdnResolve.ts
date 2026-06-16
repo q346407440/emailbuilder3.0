@@ -18,10 +18,6 @@ export type IconCdnResolveResult = {
   usedFallback: boolean;
 };
 
-const TABLER_CDN =
-  "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline";
-const LUCIDE_CDN =
-  "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons";
 
 const indexCache = new Map<string, IconCdnIndex>();
 

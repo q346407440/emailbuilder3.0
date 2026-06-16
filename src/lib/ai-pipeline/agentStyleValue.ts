@@ -6,11 +6,7 @@ import {
   type NormalizedAgentStyleField,
 } from "../../layout-variant-ai-contract/agentStyleKeys";
 import type { NormalizedStyleTokens } from "./types";
-import {
-  isValidFontSizeLiteral,
-  resolveTokenPathLiteral,
-  resolveValidFontSize,
-} from "./literalStyleExpand";
+import { resolveValidFontSize } from "./literalStyleExpand";
 import { textColorMayBindPrimaryToken } from "./semanticStyleDefaults";
 
 export type AgentStyleFieldKind =
@@ -21,6 +17,7 @@ export type AgentStyleFieldKind =
   | "container-bg-color"
   | "font-size"
   | "button-font-size"
+  | "button-border-radius"
   | "scalar";
 
 export type ResolvedAgentStyleField = {

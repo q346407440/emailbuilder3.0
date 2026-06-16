@@ -26,16 +26,23 @@ export type FetchLayoutTemplate = (
   layoutVariantId: string
 ) => Promise<EmailTemplate>;
 
+export type FetchLayoutTemplateFailure = {
+  layoutVariantId: string;
+  message: string;
+};
+
 /**
  * 拉取场景内全部版式 template 并对 payload 校验。
  * `currentLayoutVariantId` 对应 `currentTemplate` 可避免重复请求。
+ * 其它版式读取失败时只跳过该版式，避免单个坏版式阻断当前版式保存。
  */
 export async function fetchTemplatesAndValidatePayload(
   manifest: LayoutManifest,
   payload: EmailPayload,
   currentLayoutVariantId: string | null,
   currentTemplate: EmailTemplate,
-  fetchTemplate: FetchLayoutTemplate
+  fetchTemplate: FetchLayoutTemplate,
+  onFetchFailure?: (failure: FetchLayoutTemplateFailure) => void
 ): Promise<LayoutPayloadIssue[]> {
   const templates: Array<{ layoutVariantId: string; template: EmailTemplate }> = [];
   const visibleVariants = listVisibleLayoutVariants(manifest.variants);
@@ -43,7 +50,14 @@ export async function fetchTemplatesAndValidatePayload(
     if (v.id === currentLayoutVariantId) {
       templates.push({ layoutVariantId: v.id, template: currentTemplate });
     } else {
-      templates.push({ layoutVariantId: v.id, template: await fetchTemplate(v.id) });
+      try {
+        templates.push({ layoutVariantId: v.id, template: await fetchTemplate(v.id) });
+      } catch (e) {
+        onFetchFailure?.({
+          layoutVariantId: v.id,
+          message: e instanceof Error ? e.message : String(e),
+        });
+      }
     }
   }
   return validatePayloadAgainstAllLayoutTemplates(payload, templates);

@@ -18,7 +18,6 @@ export function isMerchantSpuTreeRelatedNestedKey(key: string): key is MerchantS
 /** 商家端 SPU 树形列表 · 父/子层共用标量列（不含 skus） */
 export const MERCHANT_SPU_TREE_SCALAR_FIELDS: BindingCollectionField[] = [
   { key: "imageSrc", label: "商品图", valueType: "url", required: true },
-  { key: "imageAlt", label: "图片替代文字", valueType: "string", required: true },
   { key: "name", label: "商品名", valueType: "string", required: true },
   { key: "salePrice", label: "现价", valueType: "string", required: true },
   { key: "originalPrice", label: "原价", valueType: "string", required: true },
@@ -77,7 +76,6 @@ export function projectMerchantSpuTreeScalarRow(product: BuiltinProductMock): Re
   const flat = flattenBuiltinProductRow(product);
   return {
     imageSrc: flat.imageSrc,
-    imageAlt: flat.imageAlt,
     name: flat.name,
     salePrice: flat.salePrice,
     originalPrice: flat.originalPrice,

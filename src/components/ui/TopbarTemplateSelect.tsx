@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EmailListItem } from "../../types/email";
 import { isPublishedPublishStatus, type PublishStatus } from "../../publish-status-contract";
 import { normalizePublishStatus } from "../../lib/emailPublishStatus";
@@ -7,10 +7,10 @@ import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
 import { useConfirmDialog } from "./ConfirmDialogProvider";
 import { TopbarResourceField } from "./TopbarResourceField";
 import { TOPBAR_RESOURCE_DROPDOWN_STYLE } from "./topbarResourceSelectLayout";
-import { ResourceSelectDropdownFooter } from "./ResourceSelectDropdownFooter";
 import { ResourceSelectOptionLabel } from "./ResourceSelectOptionLabel";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
+import { ShopCountInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
+import { META_DISPLAY_NAME_MAX_LENGTH } from "../../meta-contract/field-limits";
 
 type TopbarTemplateSelectProps = {
   items: EmailListItem[];
@@ -45,9 +45,11 @@ export function TopbarTemplateSelect({
 }: TopbarTemplateSelectProps) {
   const { confirm } = useConfirmDialog();
   const [selectOpen, setSelectOpen] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftError, setDraftError] = useState<string | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement>(null);
 
   const currentItem = useMemo(
     () => items.find((it) => it.emailKey === value) ?? null,
@@ -65,6 +67,16 @@ export function TopbarTemplateSelect({
     },
     [onSelect, value]
   );
+
+  useEffect(() => {
+    if (!actionMenuOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (actionMenuRef.current?.contains(event.target as Node)) return;
+      setActionMenuOpen(false);
+    };
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [actionMenuOpen]);
 
   const openRename = () => {
     if (!currentItem) return;
@@ -155,39 +167,76 @@ export function TopbarTemplateSelect({
 
   return (
     <>
-      <TopbarResourceField label="邮件模板" variant="email-template">
-        <ShopSelect
-          className="topbar__select"
-          value={value ?? undefined}
-          placeholder={items.length ? undefined : "暂无模板"}
-          disabled={selectDisabled}
-          open={selectOpen}
-          onDropdownVisibleChange={setSelectOpen}
-          popupMatchSelectWidth={false}
-          dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
-          getPopupContainer={() => document.body}
-          dropdownRender={(menu) => (
-            <ResourceSelectDropdownFooter
-              menu={menu}
-              actions={resourceActions}
-              actionsAriaLabel="邮件模板操作"
-              busy={actionBusy}
-              onAfterAction={() => setSelectOpen(false)}
-            />
-          )}
-          onChange={handleTemplatePick}
-        >
-          {items.map((it) => {
-            const published = isPublishedPublishStatus(normalizePublishStatus(it.publishStatus));
-            const label = it.displayName?.trim() || it.emailKey;
-            return (
-              <ShopSelect.Option key={it.emailKey} value={it.emailKey}>
-                <ResourceSelectOptionLabel label={label} published={published} />
-              </ShopSelect.Option>
-            );
-          })}
-        </ShopSelect>
-      </TopbarResourceField>
+      <div className="topbar__layout-picker-group">
+        <TopbarResourceField label="邮件模板" variant="email-template" hideLabel>
+          <ShopSelect
+            className="topbar__select"
+            value={value ?? undefined}
+            placeholder={items.length ? "选择模板" : "暂无模板"}
+            disabled={selectDisabled}
+            open={selectOpen}
+            onDropdownVisibleChange={(open) => {
+              setSelectOpen(open);
+              if (open) setActionMenuOpen(false);
+            }}
+            dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
+            getPopupContainer={() => document.body}
+            onChange={handleTemplatePick}
+          >
+            {items.map((it) => {
+              const published = isPublishedPublishStatus(normalizePublishStatus(it.publishStatus));
+              const label = it.displayName?.trim() || it.emailKey;
+              return (
+                <ShopSelect.Option key={it.emailKey} value={it.emailKey}>
+                  <ResourceSelectOptionLabel label={label} published={published} />
+                </ShopSelect.Option>
+              );
+            })}
+          </ShopSelect>
+        </TopbarResourceField>
+        <div className="topbar__layout-actions-menu" ref={actionMenuRef}>
+          <button
+            type="button"
+            className="topbar__layout-actions-trigger"
+            disabled={selectDisabled || actionBusy}
+            aria-haspopup="menu"
+            aria-expanded={actionMenuOpen}
+            aria-label="模板更多操作"
+            title="模板更多操作"
+            onClick={() => {
+              setSelectOpen(false);
+              setActionMenuOpen((open) => !open);
+            }}
+          >
+            ···
+          </button>
+          {actionMenuOpen ? (
+            <div className="topbar__layout-actions-popover" role="menu" aria-label="模板操作">
+              {resourceActions.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="menuitem"
+                  className={[
+                    "topbar__layout-action-item",
+                    item.danger ? "topbar__layout-action-item--danger" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  disabled={Boolean(item.disabled || actionBusy)}
+                  onClick={() => {
+                    if (item.disabled || actionBusy) return;
+                    setActionMenuOpen(false);
+                    item.onClick();
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
 
       {renameOpen ? (
         <ShopSectionModal
@@ -210,12 +259,12 @@ export function TopbarTemplateSelect({
         >
           <div className="inspector-field">
             <span className="inspector-field__label">模板名称</span>
-            <ShopInput
+            <ShopCountInput
               autoFocus
               value={draftName}
-              maxLength={80}
+              maxLength={META_DISPLAY_NAME_MAX_LENGTH}
               placeholder="请输入模板名称"
-              onChange={(e) => setDraftName(e.target.value)}
+              onChange={setDraftName}
               onPressEnter={() => void submitRename()}
             />
             {draftError ? <span className="topbar__rename-error">{draftError}</span> : null}

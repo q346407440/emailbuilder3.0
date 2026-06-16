@@ -84,6 +84,11 @@ export function integrationEndpointsForEmail(
       description: "场景级 payload（slots 目录 + values 取值）",
     },
     {
+      method: "GET",
+      path: `${API_V1}/builtin-structure-catalog`,
+      description: "内置变量结构目录（通用 + 专用），用于理解 slots 可传入的数据形态",
+    },
+    {
       method: "PUT",
       path: `${API_V1}/emails/${enc}/payload`,
       description: "写入完整 payload；多版式时须通过全部 template 校验",
@@ -175,11 +180,21 @@ export function integrationApiDemos(
       curl: `curl -s '${origin}${API_V1}/emails/${enc}/payload'`,
     },
     {
-      id: "scene-presets-list",
-      group: "内置列表变量",
-      title: "按场景列出内置列表变量",
+      id: "builtin-structure-catalog",
+      group: "业务变量",
+      title: "读取内置变量结构目录",
       description:
-        "真源 data/scene-collection-presets/<scene>/*.json；本地由 API 读盘，上线后可换为 Loyalty 等同形接口。",
+        "返回编辑器允许创建的通用 / 专用变量结构；外部系统据此理解每个 slotId 可传入的数据形态。",
+      method: "GET",
+      path: `${API_V1}/builtin-structure-catalog`,
+      curl: `curl -s '${origin}${API_V1}/builtin-structure-catalog'`,
+    },
+    {
+      id: "scene-presets-list",
+      group: "兼容接口",
+      title: "按场景列出内置列表变量（旧）",
+      description:
+        "过渡兼容旧场景 preset；新接入优先读取 builtin-structure-catalog。",
       method: "GET",
       path: `${API_V1}/scene-collection-presets?scene=loyalty-internal-admin`,
       curl: `curl -s '${origin}${API_V1}/scene-collection-presets?scene=loyalty-internal-admin'`,

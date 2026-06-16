@@ -9,7 +9,7 @@ import { resolveDesignTokens } from "./resolveTokenPreset";
 import { getInspectFieldBindMode } from "./inspectFieldBindMode";
 import { mergeTemplatePayload } from "./merge";
 import { resolveThemeInTemplate } from "./resolveThemeInTemplate";
-import { detachThemeFieldBranch, hasThemeRefInTemplateField, restoreThemeFieldBranch } from "./themeBindingEdit";
+import { detachThemeFieldBranch, applyThemeTokenBinding, hasThemeRefInTemplateField } from "./themeBindingEdit";
 import { isThemeRef } from "../types/themeRef";
 import { parseTemplateFromDisk } from "./templateTreeAdapter";
 
@@ -22,7 +22,7 @@ function containsThemeRef(value: unknown): boolean {
 
 describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeRef）", () => {
   const blockId = "blk-img";
-  const bindPath = "wrapperStyle.backgroundImage.borderRadius";
+  const bindPath = "wrapperStyle.borderRadius";
 
   it("仅有 $themeRef 且无解除 meta → themeFollow", () => {
     const template = {
@@ -45,17 +45,14 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
           parentId: "root",
           children: [],
           wrapperStyle: {
+            borderRadius: {
+              mode: "unified",
+              radius: { $themeRef: "tokens.radius.none" },
+            },
             backgroundImage: {
               src: "https://example.com/a.png",
-              alt: "",
-              link: "",
               position: "center",
               fit: "cover",
-              borderRadius: {
-                mode: "unified",
-                radius: { $themeRef: "tokens.radius.none" },
-              },
-              border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
             },
           },
           props: {},
@@ -99,17 +96,14 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
           parentId: "root",
           children: [],
           wrapperStyle: {
+            borderRadius: {
+              mode: "unified",
+              radius: { $themeRef: "tokens.radius.none" },
+            },
             backgroundImage: {
               src: "https://example.com/a.png",
-              alt: "",
-              link: "",
               position: "center",
               fit: "cover",
-              borderRadius: {
-                mode: "unified",
-                radius: { $themeRef: "tokens.radius.none" },
-              },
-              border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
             },
           },
           props: {},
@@ -127,7 +121,7 @@ describe("template43 v2 主视觉块：解除主题圆角", () => {
   const bid = "tmpl43v2-section-heroimage-1";
   const bindPath = "props.borderRadius";
 
-  it("detach 后为 themeDetached 且模板字段与子字段均解除 theme 锁定，restore 可恢复", (t) => {
+  it("detach 后为 themeDetached 且模板字段与子字段均解除 theme 锁定，可手动重新绑定预设", (t) => {
     if (!fs.existsSync(path.join(root, "template.json"))) {
       t.skip("当前工作区未包含 template43 v2 fixture");
       return;
@@ -164,12 +158,17 @@ describe("template43 v2 主视觉块：解除主题圆角", () => {
     assert.equal(getInspectFieldBindMode(next, blockAfter, payload, bid, "props.borderRadius.radius"), "free");
     assert.equal(hasThemeRefInTemplateField(next, bid, bindPath), false);
 
-    const restored = restoreThemeFieldBranch(next, bid, bindPath);
-    const restoredBlock = restored.blocks[bid];
-    assert.ok(restoredBlock);
-    assert.equal(getInspectFieldBindMode(restored, restoredBlock, payload, bid, bindPath), "themeFollow");
+    const beforeBlock = raw.blocks[bid];
+    assert.ok(beforeBlock);
+    const tokenPath = beforeBlock.bindings?.[bindPath]?.tokenPath;
+    assert.ok(tokenPath, "fixture 应含 theme tokenPath");
+
+    const rebound = applyThemeTokenBinding(next, bid, bindPath, tokenPath);
+    const reboundBlock = rebound.blocks[bid];
+    assert.ok(reboundBlock);
+    assert.equal(getInspectFieldBindMode(rebound, reboundBlock, payload, bid, bindPath), "themeFollow");
     assert.equal(
-      getInspectFieldBindMode(restored, restoredBlock, payload, bid, "props.borderRadius.radius"),
+      getInspectFieldBindMode(rebound, reboundBlock, payload, bid, "props.borderRadius.radius"),
       "themeFollow"
     );
   });

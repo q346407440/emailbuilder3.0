@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import type { EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
-import { isPayloadSlotIdTaken } from "../lib/payloadSlotRegister";
-import { SLOT_ID_PATTERN } from "../payload-contract/value-types";
 import { slotValueTypeLabelForPicker } from "../payload-contract/variable-slot-compatibility";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
+import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 
@@ -31,8 +29,6 @@ function formatSlotDisplayValue(slot: ExternalVariableSlotInfo, payload: EmailPa
   }
 }
 
-export type PayloadVariablePickerMode = "bind" | "create";
-
 export type PayloadVariablePickerModalProps = {
   visible: boolean;
   title: string;
@@ -41,12 +37,11 @@ export type PayloadVariablePickerModalProps = {
   slots: ExternalVariableSlotInfo[];
   payload: EmailPayload;
   defaultSelectedSlotId?: string | null;
-  allowCreate?: boolean;
   onClose: () => void;
   onConfirmBind: (slot: ExternalVariableSlotInfo) => void;
-  onConfirmCreate: (args: { slotId: string; label: string }) => void;
 };
 
+/** 标量变量选择器：仅绑定已有变量，不支持在弹窗内新建变量。 */
 export function PayloadVariablePickerModal({
   visible,
   title,
@@ -55,63 +50,27 @@ export function PayloadVariablePickerModal({
   slots,
   payload,
   defaultSelectedSlotId = null,
-  allowCreate = true,
   onClose,
   onConfirmBind,
-  onConfirmCreate,
 }: PayloadVariablePickerModalProps) {
   const scalarSlots = slots;
 
-  const [mode, setMode] = useState<PayloadVariablePickerMode>("bind");
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  const [slotIdDraft, setSlotIdDraft] = useState("");
-  const [labelDraft, setLabelDraft] = useState("");
-  const [slotIdError, setSlotIdError] = useState("");
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (!visible) {
-      setMode(scalarSlots.length > 0 ? "bind" : "create");
       setSelectedSlotId(null);
-      setSlotIdDraft("");
-      setLabelDraft("");
-      setSlotIdError("");
       setFormError("");
       return;
     }
-    const initialMode = scalarSlots.length > 0 ? "bind" : "create";
-    setMode(allowCreate ? initialMode : "bind");
     const preferred =
       defaultSelectedSlotId && scalarSlots.some((s) => s.slotId === defaultSelectedSlotId)
         ? defaultSelectedSlotId
         : (scalarSlots[0]?.slotId ?? null);
     setSelectedSlotId(preferred);
-    setSlotIdDraft("");
-    setLabelDraft(previewText.trim() || "");
-    setSlotIdError("");
     setFormError("");
-  }, [allowCreate, defaultSelectedSlotId, previewText, scalarSlots, visible]);
-
-  const slotIdTrimmed = slotIdDraft.trim();
-  const slotIdDuplicate =
-    mode === "create" && slotIdTrimmed.length > 0 && isPayloadSlotIdTaken(payload, slotIdTrimmed);
-
-  const validateCreateSlotId = (): boolean => {
-    if (!slotIdTrimmed) {
-      setSlotIdError("请输入变量标识（key）。");
-      return false;
-    }
-    if (!SLOT_ID_PATTERN.test(slotIdTrimmed)) {
-      setSlotIdError("变量标识须以字母开头，且只能包含字母、数字和下划线。");
-      return false;
-    }
-    if (isPayloadSlotIdTaken(payload, slotIdTrimmed)) {
-      setSlotIdError("该变量标识已存在，请使用其他 key。");
-      return false;
-    }
-    setSlotIdError("");
-    return true;
-  };
+  }, [defaultSelectedSlotId, scalarSlots, visible]);
 
   const handleConfirm = () => {
     setFormError("");
@@ -119,26 +78,17 @@ export function PayloadVariablePickerModal({
       setFormError("当前内容为空，无法绑定变量。");
       return;
     }
-    if (mode === "bind") {
-      if (!selectedSlotId) {
-        setFormError("请选择一个已有变量。");
-        return;
-      }
-      const slot = scalarSlots.find((s) => s.slotId === selectedSlotId);
-      if (!slot) {
-        setFormError("所选变量不可用。");
-        return;
-      }
-      onConfirmBind(slot);
+    if (!selectedSlotId) {
+      setFormError("请选择一个已有变量。");
       return;
     }
-    if (!validateCreateSlotId()) return;
-    onConfirmCreate({ slotId: slotIdTrimmed, label: labelDraft.trim() || slotIdTrimmed });
+    const slot = scalarSlots.find((s) => s.slotId === selectedSlotId);
+    if (!slot) {
+      setFormError("所选变量不可用。");
+      return;
+    }
+    onConfirmBind(slot);
   };
-
-  const slotIdErrorText =
-    slotIdError || (slotIdDuplicate ? "该变量标识已存在，请使用其他 key。" : "");
-  const showSlotIdError = Boolean(slotIdErrorText);
 
   return (
     <ShopSectionModal
@@ -157,7 +107,7 @@ export function PayloadVariablePickerModal({
           </ShopSecondaryButton>
           <ShopPrimaryButton
             htmlType="button"
-            disabled={mode === "bind" && scalarSlots.length === 0}
+            disabled={scalarSlots.length === 0}
             onClick={handleConfirm}
           >
             确定
@@ -183,124 +133,53 @@ export function PayloadVariablePickerModal({
           )}
         </div>
 
-        {allowCreate ? (
-          <div className="text-body-inline-var-modal__mode-tabs" role="tablist" aria-label="变量操作方式">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "bind"}
-              disabled={scalarSlots.length === 0}
-              className={`text-body-inline-var-modal__mode-tab${mode === "bind" ? " text-body-inline-var-modal__mode-tab--active" : ""}`}
-              onClick={() => setMode("bind")}
-            >
-              绑定已有变量
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "create"}
-              className={`text-body-inline-var-modal__mode-tab${mode === "create" ? " text-body-inline-var-modal__mode-tab--active" : ""}`}
-              onClick={() => setMode("create")}
-            >
-              创建新变量
-            </button>
-          </div>
-        ) : null}
-
-        {mode === "bind" ? (
-          scalarSlots.length === 0 ? (
-            <p className="text-body-var-pill-modal__empty">
-              当前没有符合该字段类型的可绑定变量{allowCreate ? "，请切换到「创建新变量」。" : "。"}
-            </p>
-          ) : (
-            <>
-              <p className="text-body-var-pill-modal__hint">
-                在下方表格中单选一个变量后点「确定」。列表类（collection）变量不在此选择。
-              </p>
-              <SelectablePickerTable
-                ariaLabel="可选 payload 变量"
-                rowKey={(slot) => slot.slotId}
-                selectedKey={selectedSlotId}
-                onSelect={setSelectedSlotId}
-                radioName="payload-var-picker-slot"
-                dataSource={scalarSlots}
-                columns={[
-                  {
-                    key: "label",
-                    title: "名称",
-                    render: (slot) => slot.label ?? slot.slotId,
-                  },
-                  {
-                    key: "id",
-                    title: "标识",
-                    render: (slot) => (
-                      <code className="selectable-picker-table__mono">{slot.slotId}</code>
-                    ),
-                  },
-                  {
-                    key: "type",
-                    title: "类型",
-                    width: 72,
-                    render: (slot) => slotValueTypeLabelForPicker(slot.valueType),
-                  },
-                  {
-                    key: "value",
-                    title: "当前值",
-                    ellipsis: true,
-                    render: (slot) => {
-                      const displayValue = formatSlotDisplayValue(slot, payload);
-                      return (
-                        <span title={displayValue}>{displayValue}</span>
-                      );
-                    },
-                  },
-                ]}
-              />
-            </>
-          )
+        {scalarSlots.length === 0 ? (
+          <p className="text-body-var-pill-modal__empty">
+            当前没有符合该字段类型的可绑定变量，请先在变量列表中点击「添加变量」。
+          </p>
         ) : (
-          <div className="text-body-inline-var-modal__create">
+          <>
             <p className="text-body-var-pill-modal__hint">
-              将使用当前字段内容作为变量初值；名称与 key 写入 payload.slots。
+              在下方表格中单选一个变量后点「确定」。列表类（collection）变量不在此选择。
             </p>
-            <p className="text-body-inline-var-modal__value-preview">
-              变量初值：<strong>{previewText.trim() || "—"}</strong>
-            </p>
-            <label className="text-rich-editor__link-label" htmlFor="payload-var-picker-label">
-              变量名称
-            </label>
-            <ShopInput
-              id="payload-var-picker-label"
-              value={labelDraft}
-              placeholder="例如：店铺名称"
-              onChange={(e) => {
-                setLabelDraft(e.target.value);
-                if (formError) setFormError("");
-              }}
+            <SelectablePickerTable
+              ariaLabel="可选 payload 变量"
+              rowKey={(slot) => slot.slotId}
+              selectedKey={selectedSlotId}
+              onSelect={setSelectedSlotId}
+              radioName="payload-var-picker-slot"
+              dataSource={scalarSlots}
+              columns={[
+                {
+                  key: "label",
+                  title: "名称",
+                  render: (slot) => slot.label ?? slot.slotId,
+                },
+                {
+                  key: "id",
+                  title: "标识",
+                  render: (slot) => (
+                    <code className="selectable-picker-table__mono">{slot.slotId}</code>
+                  ),
+                },
+                {
+                  key: "type",
+                  title: "类型",
+                  width: 72,
+                  render: (slot) => slotValueTypeLabelForPicker(slot.valueType),
+                },
+                {
+                  key: "value",
+                  title: "当前值",
+                  ellipsis: true,
+                  render: (slot) => {
+                    const displayValue = formatSlotDisplayValue(slot, payload);
+                    return <span title={displayValue}>{displayValue}</span>;
+                  },
+                },
+              ]}
             />
-            <label className="text-rich-editor__link-label" htmlFor="payload-var-picker-slot-id">
-              变量标识（key）
-            </label>
-            <ShopInput
-              id="payload-var-picker-slot-id"
-              value={slotIdDraft}
-              placeholder="storeName"
-              aria-invalid={showSlotIdError}
-              aria-describedby={showSlotIdError ? "payload-var-picker-slot-id-err" : undefined}
-              onChange={(e) => {
-                setSlotIdDraft(e.target.value);
-                if (slotIdError) setSlotIdError("");
-                if (formError) setFormError("");
-              }}
-            />
-            {showSlotIdError ? (
-              <p id="payload-var-picker-slot-id-err" className="text-rich-editor__link-error" role="alert">
-                {slotIdErrorText}
-              </p>
-            ) : (
-              <p className="text-rich-editor__link-tip">key 须在 payload.slots 中唯一。</p>
-            )}
-          </div>
+          </>
         )}
 
         {formError ? (

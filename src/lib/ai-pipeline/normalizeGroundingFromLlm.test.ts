@@ -65,6 +65,7 @@ describe("normalizeGroundingFromLlm", () => {
         ],
       },
     ]);
+    assert.ok(payload);
     assert.equal(payload.sections[0]?.imageSlots?.[0]?.containerHeight, "280px");
     assert.equal(payload.sections[0]?.layoutHints?.cardImageTier, undefined);
   });

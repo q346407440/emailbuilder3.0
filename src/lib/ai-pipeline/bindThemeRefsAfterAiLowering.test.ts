@@ -11,6 +11,7 @@ import { validatePipelineOutput } from "./validatePipelineOutput";
 import { normalizeStyleTokens } from "./normalizeStyleTokens";
 import { readTemplateFieldOnly } from "../themeBindingEdit";
 import { blockingValidationIssues, validateTemplate } from "../validate";
+import type { EmailTemplate } from "../../types/email";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(__dirname, "__fixtures__/minimal-one-section.json");
@@ -73,12 +74,13 @@ describe("bindThemeRefsAfterAiLowering", () => {
       textExtract: { schemaVersion: "1", regions: [] },
       assetManifest: { images: {}, icons: {} },
       sections: [],
+      sectionOrder: [],
       emailKey: "e",
       layoutVariantId: "v",
     }).tokenPresets;
 
     const blockId = "b1";
-    const template = {
+    const template: EmailTemplate = {
       schemaVersion: "4.0.0" as const,
       emailId: "e",
       templateId: "t",
@@ -131,7 +133,7 @@ describe("bindThemeRefsAfterAiLowering", () => {
       scopeSelections: {},
     };
     const blockId = "logo";
-    const template = {
+    const template: EmailTemplate = {
       schemaVersion: "4.0.0" as const,
       emailId: "e",
       templateId: "t",
@@ -183,7 +185,7 @@ describe("bindThemeRefsAfterAiLowering", () => {
       scopeSelections: {},
     };
     const blockId = "cta";
-    const template = {
+    const template: EmailTemplate = {
       schemaVersion: "4.0.0" as const,
       emailId: "e",
       templateId: "t",
@@ -278,7 +280,7 @@ describe("bindThemeRefsAfterAiLowering", () => {
       },
     };
     const { template: out } = bindThemeRefsAfterAiLowering({
-      template,
+      template: template as unknown as EmailTemplate,
       tokenPresets,
       enabled: true,
     });

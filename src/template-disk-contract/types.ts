@@ -1,5 +1,6 @@
 import type {
   BlockBindings,
+  ObjectRegionBinding,
   RepeatRegionBinding,
 } from "../types/email";
 import type { VisibilityRule } from "../visibility-contract/types";
@@ -21,6 +22,7 @@ export type NestedEmailBlock = {
   props: Record<string, unknown>;
   bindings?: BlockBindings;
   repeat?: RepeatRegionBinding;
+  objectBind?: ObjectRegionBinding;
   visibility?: VisibilityRule;
   children?: NestedEmailBlock[];
 };

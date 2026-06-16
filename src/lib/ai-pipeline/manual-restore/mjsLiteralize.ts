@@ -59,7 +59,6 @@ function stripBindingsProperties(source: string): string {
     const m = /,\s*\n(\s*)bindings:\s*\{/.exec(out);
     if (!m) break;
     const start = m.index;
-    const indent = m[1]!;
     let depth = 1;
     let i = m.index + m[0].length;
     while (i < out.length && depth > 0) {

@@ -168,6 +168,12 @@ export function removeExternalVariableSlot(
   const p = structuredClone(payload);
 
   for (const block of Object.values(t.blocks)) {
+    if (block.repeat?.slotId === slotId) {
+      delete block.repeat;
+    }
+    if (block.objectBind?.slotId === slotId) {
+      delete block.objectBind;
+    }
     if (!block.bindings) continue;
     for (const [bindPath, spec] of Object.entries({ ...block.bindings })) {
       if (spec.mode === "variable" && spec.slotId === slotId) {

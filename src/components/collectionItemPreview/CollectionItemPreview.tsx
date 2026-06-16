@@ -84,7 +84,7 @@ export function CollectionItemPreview({
   const metaText =
     metaHint ??
     (mode === "editable"
-      ? `共 ${visibleTabCount} 条 · 切换查看；直接改字段值，点「保存变量」落盘`
+      ? `共 ${visibleTabCount} 条 · 切换查看；直接改字段值`
       : `共 ${visibleTabCount} 条 · 切换查看${
           canEditVisibility ? "；勾选「不展示」的行不会出现在画布" : "，仅供回显不可编辑"
         }`);

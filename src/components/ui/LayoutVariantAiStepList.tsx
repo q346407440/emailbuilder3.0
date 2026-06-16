@@ -19,7 +19,6 @@ function StepIcon({ status }: { status: AiStepUiState["status"] }) {
           aria-hidden
         />
       );
-    case "failed_once":
     case "failed":
       return (
         <span className="layout-variant-ai-step__icon layout-variant-ai-step__icon--failed" aria-hidden>
@@ -37,7 +36,7 @@ function StepIcon({ status }: { status: AiStepUiState["status"] }) {
   }
 }
 
-/** 以图 AI 创建：分步进度列表（每行独立；重试 append 新行，失败行保留）。 */
+/** 以图 AI 创建：分步进度列表（一步一行；重试/失败/成功在同一行原地变更状态）。 */
 export function LayoutVariantAiStepList({ steps }: LayoutVariantAiStepListProps) {
   if (steps.length === 0) return null;
   return (

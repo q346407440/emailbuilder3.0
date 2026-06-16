@@ -42,7 +42,7 @@ function writeBindPathString(
   if (!subPath) return;
   if (root === "props") {
     setAtPath(block.props as Record<string, unknown>, subPath, value);
-    if (isPaddingFieldSubPath(subPath) || block.props.padding !== undefined) {
+    if (isPaddingFieldSubPath(subPath) || (block.props as Record<string, unknown>).padding !== undefined) {
       coercePaddingOnContainer(block.props as Record<string, unknown>);
     }
   } else if (root === "wrapperStyle") {
@@ -151,6 +151,9 @@ export function renameExternalVariableSlot(
   for (const block of Object.values(t.blocks)) {
     if (block.repeat?.slotId === oldSlotId) {
       block.repeat = { ...block.repeat, slotId: trimmed };
+    }
+    if (block.objectBind?.slotId === oldSlotId) {
+      block.objectBind = { ...block.objectBind, slotId: trimmed };
     }
     if (block.visibility?.slotId === oldSlotId) {
       block.visibility = { ...block.visibility, slotId: trimmed };

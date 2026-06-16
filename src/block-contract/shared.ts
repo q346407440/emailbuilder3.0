@@ -8,6 +8,8 @@ export const BLOCK_SHELL_KEYS = [
   "props",
   "bindings",
   "repeat",
+  /** 对象变量字段映射；与 repeat 互斥 */
+  "objectBind",
   /** 条件显隐规则；与 bindings / repeat 并列的壳层字段 */
   "visibility",
 ] as const;

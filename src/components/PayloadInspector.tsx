@@ -7,6 +7,7 @@ import {
 import { CollectionDataSourceBindModal } from "./CollectionDataSourceBindModal";
 import { collectionSlotUsesJsonPasteDataSource } from "../lib/sceneCollectionPresetSlot";
 import { CollectionVariablePanel } from "./CollectionVariablePanel";
+import { ObjectVariablePanel } from "./ObjectVariablePanel";
 import {
   draftToCollectionSnapshot,
   patchCollectionDraftSnapshot,
@@ -27,9 +28,7 @@ import { useConfirmDialog } from "./ui/ConfirmDialogProvider";
 import { removeExternalVariableSlot } from "../lib/variableBindingEdit";
 import {
   buildPreviewPayload,
-  commitPayloadSlotDraft,
   getEffectiveSlotValue,
-  isPayloadSlotDraftDirty,
   seedCollectionSlotDraft,
   toCollectionItems,
   type PayloadSlotDraft,
@@ -39,13 +38,13 @@ import { Field } from "./ui/Field";
 import { ColorField } from "./ui/ColorField";
 import { ShopInput, ShopSelect, ShopTextArea } from "./ui/ShopFormControls";
 import { UrlAssetUploadInput } from "./ui/UrlAssetUploadInput";
+import { isPayloadSlotEditorReadonly } from "../lib/payloadSlotEditorReadonly";
 
 type Props = {
   template: EmailTemplate;
   payload: EmailPayload;
   slotDrafts?: PayloadSlotDraftMap;
   onSlotDraftChange?: (slotId: string, draft: PayloadSlotDraft | null) => void;
-  onCommitSlot?: (slotId: string) => void;
   onPayloadChange: (next: EmailPayload) => void;
   onTemplatePayloadChange?: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onVariableDeleted?: (next: {
@@ -73,7 +72,7 @@ function formatDefaultPreview(v: unknown): string {
 }
 
 function slotValueTypeHint(valueType: string): string {
-  if (valueType === "collection") return payloadSlotValueTypeLabel(valueType);
+  if (valueType === "collection" || valueType === "object") return payloadSlotValueTypeLabel(valueType);
   switch (valueType) {
     case "string":
       return "纯文本";
@@ -108,6 +107,7 @@ function SlotEditor({
   dataSourceModalReimport,
   onDataSourceModalReimportChange,
   layout = "embedded",
+  valuesReadonly = false,
 }: {
   slot: ExternalVariableSlotInfo;
   payload: EmailPayload;
@@ -123,22 +123,17 @@ function SlotEditor({
   dataSourceModalReimport: boolean;
   onDataSourceModalReimportChange: (reimport: boolean) => void;
   layout?: "panel" | "embedded";
+  valuesReadonly?: boolean;
 }) {
   const panelLayout = layout === "panel";
   const slotDraft = slotDrafts[slot.slotId];
   const raw = getEffectiveSlotValue(payload, slotDrafts, slot.slotId);
   const detached = payload.detachedVariableSlotIds?.includes(slot.slotId) ?? false;
+  const fieldDisabled = detached || valuesReadonly;
 
   const patchSlotDraft = (partial: PayloadSlotDraft) => {
-    if (!onSlotDraftChange) {
-      onPatch(
-        commitPayloadSlotDraft(payload, slot.slotId, {
-          ...slotDraft,
-          ...partial,
-        })
-      );
-      return;
-    }
+    if (valuesReadonly) return;
+    if (!onSlotDraftChange) return;
     onSlotDraftChange(slot.slotId, { ...(slotDraft ?? {}), ...partial });
   };
   const bindingHint = isStandardScalarValueType(slot.valueType)
@@ -153,7 +148,7 @@ function SlotEditor({
     ? undefined
     : [bindingHint, savedValueHint].filter(Boolean).join(" · ");
   const scalarEmptyPlaceholder = detached
-    ? "留空则沿用模板中的字面量"
+    ? "留空则沿用模板中的固定内容"
     : "留空则不合并外部取值到预览";
 
   const setSlotValue = (nextVal: unknown | undefined) => {
@@ -185,6 +180,7 @@ function SlotEditor({
     onPayloadChange: onPatch,
     onTemplatePayloadChange,
     onSlotIdChange,
+    labelReadonly: valuesReadonly,
   };
   if (slot.valueType === "collection") {
     const itemFields = resolveEffectiveCollectionItemFields(slot, slotDraft);
@@ -246,15 +242,9 @@ function SlotEditor({
         onDraftChange={(next) => onSlotDraftChange?.(slot.slotId, next)}
         onItemFieldsChange={handleItemFieldsChange}
         onFixedLengthChange={handleFixedLengthChange}
-        onOpenDataSourceModal={(reimport) => {
-          const slotDef = payload.slots[slot.slotId];
-          if (!collectionSlotUsesJsonPasteDataSource(slotDef)) return;
-          ensureDraft();
-          onDataSourceModalReimportChange(Boolean(reimport));
-          onDataSourceModalOpenChange(true);
-        }}
         layout={layout}
         panelSection={panelSection}
+        valuesReadonly={valuesReadonly}
       />
     );
 
@@ -303,6 +293,42 @@ function SlotEditor({
     );
   }
 
+  if (slot.valueType === "object") {
+    const renderObjectPanel = (panelSection: "all" | "config" | "preview" = "all") => (
+      <ObjectVariablePanel
+        slot={slot}
+        previewPayload={previewPayload}
+        layout={layout}
+        panelSection={panelSection}
+      />
+    );
+
+    return (
+      <>
+        {panelLayout ? null : <PayloadSlotMetaFields {...metaProps} />}
+        {detachedBanner}
+        {panelLayout ? (
+          <>
+            <div className="payload-inspector__group">
+              <h3 className="inspector__subtitle">对象配置</h3>
+              <section className="inspector__section payload-inspector__collection-config">
+                {renderObjectPanel("config")}
+              </section>
+            </div>
+            <div className="payload-inspector__group">
+              <h3 className="inspector__subtitle">数据预览</h3>
+              <section className="inspector__section payload-inspector__collection-preview">
+                {renderObjectPanel("preview")}
+              </section>
+            </div>
+          </>
+        ) : (
+          renderObjectPanel()
+        )}
+      </>
+    );
+  }
+
   const metaSection = panelLayout ? null : <PayloadSlotMetaFields {...metaProps} />;
 
   const wrapAssignmentSection = (body: ReactNode) =>
@@ -333,7 +359,7 @@ function SlotEditor({
             headerExtra={assignmentHeaderExtra}
             value={str}
             onChange={(next) => setSlotValue(next)}
-            disabled={detached}
+            disabled={fieldDisabled}
           />
         )}
       </>
@@ -362,7 +388,7 @@ function SlotEditor({
           >
             <ShopSelect
               value={selectValue}
-              disabled={detached}
+              disabled={fieldDisabled}
               placeholder="选择真或假"
               onChange={(next) => {
                 if (next === "" || next === undefined || next === null) {
@@ -407,7 +433,7 @@ function SlotEditor({
               type="number"
               value={display}
               placeholder={scalarEmptyPlaceholder}
-              disabled={detached}
+              disabled={fieldDisabled}
               onChange={(e) => {
                 const v = e.target.value.trim();
                 if (v === "") setSlotValue(undefined);
@@ -440,7 +466,7 @@ function SlotEditor({
               value={stringVal}
               placeholder={scalarEmptyPlaceholder}
               rows={4}
-              disabled={detached}
+              disabled={fieldDisabled}
               onChange={(e) => {
                 const v = e.target.value;
                 setSlotValue(v === "" ? undefined : v);
@@ -476,14 +502,14 @@ function SlotEditor({
               uploadKind={uploadKind}
               value={stringVal}
               placeholder={placeholder}
-              disabled={detached}
+              disabled={fieldDisabled}
               onChange={(v) => setSlotValue(v === "" ? undefined : v)}
             />
           ) : (
             <ShopInput
               value={stringVal}
               placeholder={placeholder}
-              disabled={detached}
+              disabled={fieldDisabled}
               onChange={(e) => {
                 const v = e.target.value;
                 setSlotValue(v === "" ? undefined : v);
@@ -501,7 +527,6 @@ export function PayloadInspector({
   payload,
   slotDrafts = {},
   onSlotDraftChange,
-  onCommitSlot,
   onPayloadChange,
   onTemplatePayloadChange,
   onVariableDeleted,
@@ -531,11 +556,6 @@ export function PayloadInspector({
 
   const title = variant === "embedded" ? "整封邮件可替换变量" : "变量详情";
   const activeSlot = variant === "panel" ? (visibleSlots[0] ?? null) : null;
-  const activeSlotDraft = activeSlot ? slotDrafts[activeSlot.slotId] : undefined;
-  const activeSlotHasUnsavedEdits =
-    activeSlot && activeSlotDraft
-      ? isPayloadSlotDraftDirty(payload, activeSlot.slotId, activeSlotDraft)
-      : false;
 
   useEffect(() => {
     if (!activeSlot || !onSlotDraftChange) return;
@@ -547,11 +567,6 @@ export function PayloadInspector({
       seedCollectionSlotDraft(payload, activeSlot.slotId, fields)
     );
   }, [activeSlot, onSlotDraftChange, payload, slotDrafts]);
-
-  const handleCommitActiveSlot = () => {
-    if (!activeSlot || !onCommitSlot) return;
-    onCommitSlot(activeSlot.slotId);
-  };
 
   const handleDeleteActiveSlot = async () => {
     if (!activeSlot) return;
@@ -627,6 +642,7 @@ export function PayloadInspector({
                   dataSourceModalReimport={dataSourceModalReimport}
                   onDataSourceModalReimportChange={setDataSourceModalReimport}
                   layout="embedded"
+                  valuesReadonly={isPayloadSlotEditorReadonly(payload, slot.slotId)}
                 />
               </section>
             ))
@@ -667,9 +683,6 @@ export function PayloadInspector({
       onDataSourceModalOpenChange={setDataSourceModalOpen}
       dataSourceModalReimport={dataSourceModalReimport}
       onDataSourceModalReimportChange={setDataSourceModalReimport}
-      activeSlotHasUnsavedEdits={activeSlotHasUnsavedEdits}
-      onCommitSlot={onCommitSlot}
-      onCommitActiveSlot={handleCommitActiveSlot}
       onDeleteActiveSlot={handleDeleteActiveSlot}
     />
   );
@@ -692,9 +705,6 @@ type PanelActiveProps = {
   onDataSourceModalOpenChange: (open: boolean) => void;
   dataSourceModalReimport: boolean;
   onDataSourceModalReimportChange: (reimport: boolean) => void;
-  activeSlotHasUnsavedEdits: boolean;
-  onCommitSlot?: (slotId: string) => void;
-  onCommitActiveSlot: () => void;
   onDeleteActiveSlot: () => void;
 };
 
@@ -715,11 +725,9 @@ function PayloadInspectorPanelActive({
   onDataSourceModalOpenChange,
   dataSourceModalReimport,
   onDataSourceModalReimportChange,
-  activeSlotHasUnsavedEdits,
-  onCommitSlot,
-  onCommitActiveSlot,
   onDeleteActiveSlot,
 }: PanelActiveProps) {
+  const valuesReadonly = isPayloadSlotEditorReadonly(payload, activeSlot.slotId);
   const meta = usePayloadSlotMetaFields({
     slot: activeSlot,
     template,
@@ -727,6 +735,7 @@ function PayloadInspectorPanelActive({
     onPayloadChange,
     onTemplatePayloadChange,
     onSlotIdChange,
+    labelReadonly: valuesReadonly,
   });
 
   return (
@@ -741,36 +750,13 @@ function PayloadInspectorPanelActive({
         ) : null}
         <div className="side-inspector__headrow payload-inspector__headrow">
           <ShopInput
-            value={meta.labelDraft}
+            value={activeSlot.label ?? activeSlot.slotId}
             className="inspector__title-input"
-            onChange={(event) => meta.setLabelDraft(event.target.value)}
-            onBlur={meta.commitLabel}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                (event.currentTarget as HTMLInputElement).blur();
-              }
-              if (event.key === "Escape") {
-                event.preventDefault();
-                meta.setLabelDraft(activeSlot.label ?? "");
-                (event.currentTarget as HTMLInputElement).blur();
-              }
-            }}
             aria-label="变量名称"
             placeholder={activeSlot.slotId || title}
+            disabled
           />
           <div className="payload-inspector__head-actions">
-            {onCommitSlot ? (
-              <button
-                type="button"
-                className="resource-text-action"
-                disabled={!activeSlotHasUnsavedEdits}
-                onClick={onCommitActiveSlot}
-                title="保存当前变量的未提交修改"
-              >
-                保存
-              </button>
-            ) : null}
             <button
               type="button"
               className="resource-text-action resource-text-action--danger"
@@ -802,6 +788,7 @@ function PayloadInspectorPanelActive({
           dataSourceModalReimport={dataSourceModalReimport}
           onDataSourceModalReimportChange={onDataSourceModalReimportChange}
           layout="panel"
+          valuesReadonly={valuesReadonly}
         />
       </div>
     </aside>

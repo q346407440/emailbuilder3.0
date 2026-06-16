@@ -1,4 +1,4 @@
-import type { CompactNode, GroundingSection } from "../types";
+import type { CompactNode, GroundingSection } from "./types";
 import { compileCompactSectionRoot } from "./compile/compileCompactSection";
 
 /** @deprecated 使用 compileCompactSectionRoot */

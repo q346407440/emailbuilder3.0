@@ -18,7 +18,7 @@ import { contentAlignFromAxes } from "./lib/content-align-axis.mjs";
  *  6 跳转 link
  *  7 叠放子内容（image 块 + 文案叠层；双轴矩阵见 layout-test）
  *  8 layout.container 底图 vs content.image 对照
- *  9 payload 变量绑定 src / alt
+ *  9 payload 变量绑定 src
  *
  * 用法：node scripts/build-email-image-test.mjs
  */
@@ -40,7 +40,6 @@ const PEXELS = (id, w = 800) =>
 
 /** 其余章节通用 */
 const IMG_SRC = PEXELS(325185);
-const IMG_ALT = "城市天际线（雾中高楼）";
 
 /**
  * 第 2 章：白底九宫格数字 1–9 测试图（scripts/generate-image-test-position-assets.py）
@@ -52,9 +51,6 @@ const positionAsset = (name) => `${IMAGE_TEST_ASSET_BASE}/image-test-position/${
 const IMG_SRC_POSITION_SQUARE = positionAsset("position-markers-square.png");
 const IMG_SRC_POSITION_SPAN_LR = positionAsset("position-markers-span-lr.png");
 const IMG_SRC_POSITION_SPAN_TB = positionAsset("position-markers-span-tb.png");
-const IMG_ALT_POSITION_SQUARE = "画面位置测试·正方九宫格数字1-9";
-const IMG_ALT_POSITION_SPAN_LR = "画面位置测试·全宽三列数字1-9（2:1）";
-const IMG_ALT_POSITION_SPAN_TB = "画面位置测试·全高三行数字1-9（1:2）";
 
 const BORDER_ZERO = {
   mode: "unified",
@@ -161,7 +157,6 @@ function layout(id, parentId, direction, children, wrapperExtra = {}, propsExtra
 function imageBlock(id, parentId, opts = {}, children = []) {
   const {
     src = IMG_SRC,
-    alt = IMG_ALT,
     link = "",
     fit = "cover",
     position = "center",
@@ -185,7 +180,6 @@ function imageBlock(id, parentId, opts = {}, children = []) {
     borderRadius: wrapperRadius,
     backgroundImage: {
       src,
-      alt,
       link,
       fit,
       position,
@@ -300,7 +294,6 @@ function buildPositionGrid(gridId, parentId, opts = {}) {
     width,
     widthMode = "fill",
     src = IMG_SRC,
-    alt = IMG_ALT,
     title = `position 九宫格 · fit=${fit}`,
     backgroundColor,
     /** 定宽视窗时在格内水平居中（写在该图片块 contentAlign.horizontal） */
@@ -336,7 +329,6 @@ function buildPositionGrid(gridId, parentId, opts = {}) {
       addBlock(
         imageBlock(`${cellId}-img`, cellId, {
           src,
-          alt,
           fit,
           position: preset.value,
           widthMode,
@@ -413,7 +405,7 @@ addBlock(
   text(
     "it-intro",
     "it-root",
-    "图片测试专用模板\n\n默认图源：Pexels 325185。第 2 章：自研白底九宫格数字 1–9 图（public/image-test-position/，预览需 dev:all）。\n\ncontent.image：资源在 wrapperStyle.backgroundImage（src / alt / link / fit / position / 描边圆角）；视窗由 widthMode / heightMode / width / height 控制。\n\n叠放子内容时 props.direction / gap 与带底图 layout 一致；容器内双轴 contentAlign 矩阵见 layout-test，本模板只保留图片专有语义。",
+    "图片测试专用模板\n\n默认图源：Pexels 325185。第 2 章：自研白底九宫格数字 1–9 图（public/image-test-position/，预览需 dev:all）。\n\ncontent.image：资源在 wrapperStyle.backgroundImage（src / link / fit / position / 描边圆角）；视窗由 widthMode / heightMode / width / height 控制。\n\n叠放子内容时 props.direction / gap 与带底图 layout 一致；容器内双轴 contentAlign 矩阵见 layout-test，本模板只保留图片专有语义。",
     { fontSize: "13px", backgroundColor: "#FFFFFF", color: "#374151" }
   ),
   "导读",
@@ -455,7 +447,6 @@ buildPositionGrid("it-ch2-land", "it-ch2", {
   width: "52px",
   widthMode: "fixed",
   src: IMG_SRC_POSITION_SPAN_LR,
-  alt: IMG_ALT_POSITION_SPAN_LR,
   title:
     "2A · 全宽三列数字 1–9（画布 2:1）\n窄高视窗 52×112 · cover 强裁切水平\n验收：同行格左/中/右列应分别露出不同列数字（如 1/4/7 vs 2/5/8）",
   backgroundColor: "#F3F4F6",
@@ -466,7 +457,6 @@ buildPositionGrid("it-ch2-port", "it-ch2", {
   width: "112px",
   widthMode: "fixed",
   src: IMG_SRC_POSITION_SPAN_TB,
-  alt: IMG_ALT_POSITION_SPAN_TB,
   title:
     "2B · 全高三行数字 1–9（画布 1:2）\n扁宽视窗 112×52 · cover 强裁切垂直\n验收：同行格上/中/下排应分别露出不同行数字（如 1/2/3 vs 7/8/9）",
   backgroundColor: "#F3F4F6",
@@ -477,7 +467,6 @@ buildPositionGrid("it-ch2-square", "it-ch2", {
   width: "128px",
   widthMode: "fixed",
   src: IMG_SRC_POSITION_SQUARE,
-  alt: IMG_ALT_POSITION_SQUARE,
   title:
     "2C · 正方图源（900×900，数字 1–9）\n扁宽视窗 128×44（非正方）· cover 裁切上下\n验收：九格应露出不同数字；勿用正方视窗（会与图源同比例导致九格同图）",
   backgroundColor: "#F3F4F6",
@@ -732,7 +721,6 @@ chapterHeader(
   );
   const bgShared = {
     src: IMG_SRC,
-    alt: IMG_ALT,
     link: "",
     fit: "cover",
     position: "left center",
@@ -803,10 +791,10 @@ chapterHeader(
   "it-ch9",
   "9",
   "payload 变量绑定",
-  "src / alt 走 payload 槽；改 Payload 面板应同步预览。"
+  "src 走 payload 槽；改 Payload 面板应同步预览。"
 );
 addBlock(
-  text("it-ch9-var-hint", "it-ch9-var", "9 · 绑定 heroImageSrc / heroImageAlt", {
+  text("it-ch9-var-hint", "it-ch9-var", "9 · 绑定 heroImageSrc", {
     fontSize: "11px",
     color: "#047857",
   }),
@@ -826,13 +814,6 @@ addBlock(
         fieldKind: "content",
         label: "主图地址",
         description: "图片测试：Pexels 325185",
-      },
-      "wrapperStyle.backgroundImage.alt": {
-        slotId: "heroImageAlt",
-        mode: "variable",
-        valueType: "string",
-        fieldKind: "content",
-        label: "主图替代文字",
       },
     },
   }),
@@ -909,15 +890,9 @@ const payload = {
       valueType: "image",
       description: "图片测试专用：默认 Pexels 325185",
     },
-    heroImageAlt: {
-      label: "主图替代文字",
-      valueType: "string",
-      description: "无障碍 alt",
-    },
   },
   values: {
     heroImageSrc: IMG_SRC,
-    heroImageAlt: IMG_ALT,
   },
 };
 

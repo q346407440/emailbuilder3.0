@@ -8,7 +8,6 @@ export type BuiltinProductSkuMock = {
   /** 商家 SKU 编码 */
   sku: string;
   imageSrc: string;
-  imageAlt: string;
   salePrice: string;
   originalPrice: string;
   inventoryQuantity: number;
@@ -20,7 +19,6 @@ export type BuiltinProductSkuMock = {
 /** SKU 单条结构字段（各 SKU 同构；字段关联只展示一套，不按序号展开） */
 export const BUILTIN_SKU_SCHEMA_FIELD_KEYS = [
   "imageSrc",
-  "imageAlt",
   "salePrice",
   "originalPrice",
   "title",

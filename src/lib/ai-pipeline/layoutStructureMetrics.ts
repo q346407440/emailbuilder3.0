@@ -94,7 +94,7 @@ export function extractLayoutStructureMetrics(template: EmailTemplate): LayoutSt
     const bgHex =
       typeof bg === "string"
         ? bg
-        : isThemeRef(bg) && bg.$themeRef === "colors.primary"
+        : isThemeRef(bg) && (bg as { $themeRef: string }).$themeRef === "colors.primary"
           ? "#E3D026"
           : "";
     if (

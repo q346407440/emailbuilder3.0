@@ -59,8 +59,8 @@ export const VARIABLE_SLOT_BINDING_RULES = [
   },
   {
     purpose: "visibility",
-    allowedSlotTypes: [...VISIBILITY_CONDITION_VALUE_TYPES],
-    summary: "区块显隐条件：文本/链接/图片/数值/布尔/列表；不含颜色型业务变量",
+    allowedSlotTypes: [...VISIBILITY_CONDITION_VALUE_TYPES, "object"],
+    summary: "区块显隐条件：标量/列表变量，以及对象变量的标量字段；不含颜色型业务变量",
   },
 ] as const;
 
@@ -149,7 +149,7 @@ const PURPOSE_ALLOWED_SLOT_TYPES: Record<VariablePickerPurpose, readonly string[
   contentColor: ["color"],
   inlineText: ["string", "number", "url"],
   inlineUrl: ["url", "string"],
-  visibility: [...VISIBILITY_CONDITION_VALUE_TYPES],
+  visibility: [...VISIBILITY_CONDITION_VALUE_TYPES, "object"],
 };
 
 export function slotValueTypeMatchesPickerPurpose(

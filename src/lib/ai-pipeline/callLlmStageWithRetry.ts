@@ -47,7 +47,6 @@ export async function callLlmStageWithRetry<T>(
           stage: opts.stage,
           sectionId: opts.sectionId,
           attempt: attemptNum,
-          stepProgress: step,
         },
         () =>
           withStepTimeout(

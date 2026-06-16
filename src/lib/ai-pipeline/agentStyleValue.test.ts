@@ -6,8 +6,6 @@ import {
   resolveAgentStyleField,
   styleKeyToFieldKind,
 } from "./agentStyleValue";
-import { applyStyleKeysToBlockFields } from "./literalStyleExpand";
-import { isThemeRef } from "../../types/themeRef";
 import { AI_PIPELINE_B1_FALLBACK_TOKENS } from "./b1StyleTierPresets";
 
 describe("flattenCompactStyleKeys", () => {

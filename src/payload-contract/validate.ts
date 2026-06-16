@@ -7,6 +7,7 @@ import type {
 } from "../types/email";
 import { buildPayloadSlotRegistry } from "./slot-registry";
 import type { ExternalSlotDefinition } from "./types";
+import { getBuiltinStructureDefinition } from "./builtin-structure-catalog";
 import type { PayloadContractIssue, SlotValueType } from "./types";
 import {
   BUILTIN_COLLECTION_CATALOG_IDS,
@@ -18,6 +19,7 @@ import {
   COLLECTION_ITEM_FIELDS_NESTING_ERROR,
   findCollectionFieldByPath,
 } from "./collection-item-fields";
+import { isVisibilityConditionValueType } from "../visibility-contract";
 import {
   isBuiltinDerivedSortStrategy,
   isSortPolicyObject,
@@ -33,12 +35,87 @@ import {
   SLOT_ID_PATTERN,
   SLOT_VALUE_TYPE_SET,
 } from "./value-types";
+import { isObjectFieldScalarType, OBJECT_FIELD_SCALAR_TYPES } from "./object-fields";
 
 const COLLECTION_FIXED_LENGTH_MIN = 1;
 const COLLECTION_FIXED_LENGTH_MAX = 10;
 
 function issue(path: string, reason: string): PayloadContractIssue {
   return { path, reason };
+}
+
+function validateObjectFieldDefinitions(
+  path: string,
+  fields: unknown
+): PayloadContractIssue[] {
+  const issues: PayloadContractIssue[] = [];
+  if (!Array.isArray(fields) || fields.length === 0) {
+    issues.push(issue(path, "object 槽须声明非空 objectFields"));
+    return issues;
+  }
+  const seen = new Set<string>();
+  for (let i = 0; i < fields.length; i++) {
+    const fieldPath = `${path}.${i}`;
+    const raw = fields[i];
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      issues.push(issue(fieldPath, "objectFields 项必须为对象"));
+      continue;
+    }
+    const field = raw as BindingCollectionField;
+    if (!field.key || typeof field.key !== "string" || !field.key.trim()) {
+      issues.push(issue(`${fieldPath}.key`, "key 必须为非空字符串"));
+    } else if (seen.has(field.key)) {
+      issues.push(issue(`${fieldPath}.key`, `objectFields 中 key「${field.key}」重复`));
+    } else {
+      seen.add(field.key);
+    }
+    if (!field.label || typeof field.label !== "string" || !field.label.trim()) {
+      issues.push(issue(`${fieldPath}.label`, "label 必须为非空字符串"));
+    }
+    const vt = field.valueType;
+    if (!isObjectFieldScalarType(vt)) {
+      issues.push(
+        issue(
+          `${fieldPath}.valueType`,
+          `object 字段 valueType 仅支持 ${OBJECT_FIELD_SCALAR_TYPES.join("/")}，收到「${String(vt)}」`
+        )
+      );
+    }
+    if ("itemFields" in field && field.itemFields !== undefined) {
+      issues.push(issue(`${fieldPath}.itemFields`, "object 字段不可嵌套 itemFields"));
+    }
+  }
+  return issues;
+}
+
+function validateObjectFieldValue(
+  field: BindingCollectionField,
+  value: unknown,
+  path: string
+): PayloadContractIssue[] {
+  return validateCollectionItemFieldValue(field, value, path);
+}
+
+function validateObjectValue(
+  spec: { objectFields?: BindingCollectionField[] },
+  value: unknown,
+  path: string
+): PayloadContractIssue[] {
+  const issues: PayloadContractIssue[] = [];
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    issues.push(issue(path, "object 槽的值必须为对象（非数组）"));
+    return issues;
+  }
+  const objectFields = spec.objectFields;
+  if (!objectFields || objectFields.length === 0) {
+    issues.push(issue(path, "object 槽在 payload.slots 中未声明 objectFields，无法校验取值"));
+    return issues;
+  }
+  const record = value as Record<string, unknown>;
+  for (const field of objectFields) {
+    issues.push(...validateObjectFieldValue(field, record[field.key], `${path}.${field.key}`));
+  }
+  return issues;
 }
 
 function validateCollectionDataSource(
@@ -414,12 +491,21 @@ function validateCollectionValue(
 }
 
 function validateSlotValue(
-  slot: { valueType: SlotValueType; itemFields?: BindingCollectionField[]; minItems?: number; maxItems?: number },
+  slot: {
+    valueType: SlotValueType;
+    objectFields?: BindingCollectionField[];
+    itemFields?: BindingCollectionField[];
+    minItems?: number;
+    maxItems?: number;
+  },
   value: unknown,
   path: string
 ): PayloadContractIssue[] {
   if (slot.valueType === "collection") {
     return validateCollectionValue(slot, value, path);
+  }
+  if (slot.valueType === "object") {
+    return validateObjectValue(slot, value, path);
   }
   return validateScalarSlotValue(slot.valueType, value, path);
 }
@@ -586,6 +672,9 @@ export function validatePayloadSlotDefinition(
     if (slot.itemFields !== undefined) {
       issues.push(...validateCollectionItemFieldDefinitions(`${path}.itemFields`, slot.itemFields));
     }
+    if (slot.objectFields !== undefined) {
+      issues.push(issue(`${path}.objectFields`, "collection 槽不可声明 objectFields"));
+    }
     if (slot.minItems !== undefined && (!Number.isInteger(slot.minItems) || slot.minItems < 0)) {
       issues.push(issue(`${path}.minItems`, "minItems 必须为非负整数"));
     }
@@ -624,10 +713,28 @@ export function validatePayloadSlotDefinition(
     issues.push(...validateCollectionDataSource(`${path}.dataSource`, slot.dataSource));
     issues.push(...validateCollectionItemVisibility(`${path}.itemVisibility`, slot.itemVisibility));
     issues.push(...validateDeprecatedCollectionDisplayFields(path, slot));
+  } else if (valueType === "object") {
+    if (slot.itemFields !== undefined) {
+      issues.push(issue(`${path}.itemFields`, "object 槽不可声明 itemFields"));
+    }
+    if (slot.minItems !== undefined || slot.maxItems !== undefined) {
+      issues.push(issue(path, "object 槽不可声明 minItems/maxItems"));
+    }
+    if (slot.itemVisibility !== undefined) {
+      issues.push(issue(`${path}.itemVisibility`, "object 槽不可声明 itemVisibility"));
+    }
+    if (slot.dataSource !== undefined) {
+      issues.push(issue(`${path}.dataSource`, "object 槽不可声明 dataSource"));
+    }
+    if (slot.objectFields !== undefined) {
+      issues.push(...validateObjectFieldDefinitions(`${path}.objectFields`, slot.objectFields));
+    }
   } else if (slot.dataSource !== undefined) {
     issues.push(issue(`${path}.dataSource`, "仅 collection 槽可声明 dataSource"));
   } else if (slot.itemVisibility !== undefined) {
     issues.push(issue(`${path}.itemVisibility`, "仅 collection 槽可声明 itemVisibility"));
+  } else if (slot.objectFields !== undefined) {
+    issues.push(issue(`${path}.objectFields`, "仅 object 槽可声明 objectFields"));
   }
   if (slot.description !== undefined && typeof slot.description !== "string") {
     issues.push(issue(`${path}.description`, "description 若声明必须为字符串"));
@@ -649,6 +756,26 @@ export function validatePayloadSlotDefinition(
     issues.push(
       issue(`${path}.scene`, "声明 sceneCollectionPresetId 时须同时声明 scene")
     );
+  }
+  if (slot.builtinStructureId !== undefined) {
+    if (typeof slot.builtinStructureId !== "string" || !slot.builtinStructureId.trim()) {
+      issues.push(issue(`${path}.builtinStructureId`, "builtinStructureId 若声明须为非空字符串"));
+    } else {
+      const structure = getBuiltinStructureDefinition(slot.builtinStructureId);
+      if (!structure) {
+        issues.push(issue(`${path}.builtinStructureId`, `未知内置变量结构：${slot.builtinStructureId}`));
+      } else {
+        if (slot.valueType !== structure.valueType) {
+          issues.push(issue(`${path}.valueType`, "valueType 必须与内置变量结构一致"));
+        }
+        if (structure.valueType === "collection" && structure.lengthPolicy?.kind === "locked") {
+          const fixed = structure.lengthPolicy.fixedLength;
+          if (slot.minItems !== fixed || slot.maxItems !== fixed) {
+            issues.push(issue(`${path}.minItems`, `该专用列表变量长度固定为 ${fixed} 项`));
+          }
+        }
+      }
+    }
   }
   return issues;
 }
@@ -699,6 +826,9 @@ export function validateExternalVariableBindingSpec(
       issues.push(issue(`${path}.maxItems`, "maxItems 不能小于 minItems"));
     }
   }
+  if (valueType === "object" && spec.objectFields !== undefined) {
+    issues.push(...validateObjectFieldDefinitions(`${path}.objectFields`, spec.objectFields));
+  }
   return issues;
 }
 
@@ -729,6 +859,8 @@ export function validateExternalInterpolateBindingSpec(
     const valueType = slot.valueType as string;
     if (valueType === "collection") {
       issues.push(issue(`${slotPath}.valueType`, "interpolate 原子槽不支持 collection"));
+    } else if (valueType === "object") {
+      issues.push(issue(`${slotPath}.valueType`, "interpolate 原子槽不支持 object"));
     } else if (valueType === "number" || valueType === "boolean") {
       issues.push(
         issue(
@@ -793,6 +925,8 @@ function collectTemplateExternalSlotRefs(template: EmailTemplate): Array<{
   path: string;
   slotId: string;
   valueType?: string;
+  objectFields?: BindingCollectionField[];
+  objectFieldKey?: string;
   itemFields?: BindingCollectionField[];
   itemPath?: string;
 }> {
@@ -800,6 +934,8 @@ function collectTemplateExternalSlotRefs(template: EmailTemplate): Array<{
     path: string;
     slotId: string;
     valueType?: string;
+    objectFields?: BindingCollectionField[];
+    objectFieldKey?: string;
     itemFields?: BindingCollectionField[];
     itemPath?: string;
   }> = [];
@@ -813,11 +949,21 @@ function collectTemplateExternalSlotRefs(template: EmailTemplate): Array<{
         itemPath: block.repeat.itemPath,
       });
     }
+    if (block.objectBind?.mode === "object") {
+      refs.push({
+        path: `blocks.${blockId}.objectBind`,
+        slotId: block.objectBind.slotId,
+        valueType: "object",
+        objectFields: block.objectBind.objectFields,
+      });
+    }
     if (block.visibility) {
       refs.push({
         path: `blocks.${blockId}.visibility`,
         slotId: block.visibility.slotId,
         valueType: block.visibility.valueType,
+        objectFields: block.visibility.objectFields,
+        objectFieldKey: block.visibility.objectFieldKey,
       });
     }
     if (!block.bindings) continue;
@@ -865,12 +1011,41 @@ function validateTemplateReferencesPayloadSlots(
       continue;
     }
     if (ref.valueType && catalogEntry.valueType !== ref.valueType) {
-      issues.push(
-        issue(
-          ref.path,
-          `valueType「${ref.valueType}」与 payload.slots.${ref.slotId}.valueType「${catalogEntry.valueType}」不一致`
-        )
-      );
+      const objectFieldKey = ref.objectFieldKey?.trim();
+      const objectFieldAllowed =
+        catalogEntry.valueType === "object" &&
+        objectFieldKey &&
+        isVisibilityConditionValueType(ref.valueType);
+      if (!objectFieldAllowed) {
+        issues.push(
+          issue(
+            ref.path,
+            `valueType「${ref.valueType}」与 payload.slots.${ref.slotId}.valueType「${catalogEntry.valueType}」不一致`
+          )
+        );
+      }
+    }
+    if (
+      catalogEntry.valueType === "object" &&
+      ref.objectFieldKey?.trim()
+    ) {
+      const fieldKey = ref.objectFieldKey.trim();
+      const catalogField = catalogEntry.objectFields?.find((field) => field.key === fieldKey);
+      if (!catalogField) {
+        issues.push(
+          issue(
+            ref.path,
+            `objectFieldKey「${fieldKey}」未在 payload.slots.${ref.slotId}.objectFields 中声明`
+          )
+        );
+      } else if (ref.valueType && catalogField.valueType !== ref.valueType) {
+        issues.push(
+          issue(
+            ref.path,
+            `valueType「${ref.valueType}」与对象字段「${fieldKey}」的类型「${catalogField.valueType}」不一致`
+          )
+        );
+      }
     }
     if (
       catalogEntry.valueType === "collection" &&
@@ -906,6 +1081,27 @@ function validateTemplateReferencesPayloadSlots(
             issue(
               ref.path,
               `itemFields 含 payload.slots 未声明的字段「${field.key}」`
+            )
+          );
+        }
+      }
+    }
+    if (
+      catalogEntry.valueType === "object" &&
+      ref.objectFields &&
+      catalogEntry.objectFields &&
+      ref.objectFields.length > 0 &&
+      catalogEntry.objectFields.length > 0
+    ) {
+      const catalogKeys = new Set(
+        catalogEntry.objectFields.map((field: BindingCollectionField) => field.key)
+      );
+      for (const field of ref.objectFields) {
+        if (!catalogKeys.has(field.key)) {
+          issues.push(
+            issue(
+              ref.path,
+              `objectFields 含 payload.slots 未声明的字段「${field.key}」`
             )
           );
         }

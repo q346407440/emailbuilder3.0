@@ -1,5 +1,9 @@
 import type { PublishStatus } from "../publish-status-contract/types";
 import type { CollectionDataSource } from "../payload-contract/collection-data-source";
+import type {
+  BuiltinVariableLengthPolicy,
+  BuiltinVariableScope,
+} from "../payload-contract/builtin-structure-catalog";
 import type { VisibilityRule } from "../visibility-contract/types";
 import type { ThemeRef } from "./themeRef";
 
@@ -81,6 +85,8 @@ export type BindingSpec = {
   slotPath?: string;
   /** valueType=collection 时，供变量赋值面板渲染数组编辑器。 */
   itemFields?: BindingCollectionField[];
+  /** valueType=object 时，对象槽的标量字段目录（与 itemFields 对称）。 */
+  objectFields?: BindingCollectionField[];
   minItems?: number;
   maxItems?: number;
 
@@ -121,6 +127,8 @@ export type RepeatFieldMapping = {
   id: string;
   /** collection 每一项中的字段路径，例如 title、imageSrc。 */
   sourcePath: string;
+  /** 分组重复时，本映射消费当前分组内第几个数据项；不填等同第 1 项。 */
+  itemOffset?: number;
   /** 原型子树内被赋值的目标 block。 */
   targetBlockId: string;
   /** 目标 block 的具体字段路径，例如 props.content、wrapperStyle.backgroundImage.src。 */
@@ -129,9 +137,24 @@ export type RepeatFieldMapping = {
   valueType?: BindingCollectionFieldValueType;
 };
 
+export type ObjectRegionBinding = {
+  mode: "object";
+  slotId: string;
+  /** 对象槽字段目录（与 payload.slots.objectFields 对齐） */
+  objectFields: BindingCollectionField[];
+  /** 对象字段到宿主子树目标字段的显式映射（形态与 repeat.fieldMappings 一致） */
+  fieldMappings?: RepeatFieldMapping[];
+  label?: string;
+  description?: string;
+};
+
 export type RepeatRegionBinding = {
   mode: "collection";
   slotId: string;
+  /** 列表消费方式：单项重复（默认）或分组重复。 */
+  itemMode?: "single" | "group";
+  /** 分组重复时每个复制组消费的数据条数。 */
+  groupSize?: number;
   /** 当前 collection 项中用于继续展开子列表的字段路径，例如 skus。 */
   itemPath?: string;
   /** 被按 collection 每一项复制的原型子树根节点。 */
@@ -240,12 +263,9 @@ export type WrapperBackgroundContentAlign = {
 /** layout 容器背景图（底图 + 子区块叠放），替代原 overlay 区块类型 */
 export type WrapperBackgroundImage = {
   src: string;
-  alt?: string;
   link?: string;
   fit?: "cover" | "contain";
   position?: string;
-  borderRadius?: BorderRadiusValue;
-  border?: BorderValue;
 };
 
 /** 容器在父级中的宽度语义：跟随内容 / 铺满父级 / 固定尺寸 */
@@ -399,6 +419,8 @@ type EmailBlockBase<TType extends string, TProps extends Record<string, unknown>
   props: TProps;
   bindings?: BlockBindings;
   repeat?: RepeatRegionBinding;
+  /** 对象变量字段映射；与 repeat 互斥，宿主规则同 repeat（layout/grid/image） */
+  objectBind?: ObjectRegionBinding;
   visibility?: VisibilityRule;
 };
 
@@ -442,6 +464,7 @@ export type PayloadSlotDefinition = {
   label: string;
   valueType: string;
   description?: string;
+  objectFields?: BindingCollectionField[];
   itemFields?: BindingCollectionField[];
   minItems?: number;
   maxItems?: number;
@@ -450,6 +473,12 @@ export type PayloadSlotDefinition = {
   /** 场景内置列表变量预设 id；有值时不使用粘贴 JSON 配置数据源 */
   sceneCollectionPresetId?: string;
   scene?: "loyalty-internal-admin" | "loyalty-merchant-admin";
+  /** 内置数据结构目录 id；新建变量统一从 src/payload-contract/builtin-structure-catalog 派生。 */
+  builtinStructureId?: string;
+  /** 内置结构范围冗余快照，便于 UI 展示。 */
+  builtinScope?: BuiltinVariableScope;
+  /** 列表长度策略快照；专用列表可声明 locked。 */
+  lengthPolicy?: BuiltinVariableLengthPolicy;
 };
 
 export type EmailPayload = {

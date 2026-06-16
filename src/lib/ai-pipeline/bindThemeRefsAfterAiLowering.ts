@@ -147,34 +147,16 @@ function bindBlock(
 
   if (block.type === "image") {
     bind("props.gap", themeRefPathForStorage("spacing", "gap"));
-    const panelPath = themeRefPathForStorage("radius", "panel");
-    const bgRadiusPath = "wrapperStyle.backgroundImage.borderRadius.radius";
-    const wrapRadiusPath = "wrapperStyle.borderRadius.radius";
-    const bgLiteral = normalizeLiteral(readTemplateFieldOnly(block, bgRadiusPath));
-    const wrapLiteral = normalizeLiteral(readTemplateFieldOnly(block, wrapRadiusPath));
-    if (
-      bgLiteral &&
-      bgLiteral === wrapLiteral &&
-      literalMatchesToken(bgLiteral, tokenPresets, panelPath)
-    ) {
-      let r = applyThemeTokenBinding(next, blockId, bgRadiusPath, panelPath);
-      if (r !== next) bound += 1;
-      next = r;
-      r = applyThemeTokenBinding(next, blockId, wrapRadiusPath, panelPath);
-      if (r !== next) bound += 1;
-      next = r;
-    } else {
-      const br = bindBorderRadiusRadius(
-        next,
-        tokenPresets,
-        blockId,
-        "wrapperStyle.backgroundImage.borderRadius",
-        "radius",
-        "panel"
-      );
-      next = br.template;
-      if (br.bound) bound += 1;
-    }
+    const panelBr = bindBorderRadiusRadius(
+      next,
+      tokenPresets,
+      blockId,
+      "wrapperStyle.borderRadius",
+      "radius",
+      "panel"
+    );
+    next = panelBr.template;
+    if (panelBr.bound) bound += 1;
   }
 
   if (block.type === "button") {

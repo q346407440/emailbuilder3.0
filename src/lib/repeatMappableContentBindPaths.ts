@@ -83,12 +83,10 @@ export function listRepeatMappableContentBindPaths(block: EmailBlock): string[] 
   }
   if (block.type === "image") {
     paths.add("wrapperStyle.backgroundImage.src");
-    paths.add("wrapperStyle.backgroundImage.alt");
     paths.add("wrapperStyle.backgroundImage.link");
   }
   if (block.type === "emailRoot" && block.wrapperStyle?.backgroundImage) {
     paths.add("wrapperStyle.backgroundImage.src");
-    paths.add("wrapperStyle.backgroundImage.alt");
     paths.add("wrapperStyle.backgroundImage.link");
   }
   if (
@@ -96,7 +94,6 @@ export function listRepeatMappableContentBindPaths(block: EmailBlock): string[] 
     block.wrapperStyle?.backgroundImage
   ) {
     paths.add("wrapperStyle.backgroundImage.src");
-    paths.add("wrapperStyle.backgroundImage.alt");
     paths.add("wrapperStyle.backgroundImage.link");
   }
   if (block.type === "icon") {

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { MjsGenerateMode } from "../../../layout-variant-ai-contract/mjsGenerateMode";
 import type { EmailBlock } from "../../../types/email";
 import type { PipelineProgressReporter } from "../ports/PipelineProgressReporter";
 
@@ -183,8 +182,6 @@ export type ManualRestoreRunInput = {
   progress?: PipelineProgressReporter;
   /** layout-only：覆盖默认 scripts/ 下 mjs 路径 */
   mjsPath?: string;
-  /** 首轮 MR:MjsGenerate 策略；默认 delta-first（mother + slot patch） */
-  mjsGenerateMode?: MjsGenerateMode;
 };
 
 /** 豆包一次性写 mjs → node 执行 的 demo 结果。 */

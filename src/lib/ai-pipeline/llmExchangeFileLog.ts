@@ -58,6 +58,13 @@ export type LlmExchangeLogEntry =
       detail?: unknown;
     };
 
+/**
+ * 对联合类型逐成员做 Omit。
+ * 直接写 `Omit<联合, K>` 会塌缩成「所有成员都有的公共字段」，丢掉各成员独有的字段
+ * （如 pipeline 事件没有 doubaoAttempt/url，导致 request/response 的这些字段被一起抹掉）。
+ */
+type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never;
+
 function isExchangeLogEnabled(): boolean {
   const flag = (process.env.AI_PIPELINE_LLM_EXCHANGE_LOG ?? "1").trim().toLowerCase();
   return flag !== "0" && flag !== "false" && flag !== "off";
@@ -99,7 +106,8 @@ export function sanitizeLlmExchangeBodyForLog(value: unknown): unknown {
 
 function sanitizeLogEntry(entry: LlmExchangeLogEntry): LlmExchangeLogEntry {
   if (!("body" in entry) || entry.body === undefined) return entry;
-  return { ...entry, body: sanitizeLlmExchangeBodyForLog(entry.body) };
+  // 仅净化 body 的「值」，结构与判别字段不变；sanitize 返回 unknown，故回写为同一条目类型。
+  return { ...entry, body: sanitizeLlmExchangeBodyForLog(entry.body) } as LlmExchangeLogEntry;
 }
 
 function appendPipelineJsonlLine(entry: LlmExchangeLogEntry): void {
@@ -121,7 +129,7 @@ function appendPipelineJsonlLine(entry: LlmExchangeLogEntry): void {
 
 /** 追加一条 LLM 请求/响应交换记录（JSON Lines，供本地测试排查）。 */
 export function appendLlmExchangeLog(
-  partial: Omit<LlmExchangeLogEntry, "ts"> & Partial<Pick<LlmExchangeLogEntry, "ts">>
+  partial: DistributiveOmit<LlmExchangeLogEntry, "ts"> & Partial<Pick<LlmExchangeLogEntry, "ts">>
 ): void {
   const ctx = getLlmExchangeContext();
   const entry = sanitizeLogEntry({
@@ -130,8 +138,8 @@ export function appendLlmExchangeLog(
     emailKey: partial.emailKey ?? ctx.emailKey,
     layoutVariantId: partial.layoutVariantId ?? ctx.layoutVariantId,
     stage: partial.stage ?? ctx.stage,
-    sectionId: partial.sectionId ?? ctx.sectionId,
-    attempt: partial.attempt ?? ctx.attempt,
+    sectionId: ("sectionId" in partial ? partial.sectionId : undefined) ?? ctx.sectionId,
+    attempt: ("attempt" in partial ? partial.attempt : undefined) ?? ctx.attempt,
     ...partial,
   } as LlmExchangeLogEntry);
   appendPipelineJsonlLine(entry);

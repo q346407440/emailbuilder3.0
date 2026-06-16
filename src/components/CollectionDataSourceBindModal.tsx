@@ -294,7 +294,7 @@ export function CollectionDataSourceBindModal({
     }
 
     if (!applyJsonImport(snapshot.jsonPaste)) return;
-    message.success("已导入，请在右侧核对列表行字段与数据预览，并点击「保存变量」");
+    message.success("已导入，请在右侧核对列表行字段与数据预览。");
     onApply();
   };
 
@@ -347,7 +347,7 @@ export function CollectionDataSourceBindModal({
           </div>
 
           <p className="repeat-region-bind-modal__section-hint">
-            粘贴 JSON 数组后点「确定」：自动识别列表行字段并填入右侧数据预览。失败时会提示原因；成功后请点「保存变量」落盘。
+            粘贴 JSON 数组后点「确定」：自动识别列表行字段并填入右侧数据预览。失败时会提示原因。
           </p>
 
           <div className="collection-ds-bind-modal__paste-layout">

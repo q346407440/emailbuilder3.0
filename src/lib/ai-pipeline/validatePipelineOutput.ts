@@ -18,7 +18,7 @@ export function validatePipelineOutput(output: MapPipelineOutput): void {
     const first = tokenIssues[0]!;
     throw new AiPipelineError(
       "VALIDATE_TEMPLATE_FAILED",
-      `样式预设校验失败：${first.message ?? first.reason ?? "未知错误"}`
+      `样式预设校验失败：${first.reason ?? "未知错误"}`
     );
   }
 }

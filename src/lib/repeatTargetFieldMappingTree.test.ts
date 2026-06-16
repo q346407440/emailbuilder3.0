@@ -95,12 +95,6 @@ describe("repeatTargetFieldMappingTree", () => {
         bindPath: "wrapperStyle.backgroundImage.src",
         label: "SKU 规格图 图片地址",
       },
-      {
-        key: "skuImage:wrapperStyle.backgroundImage.alt",
-        blockId: "skuImage",
-        bindPath: "wrapperStyle.backgroundImage.alt",
-        label: "SKU 规格图 替代文本",
-      },
     ];
     const entries = flattenRepeatTargetFieldsForNav(template, ["row"], targets);
     assert.ok(!entries.some((e) => e.kind === "group" && e.label === "行模板"));

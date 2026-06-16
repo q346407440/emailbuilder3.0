@@ -4,6 +4,7 @@ import {
   COMPACT_BLOCK_KINDS,
   COMPACT_SCHEMA_VERSION,
 } from "../compactTypes";
+import type { CompactStyleRawValue } from "../../../layout-variant-ai-contract/agentStyleKeys";
 
 const compactWrapperSchema: z.ZodType<Record<string, unknown>> = z
   .object({
@@ -41,11 +42,12 @@ export type CompactNodeParsed = {
   props?: Record<string, unknown>;
   wrapper?: Record<string, unknown>;
   children?: CompactNodeParsed[];
-  styleKeys?: Record<string, string | boolean | number>;
+  // 与 compactStyleValueSchema（允许标量/{literal,tokenPath}/嵌套）及 CompactNode.styleKeys 对齐。
+  styleKeys?: Record<string, CompactStyleRawValue>;
 };
 
 /** styleKeys 叶子或嵌套分组（如 buttonStyle 对象）。 */
-const compactStyleValueSchema: z.ZodType<unknown> = z.lazy(() =>
+const compactStyleValueSchema: z.ZodType<CompactStyleRawValue> = z.lazy(() =>
   z.union([
     z.string(),
     z.boolean(),
@@ -54,7 +56,7 @@ const compactStyleValueSchema: z.ZodType<unknown> = z.lazy(() =>
       literal: z.string(),
       tokenPath: z.string().optional(),
     }),
-    z.record(compactStyleValueSchema),
+    z.record(z.string(), compactStyleValueSchema),
   ])
 );
 
@@ -62,10 +64,10 @@ const compactNodeSchema: z.ZodType<CompactNodeParsed> = z.lazy(() =>
   z.object({
     kind: z.enum(COMPACT_BLOCK_KINDS),
     label: z.string().min(1).max(32).optional(),
-    props: z.record(z.unknown()).optional(),
+    props: z.record(z.string(), z.unknown()).optional(),
     wrapper: compactWrapperSchema.optional(),
     children: z.array(compactNodeSchema).optional(),
-    styleKeys: z.record(compactStyleValueSchema).optional(),
+    styleKeys: z.record(z.string(), compactStyleValueSchema).optional(),
   })
 );
 

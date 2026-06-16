@@ -107,7 +107,7 @@ function ListItemFieldPickerBody({
   return (
     <div className="text-body-inline-var-modal">
       <p className="text-body-var-pill-modal__hint">
-        列表变量 <code>{slotId}</code>（{collectionLabel}）的项字段；仅可改映射到本输入框的字段，不能切换为其他列表或字面量。
+        列表「{collectionLabel}」的字段：在此选择本输入框要显示的字段，不可切换为其他列表或固定内容。
       </p>
 
       <div
@@ -132,7 +132,7 @@ function ListItemFieldPickerBody({
       ) : (
         <>
           <p className="text-body-var-pill-modal__hint">
-            在下方表格中单选一项字段后点「确定」。「首项示例」列取自 payload 列表第 1 项。
+            在下方表格中选择一个字段后点「确定」。「首项示例」列取自列表的第一条数据。
           </p>
           <SelectablePickerTable
             ariaLabel="可选列表项字段"

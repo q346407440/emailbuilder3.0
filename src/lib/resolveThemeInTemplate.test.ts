@@ -185,19 +185,16 @@ describe("resolveThemeInTemplate", () => {
           parentId: null,
           children: [],
           wrapperStyle: {
+            borderRadius: { mode: "unified", radius: { $themeRef: "tokens.radius.md" } },
             backgroundImage: {
               src: "https://example.com/x.png",
-              alt: "",
-              link: "",
               position: "center",
               fit: "cover",
-              borderRadius: { mode: "unified", radius: { $themeRef: "tokens.radius.md" } },
-              border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
             },
           },
           props: {},
           bindings: {
-            "wrapperStyle.backgroundImage.borderRadius.radius": {
+            "wrapperStyle.borderRadius.radius": {
               slotId: "tokens.radius.md",
               mode: "theme",
               tokenPath: "tokens.radius.md",
@@ -210,10 +207,9 @@ describe("resolveThemeInTemplate", () => {
 
     const result = resolveThemeInTemplate(input, theme);
     assert.equal(result.issues.length, 0);
-    const bg = result.template?.blocks["img1"]?.wrapperStyle?.backgroundImage as
-      | { borderRadius?: { mode: string; radius: string } }
+    const br = result.template?.blocks["img1"]?.wrapperStyle?.borderRadius as
+      | { mode: string; radius: string }
       | undefined;
-    const br = bg?.borderRadius;
     assert.deepEqual(br, { mode: "unified", radius: "8px" });
   });
 

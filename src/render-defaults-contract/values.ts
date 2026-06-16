@@ -29,6 +29,9 @@ export const BUTTON_INNER_LINE_HEIGHT = "normal";
 /** 图片 / 容器背景图加载前或透明区域兜底色 */
 export const IMAGE_BACKGROUND_FALLBACK_COLOR = "#f0f0f0";
 
+/** 容器/画布/图片底图替代文本：禁止写 JSON，渲染时统一注入 */
+export const WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT = "此处是图片";
+
 /** 文本块行高（画布预览） */
 export const FIXED_TEXT_LINE_HEIGHT = "1.3";
 
@@ -62,6 +65,7 @@ export const RENDER_DEFAULT_VALUES = {
   BUTTON_INNER_PADDING,
   BUTTON_INNER_LINE_HEIGHT,
   IMAGE_BACKGROUND_FALLBACK_COLOR,
+  WRAPPER_BACKGROUND_IMAGE_DEFAULT_ALT,
   FIXED_TEXT_LINE_HEIGHT,
   EMAIL_ROOT_FIXED_WIDTH,
   PREVIEW_BLOCK_OVERFLOW,

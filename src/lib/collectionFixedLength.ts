@@ -1,4 +1,4 @@
-import type { EmailPayload } from "../types/email";
+import type { EmailPayload, EmailTemplate, RepeatRegionBinding } from "../types/email";
 import {
   clampFixedLength,
   patchPayloadCollectionSlot,
@@ -9,6 +9,7 @@ import {
   isDerivedSortPolicy,
   readSortPolicyFromBuiltinDataSource,
 } from "../payload-contract/collection-builtin-sort-policy";
+import { getPayloadSlotBuiltinStructure } from "./builtinStructureSlot";
 
 export type CollectionFixedLengthEditability = {
   editable: boolean;
@@ -29,8 +30,19 @@ export function collectionFixedLengthEditability(
   }
 
   const entry = payload.slots[slotId];
+  if (entry?.valueType === "object") {
+    return { editable: false, reason: "对象变量无列表长度配置。" };
+  }
   if (!entry || entry.valueType !== "collection") {
     return { editable: false, reason: "非列表变量。" };
+  }
+
+  const structure = getPayloadSlotBuiltinStructure(entry);
+  if (structure?.lengthPolicy?.kind === "locked") {
+    return {
+      editable: false,
+      reason: `该专用变量固定为 ${structure.lengthPolicy.fixedLength} 条，不可修改。`,
+    };
   }
 
   const ds = entry.dataSource;
@@ -58,6 +70,7 @@ export function applyPayloadCollectionFixedLength(
 ): EmailPayload {
   const entry = payload.slots[slotId];
   if (!entry || entry.valueType !== "collection") return payload;
+  if (getPayloadSlotBuiltinStructure(entry)?.lengthPolicy?.kind === "locked") return payload;
 
   const len = clampFixedLength(length);
   const itemFields = entry.itemFields ?? [];
@@ -81,4 +94,65 @@ export function applyPayloadCollectionFixedLength(
 export function readPayloadCollectionFixedLength(payload: EmailPayload, slotId: string): number {
   const entry = payload.slots[slotId];
   return resolveCollectionFixedLength(entry?.minItems, entry?.maxItems);
+}
+
+/**
+ * repeat 展开时的展示条数上限。
+ * 顶层列表在槽声明了 min/max 时以 payload.slots 为真源，未声明则回落 repeat.maxItems；
+ * 嵌套子列表（itemPath）仍用 repeat 绑定上的 maxItems。
+ */
+export function resolveRepeatExpansionMaxItems(
+  repeat: RepeatRegionBinding,
+  payload: EmailPayload | null
+): number | undefined {
+  if (repeat.itemPath?.trim()) {
+    return typeof repeat.maxItems === "number" ? repeat.maxItems : undefined;
+  }
+  if (payload) {
+    const slotDef = payload.slots?.[repeat.slotId];
+    if (
+      slotDef?.valueType === "collection" &&
+      (slotDef.minItems !== undefined || slotDef.maxItems !== undefined)
+    ) {
+      return resolveCollectionFixedLength(slotDef.minItems, slotDef.maxItems);
+    }
+  }
+  return typeof repeat.maxItems === "number" ? repeat.maxItems : undefined;
+}
+
+/** 将 payload 槽固定长度同步到 template 中所有引用该 slotId 的 repeat 绑定 */
+export function syncTemplateRepeatBindingsFixedLength(
+  template: EmailTemplate,
+  slotId: string,
+  length: number
+): EmailTemplate {
+  const len = clampFixedLength(length);
+  let changed = false;
+  const blocks = { ...template.blocks };
+  for (const [blockId, block] of Object.entries(blocks)) {
+    const repeat = block.repeat;
+    if (repeat?.mode !== "collection" || repeat.slotId !== slotId) continue;
+    if (repeat.minItems === len && repeat.maxItems === len) continue;
+    blocks[blockId] = {
+      ...block,
+      repeat: { ...repeat, minItems: len, maxItems: len },
+    };
+    changed = true;
+  }
+  return changed ? { ...template, blocks } : template;
+}
+
+/** 列表固定长度变更：同步 payload.slots 与 template.repeat 绑定 */
+export function applyCollectionFixedLengthChange(
+  template: EmailTemplate,
+  payload: EmailPayload,
+  slotId: string,
+  length: number
+): { template: EmailTemplate; payload: EmailPayload } {
+  const nextPayload = applyPayloadCollectionFixedLength(payload, slotId, length);
+  const fixedLength = readPayloadCollectionFixedLength(nextPayload, slotId);
+  return {
+    template: syncTemplateRepeatBindingsFixedLength(template, slotId, fixedLength),
+    payload: nextPayload,
+  };
 }

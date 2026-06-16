@@ -124,6 +124,51 @@ function bindingValuePresentAtPath(block: EmailBlock, bindPath: string): boolean
   return value !== undefined && value !== null && value !== "";
 }
 
+function collectSubtreeBlockIds(template: EmailTemplate, rootId: string): Set<string> {
+  const ids = new Set<string>();
+  const visit = (blockId: string) => {
+    if (ids.has(blockId)) return;
+    const block = template.blocks[blockId];
+    if (!block) return;
+    ids.add(blockId);
+    for (const childId of block.children ?? []) visit(childId);
+  };
+  visit(rootId);
+  return ids;
+}
+
+function minMappedItemOffsetInSubtree(
+  template: EmailTemplate,
+  repeat: RepeatRegionBinding,
+  rootId: string
+): number | null {
+  const subtreeIds = collectSubtreeBlockIds(template, rootId);
+  let minOffset: number | null = null;
+  for (const mapping of repeat.fieldMappings ?? []) {
+    if (!subtreeIds.has(mapping.targetBlockId)) continue;
+    const offset = Math.max(0, Math.floor(mapping.itemOffset ?? 0));
+    minOffset = minOffset === null ? offset : Math.min(minOffset, offset);
+  }
+  return minOffset;
+}
+
+function shouldSkipMissingGroupItemSlot(
+  opts: {
+    sourceTemplate: EmailTemplate;
+    repeat: RepeatRegionBinding;
+    groupItems?: Record<string, unknown>[];
+    repeatHostSourceId: string;
+  },
+  parentSourceId: string,
+  childSourceId: string
+): boolean {
+  if (opts.repeat.itemMode !== "group") return false;
+  if (parentSourceId !== opts.repeatHostSourceId) return false;
+  const groupItemCount = opts.groupItems?.length ?? 1;
+  const itemOffset = minMappedItemOffsetInSubtree(opts.sourceTemplate, opts.repeat, childSourceId);
+  return itemOffset !== null && itemOffset >= groupItemCount;
+}
+
 /** 物化静态行：剥离已写入 props 的列表项 collection 绑定 */
 export function finalizeMaterializedStaticBlock(block: EmailBlock): void {
   if (!block.bindings) return;
@@ -159,6 +204,7 @@ export function clonePrototypeSubtreeSnapshot(opts: {
   repeatHostSourceId: string;
   repeat: RepeatRegionBinding;
   item: Record<string, unknown>;
+  groupItems?: Record<string, unknown>[];
   itemPath: string;
   itemIndex: number;
   materializeRepeatItemBindings: boolean;
@@ -201,7 +247,7 @@ export function clonePrototypeSubtreeSnapshot(opts: {
     if (fieldMappings?.length) {
       for (const mapping of fieldMappings) {
         if (opts.materializeRepeatItemBindings) {
-          const mappedValue = resolveRepeatFieldMappingValue(mapping, opts.item, parentItem);
+          const mappedValue = resolveRepeatFieldMappingValue(mapping, opts.item, parentItem, opts.groupItems);
           if (mappedValue !== undefined) {
             materializeRepeatBindingValue(nextBlock, mapping.targetBindPath, mappedValue);
             continue;
@@ -230,6 +276,7 @@ export function clonePrototypeSubtreeSnapshot(opts: {
 
     const clonedChildren: string[] = [];
     for (const childId of source.children ?? []) {
+      if (shouldSkipMissingGroupItemSlot(opts, sourceId, childId)) continue;
       const childSnapshotId = `${snapshotId}__${childId}`;
       const clonedChildId = visit(childId, snapshotId, childSnapshotId);
       if (clonedChildId) clonedChildren.push(clonedChildId);

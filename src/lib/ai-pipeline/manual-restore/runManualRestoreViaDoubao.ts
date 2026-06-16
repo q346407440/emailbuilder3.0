@@ -7,23 +7,22 @@ import { llmExchangeContextStore } from "../llmCallContext";
 import { wrapLlmClientWithQueue } from "../llmRequestQueue";
 import { appendRetryToUserText, feedbackFromLlmAttempt, LlmStageFailure } from "../llmRetryFeedback";
 import { callLlmStageWithRetry } from "../callLlmStageWithRetry";
+import { isTransientLlmError } from "../llmTransientError";
 import { parseLlmJson } from "../parseLlmJson";
 import {
   createNoopPipelineProgressReporter,
   type PipelineProgressReporter,
 } from "../ports/PipelineProgressReporter";
 import { MANUAL_RESTORE_MJS_UI_STEPS_INITIAL, MANUAL_RESTORE_MJS_MAX_ATTEMPTS, formatManualRestoreAttemptLabel } from "../../../layout-variant-ai-contract/progress";
-import {
-  DEFAULT_MJS_GENERATE_MODE,
-  mjsGenerateModeLabel,
-  type MjsGenerateMode,
-} from "../../../layout-variant-ai-contract/mjsGenerateMode";
-import { buildMjsGeneratorSystemPrompt, buildMjsGeneratorUserText } from "./promptsMjs";
 import { buildMjsDeltaSystemPrompt, buildMjsDeltaUserText } from "./promptsMjsDelta";
-import { buildMjsPatchSystemPrompt, buildMjsPatchUserText } from "./promptsMjsEdit";
+import {
+  buildMjsPatchSystemPrompt,
+  buildMjsPatchUserText,
+  type MjsSlotRepairGroup,
+} from "./promptsMjsEdit";
 import { buildVisualBlueprintSystemPrompt, buildVisualBlueprintUserText } from "./promptsVisualBlueprint";
 import { buildMotherMjsBody } from "./mjsMotherBody";
-import { assertMjsComplete, extractMjsBodyFromLlm, parseEmailKeyFromMjs } from "./extractMjsFromLlm";
+import { assertMjsComplete, parseEmailKeyFromMjs } from "./extractMjsFromLlm";
 import type { InjectedMjsAssets } from "./injectedMjsAssets";
 import { formatInjectedAssetsForMjs } from "./injectedMjsAssets";
 import { assembleMjsFromBody, deriveMjsIdPrefix, type MjsScaffoldContext } from "./mjsScaffold";
@@ -39,30 +38,31 @@ import {
   type ManualRestoreRunInput,
   type ManualRestoreRunResult,
 } from "./types";
+import { normalizeBlueprintFromLlm } from "./normalizeBlueprintFromLlm";
 import { logStepDone, stepStart } from "./stepTiming";
 import { createMjsRunTiming, type MjsRunTimingRecordOpts } from "./mjsRunTiming";
 import { applyMjsAutofix } from "./mjsAutofix";
 import { literalizeMjsThemeRefs } from "./mjsLiteralize";
 import { applyMjsPatches, isMjsPatchMergeClean, parseMjsPatchesFromLlm } from "./mjsPatchApply";
-import { buildMjsErrorSnippets } from "./mjsLocateSnippets";
-import { runMjsAndValidate } from "./mjsRunValidate";
-import { buildMjsFullRegenHint } from "./mjsRegenHint";
+import { injectedAssetKeySets, screenPatchesForUnknownAssetKeys } from "./mjsAssetKeyGuard";
+import { groupValidateIssuesBySlot } from "./mjsErrorSlotMap";
+import { extractMjsSlotContent } from "../../../mjs-patch-contract";
+import { runMjsAndValidate, tokenFallbacksFromBlueprint } from "./mjsRunValidate";
 import { formatVisualLintIssues, lintManualRestoreTemplateFile } from "./mjsVisualLint";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const LOG_TAG = "[manual-restore:mjs]";
-/** 首次整段生成 mjs 可能较长（复杂模板偶发 >5min） */
+/** 底稿 patch 首轮包含看图与 slot 生成，复杂模板偶发 >5min。 */
 const MJS_GENERATE_TIMEOUT_MS = 420_000;
-const MJS_PATCH_TIMEOUT_MS = 180_000;
+/** patch 修复可能整段重生成多个 slot（与整稿同量级输出），180s 实测会被掐断。 */
+const MJS_PATCH_TIMEOUT_MS = 300_000;
 const VISUAL_BLUEPRINT_TIMEOUT_MS = 180_000;
-/** 完整 mjs 约 600 行，需足够 token 避免截断 */
-const MJS_MAX_TOKENS = 32_768;
 /** 底稿 patch 只输出 XML slot patch，不应按整段 body 放大输出预算。 */
 const MJS_DELTA_MAX_TOKENS = 16_384;
 const MJS_PATCH_MAX_TOKENS = 16_384;
 /** visual blueprint 只做轻量规格提取，避免输出半份模板 IR。 */
 const VISUAL_BLUEPRINT_MAX_TOKENS = 4_096;
-/** 首次生成 + 最多 2 次重试（delta-first 下始终走底稿 patch 修复闭环）。 */
+/** 首次底稿 patch + 最多 2 次重试。 */
 const MAX_MJS_ATTEMPTS = MANUAL_RESTORE_MJS_MAX_ATTEMPTS;
 
 const MJS_PROGRESS_OPTS = { maxAttempts: MAX_MJS_ATTEMPTS } as const;
@@ -77,12 +77,23 @@ type AttemptFailure = {
   kind: FailureKind;
   errors: string[];
   rawContent?: string;
+  /**
+   * 本轮被资产键守卫拒绝的补丁原因（含合法键清单）。
+   * 须随失败跨 attempt 透传进下一轮修复 prompt——否则模型看不到拒绝原因会原样重犯
+   * （2026-06-12 模板 38 实证：同一批编造 ICON 键连续两轮被拒）。
+   */
+  guardRejections?: string[];
 };
 
-/** 单次 attempt 步骤函数的结果：成功（产出 mjs + stdout）或需重试（携带最新源码与失败原因）。终止性失败直接 throw。 */
+/**
+ * 单次 attempt 步骤函数的结果：成功（产出 mjs + stdout）/ 需重试（携带最新源码与失败原因）/
+ * 保底交付（最终尝试 validate 或视觉门未全过，但 staging 产物可用且与 mjs 同步——交付并附问题清单，不空手而归）。
+ * 仅 node 执行失败等「无可用产物」场景才 throw。
+ */
 type AttemptOutcome =
   | { kind: "success"; mjsSource: string; mjsStdout: string }
-  | { kind: "retry"; mjsSource: string; lastFailure: AttemptFailure };
+  | { kind: "retry"; mjsSource: string; lastFailure: AttemptFailure }
+  | { kind: "degraded"; mjsSource: string; mjsStdout: string; issues: string[] };
 
 function isPatchRetryKind(kind: FailureKind | undefined): boolean {
   return kind === "validate" || kind === "visual" || kind === "node" || kind === "patch";
@@ -94,6 +105,15 @@ function canUsePatchRetryPath(
   mjsSource: string
 ): boolean {
   return attempt > 1 && mjsSource.length > 0 && isPatchRetryKind(lastFailure?.kind);
+}
+
+/** 两次失败的错误集合是否完全相同（顺序无关）——相同说明该修复路径已不收敛。 */
+function sameFailureErrorSet(a: AttemptFailure | null, b: AttemptFailure): boolean {
+  if (!a || a.kind !== b.kind) return false;
+  if (a.errors.length !== b.errors.length) return false;
+  const sortedA = [...a.errors].sort();
+  const sortedB = [...b.errors].sort();
+  return sortedA.every((line, i) => line === sortedB[i]);
 }
 
 function bufferToDataUrl(buffer: Buffer, mimeType: string): string {
@@ -182,22 +202,6 @@ function finalizeAssembledMjs(
   return { ok: true, source: mjsSource, errors: [] };
 }
 
-/** 拼接 mjs；可恢复错误（截断/完整性）仍返回 source 供 patch 路径修复。 */
-function tryPostProcessMjs(
-  rawMjs: string,
-  injectedAssets: InjectedMjsAssets,
-  scaffold: MjsScaffoldContext
-): MjsPostProcessResult {
-  let body: string;
-  try {
-    body = extractMjsBodyFromLlm(rawMjs);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "提取 mjs body 失败";
-    return { ok: false, source: "", errors: [msg] };
-  }
-  return finalizeAssembledMjs(body, injectedAssets, scaffold);
-}
-
 /** 底稿 merge 后拼接 mjs（跳过 LLM body 提取）。 */
 function tryPostProcessMjsFromBody(
   body: string,
@@ -257,14 +261,12 @@ type MjsLlmClient = ReturnType<typeof wrapLlmClientWithQueue>;
  * 把原本由闭包隐式捕获的 IO / 进度 / LLM 客户端收敛为显式入参，便于复用与隔离。
  */
 type MjsAttemptContext = {
-  mjsGenerateMode: MjsGenerateMode;
   imageDataUrl: string;
   logDir: string;
   mjsPath: string;
   mjsScaffold: MjsScaffoldContext;
   injectedAssets: InjectedMjsAssets;
   visualBlueprint: ManualRestoreBlueprint;
-  generateLlm: MjsLlmClient;
   deltaLlm: MjsLlmClient;
   patchLlm: MjsLlmClient;
   generateStep: MjsStepProgress;
@@ -283,6 +285,21 @@ type MjsAttemptContext = {
     blueprint: ManualRestoreBlueprint
   ) => VisualGateResult;
 };
+
+/** JSON 层确定性 autofix 生效时记录步骤（机械契约问题已在落盘产物上按路径修复）。 */
+function logJsonAutofixes(
+  ctx: MjsAttemptContext,
+  run: ReturnType<typeof runMjsAndValidate>,
+  attempt: number
+): void {
+  if (run.jsonAutofixes.length === 0) return;
+  ctx.stepDone(
+    `  JSON 层 autofix ${run.jsonAutofixes.length} 处（尝试 ${attempt}）`,
+    stepStart(),
+    run.jsonAutofixes.slice(0, 6).join(" · "),
+    { stepId: "MR:MjsGenerate", attempt }
+  );
+}
 
 /**
  * patch 修复分支：autofix → validate → 视觉门 → 豆包 patch → apply → validate → 视觉门。
@@ -319,6 +336,7 @@ async function runPatchRepairAttempt(
 
     const tNodeAutofix = stepStart();
     const autofixRun = ctx.runValidate(mjsSource);
+    logJsonAutofixes(ctx, autofixRun, attempt);
     fs.writeFileSync(
       path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}-autofix.log`),
       autofixRun.mjsStdout
@@ -345,7 +363,9 @@ async function runPatchRepairAttempt(
       lastFailure = { kind: "visual", errors: patchErrors, rawContent: mjsSource };
       ctx.generateStep.logDetail(
         mjsAttemptDetail(
-          `visual lint 未通过（error ${visualGate.blocking.length} / warning ${visualGate.warnings.length}），继续 patch`,
+          visualGate.blocking.length > 0
+            ? `visual lint 未通过（error ${visualGate.blocking.length} / warning ${visualGate.warnings.length}），继续 patch`
+            : `视觉质量润色（${visualGate.warnings.length} 条提示），继续 patch`,
           attempt
         ),
         { attempt, ...MJS_PROGRESS_OPTS }
@@ -378,27 +398,64 @@ async function runPatchRepairAttempt(
     attempt,
     ...MJS_PROGRESS_OPTS,
   });
-  // patch 始终基于 autofix 后的 mjsSource（非上一轮原始稿）
-  const snippets = buildMjsErrorSnippets(mjsSource, patchErrors);
+  // patch 始终基于 autofix 后的 mjsSource（非上一轮原始稿）；
+  // 修复粒度 = slot 整段重生成（锚点定位与内容无关，不存在 search 未命中一类故障）
+  const grouped = groupValidateIssuesBySlot(patchErrors, ctx.mjsScaffold.idPrefix);
+  const slotGroups: MjsSlotRepairGroup[] = [];
+  const unmapped = [...grouped.unmapped];
+  for (const group of grouped.groups) {
+    const currentSource = extractMjsSlotContent(mjsSource, group.slotId);
+    if (currentSource == null) {
+      // slot 锚点已被破坏 → 该组错误降级为 search 兜底（附完整脚本）
+      unmapped.push(...group.errors);
+      continue;
+    }
+    slotGroups.push({ slotId: group.slotId, errors: group.errors, currentSource });
+  }
+  const promptMode = unmapped.length > 0 ? "both" : "slot";
+  const keySets = injectedAssetKeySets(ctx.injectedAssets);
+  const assetKeyGuide = `ICON{${[...keySets.ICON].join(",")}} PEXELS{${[...keySets.PEXELS].join(",")}}`;
   const rawPatch = await ctx.patchLlm.complete([
-    { role: "system", content: buildMjsPatchSystemPrompt(ctx.visualBlueprint) },
+    { role: "system", content: buildMjsPatchSystemPrompt(ctx.visualBlueprint, promptMode, assetKeyGuide) },
     {
       role: "user",
-      content: buildMjsPatchUserText(mjsSource, patchErrors, snippets),
+      content: buildMjsPatchUserText({
+        errorLines: patchErrors,
+        slotGroups,
+        unmapped,
+        fullSource: unmapped.length > 0 ? mjsSource : undefined,
+        guardRejections: incoming.guardRejections,
+      }),
     },
   ]);
   ctx.stepDone( `  豆包 Patch API 返回（尝试 ${attempt}）`, tPatchLlm);
   fs.writeFileSync(path.join(ctx.logDir, `04-patch-raw-attempt-${attempt}.txt`), rawPatch);
 
   const tApply = stepStart();
-  const patches = parseMjsPatchesFromLlm(rawPatch);
+  const parsedPatches = parseMjsPatchesFromLlm(rawPatch);
+  // 资产键守卫：引用注入表不存在的 ICON/PEXELS 键的补丁整体拒绝（防止空 src 静默回归）
+  const screened = screenPatchesForUnknownAssetKeys(parsedPatches, ctx.injectedAssets);
+  // 本轮有拒绝时随失败透传，下一轮修复 prompt 须看到拒绝原因与合法键清单
+  const guardRejections = screened.rejections.length > 0 ? screened.rejections : undefined;
+  if (screened.rejections.length > 0) {
+    ctx.stepDone(
+      `  资产键守卫拒绝 ${screened.rejections.length} 条补丁（尝试 ${attempt}）`,
+      tApply,
+      screened.rejections.slice(0, 2).join("; "),
+      { stepId: "MR:MjsGenerate", attempt }
+    );
+  }
+  const patches = screened.accepted;
   const applied = applyMjsPatches(mjsSource, patches);
-  if (!isMjsPatchMergeClean(applied, patches.length)) {
-    const mergeIssue = applied.hasPatchArtifacts
-      ? "merge 后残留 patch 标记"
-      : applied.applied === 0
-        ? "补丁未命中任何 SEARCH 块"
-        : `补丁未全部命中（${applied.applied}/${patches.length}）`;
+  if (patches.length === 0 || !isMjsPatchMergeClean(applied, patches.length)) {
+    const mergeIssue =
+      patches.length === 0
+        ? "补丁全部被资产键守卫拒绝"
+        : applied.hasPatchArtifacts
+          ? "merge 后残留 patch 标记"
+          : applied.applied === 0
+            ? "补丁未命中任何 SEARCH 块"
+            : `补丁未全部命中（${applied.applied}/${patches.length}）`;
     ctx.stepDone(
       `  ${mergeIssue}，继续 patch 修复（尝试 ${attempt}）`,
       tApply,
@@ -411,13 +468,18 @@ async function runPatchRepairAttempt(
     });
     lastFailure = {
       kind: "patch",
-      errors: [mergeIssue, ...applied.failures, ...lastFailure.errors.slice(0, 10)],
+      errors: [mergeIssue, ...screened.rejections, ...applied.failures, ...lastFailure.errors.slice(0, 10)],
       rawContent: rawPatch,
+      guardRejections,
     };
     if (attempt >= MAX_MJS_ATTEMPTS) {
-      throw new LlmStageFailure(
-        feedbackFromLlmAttempt(rawPatch, null, "补丁未命中", applied.failures)
-      );
+      // staging 产物来自本轮 patch 前的最后一次 node 运行，与当前 mjsSource 同步 → 保底交付
+      return {
+        kind: "degraded",
+        mjsSource,
+        mjsStdout: "",
+        issues: [mergeIssue, ...patchErrors],
+      };
     }
     return { kind: "retry", mjsSource, lastFailure };
   }
@@ -438,6 +500,7 @@ async function runPatchRepairAttempt(
   const tNode = stepStart();
   console.log(`${LOG_TAG}   node 执行 mjs（patch 后，尝试 ${attempt}）…`);
   const patchRun = ctx.runValidate(mjsSource);
+  logJsonAutofixes(ctx, patchRun, attempt);
   fs.writeFileSync(
     path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}.log`),
     patchRun.mjsStdout
@@ -449,7 +512,7 @@ async function runPatchRepairAttempt(
       detail: mjsAttemptDetail("patch 后 mjs 执行失败", attempt),
       ...MJS_PROGRESS_OPTS,
     });
-    lastFailure = { kind: "node", errors: patchRun.allIssues, rawContent: mjsSource };
+    lastFailure = { kind: "node", errors: patchRun.allIssues, rawContent: mjsSource, guardRejections };
     ctx.stepDone(`  mjs 执行失败（patch 后，尝试 ${attempt}）`, tNode, undefined, {
       stepId: "MR:RunValidate",
       attempt,
@@ -473,21 +536,19 @@ async function runPatchRepairAttempt(
       detail: mjsAttemptDetail("validate 未通过（patch 后）", attempt),
       ...MJS_PROGRESS_OPTS,
     });
-    lastFailure = { kind: "validate", errors: patchRun.allIssues };
+    lastFailure = { kind: "validate", errors: patchRun.allIssues, guardRejections };
     writeValidateErrorLog(ctx.logDir, attempt, patchRun.allIssues);
     ctx.stepDone(`  validate 未通过（patch 后，尝试 ${attempt}）`, tValidate, undefined, {
       stepId: "MR:RunValidate",
       attempt,
     });
     if (attempt >= MAX_MJS_ATTEMPTS) {
-      throw new LlmStageFailure(
-        feedbackFromLlmAttempt(
-          mjsSource,
-          null,
-          "validate 未通过",
-          patchRun.allIssues.slice(0, 25)
-        )
-      );
+      return {
+        kind: "degraded",
+        mjsSource,
+        mjsStdout: patchRun.mjsStdout,
+        issues: patchRun.allIssues,
+      };
     }
     return { kind: "retry", mjsSource, lastFailure };
   }
@@ -504,16 +565,15 @@ async function runPatchRepairAttempt(
       kind: "visual",
       errors: visualGateErrors(patchVisualGate),
       rawContent: mjsSource,
+      guardRejections,
     };
     if (attempt >= MAX_MJS_ATTEMPTS) {
-      throw new LlmStageFailure(
-        feedbackFromLlmAttempt(
-          mjsSource,
-          null,
-          "visual lint 未通过",
-          patchVisualGate.blocking.slice(0, 25)
-        )
-      );
+      return {
+        kind: "degraded",
+        mjsSource,
+        mjsStdout: patchRun.mjsStdout,
+        issues: patchVisualGate.blocking,
+      };
     }
     return { kind: "retry", mjsSource, lastFailure };
   }
@@ -522,7 +582,7 @@ async function runPatchRepairAttempt(
 }
 
 /**
- * 生成分支：delta-first 底稿+patch / 整段生成 → 后处理 → proactive/reactive autofix → validate → 视觉门。
+ * 生成分支：底稿+patch → 后处理 → proactive/reactive autofix → validate → 视觉门。
  */
 async function runGenerateAttempt(
   ctx: MjsAttemptContext,
@@ -532,26 +592,20 @@ async function runGenerateAttempt(
 ): Promise<AttemptOutcome> {
   let mjsSource = baseSource;
   let lastFailure: AttemptFailure | null = incoming;
-  const allowFullBodyGenerate = ctx.mjsGenerateMode !== "delta-first";
-  const regenHint =
-    allowFullBodyGenerate && lastFailure?.kind === "generate" && lastFailure.errors.length > 0
-      ? buildMjsFullRegenHint({
-          previousOutput: lastFailure.rawContent ?? mjsSource,
-          errors: lastFailure.errors,
-        })
-      : "";
-
-  const tryDeltaFirst =
-    ctx.mjsGenerateMode === "delta-first" && attempt === 1 && !regenHint;
   let rawMjs = "";
   let post: MjsPostProcessResult | null = null;
 
-  if (tryDeltaFirst) {
+  if (attempt === 1) {
     const motherBody = buildMotherMjsBody();
     fs.writeFileSync(path.join(ctx.logDir, "01-mother-body.mjs"), motherBody);
 
+    // 一次性整稿生成：单次调用产出全部 slot patch（不按 slot 分发并行）
     const tDeltaLlm = stepStart();
     console.log(`${LOG_TAG}   豆包 MR:MjsGenerate API（尝试 1 · 底稿+patch）…`);
+    ctx.generateStep.logDetail(mjsAttemptDetail("豆包整稿生成（底稿+patch）", attempt), {
+      attempt,
+      ...MJS_PROGRESS_OPTS,
+    });
     const rawDelta = await ctx.deltaLlm.complete([
       { role: "system", content: buildMjsDeltaSystemPrompt(ctx.injectedAssets, ctx.visualBlueprint) },
       {
@@ -572,10 +626,10 @@ async function runGenerateAttempt(
       stepId: "MR:MjsGenerate",
       attempt,
     });
+    const deltaPatches = parseMjsPatchesFromLlm(rawDelta);
     fs.writeFileSync(path.join(ctx.logDir, `01-llm-delta-attempt-${attempt}.txt`), rawDelta);
 
     const tApplyDelta = stepStart();
-    const deltaPatches = parseMjsPatchesFromLlm(rawDelta);
     const deltaApplied = applyMjsPatches(motherBody, deltaPatches);
     fs.writeFileSync(
       path.join(ctx.logDir, `01-delta-merged-attempt-${attempt}.mjs`),
@@ -628,42 +682,14 @@ async function runGenerateAttempt(
   }
 
   if (!post) {
-    if (!allowFullBodyGenerate) {
-      throw new LlmStageFailure(
-        feedbackFromLlmAttempt(
-          mjsSource,
-          null,
-          "底稿 patch 未产出可执行 mjs",
-          lastFailure?.errors ?? []
-        )
-      );
-    }
-    const tLlm = stepStart();
-    console.log(
-      `${LOG_TAG}   豆包 MR:MjsGenerate API（尝试 ${attempt}${regenHint ? " · 整段重写" : tryDeltaFirst ? " · 整段生成" : " · 首次"}）…`
+    throw new LlmStageFailure(
+      feedbackFromLlmAttempt(
+        mjsSource,
+        null,
+        "底稿 patch 未产出可执行 mjs",
+        lastFailure?.errors ?? []
+      )
     );
-    rawMjs = await ctx.generateLlm.complete([
-      { role: "system", content: buildMjsGeneratorSystemPrompt(ctx.injectedAssets, ctx.visualBlueprint) },
-      {
-        role: "user",
-        content: [
-          { type: "image_url", image_url: { url: ctx.imageDataUrl } },
-          {
-            type: "text",
-            text:
-              buildMjsGeneratorUserText({
-                idPrefix: ctx.mjsScaffold.idPrefix,
-              }) + regenHint,
-          },
-        ],
-      },
-    ]);
-    ctx.stepDone(`  豆包 API 返回（尝试 ${attempt}）`, tLlm, undefined, {
-      stepId: "MR:MjsGenerate",
-      attempt,
-    });
-    fs.writeFileSync(path.join(ctx.logDir, `01-llm-raw-attempt-${attempt}.txt`), rawMjs);
-    post = tryPostProcessMjs(rawMjs, ctx.injectedAssets, ctx.mjsScaffold);
   }
 
   const tPost = stepStart();
@@ -734,6 +760,7 @@ async function runGenerateAttempt(
   const tNode = stepStart();
   console.log(`${LOG_TAG}   node 执行 mjs（尝试 ${attempt}）…`);
   const genRun = ctx.runValidate(mjsSource);
+  logJsonAutofixes(ctx, genRun, attempt);
   fs.writeFileSync(path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}.log`), genRun.mjsStdout);
   ctx.stepDone( `  node 执行完成（尝试 ${attempt}）`, tNode);
 
@@ -771,6 +798,7 @@ async function runGenerateAttempt(
         { stepId: "MR:MjsGenerate", attempt }
       );
       const retryRun = ctx.runValidate(mjsSource);
+      logJsonAutofixes(ctx, retryRun, attempt);
       fs.writeFileSync(
         path.join(ctx.logDir, `02-mjs-run-attempt-${attempt}-autofix.log`),
         retryRun.mjsStdout
@@ -791,14 +819,12 @@ async function runGenerateAttempt(
             rawContent: mjsSource,
           };
           if (attempt >= MAX_MJS_ATTEMPTS) {
-            throw new LlmStageFailure(
-              feedbackFromLlmAttempt(
-                mjsSource,
-                null,
-                "visual lint 未通过",
-                retryVisualGate.blocking.slice(0, 25)
-              )
-            );
+            return {
+              kind: "degraded",
+              mjsSource,
+              mjsStdout: retryRun.mjsStdout,
+              issues: retryVisualGate.blocking,
+            };
           }
           return { kind: "retry", mjsSource, lastFailure };
         }
@@ -818,14 +844,7 @@ async function runGenerateAttempt(
     writeValidateErrorLog(ctx.logDir, attempt, runIssues);
     ctx.stepDone( `  validate 未通过（尝试 ${attempt}）`, tValidate);
     if (attempt >= MAX_MJS_ATTEMPTS) {
-      throw new LlmStageFailure(
-        feedbackFromLlmAttempt(
-          mjsSource,
-          null,
-          "validate 未通过",
-          runIssues.slice(0, 25)
-        )
-      );
+      return { kind: "degraded", mjsSource, mjsStdout: genRun.mjsStdout, issues: runIssues };
     }
     return { kind: "retry", mjsSource, lastFailure };
   }
@@ -844,14 +863,7 @@ async function runGenerateAttempt(
       rawContent: mjsSource,
     };
     if (attempt >= MAX_MJS_ATTEMPTS) {
-      throw new LlmStageFailure(
-        feedbackFromLlmAttempt(
-          mjsSource,
-          null,
-          "visual lint 未通过",
-          genVisualGate.blocking.slice(0, 25)
-        )
-      );
+      return { kind: "degraded", mjsSource, mjsStdout: genRun.mjsStdout, issues: genVisualGate.blocking };
     }
     return { kind: "retry", mjsSource, lastFailure };
   }
@@ -909,8 +921,19 @@ async function createVisualBlueprint(opts: {
             )
           );
         }
+        // emailKey/displayName/idPrefix 为程序已知：prompt 已禁止模型回显，
+        // 此处统一注入/覆盖（模型即使输出了也以程序值为准）
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          parsed = {
+            ...(parsed as Record<string, unknown>),
+            emailKey: opts.emailKey,
+            displayName: opts.displayName,
+            idPrefix: opts.idPrefix,
+          };
+        }
         try {
-          return ManualRestoreBlueprintSchema.parse(parsed);
+          // 先做契约归一化（px 形态、容器间距上限 clamp），越界识别值不得流入生成 prompt
+          return ManualRestoreBlueprintSchema.parse(normalizeBlueprintFromLlm(parsed));
         } catch (e) {
           throw new LlmStageFailure(
             feedbackFromLlmAttempt(
@@ -962,7 +985,7 @@ function buildValidateOpts(
 /**
  * 豆包模拟 Cursor Agent「手工还原」：
  * 1) 程序注入 skills/rules；看图 MR:AssetSlots → Pexels/CDN 得到 PEXELS/ICON
- * 2) delta-first 输出 XML patch（slot 首次 / search 修补），不再用整段 body 兜底；full-body-first 仍保留整段 body 路径
+ * 2) 输出 XML patch（slot 首次 / search 修补），应用到程序底稿后进入修复闭环。
  * 3) node 执行 + validate
  */
 export async function runManualRestoreViaDoubao(
@@ -1010,13 +1033,10 @@ export async function runManualRestoreViaDoubao(
   const progress = input.progress ?? createNoopPipelineProgressReporter();
   progress.emitPlan([...MANUAL_RESTORE_MJS_UI_STEPS_INITIAL], { display: "hidden" });
 
-  const mjsGenerateMode: MjsGenerateMode = input.mjsGenerateMode ?? DEFAULT_MJS_GENERATE_MODE;
-
   const pipelineRunId = randomUUID();
   const logDir = path.join(REPO_ROOT, "logs", `manual-restore-mjs-${pipelineRunId.slice(0, 8)}`);
   fs.mkdirSync(logDir, { recursive: true });
   const runTiming = createMjsRunTiming(logDir, {
-    mjsGenerateMode,
     emailKey,
     layoutVariantId: input.layoutVariantId ?? null,
   });
@@ -1047,11 +1067,16 @@ export async function runManualRestoreViaDoubao(
     );
 
   const validateBase = buildValidateOpts(mjsScaffold, emailKey);
+  // blueprint 识别完成后填入；JSON autofix 补标准 scale 时优先用设计图派生值
+  let blueprintTokenFallbacks:
+    | ReturnType<typeof tokenFallbacksFromBlueprint>
+    | undefined;
   const runValidate = (source: string) =>
     runMjsAndValidate({
       mjsSource: source,
       mjsPath,
       repoRoot: REPO_ROOT,
+      tokenFallbacks: blueprintTokenFallbacks,
       ...validateBase,
     });
 
@@ -1081,17 +1106,23 @@ export async function runManualRestoreViaDoubao(
     );
     if (!accept) {
       const issues = [...blocking, ...warnings];
+      // 纯 warning（无硬伤）属于质量润色轮，不以「未通过/失败」措辞呈现
+      const gateLabel =
+        blocking.length > 0
+          ? `visual lint 未通过（error ${blocking.length} / warning ${warnings.length}）`
+          : `视觉质量润色（${warnings.length} 条提示，自动优化一轮）`;
       visualLintStep.failAttempt(attempt, {
-        detail: mjsAttemptDetail(
-          `visual lint 未通过（error ${blocking.length} / warning ${warnings.length}）`,
-          attempt
-        ),
+        detail: mjsAttemptDetail(gateLabel, attempt),
         ...MJS_PROGRESS_OPTS,
       });
-      stepDone(`  visual lint 未通过（尝试 ${attempt}）`, started, issues.slice(0, 3).join(" · "), {
-        stepId: "MR:VisualLint",
-        attempt,
-      });
+      stepDone(
+        blocking.length > 0
+          ? `  visual lint 未通过（尝试 ${attempt}）`
+          : `  视觉质量润色触发（尝试 ${attempt}）`,
+        started,
+        issues.slice(0, 3).join(" · "),
+        { stepId: "MR:VisualLint", attempt }
+      );
       return { blocking, warnings, accept };
     }
     visualLintStep.succeed();
@@ -1135,6 +1166,7 @@ export async function runManualRestoreViaDoubao(
     });
     throw e;
   }
+  blueprintTokenFallbacks = tokenFallbacksFromBlueprint(visualBlueprint);
 
   const tAssets = stepStart();
   console.log(`${LOG_TAG} 程序：visual blueprint 资产槽 → Pexels/CDN 解析 …`);
@@ -1156,9 +1188,6 @@ export async function runManualRestoreViaDoubao(
       `${formatInjectedAssetsForMjs(injectedAssets)}\n\n${injectedAssets.slotGuide}\n`
     );
 
-    const generateLlm = wrapLlmClientWithQueue(
-      createDoubaoRawClient(MJS_GENERATE_TIMEOUT_MS, { maxTokens: MJS_MAX_TOKENS })
-    );
     const deltaLlm = wrapLlmClientWithQueue(
       createDoubaoRawClient(MJS_GENERATE_TIMEOUT_MS, { maxTokens: MJS_DELTA_MAX_TOKENS })
     );
@@ -1170,23 +1199,22 @@ export async function runManualRestoreViaDoubao(
       { pipelineRunId, emailKey, stage: "manual-restore-mjs" },
       async () => {
         console.log(
-          `${LOG_TAG} 注入上下文 → 豆包写 mjs（模式 ${mjsGenerateModeLabel(mjsGenerateMode)} / validate 失败则 patch）…`
+          `${LOG_TAG} 注入上下文 → 豆包按底稿 patch 写 mjs（validate 失败则 patch）…`
         );
         const tMjsGenerate = stepStart();
 
         let mjsSource = "";
         let mjsStdout = "";
+        let degradedIssues: string[] = [];
         let lastFailure: AttemptFailure | null = null;
 
         const attemptCtx: MjsAttemptContext = {
-          mjsGenerateMode,
           imageDataUrl,
           logDir,
           mjsPath,
           mjsScaffold,
           injectedAssets,
           visualBlueprint,
-          generateLlm,
           deltaLlm,
           patchLlm,
           generateStep,
@@ -1204,10 +1232,7 @@ export async function runManualRestoreViaDoubao(
 
             if (attempt === 1) {
               generateStep.start(1, {
-                detail:
-                  mjsGenerateMode === "delta-first"
-                    ? "豆包 MR:MjsGenerate API · 底稿+patch"
-                    : "豆包 MR:MjsGenerate API · 整段 body",
+                detail: "豆包 MR:MjsGenerate API · 底稿+patch",
                 ...MJS_PROGRESS_OPTS,
               });
             } else if (isPatchRetryKind(lastFailure?.kind)) {
@@ -1215,14 +1240,9 @@ export async function runManualRestoreViaDoubao(
                 detail: mjsAttemptDetail("程序 autofix → 豆包 patch", attempt),
                 ...MJS_PROGRESS_OPTS,
               });
-            } else if (mjsGenerateMode === "delta-first") {
+            } else {
               generateStep.retry(attempt, {
                 detail: mjsAttemptDetail("豆包底稿 patch 修复", attempt),
-                ...MJS_PROGRESS_OPTS,
-              });
-            } else {
-              generateStep.start(attempt, {
-                detail: mjsAttemptDetail("豆包 MR:MjsGenerate API · 整段重写", attempt),
                 ...MJS_PROGRESS_OPTS,
               });
             }
@@ -1236,7 +1256,63 @@ export async function runManualRestoreViaDoubao(
               attemptOk = true;
               break;
             }
+            if (outcome.kind === "degraded") {
+              // 保底交付：产物可用但有未消除问题，交付并附清单（不空手而归）
+              mjsStdout = outcome.mjsStdout;
+              degradedIssues = outcome.issues;
+              attemptOk = true;
+              stepDone(
+                `保底交付：剩余 ${outcome.issues.length} 条问题待人工处理`,
+                tAttempt,
+                outcome.issues.slice(0, 5).join("; "),
+                { stepId: "MR:MjsGenerate", attempt }
+              );
+              break;
+            }
+            // 早停：连续两轮同一错误集合（零进展）且产物 node 可用 → 提前保底交付，
+            // 不再烧注定无效的下一轮 patch 调用（2026-06-10 测试 4/6 各浪费一整轮的实证）
+            if (
+              (outcome.lastFailure.kind === "validate" || outcome.lastFailure.kind === "visual") &&
+              sameFailureErrorSet(lastFailure, outcome.lastFailure)
+            ) {
+              degradedIssues = outcome.lastFailure.errors;
+              attemptOk = true;
+              stepDone(
+                `同一错误集合连续两轮未收敛，提前保底交付（剩余 ${degradedIssues.length} 条待人工处理）`,
+                tAttempt,
+                degradedIssues.slice(0, 5).join("; "),
+                { stepId: "MR:MjsGenerate", attempt }
+              );
+              break;
+            }
             lastFailure = outcome.lastFailure;
+          } catch (e) {
+            // 瞬态传输错误（超时/中断/网络/5xx/429）消耗本次 attempt 后继续，
+            // 避免单次 LLM 调用超时让整个 run 悬崖式失败
+            if (!isTransientLlmError(e)) throw e;
+            const message = e instanceof Error ? e.message : String(e);
+            if (attempt >= MAX_MJS_ATTEMPTS) {
+              if (!mjsSource || !lastFailure) throw e;
+              // staging 产物来自最后一次 node 运行，与当前 mjsSource 同步 → 保底交付
+              degradedIssues = [...lastFailure.errors, `LLM 调用瞬态失败：${message}`];
+              attemptOk = true;
+              stepDone(
+                `保底交付：最终尝试 LLM 瞬态失败，剩余 ${lastFailure.errors.length} 条问题待人工处理`,
+                tAttempt,
+                message,
+                { stepId: "MR:MjsGenerate", attempt }
+              );
+              break;
+            }
+            generateStep.failAttempt(attempt, {
+              detail: mjsAttemptDetail(`LLM 调用瞬态失败（${message}），即将重试`, attempt),
+              ...MJS_PROGRESS_OPTS,
+            });
+            stepDone(`  尝试 ${attempt} LLM 瞬态失败，进入下一次尝试`, tAttempt, message, {
+              stepId: "MR:MjsGenerate",
+              attempt,
+            });
+            // lastFailure 保持不变：下一轮沿用同样的修复上下文（patch 路径仍可用）
           } finally {
             stepDone(
               `尝试 ${attempt} ${attemptOk ? "成功" : "结束（将重试或失败）"}`,
@@ -1261,7 +1337,11 @@ export async function runManualRestoreViaDoubao(
 
         fs.writeFileSync(
           path.join(logDir, "03-validation.json"),
-          `${JSON.stringify({ ok: true, issues: [] }, null, 2)}\n`
+          `${JSON.stringify(
+            { ok: degradedIssues.length === 0, issues: degradedIssues },
+            null,
+            2
+          )}\n`
         );
 
         return {
@@ -1269,8 +1349,8 @@ export async function runManualRestoreViaDoubao(
           mjsPath,
           outputDir,
           mjsStdout,
-          validationOk: true,
-          validationIssues: [],
+          validationOk: degradedIssues.length === 0,
+          validationIssues: degradedIssues,
           logDir,
         };
       }

@@ -32,11 +32,8 @@ export const layoutGridContract: BlockTypeContract = {
     "props.cellHeight": "style",
     "wrapperStyle.padding": "style",
     "wrapperStyle.backgroundImage.src": "content",
-    "wrapperStyle.backgroundImage.alt": "content",
     "wrapperStyle.backgroundImage.link": "content",
     "wrapperStyle.backgroundImage.fit": "structural",
-    "wrapperStyle.backgroundImage.position": "style",
-    "wrapperStyle.backgroundImage.border": "style",
-    "wrapperStyle.backgroundImage.borderRadius": "style",
+    "wrapperStyle.backgroundImage.position": "structural",
   },
 };

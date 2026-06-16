@@ -9,7 +9,6 @@ import {
   applyThemeTokenBinding,
   detachThemeFieldBranch,
   readThemeTokenPathForField,
-  restoreThemeFieldBranch,
 } from "../lib/themeBindingEdit";
 import {
   applyVariableBinding,
@@ -114,10 +113,6 @@ function deriveContentCapsuleModeWithRepeat(
   if (base !== "variable") return base;
   if (resolveRepeatListItemFieldBinding(template, blockId, bindPath)) return "listItem";
   return base;
-}
-
-function isValidSlotId(slotId: string): boolean {
-  return /^[a-zA-Z][a-zA-Z0-9_]*$/.test(slotId);
 }
 
 function readWholeFieldPreviewString(
@@ -239,7 +234,7 @@ export function InspectorFieldSource({
   );
 
   const applyScalarVariableSlot = useCallback(
-    (slot: ExternalVariableSlotInfo, mode: "bind" | "create") => {
+    (slot: ExternalVariableSlotInfo) => {
       const currentValue = readTemplateFieldOnly(templateRef.current.blocks[block.id]!, bindPath);
       const inferred = inferBindingValueTypeRequirement(block, bindPath, currentValue);
       if (
@@ -273,7 +268,7 @@ export function InspectorFieldSource({
               slotId: slot.slotId,
               label: slot.label ?? slot.slotId,
               valueType: slot.valueType as BindingSpec["valueType"],
-              mode,
+              mode: "bind",
               defaultValue: bindModalPreview.trim() || String(seed),
             },
             (path) => {
@@ -307,62 +302,6 @@ export function InspectorFieldSource({
           spec,
           seed
         )
-      );
-      setBindModalOpen(false);
-    },
-    [bindModalPreview, bindPath, block, contentCapsuleMode]
-  );
-
-  const handleBindModalCreate = useCallback(
-    ({ slotId, label }: { slotId: string; label: string }) => {
-      if (!isValidSlotId(slotId)) {
-        toastWarning("slotId 必须以字母开头，且只能包含字母、数字和下划线。");
-        return;
-      }
-      const currentValue = readTemplateFieldOnly(templateRef.current.blocks[block.id]!, bindPath);
-      const inferred = inferBindingValueTypeRequirement(block, bindPath, currentValue);
-      const seed =
-        typeof currentValue === "string" || (typeof currentValue === "number" && Number.isFinite(currentValue))
-          ? currentValue
-          : bindModalPreview.trim();
-
-      if (block.type === "text" && contentCapsuleMode === "inlineVariable" && mergedTemplateRef.current) {
-        onUpdateRef.current(
-          applyTextBodyWholeVariableFromSlot(
-            templateRef.current,
-            payloadRef.current,
-            block.id,
-            mergedTemplateRef.current,
-            {
-              slotId,
-              label,
-              valueType: inferred,
-              mode: "create",
-              defaultValue: bindModalPreview.trim() || String(seed),
-            },
-            (path) => {
-              const mb = mergedTemplateRef.current?.blocks[block.id];
-              if (!mb) return "";
-              const v = readInspectorDisplayValue(block, payloadRef.current, mb, path, templateRef.current);
-              return typeof v === "string" ? v : String(v ?? "");
-            }
-          )
-        );
-        setBindModalOpen(false);
-        return;
-      }
-
-      const spec: BindingSpec = {
-        slotId,
-        mode: "variable",
-        valueType: inferred,
-        defaultValue: seed,
-        allowExternal: true,
-        fieldKind: "content",
-        label,
-      };
-      onUpdateRef.current(
-        applyVariableBinding(templateRef.current, payloadRef.current, block.id, bindPath, spec, seed)
       );
       setBindModalOpen(false);
     },
@@ -463,7 +402,9 @@ export function InspectorFieldSource({
                 const merged = mergedTemplateRef.current;
                 if (!merged) return;
                 onTemplateChangeRef.current(
-                  detachThemeFieldBranch(templateRef.current, merged, block.id, bindPath)
+                  detachThemeFieldBranch(templateRef.current, merged, block.id, bindPath, {
+                    effectiveTheme: effectiveDesignTokens,
+                  })
                 );
               }
             : state.source === "variable" && !state.detached && mergedTemplate && state.canDetachVariable
@@ -484,18 +425,6 @@ export function InspectorFieldSource({
                   }
                 : undefined,
     });
-
-    if (state.fieldKind === "style" && state.source === "theme" && state.detached) {
-      items.push({
-        source: "theme",
-        label: `恢复${FIELD_SOURCE_MODE_LABEL.theme}`,
-        description: "恢复为跟随全局样式预设。",
-        active: false,
-        enabled: true,
-        action: () =>
-          onTemplateChangeRef.current(restoreThemeFieldBranch(templateRef.current, block.id, bindPath)),
-      });
-    }
 
     if (contentCapsuleMode === "listItem" && repeatListItemCtx) {
       items.push({
@@ -550,6 +479,7 @@ export function InspectorFieldSource({
     bindPath,
     block.id,
     contentCapsuleMode,
+    effectiveDesignTokens,
     mergedTemplate,
     onAggregateLiteralize,
     contentCapsuleMode,
@@ -723,10 +653,8 @@ export function InspectorFieldSource({
           slots={bindModalSlots}
           payload={payload}
           defaultSelectedSlotId={state.slotId ?? null}
-          allowCreate
           onClose={() => setBindModalOpen(false)}
-          onConfirmBind={(slot) => applyScalarVariableSlot(slot, "bind")}
-          onConfirmCreate={handleBindModalCreate}
+          onConfirmBind={applyScalarVariableSlot}
         />
       ) : null}
     </span>

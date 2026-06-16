@@ -44,7 +44,7 @@ export function applyBlockField(
       if (value === null) deleteAtPath(b.props as Record<string, unknown>, sub);
       else setAtPath(b.props as Record<string, unknown>, sub, value);
     } else Object.assign(b.props, value as object);
-    if (isPaddingFieldSubPath(sub) || b.props.padding !== undefined) {
+    if (isPaddingFieldSubPath(sub) || (b.props as Record<string, unknown>).padding !== undefined) {
       coercePaddingOnContainer(b.props as Record<string, unknown>);
     }
     if (b.type === "layout" && sub === "direction") {

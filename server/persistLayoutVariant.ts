@@ -46,13 +46,15 @@ export async function persistNewLayoutVariantOnDisk(
 
   let nextManifest: LayoutManifest;
   try {
+    const now = new Date().toISOString();
     nextManifest = appendLayoutVariant(
       manifest,
       {
         id: newId,
         label,
         description: variantDescription,
-        createdAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
         publishStatus: DEFAULT_PUBLISH_STATUS,
       },
       { makeActive: true }

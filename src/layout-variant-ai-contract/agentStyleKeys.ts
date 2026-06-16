@@ -26,7 +26,9 @@ export type CompactStyleRawValue =
   | boolean
   | number
   | CompactStyleValueObject
-  | CompactStyleNestedGroup;
+  // 内联对象类型实现自递归（对象类型可被 TS 延迟解析）；避免与 CompactStyleNestedGroup
+  // 两个 type 别名互相引用而触发 TS2456 误判死循环。
+  | { [key: string]: CompactStyleRawValue };
 
 /** 归一化后的单字段样式意图。 */
 export type NormalizedAgentStyleField = {

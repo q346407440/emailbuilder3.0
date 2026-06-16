@@ -64,12 +64,9 @@ describe("block-contract", () => {
         heightMode: "hug",
         backgroundImage: {
           src: "https://example.com/root.jpg",
-          alt: "root",
           link: "",
           fit: "cover",
           position: "center",
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          borderRadius: { mode: "unified", radius: "0" },
         },
       },
       props: {
@@ -107,12 +104,9 @@ describe("block-contract", () => {
         padding: { mode: "unified", unified: "8px" },
         backgroundImage: {
           src: "https://example.com/grid-bg.jpg",
-          alt: "grid",
           link: "",
           fit: "cover",
           position: "center",
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          borderRadius: { mode: "unified", radius: "0" },
         },
       },
       props: {
@@ -142,12 +136,9 @@ describe("block-contract", () => {
         padding: { mode: "unified", unified: "8px" },
         backgroundImage: {
           src: "https://example.com/a.jpg",
-          alt: "a",
           link: "",
           fit: "cover",
           position: "center",
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          borderRadius: { mode: "unified", radius: "0" },
         },
       },
       props: { direction: "vertical", gapMode: "fixed", gap: "0" },
@@ -169,12 +160,9 @@ describe("block-contract", () => {
         padding: { mode: "unified", unified: "8px" },
         backgroundImage: {
           src: "https://example.com/a.jpg",
-          alt: "a",
           link: "",
           fit: "cover",
           position: "center",
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          borderRadius: { mode: "unified", radius: "0" },
         },
       },
       props: { direction: "horizontal", gapMode: "fixed", gap: "12px" },

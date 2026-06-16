@@ -31,7 +31,9 @@ function stripMarkdownFences(raw: string): string {
 function unwrapCdata(content: string): string {
   const trimmed = content.trim();
   const cdata = /^<!\[CDATA\[([\s\S]*?)]]>$/i.exec(trimmed);
-  return cdata ? cdata[1]! : trimmed;
+  // CDATA 内部内容同样 trim：XML 排版习惯会让 `]]>` 独占一行并缩进，
+  // 这些框架空白不属于补丁正文；不 trim 会让逐字正确的 search 也永远无法命中。
+  return cdata ? cdata[1]!.trim() : trimmed;
 }
 
 function extractTagContent(outer: string, tag: string): string | null {
@@ -105,6 +107,76 @@ function applySlotPatch(
   return { ok: true, source: `${before}\n${replace.trim()}\n${after}` };
 }
 
+/**
+ * 行级宽松匹配：search 与源码按行 trim 后逐行相等即视为命中，
+ * 返回命中区间在原文中的字符范围（含整行缩进，不含行尾换行）。
+ * 用于精确 indexOf 未命中时兜底（缩进 / 行尾空白差异不应让补丁失败）。
+ */
+function findLooseLineRange(
+  source: string,
+  search: string,
+  fromIndex = 0
+): { start: number; end: number } | null {
+  const searchLines = search.split("\n").map((l) => l.trim());
+  if (searchLines.length === 0) return null;
+
+  const sourceLines = source.split("\n");
+  // 预计算每行起始字符偏移
+  const offsets: number[] = new Array(sourceLines.length);
+  let acc = 0;
+  for (let i = 0; i < sourceLines.length; i += 1) {
+    offsets[i] = acc;
+    acc += sourceLines[i]!.length + 1;
+  }
+
+  for (let i = 0; i + searchLines.length <= sourceLines.length; i += 1) {
+    if (offsets[i]! < fromIndex) continue;
+    let allMatch = true;
+    for (let j = 0; j < searchLines.length; j += 1) {
+      if (sourceLines[i + j]!.trim() !== searchLines[j]) {
+        allMatch = false;
+        break;
+      }
+    }
+    if (!allMatch) continue;
+    const lastIdx = i + searchLines.length - 1;
+    return { start: offsets[i]!, end: offsets[lastIdx]! + sourceLines[lastIdx]!.length };
+  }
+  return null;
+}
+
+/** search 补丁应用：先精确 replaceAll，未命中再行级宽松匹配兜底。 */
+function applySearchPatch(
+  source: string,
+  search: string,
+  replace: string
+): { source: string; hitCount: number } {
+  let current = source;
+  let hitCount = 0;
+
+  // fromIndex 始终越过已替换文本：replace 含 search 本身（如「在某行后追加」）时不得死循环
+  let exactFrom = 0;
+  while (true) {
+    const idx = current.indexOf(search, exactFrom);
+    if (idx < 0) break;
+    current = `${current.slice(0, idx)}${replace}${current.slice(idx + search.length)}`;
+    exactFrom = idx + replace.length;
+    hitCount += 1;
+  }
+  if (hitCount > 0) return { source: current, hitCount };
+
+  // 宽松兜底：同样越过已替换文本
+  let from = 0;
+  while (true) {
+    const range = findLooseLineRange(current, search, from);
+    if (!range) break;
+    current = `${current.slice(0, range.start)}${replace}${current.slice(range.end)}`;
+    from = range.start + replace.length;
+    hitCount += 1;
+  }
+  return { source: current, hitCount };
+}
+
 /** 按顺序应用 patch（slot 或 search）。 */
 export function applyMjsPatches(source: string, patches: MjsPatch[]) {
   let current = source;
@@ -129,13 +201,8 @@ export function applyMjsPatches(source: string, patches: MjsPatch[]) {
       failures.push(`补丁 ${i + 1}：search 为空`);
       continue;
     }
-    let hitCount = 0;
-    while (true) {
-      const idx = current.indexOf(patch.search);
-      if (idx < 0) break;
-      current = `${current.slice(0, idx)}${patch.replace}${current.slice(idx + patch.search.length)}`;
-      hitCount += 1;
-    }
+    const { source: replaced, hitCount } = applySearchPatch(current, patch.search, patch.replace);
+    current = replaced;
     if (hitCount === 0) {
       failures.push(
         `补丁 ${i + 1}：search 未命中（前 60 字：${patch.search.slice(0, 60).replace(/\n/g, "↵")}）`

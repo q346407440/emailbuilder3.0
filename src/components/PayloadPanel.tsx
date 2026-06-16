@@ -2,12 +2,13 @@ import { useState } from "react";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { collectPayloadVariableSlots } from "../lib/payloadSlots";
 import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
-import type { CreatePayloadSlotModalMode } from "./CreatePayloadSlotModal";
 import { PayloadSlotSourceModal } from "./PayloadSlotSourceModal";
-import { createCollectionPayloadSlotFromPreset } from "../lib/createPayloadSlot";
-import { getSceneCollectionPreset } from "../api/sceneCollectionPresets";
-import { getPayloadVariableScene, setPayloadVariableScene } from "../lib/payloadVariableScene";
+import { createPayloadSlotFromBuiltinStructure } from "../lib/createPayloadSlot";
 import { toastError } from "../lib/appToast";
+import {
+  builtinStructureScopeLabel,
+  getPayloadSlotBuiltinStructure,
+} from "../lib/builtinStructureSlot";
 
 type Props = {
   template: EmailTemplate;
@@ -26,8 +27,18 @@ function slotTypeLabel(valueType: string): string {
   return payloadSlotValueTypeLabel(valueType);
 }
 
-function slotMeta(slot: ReturnType<typeof collectPayloadVariableSlots>[number]): string {
+function slotMeta(
+  slot: ReturnType<typeof collectPayloadVariableSlots>[number],
+  payload: EmailPayload
+): string {
   const type = slotTypeLabel(slot.valueType);
+  const structureLabel = builtinStructureScopeLabel(
+    getPayloadSlotBuiltinStructure(payload.slots[slot.slotId])
+  );
+  if (slot.valueType === "object") {
+    const fieldCount = slot.objectFields?.length ?? 0;
+    return `${type} · ${structureLabel} · ${fieldCount} 个字段`;
+  }
   if (slot.valueType === "collection") {
     const count =
       slot.minItems !== undefined && slot.maxItems !== undefined && slot.minItems === slot.maxItems
@@ -35,9 +46,9 @@ function slotMeta(slot: ReturnType<typeof collectPayloadVariableSlots>[number]):
         : slot.maxItems !== undefined
           ? `最多 ${slot.maxItems} 项`
           : "列表";
-    return `${type} · ${count}`;
+    return `${type} · ${structureLabel} · ${count}`;
   }
-  return `${type} · ${slot.bindings.length} 处`;
+  return `${type} · ${structureLabel} · ${slot.bindings.length} 处`;
 }
 
 export function PayloadPanel({
@@ -51,17 +62,13 @@ export function PayloadPanel({
   getSlotError,
   getSlotWarning,
 }: Props) {
-  const [sourceModalMode, setSourceModalMode] = useState<CreatePayloadSlotModalMode | null>(null);
+  const [sourceModalOpen, setSourceModalOpen] = useState(false);
 
   const slots = collectPayloadVariableSlots(template, payload);
   const activeSlotId = selectedSlotId ?? slots[0]?.slotId ?? null;
 
-  const openCreateFlow = (mode: CreatePayloadSlotModalMode) => {
-    setSourceModalMode(mode);
-  };
-
-  async function commitNewVariable(nextPayload: EmailPayload, slotId: string, mode: CreatePayloadSlotModalMode) {
-    setSourceModalMode(null);
+  async function commitNewVariable(nextPayload: EmailPayload, slotId: string) {
+    setSourceModalOpen(false);
     try {
       if (onVariableCreated) {
         await onVariableCreated({ payload: nextPayload, slotId });
@@ -69,7 +76,10 @@ export function PayloadPanel({
         onPayloadChange(nextPayload);
         onSelectSlot(slotId);
       }
-      if (mode === "collection") {
+      if (
+        nextPayload.slots[slotId]?.valueType === "collection" ||
+        nextPayload.slots[slotId]?.valueType === "object"
+      ) {
         onCollectionSlotCreated?.(slotId);
       }
     } catch (e) {
@@ -95,22 +105,15 @@ export function PayloadPanel({
                 <button
                   type="button"
                   className="resource-text-action"
-                  onClick={() => openCreateFlow("collection")}
+                  onClick={() => setSourceModalOpen(true)}
                 >
-                  列表变量
-                </button>
-                <button
-                  type="button"
-                  className="resource-text-action"
-                  onClick={() => openCreateFlow("scalar")}
-                >
-                  标准变量
+                  添加变量
                 </button>
               </div>
             </div>
 
             {slots.length === 0 ? (
-              <p className="payload-panel__empty">暂无变量，请通过右上角添加。</p>
+              <p className="payload-panel__empty">暂无变量，请点击添加变量。</p>
             ) : (
               <ul className="theme-panel__option-list sidebar-nav-list">
                 {slots.map((slot) => {
@@ -118,11 +121,7 @@ export function PayloadPanel({
                   const title = slot.label ?? slot.slotId;
                   const slotErr = getSlotError?.(slot.slotId);
                   const slotWarn = !slotErr ? getSlotWarning?.(slot.slotId) : undefined;
-                  const presetManaged = Boolean(
-                    payload.slots[slot.slotId]?.sceneCollectionPresetId?.trim()
-                  );
-                  const metaParts = [slotMeta(slot)];
-                  if (presetManaged) metaParts.unshift("场景内置");
+                  const metaParts = [slotMeta(slot, payload)];
                   return (
                     <li key={slot.slotId}>
                       <button
@@ -152,34 +151,18 @@ export function PayloadPanel({
         </div>
       </aside>
 
-      {sourceModalMode ? (
+      {sourceModalOpen ? (
         <PayloadSlotSourceModal
-          mode={sourceModalMode}
           visible
           payload={payload}
-          initialScene={getPayloadVariableScene()}
-          onClose={() => setSourceModalMode(null)}
-          onCustomConfirm={({ slotId, payload: nextPayload }) => {
-            if (!sourceModalMode) return;
-            void commitNewVariable(nextPayload, slotId, sourceModalMode);
-          }}
-          onSceneSaved={(scene) => {
-            setPayloadVariableScene(scene);
-          }}
-          onScenePresetConfirm={({ scene, presetId }) => {
-            setSourceModalMode(null);
-            void getSceneCollectionPreset(scene, presetId)
-              .then((preset) => {
-                const result = createCollectionPayloadSlotFromPreset(payload, preset);
-                if ("error" in result) {
-                  toastError(result.error);
-                  return;
-                }
-                return commitNewVariable(result.payload, result.slotId, "collection");
-              })
-              .catch((e) => {
-                toastError(e instanceof Error ? e.message : String(e));
-              });
+          onClose={() => setSourceModalOpen(false)}
+          onBuiltinStructureConfirm={({ structureId }) => {
+            const result = createPayloadSlotFromBuiltinStructure(payload, structureId);
+            if ("error" in result) {
+              toastError(result.error);
+              return;
+            }
+            void commitNewVariable(result.payload, result.slotId);
           }}
         />
       ) : null}

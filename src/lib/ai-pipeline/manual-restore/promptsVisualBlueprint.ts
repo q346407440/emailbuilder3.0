@@ -19,7 +19,8 @@ export function buildVisualBlueprintSystemPrompt(): string {
 ## JSON 字段清单（字段名必须逐字匹配）
 
 顶层必须包含：
-\`emailKey\`, \`displayName\`, \`idPrefix\`, \`description\`, \`canvas\`, \`colors\`, \`spacing\`, \`typography\`, \`emailRootBackground\`, \`imageSlots\`, \`iconSlots\`, \`dividers\`, \`visualChecks\`, \`sections\`。
+\`description\`, \`colors\`, \`spacing\`, \`typography\`, \`emailRootBackground\`, \`imageSlots\`, \`iconSlots\`, \`dividers\`, \`visualChecks\`, \`sections\`。
+**禁止输出** \`emailKey\` / \`displayName\` / \`idPrefix\` / \`canvas\`（程序已知，自动补充；输出会被覆盖且浪费 token）。
 
 槽字段：
 - imageSlots[]: \`slotId\`, \`query\`, \`targetWidth\`, \`height\`, \`required\`, \`usage\`
@@ -27,28 +28,15 @@ export function buildVisualBlueprintSystemPrompt(): string {
 - dividers[]: \`target\`, \`kind\`, \`color\`, \`height\`（顶层唯一边线清单，用 \`target\` 指向区域，如 "s3 底部"）
 - sections[]: \`sectionId\`, \`name\`, \`backgroundColor\`, \`pageInline\`, \`padTop\`, \`padBottom\`, \`targetHeight\`, \`gap\`, \`summary\`, \`texts\`, \`imageSlotIds\`, \`iconSlotIds\`, \`visualChecks\`（**没有** dividers 字段）
 
-## 极短示例（只示意字段名，不是默认值）
+## 输出格式（紧凑，省 token）
+
+- **单行最小化 JSON**：不要缩进、不要换行美化（程序解析不需要可读性）
+- **空数组字段直接省略**（如某区无 texts/iconSlotIds，整个键不写；程序补默认）
+
+## 极短示例（只示意字段名与紧凑格式，不是默认值）
 
 \`\`\`json
-{
-  "emailKey": "<user>",
-  "displayName": "<user>",
-  "idPrefix": "<user>",
-  "description": "一句话视觉摘要",
-  "canvas": { "sourceImageWidth": 382, "sourceImageHeight": 994, "emailRootWidth": "600px" },
-  "colors": { "primary": "#000000", "secondary": "#F4F3EA", "surface": "#FFFFFF" },
-  "spacing": { "section": "22px", "gap": "13px", "pageInline": "22px" },
-  "typography": { "display": "28px", "h1": "26px", "body": "10px", "caption": "6px" },
-  "emailRootBackground": "#FFFFFF",
-  "imageSlots": [{ "slotId": "hero", "query": "英文搜图词", "targetWidth": 600, "height": "280px", "required": true, "usage": "首屏头图" }],
-  "iconSlots": [{ "slotId": "brandLogo", "pack": "simple-icons", "iconQuery": "adidas", "colorHex": "#FFFFFF", "required": true, "usage": "品牌 Logo", "hasBox": false }],
-  "dividers": [{ "target": "s3 底部", "kind": "bottom-divider", "color": "#D8D8D8", "height": "1px" }],
-  "visualChecks": ["社媒图标有 1px 外框"],
-  "sections": [
-    { "sectionId": "s1", "name": "顶部提示条", "backgroundColor": "#FFFFFF", "pageInline": true, "padTop": "8px", "padBottom": "8px", "targetHeight": "24px", "gap": "0", "summary": "左右提示文字", "texts": [], "imageSlotIds": [], "iconSlotIds": [], "visualChecks": [] }
-  ]
-}
-
+{"description":"一句话视觉摘要","colors":{"primary":"#000000","secondary":"#F4F3EA","surface":"#FFFFFF"},"spacing":{"section":"22px","gap":"13px","pageInline":"22px"},"typography":{"display":"28px","h1":"26px","body":"10px","caption":"6px"},"emailRootBackground":"#FFFFFF","imageSlots":[{"slotId":"hero","query":"英文搜图词","targetWidth":600,"height":"280px","required":true,"usage":"首屏头图"}],"iconSlots":[{"slotId":"brandLogo","pack":"simple-icons","iconQuery":"adidas","colorHex":"#FFFFFF","required":true,"usage":"品牌 Logo","hasBox":false}],"dividers":[{"target":"s3 底部","kind":"bottom-divider","color":"#D8D8D8","height":"1px"}],"visualChecks":["社媒图标有 1px 外框"],"sections":[{"sectionId":"s1","name":"顶部提示条","backgroundColor":"#FFFFFF","pageInline":true,"padTop":"8px","padBottom":"8px","targetHeight":"24px","gap":"0","summary":"左右提示文字"}]}
 \`\`\`
 
 ## 禁止输出的字段名

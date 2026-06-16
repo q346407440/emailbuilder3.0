@@ -12,7 +12,6 @@ import {
   isAiPipelineError,
 } from "../src/layout-variant-ai-contract/errors";
 import { runManualRestoreViaDoubao } from "../src/lib/ai-pipeline/manual-restore/runManualRestoreViaDoubao";
-import type { MjsGenerateMode } from "../src/layout-variant-ai-contract/mjsGenerateMode";
 import { LlmStageFailure } from "../src/lib/ai-pipeline/llmRetryFeedback";
 import { parseTemplateFromDisk } from "../src/lib/templateTreeAdapter";
 import type { PipelineProgressReporter } from "../src/lib/ai-pipeline/ports/PipelineProgressReporter";
@@ -24,7 +23,6 @@ export type LayoutVariantAiGenerateInput = {
   imageBuffer: Buffer;
   mimeType: string;
   emailBaseDir: string;
-  mjsGenerateMode?: MjsGenerateMode;
 };
 
 export type LayoutVariantAiGenerateOptions = {
@@ -35,6 +33,8 @@ export type LayoutVariantAiGenerateResult = {
   template: EmailTemplate;
   tokenPresets: TokenPresets;
   mjsPath: string;
+  /** 保底交付时未消除的 validate/视觉门问题（全过为空数组） */
+  validationIssues: string[];
 };
 
 const ALLOWED_MIME = new Set<string>(LAYOUT_VARIANT_AI_IMAGE_MIME_TYPES);
@@ -123,7 +123,6 @@ export async function generateLayoutVariantFromDesignImage(
       stagingDir,
       layoutVariantId: input.layoutVariantId,
       progress: options.progress,
-      mjsGenerateMode: input.mjsGenerateMode,
     });
 
     const templateRaw = JSON.parse(
@@ -137,6 +136,7 @@ export async function generateLayoutVariantFromDesignImage(
       template: parseTemplateFromDisk(templateRaw),
       tokenPresets: tokenPresetsRaw as TokenPresets,
       mjsPath: restored.mjsPath,
+      validationIssues: restored.validationIssues,
     };
   } catch (e) {
     throw wrapPipelineError(e);

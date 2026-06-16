@@ -11,7 +11,7 @@ type Props = {
   contentPane: ReactNode;
   stylePane: ReactNode;
   layoutPane: ReactNode;
-  /** 列表重复：仅当选中区块处于可配置 repeat 的上下文时展示。 */
+  /** 数据组绑定（列表 repeat / 对象映射）：仅当选中区块处于可配置宿主上下文时展示。 */
   listPane?: ReactNode;
   /** 仅普通 block 展示；邮件根节点不需要显隐配置。 */
   visibilityPane?: ReactNode;
@@ -48,7 +48,7 @@ export function AdminInspectorTabs({
         <div className="inspector-tab-panel">{layoutPane}</div>
       </Tabs.TabPane>
       {listPane ? (
-        <Tabs.TabPane tab="列表" key="list">
+        <Tabs.TabPane tab="数据组" key="list">
           <div className="inspector-tab-panel">{listPane}</div>
         </Tabs.TabPane>
       ) : null}

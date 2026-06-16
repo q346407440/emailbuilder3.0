@@ -106,10 +106,11 @@ function normalizeGroundingArray(items: unknown[]): GroundingPayloadParsed {
     return section;
   });
 
+  // sections 为内部 GroundingSection 形态；结构与 schema 推断型一致，输出下游再经 zod 校验。
   return {
     order: sections.map((s) => s.sectionId),
     sections,
-  };
+  } as GroundingPayloadParsed;
 }
 
 function normalizeCardImageTierHint(raw: unknown): { cardImageTier: ImageCardImageTier } | Record<string, never> {

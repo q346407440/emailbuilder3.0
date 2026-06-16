@@ -31,14 +31,15 @@ describe("blockFieldClassification —— 通用 wrapperStyle 字段", () => {
     assert.equal(classifyField("text", "wrapperStyle.contentAlign.horizontal"), "structural");
   });
 
-  it("背景图：URL/alt/link → content；borderRadius/border/position → style；fit → structural", () => {
+  it("背景图：URL/link → content；fit / position → structural", () => {
     assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.src"), "content");
-    assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.alt"), "content");
     assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.link"), "content");
-    assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.borderRadius.radius"), "style");
-    assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.border.color"), "style");
     assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.fit"), "structural");
-    assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.position"), "style");
+    assert.equal(classifyField("layout", "wrapperStyle.backgroundImage.position"), "structural");
+    assert.equal(
+      classifyField("layout", "wrapperStyle.backgroundImage.borderRadius.radius"),
+      "structural"
+    );
   });
 });
 
@@ -51,10 +52,9 @@ describe("blockFieldClassification —— emailRoot", () => {
     assert.equal(classifyField("emailRoot", "props.gap"), "style");
     assert.equal(classifyField("emailRoot", "props.width"), "structural");
     assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.src"), "content");
-    assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.alt"), "content");
     assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.link"), "content");
     assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.fit"), "structural");
-    assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.position"), "style");
+    assert.equal(classifyField("emailRoot", "wrapperStyle.backgroundImage.position"), "structural");
   });
 });
 
@@ -79,17 +79,18 @@ describe("blockFieldClassification —— text", () => {
 });
 
 describe("blockFieldClassification —— image（与 layout 容器背景图同源路径）", () => {
-  it("wrapperStyle.backgroundImage.src / alt / link → content", () => {
+  it("wrapperStyle.backgroundImage.src / link → content", () => {
     assert.equal(classifyField("image", "wrapperStyle.backgroundImage.src"), "content");
-    assert.equal(classifyField("image", "wrapperStyle.backgroundImage.alt"), "content");
     assert.equal(classifyField("image", "wrapperStyle.backgroundImage.link"), "content");
   });
 
-  it("backgroundImage 圆角/描边/position → style；fit → structural", () => {
-    assert.equal(classifyField("image", "wrapperStyle.backgroundImage.borderRadius.radius"), "style");
-    assert.equal(classifyField("image", "wrapperStyle.backgroundImage.border.color"), "style");
-    assert.equal(classifyField("image", "wrapperStyle.backgroundImage.position"), "style");
+  it("backgroundImage fit/position → structural；图级 border/borderRadius 已废弃", () => {
+    assert.equal(classifyField("image", "wrapperStyle.backgroundImage.position"), "structural");
     assert.equal(classifyField("image", "wrapperStyle.backgroundImage.fit"), "structural");
+    assert.equal(
+      classifyField("image", "wrapperStyle.backgroundImage.borderRadius.radius"),
+      "structural"
+    );
   });
 
   it("叠放栈布局 props 与 layout 同源分类", () => {

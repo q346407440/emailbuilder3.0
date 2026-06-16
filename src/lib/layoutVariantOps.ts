@@ -4,16 +4,21 @@ import type { PublishStatus } from "../publish-status-contract/types";
 import { compareByCreatedAtDesc } from "./sortByCreatedAt";
 import { assertLayoutVariantIdSafe } from "./emailLayoutVariant";
 
-/** 顶栏版式下拉：按 createdAt 倒序（缺省排后，再按 id 稳定排序）。 */
-export function sortLayoutVariantsByCreatedDesc(
+/** 顶栏 / 模板页版式列表：更新时间倒序 → 创建时间倒序 → id 稳定倒序。 */
+export function sortLayoutVariantsByUpdatedDesc(
   variants: LayoutVariantEntry[]
 ): LayoutVariantEntry[] {
-  return [...variants].sort((a, b) =>
-    compareByCreatedAtDesc(a.createdAt, b.createdAt, () =>
+  return [...variants].sort((a, b) => {
+    const byUpdated = compareByCreatedAtDesc(a.updatedAt, b.updatedAt);
+    if (byUpdated !== 0) return byUpdated;
+    return compareByCreatedAtDesc(a.createdAt, b.createdAt, () =>
       b.id.localeCompare(a.id, "zh-CN", { numeric: true, sensitivity: "base" })
-    )
-  );
+    );
+  });
 }
+
+/** @deprecated 使用 sortLayoutVariantsByUpdatedDesc。 */
+export const sortLayoutVariantsByCreatedDesc = sortLayoutVariantsByUpdatedDesc;
 
 /** 由展示名称推导唯一版式 id（无法 slug 时用 layout-<base36>）。 */
 export function deriveLayoutVariantIdFromLabel(
@@ -75,7 +80,8 @@ export function appendLayoutVariant(
 export function updateLayoutVariantLabel(
   manifest: LayoutManifest,
   layoutVariantId: string,
-  label: string
+  label: string,
+  updatedAt = new Date().toISOString()
 ): LayoutManifest {
   const normalized = label.trim();
   if (!normalized) {
@@ -85,7 +91,7 @@ export function updateLayoutVariantLabel(
   const variants = manifest.variants.map((v) => {
     if (v.id !== layoutVariantId) return v;
     found = true;
-    return { ...v, label: normalized };
+    return { ...v, label: normalized, updatedAt };
   });
   if (!found) {
     throw new Error(`未知版式：${layoutVariantId}`);
@@ -96,13 +102,14 @@ export function updateLayoutVariantLabel(
 export function updateLayoutVariantPublishStatus(
   manifest: LayoutManifest,
   layoutVariantId: string,
-  publishStatus: PublishStatus
+  publishStatus: PublishStatus,
+  updatedAt = new Date().toISOString()
 ): LayoutManifest {
   let found = false;
   const variants = manifest.variants.map((v) => {
     if (v.id !== layoutVariantId) return v;
     found = true;
-    return { ...v, publishStatus };
+    return { ...v, publishStatus, updatedAt };
   });
   if (!found) {
     throw new Error(`未知版式：${layoutVariantId}`);

@@ -1,7 +1,13 @@
 import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
 import { mergeTemplatePayload } from "../lib/merge";
 import { isRepeatHostBlock } from "../lib/repeatHostBlock";
-import { buildRepeatItemContext, resolveRepeatItemsForExpansion } from "./repeatItemResolve";
+import {
+  buildRepeatItemContext,
+  repeatGroupCount,
+  repeatItemsForGroup,
+  repeatItemIndexForGroup,
+  resolveRepeatItemsForExpansion,
+} from "./repeatItemResolve";
 import {
   clonePrototypeSubtreeSnapshot,
   finalizeMaterializedStaticBlock,
@@ -53,9 +59,12 @@ export function buildRepeatItemMaterializationSnapshots(
   const items = resolveRepeatItemsForExpansion(repeat, payload, []);
   const snapshots: RepeatItemMaterializationSnapshot[] = [];
 
-  items.forEach((item, itemIndex) => {
+  Array.from({ length: repeatGroupCount(repeat, items.length) }).forEach((_, groupIndex) => {
+    const groupItems = repeatItemsForGroup(repeat, items, groupIndex);
+    const item = groupItems[0];
     const ctxItem = isRecord(item) ? item : {};
-    const { itemPath } = buildRepeatItemContext(repeat, [], ctxItem, itemIndex);
+    const itemPathIndex = repeatItemIndexForGroup(repeat, groupIndex);
+    const { itemPath } = buildRepeatItemContext(repeat, [], ctxItem, itemPathIndex);
     const rootBlockIds: string[] = [];
     const allBlocks: Record<string, EmailBlock> = {};
     const allMeta: NonNullable<EmailTemplate["blockMeta"]> = {};
@@ -71,8 +80,9 @@ export function buildRepeatItemMaterializationSnapshots(
         repeatHostSourceId: hostId,
         repeat,
         item: ctxItem,
+        groupItems,
         itemPath,
-        itemIndex,
+        itemIndex: groupIndex,
         materializeRepeatItemBindings: true,
       });
       if (!rawSnapshot) continue;
@@ -92,7 +102,7 @@ export function buildRepeatItemMaterializationSnapshots(
 
     if (rootBlockIds.length > 0) {
       snapshots.push({
-        itemIndex,
+        itemIndex: groupIndex,
         rootBlockIds,
         blocks: allBlocks,
         blockMeta: allMeta,

@@ -43,7 +43,7 @@ describe("applySectionContentAlign", () => {
     });
     const root: CompactNode = {
       kind: "layout.container",
-      wrapper: { contentAlign: { horizontal: "center" } },
+      wrapper: { contentAlign: { horizontal: "center", vertical: "top" } },
       props: { direction: "vertical" },
     };
     const out = applySectionContentAlign(root, sectionCenter);
@@ -102,7 +102,7 @@ describe("applySectionContentAlign", () => {
         {
           kind: "layout.container",
           props: { direction: "vertical", gap: "2px" },
-          wrapper: { contentAlign: { horizontal: "right" } },
+          wrapper: { contentAlign: { horizontal: "right", vertical: "top" } },
           children: [
             {
               kind: "content.text",
@@ -127,7 +127,7 @@ describe("applySectionContentAlign", () => {
           kind: "content.image",
           wrapper: {
             backgroundImageRef: "s5-img-0",
-            contentAlign: { horizontal: "center" },
+            contentAlign: { horizontal: "center", vertical: "center" },
           },
           props: { direction: "vertical", gap: "8px" },
           children: [
@@ -160,7 +160,7 @@ describe("applySectionContentAlign", () => {
   it("无 children 的 content.image 仍 vertical=top", () => {
     const root: CompactNode = {
       kind: "content.image",
-      wrapper: { backgroundImageRef: "s3-img-0", contentAlign: { horizontal: "center" } },
+      wrapper: { backgroundImageRef: "s3-img-0", contentAlign: { horizontal: "center", vertical: "top" } },
     };
     const out = applySectionContentAlign(root, sectionCenter);
     assert.equal(out.wrapper?.contentAlign?.vertical, "top");

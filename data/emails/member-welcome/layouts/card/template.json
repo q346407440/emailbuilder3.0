@@ -180,22 +180,8 @@
                   "height": "44px",
                   "backgroundImage": {
                     "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
-                    "alt": "商店标识",
                     "link": "",
-                    "fit": "contain",
-                    "position": "center",
-                    "borderRadius": {
-                      "mode": "unified",
-                      "radius": {
-                        "$themeRef": "tokens.radius.cta"
-                      }
-                    },
-                    "border": {
-                      "mode": "unified",
-                      "width": "0",
-                      "style": "solid",
-                      "color": "rgba(0,0,0,0)"
-                    }
+                    "fit": "contain"
                   }
                 },
                 "bindings": {
@@ -208,21 +194,7 @@
                     "label": "店铺 Logo 地址",
                     "description": "店铺图形标识图片地址。"
                   },
-                  "wrapperStyle.backgroundImage.alt": {
-                    "slotId": "storeLogoAlt",
-                    "mode": "variable",
-                    "valueType": "string",
-                    "allowExternal": true,
-                    "fieldKind": "content",
-                    "label": "店铺 Logo 替代文字"
-                  },
                   "wrapperStyle.borderRadius.radius": {
-                    "slotId": "tokens.radius.cta",
-                    "mode": "theme",
-                    "tokenPath": "tokens.radius.cta",
-                    "fieldKind": "style"
-                  },
-                  "wrapperStyle.backgroundImage.borderRadius.radius": {
                     "slotId": "tokens.radius.cta",
                     "mode": "theme",
                     "tokenPath": "tokens.radius.cta",
@@ -410,22 +382,9 @@
           },
           "backgroundImage": {
             "src": "https://images.pexels.com/photos/3944406/pexels-photo-3944406.jpeg?auto=compress&cs=tinysrgb&w=800",
-            "alt": "Shopping and member perks",
             "link": "",
             "fit": "cover",
-            "position": "center",
-            "borderRadius": {
-              "mode": "unified",
-              "radius": {
-                "$themeRef": "tokens.radius.panel"
-              }
-            },
-            "border": {
-              "mode": "unified",
-              "width": "0",
-              "style": "solid",
-              "color": "rgba(0,0,0,0)"
-            }
+            "position": "center"
           }
         },
         "bindings": {
@@ -449,20 +408,6 @@
             "fieldKind": "content",
             "label": "欢迎主图地址",
             "description": "欢迎主视觉区背景图；换图后请自测叠字可读性。"
-          },
-          "wrapperStyle.backgroundImage.alt": {
-            "slotId": "heroWelcomeImageAlt",
-            "mode": "variable",
-            "valueType": "string",
-            "allowExternal": true,
-            "fieldKind": "content",
-            "label": "欢迎主图替代文字"
-          },
-          "wrapperStyle.backgroundImage.borderRadius.radius": {
-            "slotId": "tokens.radius.panel",
-            "mode": "theme",
-            "tokenPath": "tokens.radius.panel",
-            "fieldKind": "style"
           }
         },
         "children": [

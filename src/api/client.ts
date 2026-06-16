@@ -9,7 +9,6 @@ import type { BlockMaster, SectionMaster } from "../types/master";
 import { getApiBase } from "./apiBase";
 import { LAYOUT_VARIANT_AI_FROM_IMAGE_STREAM_IDLE_TIMEOUT_MS } from "../layout-variant-ai-contract/constants";
 import type { AiPipelineProgressPayload } from "../layout-variant-ai-contract/progress";
-import type { MjsGenerateMode } from "../layout-variant-ai-contract/mjsGenerateMode";
 
 const FETCH_TIMEOUT_MS = 60_000;
 
@@ -30,7 +29,7 @@ async function fetchApi(
   }
   const effectiveTimeout = timeoutMs > 0 ? timeoutMs : FETCH_TIMEOUT_MS;
   const timeoutMessage =
-    options?.timeoutMessage ?? "请求超时，请确认已运行 npm run dev:all（API 端口 8787）";
+    options?.timeoutMessage ?? "请求超时，请检查网络后重试。";
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), effectiveTimeout);
   try {
@@ -71,8 +70,16 @@ async function errorMessageFromResponse(r: Response, bodyText: string): Promise<
     /* 非 JSON，沿用原文 */
   }
   const t = bodyText.trim();
-  if (t) return t;
-  return `请求失败（HTTP ${r.status}）`;
+  // 仅当响应体是中文业务提示时原样展示；英文原文/堆栈走状态码兜底，避免暴露技术细节
+  if (t && /[一-鿿]/.test(t)) return t;
+  return fallbackMessageForStatus(r.status);
+}
+
+/** 非业务错误时按 HTTP 状态映射兜底提示，不向用户展示状态码数字 */
+function fallbackMessageForStatus(status: number): string {
+  if (status === 409) return "保存冲突：内容已被其他操作修改，请刷新后重试。";
+  if (status >= 500) return "服务暂时不可用，请稍后重试。";
+  return "操作失败，请稍后重试。";
 }
 
 export async function listEmails(): Promise<{ items: EmailListItem[] }> {
@@ -102,6 +109,40 @@ export async function createEmail(body: {
     throw new Error(await errorMessageFromResponse(r, t));
   }
   return r.json() as Promise<CreateEmailResult>;
+}
+
+export type EmailTemplateCatalogDesign = {
+  designId: string;
+  label: string;
+  publishStatus: EmailMeta["publishStatus"];
+  createdAt?: string;
+  updatedAt?: string;
+  isActive: boolean;
+};
+
+export type EmailTemplateCatalogItem = {
+  emailKey: string;
+  displayName: string;
+  description: string;
+  publishStatus: EmailMeta["publishStatus"];
+  subject: string;
+  preheader: string;
+  contentDataSummary: {
+    slotCount: number;
+    valueCount: number;
+  };
+  activeLayoutVariantId: string;
+  createdAt?: string;
+  updatedAt?: string;
+  designs: EmailTemplateCatalogDesign[];
+};
+
+export async function listEmailTemplateCatalog(): Promise<{
+  items: EmailTemplateCatalogItem[];
+}> {
+  const r = await fetchApi(apiUrl("/email-templates/catalog"));
+  if (!r.ok) throw new Error(await errorMessageFromResponse(r, await r.text()));
+  return r.json() as Promise<{ items: EmailTemplateCatalogItem[] }>;
 }
 
 export type EmailListChangedEvent = {
@@ -281,6 +322,8 @@ export type CreateLayoutVariantResult = {
   manifest: LayoutManifest;
   /** 豆包 mjs 管线落盘的 scripts/generate-doubao-*.mjs（可选） */
   mjsPath?: string;
+  /** AI 保底交付时未消除的校验/视觉问题（全过或非 AI 创建为空/缺省） */
+  validationIssues?: string[];
 };
 
 export async function createLayoutVariant(
@@ -370,16 +413,12 @@ export async function createLayoutVariantFromDesignImage(
   label: string,
   imageFile: File,
   options?: {
-    mjsGenerateMode?: MjsGenerateMode;
     onProgress?: (payload: AiPipelineProgressPayload) => void;
   }
 ): Promise<CreateLayoutVariantResult> {
   const form = new FormData();
   form.append("label", label.trim());
   form.append("image", imageFile, imageFile.name || "design.png");
-  if (options?.mjsGenerateMode) {
-    form.append("mjsGenerateMode", options.mjsGenerateMode);
-  }
   const r = await fetchApi(
     apiUrl(`/emails/${encodeURIComponent(emailKey)}/layout-variants/ai-from-image`),
     {

@@ -1,6 +1,4 @@
 import type { BlockInsertPrototype } from "../block-insert-default-contract";
-import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
-import type { TokenPresets } from "../types/tokenPreset";
 import {
   extractBlockPersistLiteralSnapshot,
   type BlockPersistLiteralSnapshotArgs,

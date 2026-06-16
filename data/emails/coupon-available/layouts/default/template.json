@@ -179,20 +179,8 @@
                   },
                   "backgroundImage": {
                     "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
-                    "alt": "Store logo",
                     "link": "",
-                    "fit": "contain",
-                    "position": "left",
-                    "borderRadius": {
-                      "mode": "unified",
-                      "radius": "0"
-                    },
-                    "border": {
-                      "mode": "unified",
-                      "width": "0",
-                      "style": "solid",
-                      "color": "rgba(0,0,0,0)"
-                    }
+                    "fit": "contain"
                   },
                   "contentAlign": {
                     "horizontal": "left",
@@ -207,14 +195,6 @@
                     "allowExternal": true,
                     "fieldKind": "content",
                     "label": "店铺 Logo 地址"
-                  },
-                  "wrapperStyle.backgroundImage.alt": {
-                    "slotId": "storeLogoAlt",
-                    "mode": "variable",
-                    "valueType": "string",
-                    "allowExternal": true,
-                    "fieldKind": "content",
-                    "label": "店铺 Logo 替代文字"
                   }
                 }
               }
@@ -1416,12 +1396,6 @@
                       "required": true
                     },
                     {
-                      "key": "imageAlt",
-                      "label": "图片替代文字",
-                      "valueType": "string",
-                      "required": true
-                    },
-                    {
                       "key": "name",
                       "label": "商品名",
                       "valueType": "string",
@@ -1488,22 +1462,9 @@
                       },
                       "backgroundImage": {
                         "src": "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400",
-                        "alt": "Everyday Crossbody Bag",
                         "link": "https://example.com/products/crossbody-bag",
                         "fit": "cover",
-                        "position": "center",
-                        "borderRadius": {
-                          "mode": "unified",
-                          "radius": {
-                            "$themeRef": "tokens.radius.panel"
-                          }
-                        },
-                        "border": {
-                          "mode": "unified",
-                          "width": "0",
-                          "style": "solid",
-                          "color": "rgba(0,0,0,0)"
-                        }
+                        "position": "center"
                       },
                       "padding": {
                         "mode": "separate",
@@ -1526,14 +1487,6 @@
                         "fieldKind": "content",
                         "slotPath": "0.imageSrc"
                       },
-                      "wrapperStyle.backgroundImage.alt": {
-                        "slotId": "pickedProducts",
-                        "mode": "variable",
-                        "valueType": "collection",
-                        "allowExternal": true,
-                        "fieldKind": "content",
-                        "slotPath": "0.imageAlt"
-                      },
                       "wrapperStyle.backgroundImage.link": {
                         "slotId": "pickedProducts",
                         "mode": "variable",
@@ -1543,12 +1496,6 @@
                         "slotPath": "0.href"
                       },
                       "wrapperStyle.borderRadius.radius": {
-                        "slotId": "tokens.radius.panel",
-                        "mode": "theme",
-                        "tokenPath": "tokens.radius.panel",
-                        "fieldKind": "style"
-                      },
-                      "wrapperStyle.backgroundImage.borderRadius.radius": {
                         "slotId": "tokens.radius.panel",
                         "mode": "theme",
                         "tokenPath": "tokens.radius.panel",

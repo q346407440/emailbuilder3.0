@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { rebalanceTextExtractRegions } from "./rebalanceTextExtractRegions";
+import type { GroundingSection } from "./types";
 
 describe("rebalanceTextExtractRegions", () => {
   it("将 TAKE ANOTHER LOOK 从 s2 挪到商品区", () => {
@@ -33,9 +34,9 @@ describe("rebalanceTextExtractRegions", () => {
         },
       ],
     };
-    const sections = [
-      { sectionId: "s2", name: "首屏提示", components: "标题+按钮" },
-      { sectionId: "s3", name: "商品推荐", components: "商品图+名称" },
+    const sections: GroundingSection[] = [
+      { sectionId: "s2", name: "首屏提示", order: 0, components: "标题+按钮" },
+      { sectionId: "s3", name: "商品推荐", order: 1, components: "商品图+名称" },
     ];
     const out = rebalanceTextExtractRegions(payload, sections);
     const s2 = out.regions.find((r) => r.regionId === "s2");

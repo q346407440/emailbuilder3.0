@@ -138,19 +138,28 @@ export function buildRepeatFieldMappingCollectionSlotPath(
     return parentItemPath ? `${parentItemPath}.${parentKey}` : parentKey;
   }
   const fieldPath = stripCollectionIndex(mapping.sourcePath);
-  return fieldPath ? `${nestedItemPath}.${fieldPath}` : nestedItemPath;
+  const itemOffset = Math.max(0, Math.floor(mapping.itemOffset ?? 0));
+  const itemPath =
+    itemOffset > 0
+      ? nestedItemPath.replace(/\d+$/, (raw) => String(Number(raw) + itemOffset))
+      : nestedItemPath;
+  return fieldPath ? `${itemPath}.${fieldPath}` : itemPath;
 }
 
 export function resolveRepeatFieldMappingValue(
   mapping: RepeatFieldMapping,
   nestedItem: Record<string, unknown>,
-  parentItem: Record<string, unknown> | undefined
+  parentItem: Record<string, unknown> | undefined,
+  groupItems?: Record<string, unknown>[]
 ): unknown {
   if (isRepeatParentFieldSourcePath(mapping.sourcePath)) {
     const key = stripRepeatParentFieldPrefix(mapping.sourcePath);
     return parentItem ? getAtPath(parentItem, key) : undefined;
   }
-  return getAtPath(nestedItem, stripCollectionIndex(mapping.sourcePath));
+  const itemOffset = Math.max(0, Math.floor(mapping.itemOffset ?? 0));
+  const sourceItem = itemOffset > 0 ? groupItems?.[itemOffset] : nestedItem;
+  if (!sourceItem) return undefined;
+  return getAtPath(sourceItem, stripCollectionIndex(mapping.sourcePath));
 }
 
 export function resolveAnchoredParentItemWithFallback(

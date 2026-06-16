@@ -71,7 +71,7 @@ export function CollectionItemFieldsModal({
         <p className="collection-item-fields-modal__hint">
           列表变量 <code>{slotId}</code>
           {displayLabel !== slotId ? <>（{displayLabel}）</> : null}
-          ：声明每一项包含哪些列（itemFields），写入 <code>payload.slots</code>。类型为「子列表」时可展开并添加子字段（如 SPU 下的 SKU 列表）。
+          ：定义列表中每一行包含哪些字段。类型为「子列表」时可展开并添加子字段（如 SPU 下的 SKU 列表）。
         </p>
         <CollectionItemFieldsTableEditor
           itemFields={draft}

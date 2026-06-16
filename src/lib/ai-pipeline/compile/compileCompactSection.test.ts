@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { compileCompactSectionRoot } from "./compileCompactSection";
 import { sanitizeCompactIrTree } from "./sanitizeCompactIr";
-import type { CompactNode, GroundingSection } from "../types";
+import type { CompactNode, CompactWrapper, GroundingSection } from "../types";
 
 const sectionCenter: GroundingSection = {
   sectionId: "s1",
@@ -15,7 +15,7 @@ describe("compileCompactSectionRoot", () => {
   it("剥离 crossAlign 等禁止 wrapper 键", () => {
     const root: CompactNode = {
       kind: "layout.container",
-      wrapper: { crossAlign: "center", widthMode: "fill" },
+      wrapper: { widthMode: "fill", ...{ crossAlign: "center" } } as CompactWrapper,
       props: { direction: "vertical" },
     };
     const out = sanitizeCompactIrTree(root);
@@ -109,7 +109,7 @@ describe("compileCompactSectionRoot", () => {
           kind: "content.image",
           wrapper: {
             backgroundImageRef: "s5-img-0",
-            contentAlign: { horizontal: "center" },
+            contentAlign: { horizontal: "center", vertical: "center" },
           },
           props: { direction: "vertical" },
           children: [
@@ -132,7 +132,7 @@ describe("compileCompactSectionRoot", () => {
         {
           kind: "layout.container",
           props: { direction: "vertical" },
-          wrapper: { contentAlign: { horizontal: "right" } },
+          wrapper: { contentAlign: { horizontal: "right", vertical: "top" } },
           children: [{ kind: "content.text", props: { textId: "s1-t1" } }],
         },
       ],

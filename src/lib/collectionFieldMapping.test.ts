@@ -14,6 +14,7 @@ import {
   collectionSampleFromPayloadValues,
 } from "./collectionFieldMapping";
 import { parentScalarItemFieldsFromItemFields } from "./repeatNestedBindingUi";
+import type { BindingCollectionField } from "../types/email";
 import {
   canBindTargetPathToSourceKey,
   countNestedCollectionsInItemFields,
@@ -39,9 +40,20 @@ describe("collectionFieldMapping", () => {
     });
     assert.ok(fields.some((f) => f.key === "name" && f.valueType === "string"));
     assert.ok(fields.some((f) => f.key === "imageSrc" && f.valueType === "url"));
-    const skus = fields.find((f) => f.key === "skus" && f.valueType === "collection");
-    assert.ok(skus?.itemFields?.some((c) => c.key === "inventoryQuantity" && c.valueType === "number"));
-    assert.ok(skus?.itemFields?.some((c) => c.key === "totalSales" && c.valueType === "number"));
+    const skus = fields.find(
+      (f): f is Extract<BindingCollectionField, { valueType: "collection" }> =>
+        f.key === "skus" && f.valueType === "collection"
+    );
+    assert.ok(
+      skus?.itemFields?.some(
+        (c: BindingCollectionField) => c.key === "inventoryQuantity" && c.valueType === "number"
+      )
+    );
+    assert.ok(
+      skus?.itemFields?.some(
+        (c: BindingCollectionField) => c.key === "totalSales" && c.valueType === "number"
+      )
+    );
   });
 
   it("echoCustomJsonPaste 从列表值回显 JSON", () => {
@@ -328,7 +340,7 @@ describe("collectionFieldMapping", () => {
 
   it("buildDefaultCollectionFieldMap 不匹配跨层级默认同名", () => {
     const itemFields = [
-      { key: "imageAlt", label: "替代文字", valueType: "string" as const },
+      { key: "badge", label: "角标", valueType: "string" as const },
       {
         key: "skus",
         label: "SKU 列表",
@@ -336,10 +348,10 @@ describe("collectionFieldMapping", () => {
         itemFields: [{ key: "title", label: "规格名", valueType: "string" as const }],
       },
     ];
-    const map = buildDefaultCollectionFieldMap(itemFields, ["imageAlt", "skus.title"]);
-    assert.equal(map.imageAlt, "imageAlt");
+    const map = buildDefaultCollectionFieldMap(itemFields, ["badge", "skus.title"]);
+    assert.equal(map.badge, "badge");
     assert.equal(map["skus.title"], "skus.title");
-    assert.equal(map["skus.imageAlt"], undefined);
+    assert.equal(map["skus.badge"], undefined);
   });
 
   it("buildDefaultCollectionFieldMap 匹配 skus.xxx 路径", () => {

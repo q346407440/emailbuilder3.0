@@ -18,7 +18,7 @@
 
 **落盘 artifact 版本索引**：[`src/schema-registry/`](./src/schema-registry/)（引用各 `*-contract` 常量；`npm run validate:all` 经 registry 校验 meta / tokenPresets / layoutManifest 等）。
 
-完整技能表见 [CLAUDE.md](./CLAUDE.md)。`docs/project-plan.md` 仅为历史备忘，**不是**契约。
+完整技能表见 [CLAUDE.md](./CLAUDE.md)。产品 PRD 见 [`docs/prd.md`](./docs/prd.md)。
 
 **结构批量迁移**：`npm run migrate:text-body -- --write`、`npm run validate:all`、`npm run migrate:content-align-hug-neutral:write` 等见 `package.json`；交付前 **`npm run validate:all`**。
 

@@ -15,6 +15,7 @@ import {
   EMAIL_PRESENTATION_TD_ANTI_STRUT_STYLE,
   normalizePresentationHeightMode,
   stripPresentationLeafShellOuterChromeFromElement,
+  emailTextContentWrapCss,
 } from "./emailPresentationLayout";
 
 export type MeasuredBoxPx = { width: number; height: number };
@@ -113,14 +114,29 @@ function syncPresentationLeafShellTdPatch(
   stripPresentationLeafShellOuterChromeFromElement(cloneRoot);
 }
 
-/** 发信 HTML：`.email-text-content` 内段落须内联 margin/padding 归零（画布 CSS 不会进邮件） */
+/** 发信 HTML：`.email-text-content` 段落归零 + fill/fixed 宽栏内断行（画布 CSS 不会进邮件） */
 export function applyEmailTextContentParagraphReset(root: Element): void {
-  for (const p of root.querySelectorAll(".email-text-content p")) {
-    if (p instanceof HTMLElement) {
-      p.style.margin = "0";
-      p.style.padding = "0";
+  for (const el of root.querySelectorAll(".email-text-content")) {
+    if (!(el instanceof HTMLElement)) continue;
+    const widthMode = findAncestorDeliveryExportWidthMode(el);
+    Object.assign(el.style, emailTextContentWrapCss(widthMode));
+    for (const p of el.querySelectorAll("p")) {
+      if (p instanceof HTMLElement) {
+        p.style.margin = "0";
+        p.style.padding = "0";
+      }
     }
   }
+}
+
+function findAncestorDeliveryExportWidthMode(el: Element): string | undefined {
+  let cur: Element | null = el.parentElement;
+  while (cur) {
+    const mode = cur.getAttribute(DELIVERY_EXPORT_WIDTH_MODE_ATTR);
+    if (mode) return mode;
+    cur = cur.parentElement;
+  }
+  return undefined;
 }
 
 /**

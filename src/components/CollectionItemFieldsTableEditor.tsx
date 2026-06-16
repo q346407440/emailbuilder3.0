@@ -61,7 +61,7 @@ export function CollectionItemFieldsTableEditor({ itemFields, disabled, onChange
         </span>
         <span
           className="collection-item-fields-table__th collection-item-fields-table__th--key"
-          title="系统使用的字段标识，写入 payload 与模板绑定"
+          title="字段的唯一标识，用于与模板内容绑定"
         >
           key
         </span>

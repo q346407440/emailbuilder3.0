@@ -68,14 +68,6 @@ export function resetGlobalLlmRequestQueueForTests(): void {
   globalQueue = null;
 }
 
-function emitStepRunningFromQueue(ctx: ReturnType<typeof getLlmExchangeContext>): void {
-  const step = ctx.stepProgress;
-  if (!step) return;
-  const attempt = ctx.attempt ?? 1;
-  if (attempt > 1) step.retry(attempt);
-  else step.start(attempt);
-}
-
 export function wrapLlmClientWithQueue(
   client: LlmClient,
   queue: LlmRequestQueue = getGlobalLlmRequestQueue()
@@ -85,11 +77,7 @@ export function wrapLlmClientWithQueue(
       const ctx = { ...getLlmExchangeContext() };
       const isRetry = (ctx.attempt ?? 1) > 1;
       return queue.enqueue(
-        () =>
-          llmExchangeContextStore.run(ctx, () => {
-            emitStepRunningFromQueue(ctx);
-            return client.complete(messages, responseFormat);
-          }),
+        () => llmExchangeContextStore.run(ctx, () => client.complete(messages, responseFormat)),
         isRetry ? 1 : 0
       );
     },

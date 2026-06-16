@@ -25,12 +25,9 @@ export const layoutContainerContract: BlockTypeContract = {
     "wrapperStyle.backgroundColor": "style",
     "wrapperStyle.padding": "style",
     "wrapperStyle.backgroundImage.src": "content",
-    "wrapperStyle.backgroundImage.alt": "content",
     "wrapperStyle.backgroundImage.link": "content",
     "wrapperStyle.backgroundImage.fit": "structural",
-    "wrapperStyle.backgroundImage.position": "style",
-    "wrapperStyle.backgroundImage.border": "style",
-    "wrapperStyle.backgroundImage.borderRadius": "style",
+    "wrapperStyle.backgroundImage.position": "structural",
     "wrapperStyle.contentAlign": "structural",
   },
 };

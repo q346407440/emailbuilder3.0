@@ -27,9 +27,6 @@ const RADIUS_PRESET_MAP = {
   pill: { panel: "12px", cta: "9999px" },
 } as const;
 
-type SpacingPreset = keyof typeof SPACING_PRESET_MAP;
-type TypographyPreset = keyof typeof TYPOGRAPHY_PRESET_MAP;
-type RadiusPreset = keyof typeof RADIUS_PRESET_MAP;
 
 /** 将 LLM 输出的 preset + hex JSON 规范化为管线内部 StyleTokensPayload。 */
 export function normalizeStyleTokensFromLlm(parsed: unknown): StyleTokensPayloadParsed | null {
@@ -139,8 +136,8 @@ function pickPreset<T extends string>(
   return fallback;
 }
 
-function pickEnum(value: string, enums: readonly string[], fallback: string): string {
-  return enums.includes(value) ? value : fallback;
+function pickEnum<T extends string>(value: string, enums: readonly T[], fallback: T): T {
+  return (enums as readonly string[]).includes(value) ? (value as T) : fallback;
 }
 
 function normalizeHex(value: unknown): string | null {

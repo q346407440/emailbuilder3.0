@@ -140,6 +140,21 @@ export function emailPresentationHugTdWidthStyle(widthMode: unknown): CSSPropert
   return { width: "100%", whiteSpace: "normal" };
 }
 
+/**
+ * fill/fixed 宽正文断行：与 {@link emailPresentationHugTdWidthStyle} 的 whiteSpace:normal 配套；
+ * hug 宽单行块不写断行（td 侧 nowrap）。
+ */
+export function emailTextContentWrapCss(widthMode: unknown): CSSProperties {
+  if (normalizePresentationWidthMode(widthMode) === "hug") {
+    return {};
+  }
+  return {
+    overflowWrap: "anywhere",
+    wordBreak: "break-word",
+    maxWidth: "100%",
+  };
+}
+
 /** 叶壳 inner `<td>` 承载的外观键；外层 div 须剥离，避免与 td 双层描边/内边距。 */
 const PRESENTATION_LEAF_SHELL_OUTER_OMIT_CSS_KEYS: (keyof CSSProperties)[] = [
   "padding",

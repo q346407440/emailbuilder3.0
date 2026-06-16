@@ -7,13 +7,14 @@ import {
   listRepeatFieldMappingScalarFields,
   resolveRepeatFieldMappingValue,
 } from "./repeatNestedFieldMapping";
-import type { EmailTemplate } from "../types/email";
+import type { EmailTemplate, RepeatRegionBinding } from "../types/email";
 
 describe("repeatNestedFieldMapping", () => {
-  const parentRepeat = {
-    mode: "collection" as const,
+  const parentRepeat: RepeatRegionBinding = {
+    mode: "collection",
     slotId: "products",
     prototypeChildIds: ["card"],
+    fallbackChildIds: [],
     itemFields: [
       { key: "name", label: "商品名", valueType: "string" as const },
       { key: "salePrice", label: "现价", valueType: "string" as const },
@@ -27,10 +28,11 @@ describe("repeatNestedFieldMapping", () => {
     fieldMappings: [],
   };
 
-  const nestedRepeat = {
-    mode: "collection" as const,
+  const nestedRepeat: RepeatRegionBinding = {
+    mode: "collection",
     slotId: "products",
     prototypeChildIds: ["desc"],
+    fallbackChildIds: [],
     itemPath: "skus",
     itemFields: [{ key: "title", label: "规格名", valueType: "string" as const }],
     fieldMappings: [],

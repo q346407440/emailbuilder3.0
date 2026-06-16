@@ -103,6 +103,9 @@ describe("extractBlockPersistLiteralSnapshot", () => {
       },
       props: {
         textBody: { paragraphs: [{ runs: [{ text: "你好" }] }] },
+        bold: false,
+        italic: false,
+        decoration: "none",
       },
       bindings: { "props.textBody": { mode: "variable", slotId: "x", fieldKind: "content" } },
     };

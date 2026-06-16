@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { AiStepUiState } from "../../layout-variant-ai-contract/progress";
 import {
-  DEFAULT_MJS_GENERATE_MODE,
-  mjsGenerateModeHint,
-  type MjsGenerateMode,
-} from "../../layout-variant-ai-contract/mjsGenerateMode";
-import {
   LAYOUT_VARIANT_AI_IMAGE_MAX_BYTES,
   LAYOUT_VARIANT_AI_IMAGE_MIME_TYPES,
 } from "../../layout-variant-ai-contract/constants";
@@ -25,7 +20,6 @@ export type LayoutVariantCreateAiSubmit = {
   kind: "ai";
   label: string;
   imageFile: File;
-  mjsGenerateMode: MjsGenerateMode;
 };
 
 export type LayoutVariantCreateCopySubmit = {
@@ -62,16 +56,12 @@ function validateClientDesignImage(file: File): string | null {
   return null;
 }
 
-function modeNote(isCopy: boolean, aiMode: boolean, mjsGenerateMode: MjsGenerateMode): string {
+function modeNote(isCopy: boolean, aiMode: boolean): string {
   if (isCopy) {
-    return "将复制源版式的结构与样式预设；场景变量仍共用当前 payload。新版式为未发布状态。";
+    return "将复制源版式的结构与样式预设；内容数据仍共用当前邮件模板。新版式为未发布状态。";
   }
   if (aiMode) {
-    const modeLine =
-      mjsGenerateMode === "delta-first"
-        ? "生成模式：底稿 patch（视觉规格识别 + 程序底稿 + slot 补丁 + 视觉质量门）。"
-        : "生成模式：整段生成（豆包一次输出完整 mjs body，对照 git 版首轮）。";
-    return `${modeLine}上传设计图后，AI 将自动生成版式结构与样式预设；过程约需 2–8 分钟，校验或脚本执行失败时会自动重试（最多 3 次）。新版式为未发布状态。`;
+    return "上传设计图后，AI 将按底稿 patch 流程生成版式结构与样式预设；过程约需 2–8 分钟，校验或脚本执行失败时会自动重试（最多 3 次）。新版式为未发布状态。";
   }
   return "将创建空白画布与默认样式预设。新版式为未发布状态。";
 }
@@ -87,7 +77,6 @@ export function LayoutVariantCreateModal({
 }: LayoutVariantCreateModalProps) {
   const [draftName, setDraftName] = useState("");
   const [useAiFromImage, setUseAiFromImage] = useState(false);
-  const [mjsGenerateMode, setMjsGenerateMode] = useState<MjsGenerateMode>(DEFAULT_MJS_GENERATE_MODE);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
@@ -101,7 +90,6 @@ export function LayoutVariantCreateModal({
       setDraftName("");
     }
     setUseAiFromImage(false);
-    setMjsGenerateMode(DEFAULT_MJS_GENERATE_MODE);
     setImageFile(null);
     setImagePreviewUrl(null);
     setDraftError(null);
@@ -160,7 +148,7 @@ export function LayoutVariantCreateModal({
       if (mode === "copy") {
         await onSubmit({ kind: "copy", label: normalized });
       } else if (useAiFromImage && imageFile) {
-        await onSubmit({ kind: "ai", label: normalized, imageFile, mjsGenerateMode });
+        await onSubmit({ kind: "ai", label: normalized, imageFile });
       } else {
         await onSubmit({ kind: "blank", label: normalized });
       }
@@ -181,7 +169,7 @@ export function LayoutVariantCreateModal({
   return (
     <ShopSectionModal
       visible
-      title={isCopy ? "复制版式结构" : "新建版式结构"}
+      title={isCopy ? "复制版式" : "新版式"}
       onCancel={close}
       maskClosable={!busy}
       closable={!busy}
@@ -213,7 +201,7 @@ export function LayoutVariantCreateModal({
             value={draftName}
             maxLength={80}
             disabled={busy}
-            placeholder={isCopy ? "请输入新版式名称" : "例如：居中流式版"}
+            placeholder={isCopy ? "请输入新版式名称" : "例如：居中流式版式"}
             onChange={(e) => setDraftName(e.target.value)}
             onPressEnter={() => canSubmit && void submit()}
           />
@@ -237,7 +225,7 @@ export function LayoutVariantCreateModal({
                   setDraftError(null);
                 }}
               >
-                空白版式
+                空白方案
               </button>
               <button
                 type="button"
@@ -258,54 +246,6 @@ export function LayoutVariantCreateModal({
                 <span className="layout-variant-create-modal__segment-tag">AI</span>
               </button>
             </div>
-          </Field>
-        ) : null}
-
-        {aiMode ? (
-          <Field label="生成模式">
-            <div
-              className="layout-variant-create-modal__segment layout-variant-create-modal__segment--stacked"
-              role="tablist"
-              aria-label="以图创建生成模式"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mjsGenerateMode === "delta-first"}
-                disabled={busy}
-                className={
-                  mjsGenerateMode === "delta-first"
-                    ? "layout-variant-create-modal__segment-item layout-variant-create-modal__segment-item--active"
-                    : "layout-variant-create-modal__segment-item"
-                }
-                onClick={() => {
-                  setMjsGenerateMode("delta-first");
-                  setDraftError(null);
-                }}
-              >
-                <span className="layout-variant-create-modal__segment-title">底稿 patch</span>
-                <span className="layout-variant-create-modal__segment-desc">视觉规格 + 程序底稿 + slot 补丁</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mjsGenerateMode === "full-body-first"}
-                disabled={busy}
-                className={
-                  mjsGenerateMode === "full-body-first"
-                    ? "layout-variant-create-modal__segment-item layout-variant-create-modal__segment-item--active"
-                    : "layout-variant-create-modal__segment-item"
-                }
-                onClick={() => {
-                  setMjsGenerateMode("full-body-first");
-                  setDraftError(null);
-                }}
-              >
-                <span className="layout-variant-create-modal__segment-title">整段生成</span>
-                <span className="layout-variant-create-modal__segment-desc">对照 git 版首轮策略</span>
-              </button>
-            </div>
-            <p className="layout-variant-create-modal__mode-hint">{mjsGenerateModeHint(mjsGenerateMode)}</p>
           </Field>
         ) : null}
 
@@ -353,7 +293,7 @@ export function LayoutVariantCreateModal({
           </section>
         ) : null}
 
-        <p className="topbar__create-hint">{modeNote(isCopy, aiMode, mjsGenerateMode)}</p>
+        <p className="topbar__create-hint">{modeNote(isCopy, aiMode)}</p>
 
         {draftError ? (
           <span className="topbar__rename-error" role="alert">

@@ -139,6 +139,33 @@ function iconBlock(id, name, src, opts = {}) {
   };
 }
 
+/** 带外框图标（社媒图标常用形态）：fixed 容器 + 描边 + 居中 iconBlock；圆角默认 0，按设计图传 radius */
+function iconBadge(id, name, src, opts = {}) {
+  const {
+    boxSize = '40px',
+    iconSize = '24px',
+    borderColor = COLORS.primary,
+    borderWidth = '1px',
+    radius = '0',
+    iconColor = COLORS.primary,
+  } = opts;
+  return {
+    id,
+    type: 'layout',
+    blockMeta: { blockType: 'layout.container', name },
+    wrapperStyle: {
+      widthMode: 'fixed',
+      width: boxSize,
+      heightMode: 'fixed',
+      height: boxSize,
+      contentAlign: { horizontal: 'center', vertical: 'center' },
+      border: { mode: 'unified', width: borderWidth, style: 'solid', color: borderColor },
+      borderRadius: { mode: 'unified', radius },
+    },
+    children: [iconBlock(\`\${id}-icon\`, name, src, { size: iconSize, color: iconColor })],
+  };
+}
+
 function coverImage(id, name, src, alt, height) {
   return {
     id,
@@ -202,6 +229,7 @@ function colorBadge(id, name, color, textColor) {
     wrapperStyle: {
       widthMode: 'hug',
       heightMode: 'hug',
+      contentAlign: { horizontal: 'center', vertical: 'center' },
       backgroundColor: color,
       border: borderNone(),
       borderRadius: { mode: 'unified', radius: '9999px' },
@@ -325,7 +353,7 @@ function productCard(id, cardName, productName, imageSrc, imageAlt, imgWidth, im
           },
         },
       },
-      textBlock(\`\${id}-name\`, '产品名称', productName, { fontSize: '14px' }),
+      textBlock(\`\${id}-name\`, '产品名称', productName, { fontSize: '14px', widthMode: 'hug' }),
       buttonBlock(\`\${id}-cta\`, '购买按钮', 'Shop now', { fontSize: '12px', widthMode: 'hug' }),
     ],
   };

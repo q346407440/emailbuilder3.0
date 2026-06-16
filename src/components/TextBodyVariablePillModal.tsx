@@ -122,7 +122,7 @@ export function TextBodyVariablePillModal({
             在下方表格中单选一个 payload 变量后点「确定」完成绑定（不支持列表）。也可解除绑定，将当前预览文字烘焙为普通文本。
           </p>
           {scalarSlots.length === 0 ? (
-            <p className="text-body-var-pill-modal__empty">当前邮件没有可绑定的标量变量，请先在变量赋值面板创建。</p>
+            <p className="text-body-var-pill-modal__empty">当前没有可绑定的变量，请先在变量列表中点击「添加变量」。</p>
           ) : (
             <SelectablePickerTable
               ariaLabel="可选 payload 变量"

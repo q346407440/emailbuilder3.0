@@ -17,12 +17,13 @@ description: >-
 | schema 版本与类型 | **`src/payload-contract/types.ts`**（`PAYLOAD_SCHEMA_VERSION` 等） |
 | **槽顶层的 valueType 枚举、槽 id 模式** | **`src/payload-contract/value-types.ts`**（**不**在本技能重复表格） |
 | **列表行字段 `itemFields`（类型、2 级嵌套、image→url）** | **`src/payload-contract/collection-item-fields.ts`** + **`value-types.ts`** · `COLLECTION_ITEM_FIELD_TYPES` |
+| **内置变量结构目录（通用 / 专用、长度策略）** | **`src/payload-contract/builtin-structure-catalog/`** |
 | 从 template 合并外部可赋值槽 | **`src/payload-contract/slot-registry.ts`**（`buildExternalSlotRegistry`） |
 | 校验实现 | **`src/payload-contract/validate.ts`** |
 | **场景列表预设（scene-collection-presets）** | **`src/payload-contract/scene-collection-presets/`**（`SCENE_COLLECTION_PRESET_SCHEMA_VERSION` 必填） |
 | template 侧编排入口 | **`src/lib/validate.ts`**（`validateTemplateBindings`、`validatePayloadAgainstTemplate` 等） |
 
-维护：**先改 `types.ts` / `value-types.ts` / `collection-item-fields.ts`** → 再改 **`validate.ts`** 与单测 → **`npm run validate:all`**。列表行字段类型须与 **`standard-scalar-types.ts`** 一致（+ `collection`），勿新增 `image` 列类型。
+维护：**先改 `types.ts` / `value-types.ts` / `collection-item-fields.ts` / `builtin-structure-catalog/`** → 再改 **`validate.ts`** 与单测 → **`npm run validate:all`**。列表行字段类型须与 **`standard-scalar-types.ts`** 一致（+ `collection`），勿新增 `image` 列类型。
 
 ## 两层分工（必读，勿再双写）
 
@@ -35,6 +36,8 @@ description: >-
 | 编辑器主题快照 | **`template.meta.easyEmailBindingUi`** | 仅 theme 解除跟随；非业务默认 |
 
 **`buildExternalSlotRegistry(template)`**：从 template 扫描 **合并** 槽目录（repeat 优先）；日常 UI 用 **`collectPayloadVariableSlots`** → 以 **`payload.slots`** 为准（`src/lib/payloadSlots.ts`）。
+
+**内置数据结构变量（当前产品口径）**：新建变量统一从 **`src/payload-contract/builtin-structure-catalog/`** 派生，写入 `payload.slots[slotId].builtinStructureId`。编辑器不再提供自定义变量入口；变量类型、变量标识、列表行字段均只读。内置结构自带 mock 取值，仅用于画布预览与绑定调试，不允许运营在编辑器中自由改 mock 字段；通用列表的「列表长度」只作为展示截取长度，不裁剪 mock 源数据；专用列表（如 loyalty 内部后台）通过 `lengthPolicy: { kind: "locked" }` 固定长度，变量面板与 repeat 绑定处均置灰。选商品、选专辑、相似品/搭配品排序不在编辑器处理范围内，由上游接入方在灌 `values` 前完成。
 
 **`interpolate`**：单层 **`{{ slotId }}`**；原子槽定义在 `interpolationSlots`，**无** `defaultValue`；值在 **`payload.values`**。  
 **visibility**：运算符合法性在 **`src/visibility-contract/`**；消费的槽纳入注册与类型校验。  

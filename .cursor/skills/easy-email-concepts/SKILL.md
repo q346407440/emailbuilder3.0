@@ -11,7 +11,7 @@ description: >-
 
 - **字段白名单、禁止持久化项、枚举、必填、payload 形态**：一律以仓库 **TypeScript 契约与校验** 为准；本文件**不**维护第二份键表。
 - **本目录技能（`.cursor/skills/`）**：Agent **何时读哪段代码**、**工作流顺序**、**易错口语对照**；与 `npm run sync:claude` 镜像到 `.claude/skills/`、`CLAUDE.md`。
-- **`docs/project-plan.md`**：对话备忘，**不是** JSON/API 契约。
+- **`docs/prd.md`**：产品 PRD；**不是** JSON/API 契约真源。
 
 ## 代码真源指针
 

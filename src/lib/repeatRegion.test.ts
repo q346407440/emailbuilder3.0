@@ -734,7 +734,6 @@ describe("repeatRegion", () => {
     payload.values.pickedSpotlightProduct = [
       {
         imageSrc: "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
-        imageAlt: "Aura 无线耳机 — 曜石黑",
         name: "Aura 无线耳机",
         salePrice: "$79.00",
         originalPrice: "$99.00",
@@ -743,19 +742,16 @@ describe("repeatRegion", () => {
         skus: [
           {
             imageSrc: "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
-            imageAlt: "Aura 无线耳机 — 曜石黑",
             title: "曜石黑",
             href: "https://example.com/products/aura-earbuds?variant=1",
           },
           {
             imageSrc: "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
-            imageAlt: "Aura 无线耳机 — 云雾白",
             title: "云雾白",
             href: "https://example.com/products/aura-earbuds?variant=2",
           },
           {
             imageSrc: "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
-            imageAlt: "Aura 无线耳机 — 薄荷绿",
             title: "薄荷绿",
             href: "https://example.com/products/aura-earbuds?variant=3",
           },
@@ -763,7 +759,6 @@ describe("repeatRegion", () => {
       },
       {
         imageSrc: "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
-        imageAlt: "Pulse 智能手表 42mm 星空灰",
         name: "Pulse 智能手表",
         salePrice: "$149.00",
         originalPrice: "$199.00",
@@ -772,13 +767,11 @@ describe("repeatRegion", () => {
         skus: [
           {
             imageSrc: "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
-            imageAlt: "Pulse 智能手表 42mm 星空灰",
             title: "42mm 星空灰",
             href: "https://example.com/products/pulse-watch?variant=1",
           },
           {
             imageSrc: "https://images.pexels.com/photos/1181717/pexels-photo-1181717.jpeg?auto=compress&cs=tinysrgb&w=400",
-            imageAlt: "Pulse 智能手表 42mm 玫瑰金",
             title: "42mm 玫瑰金",
             href: "https://example.com/products/pulse-watch?variant=2",
           },

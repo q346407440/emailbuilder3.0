@@ -20,7 +20,7 @@ description: >-
 
 ## 何时使用
 
-- **`docs/project-prd.md`** / **`docs/prd-assets/`** 需要**整屏**界面图  
+- **`docs/prd.md`** / **`docs/prd-assets/`** 需要**整屏**界面图  
 - 用户说「全页截图」「整页配图」「视口截图」  
 - 下一步要对整图做**红框圈选**（多 `regions`）  
 - 用户指定 **`user-chrome-devtools`**（勿擅自改用 cursor-ide-browser）

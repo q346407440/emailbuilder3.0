@@ -3,6 +3,7 @@ import * as api from "../api/client";
 import { CrmOpsShell } from "../components/crmOps/CrmOpsShell";
 import { readCampaignV2BindingFromUrl } from "../lib/campaignCreateBindingUrl";
 import { goToEmailCampaign, goToEmailEditorFromCampaignCreate } from "../lib/appNavigation";
+import { toUserFacingErrorMessage } from "../lib/userFacingError";
 
 type TemplateOption = {
   key: string;
@@ -54,7 +55,7 @@ export function EmailCampaignCreatePage() {
         );
       } catch (error) {
         if (cancelled) return;
-        setTemplateLoadError(error instanceof Error ? error.message : String(error));
+        setTemplateLoadError(toUserFacingErrorMessage(error, "加载模板列表失败，请刷新重试"));
       } finally {
         if (!cancelled) setTemplateLoading(false);
       }
@@ -132,7 +133,7 @@ export function EmailCampaignCreatePage() {
         if (cancelled) return;
         setLayoutOptions([]);
         setSelectedLayoutId(null);
-        setLayoutLoadError(error instanceof Error ? error.message : String(error));
+        setLayoutLoadError(toUserFacingErrorMessage(error, "加载版式列表失败，请刷新重试"));
       } finally {
         if (!cancelled) setLayoutLoading(false);
       }
@@ -178,9 +179,7 @@ export function EmailCampaignCreatePage() {
         });
       } catch (error) {
         if (cancelled) return;
-        setBindingInvalidHint(
-          error instanceof Error ? error.message : "模板可用性校验失败"
-        );
+        setBindingInvalidHint(toUserFacingErrorMessage(error, "模板可用性校验失败，请稍后重试"));
       } finally {
         if (!cancelled) setBindingCheckLoading(false);
       }
@@ -214,7 +213,7 @@ export function EmailCampaignCreatePage() {
 
   const dropdownDisplayText =
     selectedTemplateLabel ||
-    (templateVersion === "v2" ? "请选择邮件模板" : "试用中未完成配置");
+    "请选择邮件模板";
   const layoutDisplayText =
     selectedLayoutLabel ||
     (templateVersion === "v1"
@@ -304,7 +303,7 @@ export function EmailCampaignCreatePage() {
             <h5 className="crm-create__push-title">邮件推送</h5>
             <div className="crm-create__push-field">
               <div className="crm-create__push-label-row">
-                <span className="crm-create__push-label">邮件模版</span>
+                <span className="crm-create__push-label">邮件模板</span>
                 <div className="crm-create__version-tabs" role="tablist" aria-label="邮件模板版本">
                   <button
                     type="button"

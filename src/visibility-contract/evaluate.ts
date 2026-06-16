@@ -2,8 +2,12 @@ import type { EmailPayload } from "../types/email";
 import { getVisibilityOperatorSpec } from "./operators";
 import type { VisibilityRule } from "./types";
 
-function readPayloadValue(payload: EmailPayload | null, slotId: string): unknown {
-  return payload?.values?.[slotId];
+function readPayloadValue(payload: EmailPayload | null, rule: VisibilityRule): unknown {
+  const raw = payload?.values?.[rule.slotId];
+  const objectFieldKey = rule.objectFieldKey?.trim();
+  if (!objectFieldKey) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  return (raw as Record<string, unknown>)[objectFieldKey];
 }
 
 function isEmptyStringLike(value: unknown): boolean {
@@ -59,7 +63,7 @@ function lengthCompare(
 
 export function evaluateVisibilityRule(rule: VisibilityRule, payload: EmailPayload | null): boolean {
   if (getVisibilityOperatorSpec(rule.valueType, rule.operator) === null) return false;
-  const value = readPayloadValue(payload, rule.slotId);
+  const value = readPayloadValue(payload, rule);
 
   switch (rule.operator) {
     case "isEmpty":

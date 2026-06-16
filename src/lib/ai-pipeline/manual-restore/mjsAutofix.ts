@@ -108,7 +108,7 @@ function mapLegacyFlexAlignToContentAlign(source: string): { source: string; fix
   const blockRe =
     /props:\s*\{([^}]*(?:mainAlign|crossAlign)[^}]*)\}([\s\S]{0,800}?wrapperStyle:\s*\{)/g;
 
-  out = out.replace(blockRe, (full, propsBody: string, prefix: string) => {
+  out = out.replace(blockRe, (_full, propsBody: string, prefix: string) => {
     const direction = /direction:\s*'([^']*)'/.exec(propsBody)?.[1] ?? "vertical";
     const mainAlign = /mainAlign:\s*'([^']*)'/.exec(propsBody)?.[1];
     const crossAlign = /crossAlign:\s*'([^']*)'/.exec(propsBody)?.[1];
@@ -478,7 +478,12 @@ function blockIdFromErrorLine(line: string): string | null {
   return blockIdFromValidateIssueLine(line);
 }
 
-/** mjs 源码中 block id 多为 \`\${P}-s2-left\`，validate 路径为 couponte-s2-left。 */
+/**
+ * mjs 源码中 block id 锚点：对象字面量 `id: '...'` 与模板字符串 `id: \`\${P}-suffix\``。
+ * 刻意不支持 helper 调用形式（textBlock(\`\${P}-x\`, ...)）：helper 调用仅 1-3 行，
+ * 锚点后的固定窗口会越界到相邻块、引发区域修复误伤；helper 生成块的机械修复
+ * 统一由 JSON 层 templateContractAutofix 按 validate 路径寻址兜底（永不 miss）。
+ */
 function findBlockIdAnchor(source: string, blockId: string): number {
   const literalPatterns = [`id: '${blockId}'`, `id: "${blockId}"`];
   for (const p of literalPatterns) {

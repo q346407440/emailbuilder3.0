@@ -10,6 +10,7 @@ import {
   type NormalizedBuiltinSortPolicy,
 } from "../payload-contract/collection-builtin-sort-policy";
 import type { BindingCollectionField, EmailPayload, PayloadSlotDefinition } from "../types/email";
+import { getBuiltinStructureDefinition } from "../payload-contract/builtin-structure-catalog";
 import { resizeCollectionItemVisibility } from "./collectionItemVisibility";
 import {
   projectBuiltinCatalogItems,
@@ -370,7 +371,10 @@ export function patchPayloadCollectionSlot(
 
   if (patch.values !== undefined) {
     next.values[slotId] = patch.values;
-  } else if (patch.fixedLength !== undefined) {
+  } else if (
+    patch.fixedLength !== undefined &&
+    !getBuiltinStructureDefinition(entry.builtinStructureId)
+  ) {
     const fields = slotDef.itemFields ?? [];
     const raw = Array.isArray(next.values[slotId]) ? (next.values[slotId] as Record<string, unknown>[]) : [];
     const len = resolveCollectionFixedLength(slotDef.minItems, slotDef.maxItems);

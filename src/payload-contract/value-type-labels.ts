@@ -9,6 +9,8 @@ export function payloadSlotValueTypeLabel(valueType: string): string {
     return standardScalarValueTypeLabel(valueType);
   }
   switch (valueType) {
+    case "object":
+      return "对象";
     case "collection":
       return "列表";
     case "image":

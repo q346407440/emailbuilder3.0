@@ -1,12 +1,11 @@
-/** 以图 AI 生成：前端步骤进度事件真源。 */
+/**
+ * 以图 AI 生成：前端步骤进度事件真源。
+ *
+ * 展示原则（一步一行）：后端每个步骤对应前端一行；步骤的重试、失败、成功都是
+ * **同一行的状态原地变更**；只有后端出现前端未知的新步骤时才新增一行。
+ */
 
-export type AiPipelineStepStatus =
-  | "pending"
-  | "running"
-  /** @deprecated 旧管线「同一步骤上即将重试」；新管线用 failed + append 新行 */
-  | "failed_once"
-  | "success"
-  | "failed";
+export type AiPipelineStepStatus = "pending" | "running" | "success" | "failed";
 
 export type AiPipelineUiStep = {
   id: string;
@@ -52,21 +51,13 @@ export type AiPipelineStepEventFields = {
 };
 
 export type AiPipelineProgressPayload =
-  | { type: "plan"; steps: AiPipelineUiStep[]; /** 默认 pending：旧管线预展示；hidden：仅登记元数据，逐步 append */ display?: "pending" | "hidden" }
+  | { type: "plan"; steps: AiPipelineUiStep[]; /** 默认 pending：预展示全部步骤；hidden：仅登记元数据，步骤首个事件到达时再逐行出现 */ display?: "pending" | "hidden" }
   | ({
       type: "step";
       stepId: string;
       status: AiPipelineStepStatus;
-      /** 行唯一 id；默认同 stepId，重试 append 时为 stepId~2 等 */
-      entryId?: string;
-      /** true 时在逻辑步骤最后一行之后插入新行，不覆盖失败行 */
-      append?: boolean;
-      /** 覆盖整行文案（含 detail 时由 Reporter 拼好） */
+      /** 覆盖整行文案（含 detail 时由 Reporter 拼好）；缺省保留行内已有文案 */
       label?: string;
-    } & AiPipelineStepEventFields)
-  | ({
-      type: "stepDetail";
-      stepId: string;
     } & AiPipelineStepEventFields);
 
 export type AiStepUiState = AiPipelineUiStep & {
@@ -81,57 +72,6 @@ export function formatManualRestoreAttemptLabel(
   maxAttempts: number = MANUAL_RESTORE_MJS_MAX_ATTEMPTS
 ): string {
   return `尝试 ${attempt}/${maxAttempts}`;
-}
-
-/** 逻辑 stepId 在列表中最后一行的下标（含 stepId~N 重试行）。 */
-export function findLastEntryIndexForStep(
-  steps: readonly AiStepUiState[],
-  stepId: string
-): number {
-  for (let i = steps.length - 1; i >= 0; i -= 1) {
-    const id = steps[i]!.id;
-    if (id === stepId || id.startsWith(`${stepId}~`)) return i;
-  }
-  return -1;
-}
-
-function resolveEntryIndex(
-  steps: readonly AiStepUiState[],
-  stepId: string,
-  entryId?: string
-): number {
-  if (entryId) {
-    const byEntry = steps.findIndex((s) => s.id === entryId);
-    if (byEntry >= 0) return byEntry;
-  }
-  return steps.findIndex((s) => s.id === stepId);
-}
-
-function mergeStepFields(
-  step: AiStepUiState,
-  fields: AiPipelineStepEventFields
-): AiStepUiState {
-  return {
-    ...step,
-    ...(fields.attempt !== undefined ? { attempt: fields.attempt } : {}),
-    ...(fields.maxAttempts !== undefined ? { maxAttempts: fields.maxAttempts } : {}),
-  };
-}
-
-function appendStepRow(
-  prev: AiStepUiState[],
-  event: Extract<AiPipelineProgressPayload, { type: "step" }>,
-  insertAt: number,
-  baseLabel: string
-): AiStepUiState[] {
-  const newRow: AiStepUiState = {
-    id: event.entryId ?? `${event.stepId}~${insertAt}`,
-    label: event.label ?? baseLabel,
-    status: event.status,
-    ...(event.attempt !== undefined ? { attempt: event.attempt } : {}),
-    ...(event.maxAttempts !== undefined ? { maxAttempts: event.maxAttempts } : {}),
-  };
-  return [...prev.slice(0, insertAt), newRow, ...prev.slice(insertAt)];
 }
 
 export function reduceAiPipelineProgress(
@@ -157,39 +97,29 @@ export function reduceAiPipelineProgress(
     });
   }
   const base = prev ?? [];
-  if (event.type === "stepDetail") {
-    const idx = resolveEntryIndex(base, event.stepId);
-    if (idx < 0) return base;
-    const row = base[idx]!;
-    const detailSuffix = event.detail ? ` — ${event.detail}` : "";
-    const baseLabel = row.label.split(" — ")[0] ?? row.label;
-    return base.map((step, i) =>
-      i === idx
-        ? mergeStepFields({ ...step, label: `${baseLabel}${detailSuffix}` }, event)
-        : step
-    );
+  const idx = base.findIndex((s) => s.id === event.stepId);
+  if (idx < 0) {
+    // 前端未知的后端步骤（hidden plan 渐进出现 / 后端新增步骤）→ 末尾新增一行
+    return [
+      ...base,
+      {
+        id: event.stepId,
+        label: event.label ?? event.stepId,
+        status: event.status,
+        ...(event.attempt !== undefined ? { attempt: event.attempt } : {}),
+        ...(event.maxAttempts !== undefined ? { maxAttempts: event.maxAttempts } : {}),
+      },
+    ];
   }
-  if (event.type === "step" && event.append) {
-    const lastSameStep = findLastEntryIndexForStep(base, event.stepId);
-    const baseLabel =
-      event.label?.split(" — ")[0] ??
-      (lastSameStep >= 0 ? base[lastSameStep]!.label.split(" — ")[0] : event.stepId);
-    // 全局时序 append：始终接在列表末尾，避免重试行插到同 stepId 旧行之后、已 append 的其它步骤之前
-    return appendStepRow(base, event, base.length, baseLabel);
-  }
-  const idx = resolveEntryIndex(base, event.stepId, event.entryId);
-  if (idx < 0 && event.type === "step") {
-    const baseLabel = event.label?.split(" — ")[0] ?? event.stepId;
-    return appendStepRow(base, event, base.length, baseLabel);
-  }
-  if (idx < 0) return base;
+  // 已知步骤：状态与文案原地变更（重试也在同一行展示）
   return base.map((step, i) => {
     if (i !== idx) return step;
-    const merged = mergeStepFields(step, event);
     return {
-      ...merged,
-      ...(event.label !== undefined ? { label: event.label } : {}),
+      ...step,
       status: event.status,
+      ...(event.label !== undefined ? { label: event.label } : {}),
+      ...(event.attempt !== undefined ? { attempt: event.attempt } : {}),
+      ...(event.maxAttempts !== undefined ? { maxAttempts: event.maxAttempts } : {}),
     };
   });
 }

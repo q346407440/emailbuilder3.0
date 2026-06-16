@@ -3,6 +3,7 @@ import type {
   EmailPayload,
   EmailTemplate,
   RepeatFieldMapping,
+  RepeatRegionBinding,
 } from "../types/email";
 import { isCollectionField } from "../payload-contract/collection-item-fields";
 import { normalizeTemplateBeforeUnifiedRepeatBinding } from "./repeatMaterializedNormalize";
@@ -101,6 +102,8 @@ export type SingleLevelRepeatBindSpec = {
   itemFields: BindingCollectionField[];
   /** 绑定父项子列表时的相对路径；绑定独立顶层变量时为空 */
   itemPath?: string;
+  itemMode?: RepeatRegionBinding["itemMode"];
+  groupSize?: number;
   fieldMappings: RepeatFieldMapping[];
   minItems?: number;
   maxItems?: number;
@@ -140,12 +143,17 @@ export function applySingleLevelRepeatBinding(
   if (!host || !isRepeatHostBlock(host)) {
     throw new Error("列表重复只能绑定在布局容器、栅格或图片区块上。");
   }
+  if (host.objectBind?.mode === "object") {
+    delete host.objectBind;
+  }
   const itemPath = spec.itemPath?.trim() ? spec.itemPath.trim() : undefined;
   return applyRepeatRegionBinding(normalized, spec.hostId, {
     slotId: spec.slotId,
     prototypeChildIds: [spec.hostId],
     itemFields: spec.itemFields,
     itemPath,
+    itemMode: spec.itemMode,
+    groupSize: spec.groupSize,
     fieldMappings: spec.fieldMappings,
     minItems: spec.minItems,
     maxItems: spec.maxItems,

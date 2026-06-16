@@ -12,7 +12,7 @@ import type { FieldKind } from "../types/email";
  * - 图片块：资源与裁切在 `wrapperStyle.backgroundImage` / 外层 wrapper 尺寸，`props` 仅承载与带底图 layout 一致的叠放栈布局
  * - 按钮 text / link → content；按钮 buttonStyle.* → style
  * - 图标 src → content；icon.size → style
- * - 背景色 backgroundColor → style；背景图 backgroundImage.src / alt / link → content；backgroundImage.borderRadius / border / fit / position → style；backgroundContentAlign → structural
+ * - 背景色 backgroundColor → style；背景图 backgroundImage.src / link → content；backgroundImage.fit / position → structural（裁切语义，不可绑样式预设）
  * - 文本段内变色/变字号：使用 `textBody.paragraphs[].runs[].color|fontSize` 字面量字段（不可绑 theme/variable）；禁止手写 HTML `<span style="...">`
  *
  * 实现：每条规则是「字段路径前缀 → 分类」；匹配按前缀长度倒序，最长前缀优先。
@@ -41,12 +41,9 @@ const COMMON_RULES: ClassificationRule[] = [
   { prefix: "wrapperStyle.contentAlign", kind: "structural" },
   // 容器背景图：URL / alt / link 是业务内容，圆角描边 fit 是样式
   { prefix: "wrapperStyle.backgroundImage.src", kind: "content" },
-  { prefix: "wrapperStyle.backgroundImage.alt", kind: "content" },
   { prefix: "wrapperStyle.backgroundImage.link", kind: "content" },
-  { prefix: "wrapperStyle.backgroundImage.borderRadius", kind: "style" },
-  { prefix: "wrapperStyle.backgroundImage.border", kind: "style" },
   { prefix: "wrapperStyle.backgroundImage.fit", kind: "structural" },
-  { prefix: "wrapperStyle.backgroundImage.position", kind: "style" },
+  { prefix: "wrapperStyle.backgroundImage.position", kind: "structural" },
 ];
 
 /** 按 block.type 拆分的规则 */

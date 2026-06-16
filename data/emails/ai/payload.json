@@ -1,5 +1,457 @@
 {
   "schemaVersion": "1.0.0",
-  "slots": {},
-  "values": {}
+  "slots": {
+    "storeUrl": {
+      "label": "店铺链接",
+      "valueType": "url",
+      "description": "接入方传入的店铺访问链接。",
+      "builtinStructureId": "scalar.storeUrl",
+      "builtinScope": "general"
+    },
+    "similarSpuList": {
+      "label": "相似品列表",
+      "valueType": "collection",
+      "description": "通用相似品结构：主 SPU 行下嵌套 similarSpus；相似品计算由上游接入方处理。",
+      "builtinStructureId": "collection.similarSpuPairing",
+      "builtinScope": "general",
+      "lengthPolicy": {
+        "kind": "editable",
+        "defaultLength": 10
+      },
+      "itemFields": [
+        {
+          "key": "imageSrc",
+          "label": "商品图",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "name",
+          "label": "商品名",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "salePrice",
+          "label": "现价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "originalPrice",
+          "label": "原价",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "badge",
+          "label": "角标",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "href",
+          "label": "商品链接",
+          "valueType": "url",
+          "required": true
+        },
+        {
+          "key": "similarSpus",
+          "label": "相似商品列表",
+          "valueType": "collection",
+          "itemFields": [
+            {
+              "key": "imageSrc",
+              "label": "商品图",
+              "valueType": "url",
+              "required": true
+            },
+            {
+              "key": "name",
+              "label": "商品名",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "salePrice",
+              "label": "现价",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "originalPrice",
+              "label": "原价",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "badge",
+              "label": "角标",
+              "valueType": "string",
+              "required": true
+            },
+            {
+              "key": "href",
+              "label": "商品链接",
+              "valueType": "url",
+              "required": true
+            }
+          ],
+          "minItems": 0,
+          "maxItems": 5
+        }
+      ],
+      "minItems": 10,
+      "maxItems": 10
+    },
+    "loyaltyRecommendedSubscriptionPlans": {
+      "label": "推荐订阅套餐",
+      "valueType": "object",
+      "description": "整张订阅套餐卡片（标题行、原价、优惠胶囊、ROI 文案）",
+      "builtinStructureId": "dedicated.loyalty.recommendedSubscriptionPlans",
+      "builtinScope": "dedicated",
+      "objectFields": [
+        {
+          "key": "headline",
+          "label": "套餐标题行",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "originalPriceText",
+          "label": "原价文案",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "discountBadge",
+          "label": "优惠胶囊",
+          "valueType": "string",
+          "required": true
+        },
+        {
+          "key": "roiText",
+          "label": "ROI 文案",
+          "valueType": "string",
+          "required": true
+        }
+      ],
+      "scene": "loyalty-internal-admin"
+    }
+  },
+  "values": {
+    "storeUrl": "https://example.com",
+    "similarSpuList": [
+      {
+        "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 1",
+        "salePrice": "$49.00",
+        "originalPrice": "$69.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-1",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 1-1",
+            "salePrice": "$39.00",
+            "originalPrice": "$59.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-1-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 1-2",
+            "salePrice": "$40.00",
+            "originalPrice": "$60.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-1-2"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 1-3",
+            "salePrice": "$41.00",
+            "originalPrice": "$61.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-1-3"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 1-4",
+            "salePrice": "$42.00",
+            "originalPrice": "$62.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-1-4"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 1-5",
+            "salePrice": "$43.00",
+            "originalPrice": "$63.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-1-5"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 2",
+        "salePrice": "$53.00",
+        "originalPrice": "$73.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-2",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 2-1",
+            "salePrice": "$42.00",
+            "originalPrice": "$62.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-2-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 2-2",
+            "salePrice": "$43.00",
+            "originalPrice": "$63.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-2-2"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 2-3",
+            "salePrice": "$44.00",
+            "originalPrice": "$64.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-2-3"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 2-4",
+            "salePrice": "$45.00",
+            "originalPrice": "$65.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-2-4"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 3",
+        "salePrice": "$57.00",
+        "originalPrice": "$77.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-3",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 3-1",
+            "salePrice": "$45.00",
+            "originalPrice": "$65.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-3-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 3-2",
+            "salePrice": "$46.00",
+            "originalPrice": "$66.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-3-2"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 3-3",
+            "salePrice": "$47.00",
+            "originalPrice": "$67.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-3-3"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 4",
+        "salePrice": "$61.00",
+        "originalPrice": "$81.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-4",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 4-1",
+            "salePrice": "$48.00",
+            "originalPrice": "$68.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-4-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 4-2",
+            "salePrice": "$49.00",
+            "originalPrice": "$69.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-4-2"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 5",
+        "salePrice": "$65.00",
+        "originalPrice": "$85.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-5",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 5-1",
+            "salePrice": "$51.00",
+            "originalPrice": "$71.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-5-1"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/2983468/pexels-photo-2983468.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 6",
+        "salePrice": "$69.00",
+        "originalPrice": "$89.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-6",
+        "similarSpus": []
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181717/pexels-photo-1181717.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 7",
+        "salePrice": "$73.00",
+        "originalPrice": "$93.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-7",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181722/pexels-photo-1181722.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 7-1",
+            "salePrice": "$57.00",
+            "originalPrice": "$77.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-7-1"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181722/pexels-photo-1181722.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 8",
+        "salePrice": "$77.00",
+        "originalPrice": "$97.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-8",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 8-1",
+            "salePrice": "$60.00",
+            "originalPrice": "$80.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-8-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 8-2",
+            "salePrice": "$61.00",
+            "originalPrice": "$81.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-8-2"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 9",
+        "salePrice": "$81.00",
+        "originalPrice": "$101.00",
+        "badge": "热卖",
+        "href": "https://example.com/products/mock-9",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 9-1",
+            "salePrice": "$63.00",
+            "originalPrice": "$83.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-9-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 9-2",
+            "salePrice": "$64.00",
+            "originalPrice": "$84.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-9-2"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 9-3",
+            "salePrice": "$65.00",
+            "originalPrice": "$85.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-9-3"
+          }
+        ]
+      },
+      {
+        "imageSrc": "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "name": "Mock 商品 10",
+        "salePrice": "$85.00",
+        "originalPrice": "$105.00",
+        "badge": "新品",
+        "href": "https://example.com/products/mock-10",
+        "similarSpus": [
+          {
+            "imageSrc": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 10-1",
+            "salePrice": "$66.00",
+            "originalPrice": "$86.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-10-1"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 10-2",
+            "salePrice": "$67.00",
+            "originalPrice": "$87.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-10-2"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 10-3",
+            "salePrice": "$68.00",
+            "originalPrice": "$88.00",
+            "badge": "推荐",
+            "href": "https://example.com/products/mock-related-10-3"
+          },
+          {
+            "imageSrc": "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+            "name": "Mock 关联商品 10-4",
+            "salePrice": "$69.00",
+            "originalPrice": "$89.00",
+            "badge": "搭配",
+            "href": "https://example.com/products/mock-related-10-4"
+          }
+        ]
+      }
+    ],
+    "loyaltyRecommendedSubscriptionPlans": {
+      "headline": "growth 版本: $10.00 / 月",
+      "originalPriceText": "原价 $20.00/mo",
+      "discountBadge": "连续12个月订阅优惠 $10.00",
+      "roiText": "每月 ROI 预计可达到 1:3"
+    }
+  },
+  "slotOrder": [
+    "storeUrl",
+    "similarSpuList",
+    "loyaltyRecommendedSubscriptionPlans"
+  ]
 }

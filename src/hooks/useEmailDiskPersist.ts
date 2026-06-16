@@ -2,8 +2,8 @@ import { useCallback, useRef } from "react";
 import type { LayoutManifest } from "../layout-variant-contract/types";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import * as api from "../api/client";
+import { collectPersistValidationIssues } from "../lib/persistValidation";
 import { fetchTemplatesAndValidatePayload } from "../lib/validatePayloadAllLayouts";
-import { validatePayloadAgainstTemplate, validateTemplate } from "../lib/validate";
 
 type Params = {
   emailKey: string | null;
@@ -75,7 +75,9 @@ export function useEmailDiskPersist({
         const snap = JSON.stringify({ template: t, payload: p });
         if (!options?.force && snap === baselineJsonRef.current) return true;
 
-        const issues = [...validateTemplate(t), ...validatePayloadAgainstTemplate(t, p)];
+        const issues = collectPersistValidationIssues(t, p, {
+          payloadOnly: options?.payloadOnly,
+        });
         if (issues.length > 0) {
           onErrorRef.current?.(
             issues.map((i) => `${i.path}：${i.reason}`).join("；") || "校验未通过"

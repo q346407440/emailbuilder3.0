@@ -49,9 +49,9 @@ export function sanitizeCompactIrNode(node: CompactNode): CompactNode {
     const wm = normalizeBoxMode(wrapperRaw.widthMode);
     const hm = normalizeBoxMode(wrapperRaw.heightMode);
     if (wm) wrapperRaw.widthMode = wm;
-    else if (wrapperRaw.widthMode === "fitContent") delete wrapperRaw.widthMode;
+    else if ((wrapperRaw.widthMode as string) === "fitContent") delete wrapperRaw.widthMode;
     if (hm) wrapperRaw.heightMode = hm;
-    else if (wrapperRaw.heightMode === "fitContent") delete wrapperRaw.heightMode;
+    else if ((wrapperRaw.heightMode as string) === "fitContent") delete wrapperRaw.heightMode;
   }
 
   const propsRaw =

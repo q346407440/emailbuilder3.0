@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { InputRef } from "@shoplazza/sds";
 import type { BlockCatalogEntry } from "../../lib/blockDefaults";
 import type { SectionCatalogItem } from "../../lib/sectionCatalog";
 import {
@@ -66,7 +67,7 @@ function SectionModuleRow({
   const [renaming, setRenaming] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<InputRef>(null);
 
   useEffect(() => {
     if (!editing) {
@@ -222,7 +223,6 @@ function SectionModuleRow({
             >
               {item.name}
             </span>
-            <span className="canvas-insert-modal__module-meta">{item.blockCount} 个区块</span>
           </button>
           <div className="canvas-insert-modal__module-ops shop-action-button-group">
             <ShopPrimaryButton

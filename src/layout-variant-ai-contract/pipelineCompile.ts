@@ -106,7 +106,7 @@ export const PIPELINE_COMPILE_INVARIANTS: readonly PipelineInvariant[] = [
   {
     id: "E-MAP-3",
     phase: "E",
-    summary: "content.image → runtime image：backgroundImage 含 src/fit/position/border/borderRadius",
+    summary: "content.image → runtime image：backgroundImage 含 src/fit/position；圆角/描边由 wrapperStyle 承接",
     onViolation: "lowering_bug",
   },
   {

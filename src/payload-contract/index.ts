@@ -40,6 +40,16 @@ export {
   BUILTIN_PRODUCT_SPU_ITEM_FIELDS,
 } from "./builtin-collection-item-fields";
 export {
+  BUILTIN_STRUCTURE_REGISTRY,
+  getBuiltinStructureDefinition,
+  listBuiltinStructureDefinitions,
+  toBuiltinStructureSummary,
+  type BuiltinStructureDefinition,
+  type BuiltinStructureSummary,
+  type BuiltinVariableLengthPolicy,
+  type BuiltinVariableScope,
+} from "./builtin-structure-catalog";
+export {
   BUILTIN_ALBUM_SORT_IDS,
   BUILTIN_PRODUCT_SORT_IDS,
 } from "./collection-builtin-sort";

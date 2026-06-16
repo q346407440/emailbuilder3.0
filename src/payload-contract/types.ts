@@ -1,11 +1,23 @@
 import type { BindingCollectionField, BindingInterpolationSlotValueType } from "../types/email";
 import type { CollectionDataSource } from "./collection-data-source";
+import type {
+  BuiltinVariableLengthPolicy,
+  BuiltinVariableScope,
+} from "./builtin-structure-catalog";
 
 /** payload.json 顶层契约版本 */
 export const PAYLOAD_SCHEMA_VERSION = "1.0.0" as const;
 
 /** template.bindings / visibility 上 variable 槽的 valueType（interpolate 原子槽不支持 number/boolean，见 validate） */
-export type SlotValueType = "string" | "url" | "image" | "color" | "number" | "boolean" | "collection";
+export type SlotValueType =
+  | "string"
+  | "url"
+  | "image"
+  | "color"
+  | "number"
+  | "boolean"
+  | "object"
+  | "collection";
 
 /** collection 槽 itemFields[].valueType（标量与 STANDARD_SCALAR 一致 + 子列表） */
 export type CollectionItemFieldValueType = "string" | "number" | "url" | "collection";
@@ -23,6 +35,8 @@ export type PayloadSlotDefinition = {
   label: string;
   valueType: SlotValueType;
   description?: string;
+  /** object 槽字段目录（仅标量列；values 为单个对象，非数组） */
+  objectFields?: BindingCollectionField[];
   itemFields?: BindingCollectionField[];
   minItems?: number;
   maxItems?: number;
@@ -39,12 +53,19 @@ export type PayloadSlotDefinition = {
   sceneCollectionPresetId?: string;
   /** 与 sceneCollectionPresetId 配套的场景标识 */
   scene?: "loyalty-internal-admin" | "loyalty-merchant-admin";
+  /** 内置数据结构目录 id；新建变量统一从 src/payload-contract/builtin-structure-catalog 派生。 */
+  builtinStructureId?: string;
+  /** 内置结构范围冗余快照，便于 UI 展示；真源仍为 builtinStructureId 对应目录项。 */
+  builtinScope?: BuiltinVariableScope;
+  /** 列表长度策略快照：专用结构可声明 locked，通用列表通常 editable。 */
+  lengthPolicy?: BuiltinVariableLengthPolicy;
 };
 
 /** 运行期槽定义视图（由 payload.slots 或历史 template 扫描派生） */
 export type ExternalSlotDefinition = {
   slotId: string;
   valueType: SlotValueType;
+  objectFields?: BindingCollectionField[];
   itemFields?: BindingCollectionField[];
   minItems?: number;
   maxItems?: number;

@@ -11,9 +11,9 @@ type Props = {
   sending?: boolean;
   disabled?: boolean;
   smtpStatus: SmtpTestStatus | null;
-  /** 与左侧「投递信息」同一份：主题行（meta.delivery.subject） */
+  /** 与「模板信息 > 发信信息」同一份：主题行（meta.delivery.subject） */
   subject: string;
-  /** 与左侧「投递信息」同一份：预览摘要（meta.delivery.preheader） */
+  /** 与「模板信息 > 发信信息」同一份：预览摘要（meta.delivery.preheader） */
   preheader: string;
   displayName: string;
   emailKey: string;
@@ -92,7 +92,7 @@ export function SendTestEmailModal({
     >
       {!smtpStatus?.configured ? (
         <p className="send-test-email-modal__alert" role="alert">
-          未配置 SMTP，请先在 <code>.env</code> 中填写 <code>EMAIL_SMTP_*</code> 并重启服务。
+          邮件发送服务尚未配置，请联系管理员完成配置后再试。
         </p>
       ) : null}
 
@@ -112,7 +112,7 @@ export function SendTestEmailModal({
           />
         </label>
 
-        <dl className="send-test-email-modal__delivery-readonly" aria-label="投递信息（与左侧一致）">
+        <dl className="send-test-email-modal__delivery-readonly" aria-label="发信信息">
           <div className="send-test-email-modal__delivery-row">
             <dt>主题</dt>
             <dd>{resolvedSubject}</dd>
@@ -124,7 +124,9 @@ export function SendTestEmailModal({
             </dd>
           </div>
         </dl>
-        <p className="send-test-email-modal__delivery-hint">主题与预览摘要在左侧「投递信息」中修改。</p>
+        <p className="send-test-email-modal__delivery-hint">
+          主题与预览摘要可在「模板信息」里的发信信息中修改。
+        </p>
       </div>
     </ShopSectionModal>
   );

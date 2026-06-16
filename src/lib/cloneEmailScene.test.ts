@@ -46,7 +46,7 @@ describe("buildClonedEmailSceneBundle", () => {
 
   const payload: EmailPayload = {
     schemaVersion: "1.0.0",
-    slots: { title: { valueType: "string" } },
+    slots: { title: { label: "标题", valueType: "string" } },
     values: { title: "hello" },
   };
 

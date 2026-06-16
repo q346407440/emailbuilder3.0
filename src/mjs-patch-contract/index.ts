@@ -1,5 +1,6 @@
 export {
   MJS_PATCH_SLOT_IDS,
+  extractMjsSlotContent,
   isMjsPatchSlotId,
   listMjsPatchSlotIdsForPrompt,
   mjsSlotBeginMarker,

@@ -4,8 +4,6 @@ import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import { filterSlotsForVariablePicker } from "../payload-contract/variable-slot-compatibility";
 import { PayloadVariablePickerModal } from "./PayloadVariablePickerModal";
 
-export type TextBodyInlineVariableMode = "bind" | "create";
-
 type Props = {
   visible: boolean;
   selectionPreview: string;
@@ -13,10 +11,9 @@ type Props = {
   payload: EmailPayload;
   onClose: () => void;
   onConfirmBind: (slot: ExternalVariableSlotInfo) => void;
-  onConfirmCreate: (args: { slotId: string; label: string }) => void;
 };
 
-/** 正文选区设为文中变量：复用标量变量选择弹窗 */
+/** 正文选区设为文中变量：仅绑定已有标量变量（非列表、非对象） */
 export function TextBodyInlineVariableModal({
   visible,
   selectionPreview,
@@ -24,7 +21,6 @@ export function TextBodyInlineVariableModal({
   payload,
   onClose,
   onConfirmBind,
-  onConfirmCreate,
 }: Props) {
   const inlineTextSlots = useMemo(
     () => filterSlotsForVariablePicker(slots, "inlineText"),
@@ -41,7 +37,6 @@ export function TextBodyInlineVariableModal({
       payload={payload}
       onClose={onClose}
       onConfirmBind={onConfirmBind}
-      onConfirmCreate={onConfirmCreate}
     />
   );
 }

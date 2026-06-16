@@ -10,9 +10,15 @@ import { normalizeStyleTokens } from "./normalizeStyleTokens";
 import { blockingValidationIssues, validateTemplate } from "../validate";
 import { AI_PIPELINE_B1_FALLBACK_TOKENS } from "./b1StyleTierPresets";
 import type { StyleTokensResult } from "./types";
+import type { BorderRadiusValue, ButtonBlockProps } from "../../types/email";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(__dirname, "__fixtures__/minimal-one-section.json");
+
+/** 仅在 unified 圆角上读取 radius，narrow BorderRadiusValue 联合类型。 */
+function unifiedRadius(borderRadius: BorderRadiusValue | undefined): string | undefined {
+  return borderRadius?.mode === "unified" ? borderRadius.radius : undefined;
+}
 
 describe("normalizeStyleTokens", () => {
   it("非法 spacing 回落到最近 enum", () => {
@@ -62,13 +68,12 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
       bottom: "16px",
       left: "20px",
     });
-    assert.deepEqual(Object.keys(output.tokenPresets.presets.default.tokens.colors), [
-      "primary",
-      "secondary",
-      "surface",
-    ]);
+    const colors = output.tokenPresets.presets.default.tokens.colors;
+    assert.ok(colors, "应有 colors token");
+    assert.deepEqual(Object.keys(colors), ["primary", "secondary", "surface"]);
     const button = Object.values(output.template.blocks).find((b) => b.type === "button");
-    assert.equal(button?.props.buttonStyle?.borderRadius?.radius, "8px");
+    const buttonProps = button?.props as ButtonBlockProps | undefined;
+    assert.equal(unifiedRadius(buttonProps?.buttonStyle?.borderRadius), "8px");
     const buttonBlock = Object.values(output.template.blocks).find((b) => b.type === "button");
     assert.equal(buttonBlock?.wrapperStyle?.widthMode, "hug");
     assert.equal(output.template.blockMeta?.["fixture-ai-layout-ai-test-s1-sec"]?.name, "Hero");
@@ -143,7 +148,7 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
           root: {
             kind: "layout.container",
             wrapper: {
-              contentAlign: { horizontal: "center" },
+              contentAlign: { horizontal: "center", vertical: "top" },
               widthMode: "fill",
               heightMode: "hug",
             },
@@ -152,7 +157,7 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
               {
                 kind: "content.text",
                 props: { textId: "s1-t0" },
-                wrapper: { contentAlign: { horizontal: "center" }, widthMode: "fill" },
+                wrapper: { contentAlign: { horizontal: "center", vertical: "top" }, widthMode: "fill" },
               },
             ],
           },
@@ -197,7 +202,7 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     assert.equal(typeof textBlock!.props.bold, "boolean");
     assert.equal(typeof textBlock!.props.italic, "boolean");
     const issues = blockingValidationIssues(validateTemplate(output.template));
-    assert.equal(issues.length, 0, issues.map((i) => i.message).join("; "));
+    assert.equal(issues.length, 0, issues.map((i) => i.reason).join("; "));
   });
 
   it("fullWidth 区段壳左右 0、竖直与全区 section 一致", () => {
@@ -234,7 +239,7 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     const hero = output.template.blocks["fixture-ai-layout-ai-test-s1-b0"];
     assert.equal(hero?.wrapperStyle?.padding?.mode, "unified");
     assert.equal(hero?.wrapperStyle?.padding?.unified, "32px");
-    assert.equal(hero?.wrapperStyle?.backgroundImage?.borderRadius?.radius, "0");
+    assert.equal(unifiedRadius(hero?.wrapperStyle?.borderRadius), "0");
   });
 
   it("card 图与有色 layout 写入 panel 圆角", () => {
@@ -289,9 +294,8 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     validatePipelineOutput(output);
     const layout = output.template.blocks["radius-test-ai-r-s1-b0"];
     const image = output.template.blocks["radius-test-ai-r-s1-b1"];
-    assert.equal(layout?.wrapperStyle?.borderRadius?.radius, "12px");
-    assert.equal(image?.wrapperStyle?.backgroundImage?.borderRadius?.radius, "12px");
-    assert.equal(image?.wrapperStyle?.borderRadius?.radius, "12px");
+    assert.equal(unifiedRadius(layout?.wrapperStyle?.borderRadius), "12px");
+    assert.equal(unifiedRadius(image?.wrapperStyle?.borderRadius), "12px");
   });
 
   it("action.button 误写 wrapper.backgroundColor 时 E 剥离 wrapper 背景", () => {
@@ -357,8 +361,9 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     const output = mapPipelineResultToEasyEmail(draft);
     validatePipelineOutput(output);
     const button = output.template.blocks["btn-wrap-ai-btn-s6-b1"];
-    assert.equal(button?.props.buttonStyle?.backgroundColor, "#000000");
-    assert.equal(button?.props.buttonStyle?.textColor, "#FFFFFF");
+    const buttonProps = button?.props as ButtonBlockProps | undefined;
+    assert.equal(buttonProps?.buttonStyle?.backgroundColor, "#000000");
+    assert.equal(buttonProps?.buttonStyle?.textColor, "#FFFFFF");
     assert.equal(button?.wrapperStyle?.backgroundColor, undefined);
     assert.equal(button?.wrapperStyle?.widthMode, "fill");
   });

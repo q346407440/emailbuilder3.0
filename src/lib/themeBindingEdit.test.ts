@@ -12,6 +12,7 @@ import {
 } from "./themeBindingEdit";
 import { getInspectFieldBindMode } from "./inspectFieldBindMode";
 import type { EmailPayload, EmailTemplate } from "../types/email";
+import type { ExpandedTheme } from "../types/theme";
 import type { TokenPresets } from "../types/tokenPreset";
 import type { LayoutManifest } from "../layout-variant-contract/types";
 import { resolveEmailFilePaths } from "./emailLayoutVariant";
@@ -75,5 +76,63 @@ describe("detachThemeFieldBranch", () => {
     assert.equal(after.wrapperStyle?.backgroundColor, "#FFFFFF");
     assert.equal(after.bindings?.[bindPath], undefined);
     assert.equal(isThemeDetached(next, blockId, bindPath), true);
+  });
+
+  it("解除嵌套颜色主题绑定时兜底烘焙残留的 $themeRef", () => {
+    const template: EmailTemplate = {
+      schemaVersion: "4.0.0",
+      templateId: "theme-detach",
+      templateVersion: 1,
+      rootBlockId: "root",
+      blocks: {
+        root: {
+          id: "root",
+          type: "emailRoot",
+          parentId: null,
+          children: [],
+          wrapperStyle: {},
+          props: {
+            backgroundColor: "#ffffff",
+            width: "640px",
+            border: {
+              mode: "unified",
+              width: "1px",
+              style: "solid",
+              color: { $themeRef: "colors.surfaceMuted" },
+            },
+          },
+          bindings: {
+            "props.border.color": {
+              slotId: "colors.surfaceMuted",
+              mode: "theme",
+              tokenPath: "colors.surfaceMuted",
+              fieldKind: "style",
+            },
+          },
+        },
+      },
+    } as unknown as EmailTemplate;
+    const mergedStillHasThemeRef = structuredClone(template);
+    const theme = {
+      colors: { surfaceMuted: "#F2E9E4" },
+      tokens: { spacing: {}, typography: {}, radius: {} },
+    } as ExpandedTheme;
+
+    const next = detachThemeFieldBranch(
+      template,
+      mergedStillHasThemeRef,
+      "root",
+      "props.border.color",
+      { effectiveTheme: theme }
+    );
+    const block = next.blocks.root;
+    assert.ok(block);
+    assert.equal(
+      ((block.props as { border?: { color?: unknown } }).border as { color?: unknown })
+        .color,
+      "#F2E9E4"
+    );
+    assert.equal(block.bindings?.["props.border.color"], undefined);
+    assert.equal(isThemeDetached(next, "root", "props.border.color"), true);
   });
 });

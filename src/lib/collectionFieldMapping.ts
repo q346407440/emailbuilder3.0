@@ -119,9 +119,10 @@ export function parseCollectionJsonSample(
 function inferScalarValueTypeFromJson(
   key: string,
   value: unknown
-): BindingCollectionField["valueType"] {
+): Exclude<BindingCollectionField["valueType"], "collection"> {
   if (typeof value === "number" && Number.isFinite(value)) return "number";
-  if (typeof value === "boolean") return "boolean";
+  // collection 字段无 boolean 类型，布尔值按文本列处理
+  if (typeof value === "boolean") return "string";
   if (typeof value !== "string") return "string";
   const lowerKey = key.toLowerCase();
   const stringValue = value.trim();
@@ -210,7 +211,6 @@ export function formatSourceFieldExample(value: unknown): string {
 
 const SKU_SCHEMA_FIELD_LABELS: Record<BuiltinSkuSchemaFieldKey, string> = {
   imageSrc: "SKU 商品图",
-  imageAlt: "SKU 图片替代文字",
   salePrice: "SKU 现价",
   originalPrice: "SKU 原价",
   title: "SKU 规格名",
@@ -222,7 +222,7 @@ const SKU_SCHEMA_FIELD_LABELS: Record<BuiltinSkuSchemaFieldKey, string> = {
 
 /** 历史 mock 按序号摊平的 SKU 字段（不再出现在字段关联列表） */
 export function isIndexedSkuFlatSourceKey(key: string): boolean {
-  return /^sku(Image|ImageAlt|SalePrice|OriginalPrice|Title|Code|Inventory|TotalSales)\d+$/.test(
+  return /^sku(Image|SalePrice|OriginalPrice|Title|Code|Inventory|TotalSales)\d+$/.test(
     key
   );
 }

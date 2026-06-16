@@ -75,8 +75,7 @@ export function GlobalTokenPresetCreateModal({
           onPressEnter={() => void submit()}
         />
         <span className="topbar__create-hint">
-          将使用内置默认颜色/间距/字号/圆角创建文件；技术 id 由名称自动推导（public- 前缀），保存至
-          data/token-presets/。
+          将基于默认的颜色、间距、字号与圆角创建预设；预设标识由名称自动生成。
         </span>
         {draftError ? <span className="topbar__rename-error">{draftError}</span> : null}
       </div>

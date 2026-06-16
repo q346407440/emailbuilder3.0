@@ -349,7 +349,7 @@ layout-outer  repeat → A（商品列表）
 
 - [x] B 在 `slots` 声明「相似品/搭配品 → A」**逻辑关系**；无 extract/anchorItemIndex 持久化残留（读盘 fail）。
 - [x] 变量面板：B 整槽预览随策略/目标变化（**非 per-row 真源**；`CollectionVariablePanel` + builtin 解析）。
-- [x] 父 repeat A + 子 repeat B（B target=A）：画布**每次预览** per-row 正确（`shouldResolveDerivedCollectionPerRow` + `repeatItemResolve`；浏览器抽检 step23x2 已通过，见 `docs/step2-浏览器验收-bugs.md`）。
+- [x] 父 repeat A + 子 repeat B（B target=A）：画布**每次预览** per-row 正确（`shouldResolveDerivedCollectionPerRow` + `repeatItemResolve`；浏览器抽检 step23x2 已通过）。
 - [ ] **发信模拟**：不改 slots/template，仅换发信 `values[A]`，per-row B 整体更新（逻辑重算，非快照）— 需对接方走完整 merged/预览管道验收。
 - [x] itemPath 子列表、常规 B、非嵌套 B 行为不退化（`repeatNestedBinding` / `repeatRegion.derived` 单测）。
 - [x] 预览与发信文档化**同一解析管道**（`src/repeat-runtime/` + `easy-email-repeat-binding`）；`values[B]` 定位仅为预览回退。

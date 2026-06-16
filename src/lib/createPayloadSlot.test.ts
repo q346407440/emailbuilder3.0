@@ -1,7 +1,11 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
 import type { EmailPayload } from "../types/email";
-import { createCollectionPayloadSlot, createScalarPayloadSlot } from "./createPayloadSlot";
+import {
+  createCollectionPayloadSlot,
+  createPayloadSlotFromBuiltinStructure,
+  createScalarPayloadSlot,
+} from "./createPayloadSlot";
 
 const basePayload = (): EmailPayload => ({
   schemaVersion: "1.0.0",
@@ -70,5 +74,47 @@ describe("createPayloadSlot", () => {
     });
     assert.ok("error" in result);
     assert.ok(result.fieldErrors?.slotId);
+  });
+
+  it("从内置商品结构创建变量：写入 10 组只读 mock 与 5432101234 子列表长度", () => {
+    const result = createPayloadSlotFromBuiltinStructure(
+      basePayload(),
+      "collection.productSpuWithSkus"
+    );
+    assert.ok("payload" in result);
+    const rows = result.payload.values.productList as Array<{ skus?: unknown[] }>;
+    assert.equal(rows.length, 10);
+    assert.deepEqual(
+      rows.map((row) => row.skus?.length ?? 0),
+      [5, 4, 3, 2, 1, 0, 1, 2, 3, 4]
+    );
+    assert.equal(result.payload.slots.productList?.builtinStructureId, "collection.productSpuWithSkus");
+    assert.equal(result.payload.slots.productList?.minItems, 10);
+  });
+
+  it("从内置相似品/搭配品结构创建变量：子列表长度一致", () => {
+    const similar = createPayloadSlotFromBuiltinStructure(
+      basePayload(),
+      "collection.similarSpuPairing"
+    );
+    assert.ok("payload" in similar);
+    const similarRows = similar.payload.values.similarSpuList as Array<{ similarSpus?: unknown[] }>;
+    assert.deepEqual(
+      similarRows.map((row) => row.similarSpus?.length ?? 0),
+      [5, 4, 3, 2, 1, 0, 1, 2, 3, 4]
+    );
+
+    const complement = createPayloadSlotFromBuiltinStructure(
+      basePayload(),
+      "collection.complementSpuPairing"
+    );
+    assert.ok("payload" in complement);
+    const complementRows = complement.payload.values.complementSpuList as Array<{
+      complementSpus?: unknown[];
+    }>;
+    assert.deepEqual(
+      complementRows.map((row) => row.complementSpus?.length ?? 0),
+      [5, 4, 3, 2, 1, 0, 1, 2, 3, 4]
+    );
   });
 });

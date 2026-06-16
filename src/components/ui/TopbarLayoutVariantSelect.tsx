@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AiStepUiState } from "../../layout-variant-ai-contract/progress";
-import type { MjsGenerateMode } from "../../layout-variant-ai-contract/mjsGenerateMode";
 import type { LayoutManifest } from "../../layout-variant-contract/types";
 import { isPublishedPublishStatus, type PublishStatus } from "../../publish-status-contract";
 import { normalizePublishStatus } from "../../lib/emailPublishStatus";
@@ -10,7 +9,6 @@ import { useConfirmDialog } from "./ConfirmDialogProvider";
 import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
 import { TopbarResourceField } from "./TopbarResourceField";
 import { TOPBAR_RESOURCE_DROPDOWN_STYLE } from "./topbarResourceSelectLayout";
-import { ResourceSelectDropdownFooter } from "./ResourceSelectDropdownFooter";
 import { ResourceSelectOptionLabel } from "./ResourceSelectOptionLabel";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
@@ -32,7 +30,6 @@ type TopbarLayoutVariantSelectProps = {
     options?: {
       copyFromLayoutVariantId?: string;
       designImageFile?: File;
-      mjsGenerateMode?: MjsGenerateMode;
     }
   ) => Promise<void>;
   /** 新建版式弹窗关闭时清理 AI 进度（如失败后点取消） */
@@ -42,7 +39,7 @@ type TopbarLayoutVariantSelectProps = {
   onSetPublishStatus?: (status: PublishStatus) => Promise<void>;
 };
 
-/** 场景级版式切换（大结构变体） */
+/** 场景级版式切换（底层为 layout variant） */
 export function TopbarLayoutVariantSelect({
   manifest,
   value,
@@ -58,11 +55,13 @@ export function TopbarLayoutVariantSelect({
 }: TopbarLayoutVariantSelectProps) {
   const { confirm } = useConfirmDialog();
   const [selectOpen, setSelectOpen] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createModalMode, setCreateModalMode] = useState<LayoutVariantCreateModalMode>("create");
   const [renameOpen, setRenameOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftError, setDraftError] = useState<string | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement>(null);
 
   const options = useMemo(
     () => (manifest?.variants ? sortVisibleLayoutVariantsByCreatedDesc(manifest.variants) : []),
@@ -92,6 +91,16 @@ export function TopbarLayoutVariantSelect({
     },
     [onSelect, value]
   );
+
+  useEffect(() => {
+    if (!actionMenuOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (actionMenuRef.current?.contains(event.target as Node)) return;
+      setActionMenuOpen(false);
+    };
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [actionMenuOpen]);
 
   const openRename = () => {
     if (!currentVariant) return;
@@ -152,7 +161,6 @@ export function TopbarLayoutVariantSelect({
     } else if (payload.kind === "ai") {
       await onCreate(payload.label, {
         designImageFile: payload.imageFile,
-        mjsGenerateMode: payload.mjsGenerateMode,
       });
     } else {
       await onCreate(payload.label);
@@ -168,13 +176,13 @@ export function TopbarLayoutVariantSelect({
   const resourceActions = [
     {
       id: "create",
-      label: "新建",
+      label: "新版式",
       disabled: selectDisabled,
       onClick: () => openCreateModal("create"),
     },
     {
       id: "copy",
-      label: "复制",
+      label: "复制版式",
       disabled: selectDisabled || !currentVariant,
       onClick: () => openCreateModal("copy"),
     },
@@ -212,39 +220,76 @@ export function TopbarLayoutVariantSelect({
 
   return (
     <>
-      <TopbarResourceField label="版式结构" variant="layout-variant">
-        <ShopSelect
-          className="topbar__select"
-          disabled={selectDisabled}
-          value={selectValue}
-          open={selectOpen}
-          onDropdownVisibleChange={setSelectOpen}
-          popupMatchSelectWidth={false}
-          dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
-          onChange={handlePick}
-          placeholder="选择版式"
-          getPopupContainer={() => document.body}
-          dropdownRender={(menu) => (
-            <ResourceSelectDropdownFooter
-              menu={menu}
-              actions={resourceActions}
-              actionsAriaLabel="版式结构操作"
-              busy={busy}
-              onAfterAction={() => setSelectOpen(false)}
-            />
-          )}
-        >
-          {options.map((v) => {
-            const published = isPublishedPublishStatus(normalizePublishStatus(v.publishStatus));
-            const label = v.label?.trim() || v.id;
-            return (
-              <ShopSelect.Option key={v.id} value={v.id}>
-                <ResourceSelectOptionLabel label={label} published={published} />
-              </ShopSelect.Option>
-            );
-          })}
-        </ShopSelect>
-      </TopbarResourceField>
+      <div className="topbar__layout-picker-group">
+        <TopbarResourceField label="版式" variant="layout-variant" hideLabel>
+          <ShopSelect
+            className="topbar__select"
+            disabled={selectDisabled}
+            value={selectValue}
+            open={selectOpen}
+            onDropdownVisibleChange={(open) => {
+              setSelectOpen(open);
+              if (open) setActionMenuOpen(false);
+            }}
+            dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
+            onChange={handlePick}
+            placeholder="选择版式"
+            getPopupContainer={() => document.body}
+          >
+            {options.map((v) => {
+              const published = isPublishedPublishStatus(normalizePublishStatus(v.publishStatus));
+              const label = v.label?.trim() || v.id;
+              return (
+                <ShopSelect.Option key={v.id} value={v.id}>
+                  <ResourceSelectOptionLabel label={label} published={published} />
+                </ShopSelect.Option>
+              );
+            })}
+          </ShopSelect>
+        </TopbarResourceField>
+        <div className="topbar__layout-actions-menu" ref={actionMenuRef}>
+          <button
+            type="button"
+            className="topbar__layout-actions-trigger"
+            disabled={selectDisabled}
+            aria-haspopup="menu"
+            aria-expanded={actionMenuOpen}
+            aria-label="版式更多操作"
+            title="版式更多操作"
+            onClick={() => {
+              setSelectOpen(false);
+              setActionMenuOpen((open) => !open);
+            }}
+          >
+            ···
+          </button>
+          {actionMenuOpen ? (
+            <div className="topbar__layout-actions-popover" role="menu" aria-label="版式操作">
+              {resourceActions.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="menuitem"
+                  className={[
+                    "topbar__layout-action-item",
+                    item.danger ? "topbar__layout-action-item--danger" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  disabled={Boolean(item.disabled || busy)}
+                  onClick={() => {
+                    if (item.disabled || busy) return;
+                    setActionMenuOpen(false);
+                    item.onClick();
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
 
       <LayoutVariantCreateModal
         visible={createModalOpen}
@@ -259,7 +304,7 @@ export function TopbarLayoutVariantSelect({
       {renameOpen ? (
         <ShopSectionModal
           visible
-          title="重命名版式结构"
+          title="重命名版式"
           onCancel={closeRename}
           maskClosable={!busy}
           closable={!busy}

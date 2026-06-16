@@ -6,6 +6,7 @@ type Props = {
   children: ReactNode;
   /** 控制顶栏选择框槽宽（邮件模板与版式结构同宽） */
   variant: "email-template" | "layout-variant";
+  hideLabel?: boolean;
 };
 
 const selectSlotStyle: CSSProperties = {
@@ -14,8 +15,8 @@ const selectSlotStyle: CSSProperties = {
   maxWidth: TOPBAR_RESOURCE_SELECT_SLOT_WIDTH,
 };
 
-/** 顶栏资源选择：仅标签 + 下拉（操作收进下拉底部） */
-export function TopbarResourceField({ label, children, variant }: Props) {
+/** 顶栏资源选择：下拉与可选标签（操作收进下拉底部） */
+export function TopbarResourceField({ label, children, variant, hideLabel }: Props) {
   return (
     <div
       className={[
@@ -23,9 +24,11 @@ export function TopbarResourceField({ label, children, variant }: Props) {
         variant === "email-template"
           ? "topbar__select-wrap--email-template"
           : "topbar__select-wrap--layout-variant",
+        hideLabel ? "topbar__select-wrap--label-hidden" : "",
       ].join(" ")}
+      aria-label={hideLabel ? label : undefined}
     >
-      <span className="topbar__select-label">{label}</span>
+      {hideLabel ? null : <span className="topbar__select-label">{label}</span>}
       <div className="topbar__select-slot" style={selectSlotStyle}>
         {children}
       </div>

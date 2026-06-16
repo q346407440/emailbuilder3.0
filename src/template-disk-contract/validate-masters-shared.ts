@@ -1,3 +1,4 @@
+import { RUNTIME_BLOCK_TYPES, RUNTIME_TYPE_TO_SEMANTIC } from "../block-contract/types";
 import { NESTED_BLOCK_SHELL_KEYS } from "./shell-keys";
 import type { NestedDiskValidationIssue } from "./types";
 
@@ -56,6 +57,11 @@ export function validateNestedBlockNode(
 
   if (typeof node.type !== "string" || !node.type.trim()) {
     issues.push({ path: `${path}.type`, reason: "type 为必填字符串" });
+  } else if (!(node.type in RUNTIME_TYPE_TO_SEMANTIC)) {
+    issues.push({
+      path: `${path}.type`,
+      reason: `type 非法运行时类型「${node.type}」（合法：${RUNTIME_BLOCK_TYPES.join("/")}）`,
+    });
   }
 
   if (node.props !== undefined && !isRecord(node.props)) {

@@ -18,42 +18,44 @@ describe("reduceAiPipelineProgress", () => {
     assert.ok(steps.every((s) => s.status === "pending"));
   });
 
-  it("重试时失败行保留 failed，append 新 running 行", () => {
+  it("重试在同一行原地变更：失败 → 重试 running → 成功打勾，不新增行", () => {
     let steps = reduceAiPipelineProgress(null, {
       type: "plan",
-      steps: [{ id: "MR:MjsGenerate", label: "豆包生成还原脚本" }],
+      steps: [{ id: "MR:VisualBlueprint", label: "识别视觉规格" }],
       display: "hidden",
     });
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
-      stepId: "MR:MjsGenerate",
-      entryId: "MR:MjsGenerate",
+      stepId: "MR:VisualBlueprint",
       status: "running",
       attempt: 1,
+      label: "识别视觉规格 — 豆包 MR:VisualBlueprint API",
     });
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
-      stepId: "MR:MjsGenerate",
-      entryId: "MR:MjsGenerate",
+      stepId: "MR:VisualBlueprint",
       status: "failed",
       attempt: 1,
-      label: "豆包生成还原脚本 — mjs 执行失败（尝试 1/3）",
+      label: "识别视觉规格 — 第 1 次未通过，即将重试",
     });
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
-      stepId: "MR:MjsGenerate",
-      entryId: "MR:MjsGenerate~2",
-      append: true,
+      stepId: "MR:VisualBlueprint",
       status: "running",
       attempt: 2,
-      label: "豆包生成还原脚本 — 程序 autofix → 豆包 patch（尝试 2/3）",
+      label: "识别视觉规格 — 第 2 次重试",
     });
-    assert.equal(steps.length, 2);
-    assert.equal(steps[0]?.status, "failed");
-    assert.equal(steps[0]?.label, "豆包生成还原脚本 — mjs 执行失败（尝试 1/3）");
-    assert.equal(steps[1]?.status, "running");
-    assert.equal(steps[1]?.id, "MR:MjsGenerate~2");
-    assert.equal(steps[1]?.attempt, 2);
+    assert.equal(steps.length, 1, "重试不新增行");
+    assert.equal(steps[0]?.status, "running");
+    assert.equal(steps[0]?.label, "识别视觉规格 — 第 2 次重试");
+    steps = reduceAiPipelineProgress(steps, {
+      type: "step",
+      stepId: "MR:VisualBlueprint",
+      status: "success",
+    });
+    assert.equal(steps.length, 1, "成功在重试行上打勾，不新增行");
+    assert.equal(steps[0]?.status, "success");
+    assert.equal(steps[0]?.label, "识别视觉规格 — 第 2 次重试");
   });
 
   it("plan 更新保留已完成步骤状态", () => {
@@ -97,7 +99,7 @@ describe("reduceAiPipelineProgress", () => {
     assert.equal(steps.length, 0);
   });
 
-  it("首条 step 事件渐进 append", () => {
+  it("hidden plan 下步骤首个事件渐进出现，一步一行", () => {
     let steps = reduceAiPipelineProgress(null, {
       type: "plan",
       steps: [...MANUAL_RESTORE_MJS_UI_STEPS_INITIAL],
@@ -106,7 +108,6 @@ describe("reduceAiPipelineProgress", () => {
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:VisualBlueprint",
-      entryId: "MR:VisualBlueprint",
       status: "running",
       label: "识别视觉规格 — 豆包 MR:VisualBlueprint…",
     });
@@ -115,17 +116,16 @@ describe("reduceAiPipelineProgress", () => {
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:VisualBlueprint",
-      entryId: "MR:VisualBlueprint",
       status: "success",
     });
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:ResolveAssets",
-      entryId: "MR:ResolveAssets",
       status: "running",
       label: "搜索远程素材（Pexels/CDN）",
     });
     assert.equal(steps.length, 2);
+    assert.equal(steps[0]?.status, "success");
     assert.equal(steps[1]?.id, "MR:ResolveAssets");
   });
 
@@ -139,7 +139,7 @@ describe("reduceAiPipelineProgress", () => {
     assert.equal(steps[4]?.id, "MR:VisualLint");
   });
 
-  it("append 重试行接在列表末尾（不插入同 stepId 旧行之后）", () => {
+  it("跨步骤重试也回到原行变更（不在列表末尾新增）", () => {
     let steps = reduceAiPipelineProgress(null, {
       type: "plan",
       steps: [
@@ -151,14 +151,12 @@ describe("reduceAiPipelineProgress", () => {
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:MjsGenerate",
-      entryId: "MR:MjsGenerate",
       status: "success",
       label: "豆包生成还原脚本 — 豆包 MR:MjsGenerate API · 首次",
     });
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:RunValidate",
-      entryId: "MR:RunValidate",
       status: "failed",
       attempt: 1,
       label: "执行脚本并校验 — validate 未通过（尝试 1/3）",
@@ -166,17 +164,30 @@ describe("reduceAiPipelineProgress", () => {
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:MjsGenerate",
-      entryId: "MR:MjsGenerate~2",
-      append: true,
       status: "running",
       attempt: 2,
       label: "豆包生成还原脚本 — 豆包 MR:MjsPatch API（尝试 2/3）",
     });
-    assert.equal(steps.length, 3);
-    assert.equal(steps[1]?.id, "MR:RunValidate");
+    assert.equal(steps.length, 2, "重试不新增行");
+    assert.equal(steps[0]?.id, "MR:MjsGenerate");
+    assert.equal(steps[0]?.status, "running");
+    assert.equal(steps[0]?.label, "豆包生成还原脚本 — 豆包 MR:MjsPatch API（尝试 2/3）");
     assert.equal(steps[1]?.status, "failed");
-    assert.equal(steps[2]?.id, "MR:MjsGenerate~2");
-    assert.equal(steps[2]?.status, "running");
+  });
+
+  it("未知 stepId（后端新增步骤）才新增一行", () => {
+    let steps = reduceAiPipelineProgress(null, {
+      type: "plan",
+      steps: [{ id: "MR:MjsGenerate", label: "豆包生成还原脚本" }],
+    });
+    steps = reduceAiPipelineProgress(steps, {
+      type: "step",
+      stepId: "MR:AssetSlots",
+      status: "running",
+      label: "MR:AssetSlots — 豆包资产槽",
+    });
+    assert.equal(steps.length, 2);
+    assert.equal(steps[1]?.id, "MR:AssetSlots");
   });
 
   it("buildPendingManualRestoreSteps 全 pending", () => {
@@ -193,7 +204,6 @@ describe("reduceAiPipelineProgress", () => {
     steps = reduceAiPipelineProgress(steps, {
       type: "step",
       stepId: "MR:RunValidate",
-      entryId: "MR:RunValidate",
       status: "failed",
       attempt: 1,
       maxAttempts: 3,
@@ -203,7 +213,7 @@ describe("reduceAiPipelineProgress", () => {
     assert.equal(steps[0]?.maxAttempts, 3);
   });
 
-  it("logDetail 更新主行 label 而非副行", () => {
+  it("无 label 的事件只变更状态，保留行内文案", () => {
     let steps = reduceAiPipelineProgress(null, {
       type: "plan",
       steps: [{ id: "MR:MjsGenerate", label: "豆包生成还原脚本" }],
@@ -214,15 +224,13 @@ describe("reduceAiPipelineProgress", () => {
       status: "running",
       attempt: 2,
       label: "豆包生成还原脚本 — 程序 autofix → 豆包 patch（尝试 2/3）",
-      maxAttempts: 3,
     });
     steps = reduceAiPipelineProgress(steps, {
-      type: "stepDetail",
+      type: "step",
       stepId: "MR:MjsGenerate",
-      detail: "豆包 MR:MjsPatch API（尝试 2/3）",
-      attempt: 2,
-      maxAttempts: 3,
+      status: "success",
     });
-    assert.equal(steps[0]?.label, "豆包生成还原脚本 — 豆包 MR:MjsPatch API（尝试 2/3）");
+    assert.equal(steps[0]?.status, "success");
+    assert.equal(steps[0]?.label, "豆包生成还原脚本 — 程序 autofix → 豆包 patch（尝试 2/3）");
   });
 });
