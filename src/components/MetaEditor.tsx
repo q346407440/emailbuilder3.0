@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { toastError, toastInfo, toastSuccess, toastWarning } from "../lib/appToast";
 import { captureEmailPreviewHtmlFromDom } from "../lib/captureEmailPreviewHtml";
 import { toUserFacingErrorMessage } from "../lib/userFacingError";
 import { resolveTestEmailSubject } from "../lib/emailDeliveryFields";
@@ -81,6 +81,8 @@ export function MetaEditor({
   const lastMetaToastAtRef = useRef(0);
   const prevOpenSendTestNonceRef = useRef(openSendTestNonce);
   const prevExternalSaveNonceRef = useRef(externalSaveNonce);
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   useEffect(() => {
     let cancelled = false;
@@ -102,14 +104,14 @@ export function MetaEditor({
         setLoaded(true);
       } catch (err) {
         if (cancelled) return;
-        onError?.(toUserFacingErrorMessage(err, "加载模板信息失败，请刷新重试"));
+        onErrorRef.current?.(toUserFacingErrorMessage(err, "加载模板信息失败，请刷新重试"));
         setLoaded(true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [emailKey, onError]);
+  }, [emailKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,20 +122,20 @@ export function MetaEditor({
       } catch (err) {
         if (!cancelled) {
           setSmtpStatus({ configured: false });
-          onError?.(toUserFacingErrorMessage(err, "获取邮件服务状态失败，请稍后重试"));
+          onErrorRef.current?.(toUserFacingErrorMessage(err, "获取邮件服务状态失败，请稍后重试"));
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [onError]);
+  }, []);
 
   function notifyMetaPersisted() {
     const now = Date.now();
     if (now - lastMetaToastAtRef.current < META_SAVE_TOAST_MIN_MS) return;
     lastMetaToastAtRef.current = now;
-    message.info("模板信息已保存", 1.6);
+    toastInfo("模板信息已保存", 1.6);
   }
 
   function update<K extends keyof MetaEditorFormSnapshot>(key: K, value: MetaEditorFormSnapshot[K]) {
@@ -152,7 +154,7 @@ export function MetaEditor({
     } catch (err) {
       const msg = toUserFacingErrorMessage(err, "保存失败，请稍后重试");
       onError?.(msg);
-      message.error(msg);
+      toastError(msg);
       return false;
     } finally {
       setSavingMeta(false);
@@ -205,7 +207,7 @@ export function MetaEditor({
     const preheader = form.preheader.trim();
     const html = captureEmailPreviewHtmlFromDom({ subject, preheader });
     if (!html) {
-      message.error("未找到画布预览内容，请确认中间「画布预览」已加载");
+      toastError("未找到画布预览内容，请确认中间「画布预览」已加载");
       return;
     }
     setSending(true);
@@ -216,11 +218,11 @@ export function MetaEditor({
         subject,
         preheader,
       });
-      message.success("测试邮件已发送，请前往收件箱查看", 3);
+      toastSuccess("测试邮件已发送，请前往收件箱查看", 3);
       setSendTestOpen(false);
     } catch (err) {
       const msg = toUserFacingErrorMessage(err, "发送失败，请稍后重试");
-      message.error(msg);
+      toastError(msg);
       onError?.(msg);
     } finally {
       setSending(false);

@@ -85,8 +85,8 @@ emulate → viewport: "1920x1080x2"
 
 | UI | 选择器 | 说明 |
 |----|--------|------|
-| 顶栏表单/确认弹窗（SDS Modal 白底） | `.shop-section-modal` | 未保存确认等同理 |
-| 版式/模板下拉浮层 | `.sds-select-dropdown` 或含 `[role="listbox"]` 的最近 dropdown 容器 | 参考 `scripts/prd-get-crop-rect.js` |
+| 顶栏表单/确认弹窗（Modal 白底） | `.shop-section-modal` | 未保存确认等同理 |
+| 版式/模板下拉浮层 | `.ant-select-dropdown` 或含 `[role="listbox"]` 的最近 dropdown 容器 | 参考 `scripts/prd-get-crop-rect.js` |
 
 下拉裁切示例：
 
@@ -95,8 +95,8 @@ emulate → viewport: "1920x1080x2"
   const list = document.querySelector('[role="listbox"]');
   if (!list) return null;
   const dd =
-    list.closest(".sds-select-dropdown") ??
-    list.closest(".sds-select-dropdown-wrap") ??
+    list.closest(".ant-select-dropdown") ??
+    list.closest(".ant-select-dropdown-wrap") ??
     list.parentElement?.closest("[class*='select-dropdown']");
   const target = dd ?? list.parentElement?.parentElement;
   if (!target) return null;

@@ -28,7 +28,7 @@ description: >-
 | **落盘 JSON schema 索引** | **`src/schema-registry/`**（版本常量引用各 `*-contract`） |
 | visibility 运算符合法性 | `src/visibility-contract/` |
 | tokenPresets 外壳校验 | `src/lib/validateTokenPresets.ts` · `src/token-preset-contract/validate.ts` |
-| 容器内边距 `SpacingValue`（`unified` 单边 / `separate` 四边） | `src/lib/validate.ts` · `validateSpacingValue`；批量审计 `npm run normalize:spacing-unified` |
+| 容器内边距 / 描边 / 圆角（四边/四角平铺） | `src/lib/boxModelFlat.ts` · `src/lib/boxModelStorage.ts`；校验 `validate.ts`（禁止 legacy `mode`） |
 | 落盘目录与 HTTP API | `easy-email-storage-api` 技能 + `server/index.ts` |
 | 场景版式变体（layoutVariant）路径与 manifest | `src/layout-variant-contract/`、`src/lib/emailLayoutVariant.ts` |
 
@@ -62,7 +62,7 @@ description: >-
 4. **不进 JSON 的默认**：**`src/render-defaults-contract/`**；口语「项目默认」→ 技能 **`easy-email-render-defaults`**。
 5. **容器内相对居中（修复顺序）**：用户说「相对居中 / 行内居中 / 叠在图上的块要居中」时，**先改父容器 `contentAlign`**，再改子块壳内文案的 **`contentAlign`**；**不要**仅靠子块 **`widthMode: hug`** 代替父级对齐。子块 **`fill`** 时父级水平居中管叠放栈；壳内文字居中靠子块 **`fill` + `contentAlign.horizontal: center`**。
 6. **横向 layout、grid 矩阵格、图片/底图叠放**：父 **`layout`/`grid`/`image`（含 `backgroundImage`）** 的 **`contentAlign` 双轴** 控制子级在容器内的水平+竖直对齐；栅格槽位见 **`gridMatrixSlotContentAlignCss`**。邮件级整组居中：父 **`contentAlign.horizontal: center`** 或 **`hug` 外壳 + 父级居中**，见 **`email-template-restore-check`**。
-7. **容器内边距 `wrapperStyle.padding` / `emailRoot.props.padding`（`SpacingValue`）**：**`mode: "unified"`** 时 **`unified` 只能是单边长度**（如 `"8px"`、`"0"` 或 `$themeRef`），**禁止** CSS 多值简写（如 `"8px 0 0 0"`、`"28px 24px"`）；四边不同必须用 **`mode: "separate"`** + **`top/right/bottom/left`**。校验 **`validate.ts`**；存量清理 **`npm run normalize:spacing-unified:write`**。Inspector「四边统一」= 四边**同值**，不是简写四段。
+7. **容器内边距 `wrapperStyle.padding` / `emailRoot.props.padding`（`SpacingValue`）**：JSON **永远四边平铺** `{ top, right, bottom, left }`（可绑 `$themeRef`）；**禁止** CSS 多值简写（如 `"8px 0 0 0"` 写在任一边）与 legacy `mode: unified/separate`。校验 **`validate.ts`** 直接拒绝非法形态。Inspector 仅展示四路分边输入，无统一/分边模式切换。
 8. **contentAlign 可配性（代码真源）**：**`src/lib/contentAlignConfigurability.ts`**。`widthMode: hug` → 水平轴不可配（须 `left`）；`heightMode: hug` → 竖直轴不可配（须 `top`）。**layout / grid / image 叠放** 在定高/定宽壳上**双轴均可配**。校验 **`validate.ts`** + **`render-defaults-contract/forbiddenWrapperStyleKeys.ts`**；hug 轴回落 **`npm run migrate:content-align-hug-neutral:write`**；协调 **`npm run normalize:wrapper-layout:write`**。
 
 ## 术语路由（用户说一句 → 先改哪）
@@ -78,7 +78,7 @@ description: >-
 | 列表绑定 / 解除 / 父级+子级循环 / 物化重绑 | 技能 **`easy-email-repeat-binding`**；勿在 template 长期写物化 `*-1` id |
 | 标准 token 键范围与绑法 | **`email-token-preset-standard-scope`** + `standard-keys.ts` |
 | 已废弃「意图层」/ configSchema 口语 | 译为 template + Inspector / payload / tokenPresets；无独立意图 JSON |
-| 只要上边距 / 四边不同 padding | **`separate`** 分边写；**勿**在 **`unified`** 里写 `"8px 0 0 0"` |
+| 只要上边距 / 四边不同 padding | **四边平铺**写 `top/right/bottom/left`；四边同值则四键同字面量或同 `$themeRef` |
 
 ## 编辑器 MVP（产品行为）
 

@@ -1,0 +1,462 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "#1A1A1A",
+      "accent": "#C4A052",
+      "secondary": "#6B6B6B",
+      "surface": "#FFFFFF"
+    },
+    "spacing": {
+      "section": "24px",
+      "gap": "12px",
+      "pageInline": "18px"
+    },
+    "typography": {
+      "display": "32px",
+      "h1": "16px",
+      "body": "14px",
+      "caption": "11px"
+    },
+    "radius": {
+      "panel": "0px",
+      "cta": "0px"
+    }
+  },
+  "tree": {
+    "t": "email",
+    "children": [
+      {
+        "t": "stack",
+        "title": "顶部品牌标识",
+        "align": "center",
+        "gap": "gap",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "row",
+            "title": "品牌标识行",
+            "align": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "icon",
+                "query": "tree",
+                "pack": "tabler",
+                "required": true,
+                "size": "lg"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "退货完成说明",
+        "align": "start",
+        "gap": "gap",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "text",
+            "content": "All Set!",
+            "role": "display",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "Hey Smiles Davis,",
+            "role": "body"
+          },
+          {
+            "t": "text",
+            "content": "We've processed your return and you should see a refund to your card within 5-7 business days, or store credit if you chose that option.",
+            "role": "body"
+          },
+          {
+            "t": "text",
+            "content": "Thanks for shopping with us — we hope to see you again soon.",
+            "role": "body"
+          },
+          {
+            "t": "row",
+            "title": "客服联系行",
+            "align": "start",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "text",
+                "content": "Questions or concerns? Drop us a line at ",
+                "role": "body"
+              },
+              {
+                "t": "text",
+                "content": "support@huckberry.com",
+                "role": "body",
+                "tone": "accent",
+                "bold": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "退货订单摘要",
+        "align": "start",
+        "gap": "gap",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "row",
+            "title": "订单头信息",
+            "align": "between",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "stack",
+                "title": "订单号列",
+                "gap": "gap",
+                "align": "start",
+                "children": [
+                  {
+                    "t": "text",
+                    "content": "Order Number",
+                    "role": "caption",
+                    "tone": "secondary"
+                  },
+                  {
+                    "t": "text",
+                    "content": "R650056055",
+                    "role": "h1",
+                    "tone": "accent",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "收货日期列",
+                "gap": "gap",
+                "align": "end",
+                "children": [
+                  {
+                    "t": "text",
+                    "content": "Return Received:",
+                    "role": "caption",
+                    "tone": "secondary"
+                  },
+                  {
+                    "t": "text",
+                    "content": "08/27/2021",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              }
+            ]
+          },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          {
+            "t": "row",
+            "title": "表头行",
+            "align": "between",
+            "gap": "gap",
+            "children": [
+              { "t": "text", "content": "Item", "role": "caption", "bold": true },
+              { "t": "text", "content": "Qty.", "role": "caption", "bold": true },
+              { "t": "text", "content": "Price", "role": "caption", "bold": true }
+            ]
+          },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          {
+            "t": "row",
+            "title": "退货商品行",
+            "align": "start",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "image",
+                "query": "onitsuka tiger california 78 yellow white sneaker product",
+                "height": { "px": 72 },
+                "aspect": { "w": 1, "h": 1 }
+              },
+              {
+                "t": "stack",
+                "title": "商品信息",
+                "gap": "gap",
+                "align": "start",
+                "children": [
+                  {
+                    "t": "text",
+                    "content": "Onitsuka Tiger: California 78",
+                    "role": "body"
+                  }
+                ]
+              },
+              { "t": "text", "content": "1", "role": "body" },
+              { "t": "text", "content": "$95.40", "role": "body" }
+            ]
+          },
+          {
+            "t": "row",
+            "title": "退货商品行",
+            "align": "start",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "image",
+                "query": "patagonia black hole tote bag olive green product",
+                "height": { "px": 72 },
+                "aspect": { "w": 1, "h": 1 }
+              },
+              {
+                "t": "stack",
+                "title": "商品信息",
+                "gap": "gap",
+                "align": "start",
+                "children": [
+                  {
+                    "t": "text",
+                    "content": "Patagonia: Black Hole Tote 25L",
+                    "role": "body"
+                  }
+                ]
+              },
+              { "t": "text", "content": "1", "role": "body" },
+              { "t": "text", "content": "$62.54", "role": "body" }
+            ]
+          },
+          {
+            "t": "stack",
+            "title": "退款合计条",
+            "align": "end",
+            "box": { "pad": "gap", "tone": { "hex": "#F0F0F0" } },
+            "children": [
+              {
+                "t": "text",
+                "content": "Returned to Card: $157.94",
+                "role": "body",
+                "bold": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "九宫格商品推荐",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "grid",
+            "title": "三列推荐宫格",
+            "columns": 3,
+            "gap": "gap",
+            "cellImageHeight": { "px": 160 },
+            "children": [
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "tan utility field jacket mens outdoor product"
+                  },
+                  {
+                    "t": "text",
+                    "content": "Our Most Requested Jacket",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "grey wool slip on outdoor slippers cozy product"                  },
+                  {
+                    "t": "text",
+                    "content": "Cozy Outdoor Slippers",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "dark grey everyday chino trousers mens product"                  },
+                  {
+                    "t": "text",
+                    "content": "Every. Damn. Day.",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "wide brim palm leaf straw fishing hat product"                  },
+                  {
+                    "t": "text",
+                    "content": "Palm Leaf Fishing Hat",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "cream cable knit crewneck sweater mens product"                  },
+                  {
+                    "t": "text",
+                    "content": "Stylish Knit Crewneck",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "dark green quilted jacket orange lining mens product"                  },
+                  {
+                    "t": "text",
+                    "content": "The Swiss Army Knife of Jackets",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "navy blue zip up hoodie mens bestseller product"                  },
+                  {
+                    "t": "text",
+                    "content": "Our Bestselling Hoodie",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "charcoal long sleeve polo pullover mens cozy product"                  },
+                  {
+                    "t": "text",
+                    "content": "Cozy Polo Pullover",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "推荐商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "brown leather lace up waterproof rollable boots mens product"                  },
+                  {
+                    "t": "text",
+                    "content": "Rollable, Waterproof Boots",
+                    "role": "body",
+                    "bold": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "页脚信息",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section", "tone": { "hex": "#2D2D2D" } },
+        "children": [
+          {
+            "t": "icon",
+            "query": "tree",
+            "pack": "tabler",
+            "required": true,
+            "size": "md",
+            "tone": "surface"
+          },
+          {
+            "t": "text",
+            "content": "The Huckberry Story",
+            "role": "body",
+            "tone": "accent",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "©2021 Huckberry Inc. | 2901 South First St., Suite 200, Austin, TX 78704",
+            "role": "caption",
+            "tone": "surface"
+          },
+          {
+            "t": "row",
+            "title": "页脚链接行",
+            "align": "center",
+            "gap": "gap",
+            "children": [
+              { "t": "text", "content": "Web Version", "role": "caption", "tone": "surface" },
+              { "t": "text", "content": "|", "role": "caption", "tone": "surface" },
+              { "t": "text", "content": "Email Frequency", "role": "caption", "tone": "surface" },
+              { "t": "text", "content": "|", "role": "caption", "tone": "surface" },
+              { "t": "text", "content": "Unsubscribe", "role": "caption", "tone": "surface" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

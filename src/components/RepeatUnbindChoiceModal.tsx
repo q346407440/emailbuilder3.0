@@ -1,4 +1,4 @@
-import { Radio } from "@shoplazza/sds";
+import { Radio } from "antd";
 import { useEffect, useId, useState } from "react";
 import {
   defaultRepeatUnbindMode,

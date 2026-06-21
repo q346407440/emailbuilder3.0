@@ -13,8 +13,8 @@ export type LlmExchangeLogEntry =
       stage?: string;
       sectionId?: string;
       attempt?: number;
-      /** 豆包 response_format 回退链中的第几次 HTTP 请求（从 1 起） */
-      doubaoAttempt: number;
+      /** response_format 等回退链中的第几次 HTTP 请求（从 1 起） */
+      httpAttempt: number;
       url: string;
       body: Record<string, unknown>;
     }
@@ -27,7 +27,7 @@ export type LlmExchangeLogEntry =
       stage?: string;
       sectionId?: string;
       attempt?: number;
-      doubaoAttempt: number;
+      httpAttempt: number;
       url: string;
       status: number;
       body: unknown;
@@ -41,7 +41,7 @@ export type LlmExchangeLogEntry =
       stage?: string;
       sectionId?: string;
       attempt?: number;
-      doubaoAttempt: number;
+      httpAttempt: number;
       url: string;
       status?: number;
       message: string;
@@ -61,7 +61,7 @@ export type LlmExchangeLogEntry =
 /**
  * 对联合类型逐成员做 Omit。
  * 直接写 `Omit<联合, K>` 会塌缩成「所有成员都有的公共字段」，丢掉各成员独有的字段
- * （如 pipeline 事件没有 doubaoAttempt/url，导致 request/response 的这些字段被一起抹掉）。
+ * （如 pipeline 事件没有 httpAttempt/url，导致 request/response 的这些字段被一起抹掉）。
  */
 type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never;
 

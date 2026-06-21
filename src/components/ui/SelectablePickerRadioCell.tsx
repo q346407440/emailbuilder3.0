@@ -1,6 +1,6 @@
-import { Radio } from "@shoplazza/sds";
+import { Radio } from "antd";
 
-/** 单选列表首列：SDS Radio，与 {@link SelectablePickerTable} 视觉对齐 */
+/** 单选列表首列：antd Radio，与 {@link SelectablePickerTable} 视觉对齐 */
 export function SelectablePickerRadioCell({
   name,
   checked,

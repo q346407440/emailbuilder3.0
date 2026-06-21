@@ -1,3 +1,12 @@
+import type { PayloadSlotDefinition } from "../types/email";
+
+/** 仅 loyalty 内部后台专用列表变量支持行级「不展示」 */
+export function collectionSlotAllowsItemVisibility(
+  slot: PayloadSlotDefinition | undefined
+): boolean {
+  return slot?.valueType === "collection" && slot.scene === "loyalty-internal-admin";
+}
+
 /** 解析槽级显隐：未声明或下标缺失视为展示（true） */
 export function normalizeItemVisibility(
   itemCount: number,
@@ -23,8 +32,10 @@ export function isCollectionItemVisible(
 /** 列表展开 / 合并前：按槽级 itemVisibility 过滤（false = 不展示） */
 export function applyCollectionItemVisibility(
   items: Record<string, unknown>[],
-  visibility: boolean[] | undefined
+  visibility: boolean[] | undefined,
+  slot?: PayloadSlotDefinition
 ): Record<string, unknown>[] {
+  if (!collectionSlotAllowsItemVisibility(slot)) return items;
   if (!Array.isArray(visibility) || visibility.length === 0) return items;
   return items.filter((_, index) => isCollectionItemVisible(visibility, index));
 }

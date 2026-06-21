@@ -2,9 +2,10 @@ import type { ExpandedTheme } from "../types/theme";
 import type { TokenPresets } from "../types/tokenPreset";
 import { readTokenPresetStorageValue } from "./resolveTokenPreset";
 
-/** 仓库标准 12 键（与 email-token-preset-standard-scope 对齐） */
+/** 仓库标准 13 键（与 email-token-preset-standard-scope 对齐） */
 export const STANDARD_THEME_TOKEN_PATHS = [
   "colors.primary",
+  "colors.accent",
   "colors.secondary",
   "colors.surface",
   "tokens.spacing.section",
@@ -18,8 +19,13 @@ export const STANDARD_THEME_TOKEN_PATHS = [
   "tokens.radius.cta",
 ] as const;
 
-/** surface / primary / secondary：容器背景与文字、图标描边等前景色共用（主背景 surface 在前） */
-const COLOR_SURFACE_PRIMARY_SECONDARY = ["colors.surface", "colors.primary", "colors.secondary"] as const;
+/** surface / accent / primary / secondary：容器背景与文字、图标描边等前景色共用（主背景 surface 在前） */
+const COLOR_SURFACE_ACCENT_PRIMARY_SECONDARY = [
+  "colors.surface",
+  "colors.accent",
+  "colors.primary",
+  "colors.secondary",
+] as const;
 const TYPOGRAPHY = [
   "tokens.typography.display",
   "tokens.typography.h1",
@@ -50,9 +56,9 @@ export function suggestThemeTokenPaths(_blockType: string, bindPath: string): st
   const parent = pathParent(bindPath);
 
   if (leaf === "fontSize") return [...TYPOGRAPHY];
-  if (leaf === "color" || leaf === "textColor") return [...COLOR_SURFACE_PRIMARY_SECONDARY];
+  if (leaf === "color" || leaf === "textColor") return [...COLOR_SURFACE_ACCENT_PRIMARY_SECONDARY];
   if (leaf === "backgroundColor") {
-    return [...COLOR_SURFACE_PRIMARY_SECONDARY];
+    return [...COLOR_SURFACE_ACCENT_PRIMARY_SECONDARY];
   }
   if (leaf === "gap" || parent === "padding" || parent === "margin") return [...SPACING];
   if (

@@ -1,0 +1,4601 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "template-mqhos2xu",
+  "templateId": "template-mqhos2xu",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "template-mqhos2xu-gemini31-prohuckberry-template-root-1",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "邮件根"
+    },
+    "props": {
+      "backgroundColor": {
+        "$themeRef": "colors.surface"
+      },
+      "width": "600px",
+      "padding": {
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      },
+      "gapMode": "fixed",
+      "gap": "0",
+      "border": {
+        "style": "solid",
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      }
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "bindings": {
+      "props.backgroundColor": {
+        "slotId": "colors.surface",
+        "mode": "theme",
+        "tokenPath": "colors.surface",
+        "fieldKind": "style"
+      }
+    },
+    "children": [
+      {
+        "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "Header模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-icon-1",
+            "type": "icon",
+            "blockMeta": {
+              "blockType": "content.icon",
+              "name": "huckberry-logo"
+            },
+            "props": {
+              "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/google.svg",
+              "size": "32px",
+              "color": "#000000"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "hug",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "Main Content模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.section"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "All Set!"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "All Set!",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.display"
+              },
+              "color": {
+                "$themeRef": "colors.accent"
+              },
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.display",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.display",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.accent",
+                "mode": "theme",
+                "tokenPath": "colors.accent",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-3",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "Message"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-2",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Hey Smiles Davis,"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Hey Smiles Davis,"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": "#1A1A1A",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-3",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "We wanted to let you know th…"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "We wanted to let you know that your return has been processed successfully. If you chose a refund to your credit or debit card, you should see the refund on your bank statement in the next 5-7 business days. If you returned your item for store credit, you should see that credit in your Huckberry account immediately."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": "#1A1A1A",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-4",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Questions or concerns? Drop …"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Questions or concerns? Drop us a line at support@huckberry.com"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": "#1A1A1A",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-4",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "Order Details"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-divider-1",
+                "type": "divider",
+                "blockMeta": {
+                  "blockType": "separator.divider",
+                  "name": "分隔线"
+                },
+                "props": {
+                  "color": "#D8D8D8",
+                  "height": "1px",
+                  "lineWidthMode": "fill"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-1",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Order Info Row"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "auto",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-5",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Order Number"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-5",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Order Number"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Order Number",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-6",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "R650056055"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "R650056055"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": {
+                            "$themeRef": "colors.primary"
+                          },
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          },
+                          "props.color": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-6",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Return Received"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-7",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Return Received:"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Return Received:",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-8",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "08/27/2021"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "08/27/2021"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-divider-2",
+                "type": "divider",
+                "blockMeta": {
+                  "blockType": "separator.divider",
+                  "name": "分隔线"
+                },
+                "props": {
+                  "color": "#D8D8D8",
+                  "height": "1px",
+                  "lineWidthMode": "fill"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-2",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Items Header"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "auto",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-9",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Item"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Item",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-3",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Qty Price Header"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-10",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Qty."
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Qty.",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-11",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Price"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Price",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-divider-3",
+                "type": "divider",
+                "blockMeta": {
+                  "blockType": "separator.divider",
+                  "name": "分隔线"
+                },
+                "props": {
+                  "color": "#D8D8D8",
+                  "height": "1px",
+                  "lineWidthMode": "fill"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-4",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Product 1"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "auto",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-5",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Product Info"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-1",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "yellow sneakers"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fixed",
+                          "width": "80px",
+                          "heightMode": "fixed",
+                          "height": "80px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/31310747/pexels-photo-31310747.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-7",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "Product Title"
+                        },
+                        "props": {
+                          "direction": "vertical",
+                          "gapMode": "fixed",
+                          "gap": {
+                            "$themeRef": "tokens.spacing.gap"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.gap": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-12",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "Onitsuka"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "Onitsuka"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": {
+                                "$themeRef": "tokens.typography.body"
+                              },
+                              "color": "#1A1A1A",
+                              "bold": false,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.fontSize": {
+                                "slotId": "tokens.typography.body",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.body",
+                                "fieldKind": "style"
+                              }
+                            }
+                          },
+                          {
+                            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-13",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "Tiger: California"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "Tiger: California"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": {
+                                "$themeRef": "tokens.typography.body"
+                              },
+                              "color": "#1A1A1A",
+                              "bold": false,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.fontSize": {
+                                "slotId": "tokens.typography.body",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.body",
+                                "fieldKind": "style"
+                              }
+                            }
+                          },
+                          {
+                            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-14",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "78"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "78"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": {
+                                "$themeRef": "tokens.typography.body"
+                              },
+                              "color": "#1A1A1A",
+                              "bold": false,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.fontSize": {
+                                "slotId": "tokens.typography.body",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.body",
+                                "fieldKind": "style"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-6",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Qty Price"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-15",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "1"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-16",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "$95.40"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "$95.40"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-divider-4",
+                "type": "divider",
+                "blockMeta": {
+                  "blockType": "separator.divider",
+                  "name": "分隔线"
+                },
+                "props": {
+                  "color": "#D8D8D8",
+                  "height": "1px",
+                  "lineWidthMode": "fill"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-7",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Product 2"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "auto",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-8",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Product Info"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-2",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "olive green tote"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fixed",
+                          "width": "100px",
+                          "heightMode": "fixed",
+                          "height": "100px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/7129196/pexels-photo-7129196.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-8",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "Product Title"
+                        },
+                        "props": {
+                          "direction": "vertical",
+                          "gapMode": "fixed",
+                          "gap": {
+                            "$themeRef": "tokens.spacing.gap"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.gap": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-17",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "Patagonia: Black"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "Patagonia: Black"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": {
+                                "$themeRef": "tokens.typography.body"
+                              },
+                              "color": "#1A1A1A",
+                              "bold": false,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.fontSize": {
+                                "slotId": "tokens.typography.body",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.body",
+                                "fieldKind": "style"
+                              }
+                            }
+                          },
+                          {
+                            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-18",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "Hole Tote 25L"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "Hole Tote 25L"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": {
+                                "$themeRef": "tokens.typography.body"
+                              },
+                              "color": "#1A1A1A",
+                              "bold": false,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.fontSize": {
+                                "slotId": "tokens.typography.body",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.body",
+                                "fieldKind": "style"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-9",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Qty Price"
+                    },
+                    "props": {
+                      "direction": "horizontal",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-19",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "1"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "1"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-20",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "$62.54"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "$62.54"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": false,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-10",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Total Row"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "right",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-9",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Total Block"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundColor": "#E8E8E8",
+                      "padding": {
+                        "top": {
+                          "$themeRef": "tokens.spacing.gap"
+                        },
+                        "right": {
+                          "$themeRef": "tokens.spacing.gap"
+                        },
+                        "bottom": {
+                          "$themeRef": "tokens.spacing.gap"
+                        },
+                        "left": {
+                          "$themeRef": "tokens.spacing.gap"
+                        }
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.top": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.right": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.bottom": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.left": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-21",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Returned to Card: $157.94"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Returned to Card: $157.94",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.body"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-10",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "Product Grid模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-grid-1",
+            "type": "grid",
+            "blockMeta": {
+              "blockType": "layout.grid",
+              "name": "Recommended Products"
+            },
+            "props": {
+              "columns": 3,
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              },
+              "cellWidthMode": "auto",
+              "cellHeightMode": "content-max"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "padding": {
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-11",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 1"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-3",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "brown jacket"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/32527462/pexels-photo-32527462.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-22",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Our Most Requested Jacket"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Our Most Requested Jacket",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-12",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 2"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-4",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "cozy slippers"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/12969102/pexels-photo-12969102.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-23",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Cozy Outdoor Slippers"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Cozy Outdoor Slippers",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-13",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 3"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-5",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "grey pants"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/15393441/pexels-photo-15393441.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-24",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Every. Damn. Day."
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Every. Damn. Day.",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-14",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 4"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-6",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "straw hat"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/16824522/pexels-photo-16824522.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-25",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Palm Leaf Fishing Hat"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Palm Leaf Fishing Hat",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-15",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 5"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-7",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "knit sweater"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/6630848/pexels-photo-6630848.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-26",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Stylish Knit Crewneck"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Stylish Knit Crewneck",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-16",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 6"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-8",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "quilted jacket"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/6334403/pexels-photo-6334403.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-27",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "The Swiss Army Knife of Jack…"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "The Swiss Army Knife of Jackets",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-17",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 7"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-9",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "blue hoodie"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/14447677/pexels-photo-14447677.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-28",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Our Bestselling Hoodie"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Our Bestselling Hoodie",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-18",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 8"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-10",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "black pullover"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/19733070/pexels-photo-19733070.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-29",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Cozy Polo Pullover"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Cozy Polo Pullover",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-19",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Item 9"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-image-11",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "brown boots"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "fixed",
+                      "height": "150px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/31278577/pexels-photo-31278577.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-30",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Rollable, Waterproof Boots"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Rollable, Waterproof Boots",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-gemini31-prohuckberry-template-stack-20",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "Footer模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "backgroundColor": "#252424",
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-icon-2",
+            "type": "icon",
+            "blockMeta": {
+              "blockType": "content.icon",
+              "name": "tree"
+            },
+            "props": {
+              "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/trees.svg",
+              "size": "24px",
+              "color": {
+                "$themeRef": "colors.surface"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "hug",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.color": {
+                "slotId": "colors.surface",
+                "mode": "theme",
+                "tokenPath": "colors.surface",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-31",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "The Huckberry Story"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "The Huckberry Story"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-32",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "©2021 Huckberry Inc. | 2901 …"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "©2021 Huckberry Inc. | 2901 South First St., Suite 200, Austin, TX 78704"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-gemini31-prohuckberry-template-row-11",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "Footer Links"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-33",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Web Version"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Web Version"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.caption"
+                  },
+                  "color": {
+                    "$themeRef": "colors.secondary"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.caption",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.caption",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.secondary",
+                    "mode": "theme",
+                    "tokenPath": "colors.secondary",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-34",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "|"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "|"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.caption"
+                  },
+                  "color": {
+                    "$themeRef": "colors.secondary"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.caption",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.caption",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.secondary",
+                    "mode": "theme",
+                    "tokenPath": "colors.secondary",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-35",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Email Frequency"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Email Frequency"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.caption"
+                  },
+                  "color": {
+                    "$themeRef": "colors.secondary"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.caption",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.caption",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.secondary",
+                    "mode": "theme",
+                    "tokenPath": "colors.secondary",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-36",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "|"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "|"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.caption"
+                  },
+                  "color": {
+                    "$themeRef": "colors.secondary"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.caption",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.caption",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.secondary",
+                    "mode": "theme",
+                    "tokenPath": "colors.secondary",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-gemini31-prohuckberry-template-text-37",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Unsubscribe"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Unsubscribe"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.caption"
+                  },
+                  "color": {
+                    "$themeRef": "colors.secondary"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.caption",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.caption",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.secondary",
+                    "mode": "theme",
+                    "tokenPath": "colors.secondary",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

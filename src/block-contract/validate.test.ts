@@ -27,8 +27,8 @@ function minimalTemplate(block: EmailBlock): EmailTemplate {
         props: {
           backgroundColor: "#fff",
           width: "600px",
-          padding: { mode: "unified", unified: "0" },
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+          padding: { top: "0", right: "0", bottom: "0", left: "0" },
+          border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
           gapMode: "fixed",
           gap: "0",
         },
@@ -72,8 +72,8 @@ describe("block-contract", () => {
       props: {
         backgroundColor: "#fff",
         width: "600px",
-        padding: { mode: "unified", unified: "24px" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "24px", right: "24px", bottom: "24px", left: "24px" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       },
@@ -101,7 +101,7 @@ describe("block-contract", () => {
         widthMode: "fill",
         heightMode: "fixed",
         height: "200px",
-        padding: { mode: "unified", unified: "8px" },
+        padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
         backgroundImage: {
           src: "https://example.com/grid-bg.jpg",
           link: "",
@@ -133,7 +133,7 @@ describe("block-contract", () => {
         widthMode: "fill",
         heightMode: "fixed",
         height: "200px",
-        padding: { mode: "unified", unified: "8px" },
+        padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
         backgroundImage: {
           src: "https://example.com/a.jpg",
           link: "",
@@ -157,7 +157,7 @@ describe("block-contract", () => {
         widthMode: "fill",
         heightMode: "fixed",
         height: "200px",
-        padding: { mode: "unified", unified: "8px" },
+        padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
         backgroundImage: {
           src: "https://example.com/a.jpg",
           link: "",
@@ -199,8 +199,8 @@ describe("block-contract", () => {
       props: {
         backgroundColor: "#fff",
         width: "600px",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gap: "0",
       },
       bindings: {},
@@ -224,8 +224,8 @@ describe("block-contract", () => {
       props: {
         backgroundColor: "#fff",
         width: "600px",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       },

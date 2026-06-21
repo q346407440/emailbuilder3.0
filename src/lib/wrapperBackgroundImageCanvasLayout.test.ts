@@ -10,7 +10,7 @@ describe("borderCssHasVisibleWidth", () => {
   it("0 宽描边视为不可见", () => {
     assert.equal(
       borderCssHasVisibleWidth(
-        borderToCss({ mode: "unified", width: "0", style: "solid", color: "#000" })
+        borderToCss({ style: "solid", color: "#000", top: "0", right: "0", bottom: "0", left: "0" })
       ),
       false
     );
@@ -19,7 +19,7 @@ describe("borderCssHasVisibleWidth", () => {
   it("正宽描边视为可见", () => {
     assert.equal(
       borderCssHasVisibleWidth(
-        borderToCss({ mode: "unified", width: "3px", style: "solid", color: "#DC2626" })
+        borderToCss({ style: "solid", color: "#DC2626", top: "3px", right: "3px", bottom: "3px", left: "3px" })
       ),
       true
     );
@@ -33,7 +33,7 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
         widthMode: "fill",
         heightMode: "fixed",
         height: "100px",
-        padding: { mode: "unified", unified: "10px" },
+        padding: { top: "10px", right: "10px", bottom: "10px", left: "10px" },
         contentAlign: { horizontal: "left", vertical: "top" },
         backgroundImage: {
           src: "https://example.com/x.jpg",
@@ -43,7 +43,7 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
       },
     });
     assert.ok(layout);
-    assert.equal(layout.overlayPaddingCss, "10px");
+    assert.equal(layout.overlayPaddingCss, "10px 10px 10px 10px");
     assert.equal(layout.outerBoxCss.padding, undefined);
     assert.equal(layout.fixedCanvasHeight, "100px");
     assert.equal(layout.overlayVerticalValign, "top");
@@ -55,7 +55,7 @@ describe("resolveWrapperBackgroundImageCanvasLayout", () => {
         widthMode: "fill",
         heightMode: "fixed",
         height: "100px",
-        borderRadius: { mode: "unified", radius: "12px" },
+        borderRadius: { topLeft: "12px", topRight: "12px", bottomRight: "12px", bottomLeft: "12px" },
         contentAlign: { horizontal: "left", vertical: "top" },
         backgroundImage: {
           src: "https://example.com/x.jpg",

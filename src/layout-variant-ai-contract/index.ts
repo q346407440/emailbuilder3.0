@@ -8,7 +8,9 @@ export {
 export {
   AI_PIPELINE_UI_STEPS_INITIAL,
   MANUAL_RESTORE_MJS_UI_STEPS_INITIAL,
+  RESTORE_AST_UI_STEPS_INITIAL,
   buildPendingManualRestoreSteps,
+  buildPendingRestoreAstSteps,
   buildSectionPlanSteps,
   reduceAiPipelineProgress,
   type AiPipelineProgressPayload,
@@ -16,6 +18,13 @@ export {
   type AiPipelineUiStep,
   type AiStepUiState,
 } from "./progress";
+export {
+  LAYOUT_VARIANT_AI_FROM_IMAGE_PIPELINES,
+  MJS_PATCH_PIPELINE_RESERVED_MESSAGE,
+  isMjsPatchPipelineReserved,
+  parseLayoutVariantAiFromImagePipeline,
+  type LayoutVariantAiFromImagePipeline,
+} from "./aiFromImagePipeline";
 export {
   AI_PIPELINE_ERROR_CODES,
   AiPipelineError,
@@ -46,6 +55,39 @@ export {
   type ImageHeroLayoutTier,
   type ImageSlotRole,
 } from "./compactIr";
+export {
+  buildLlmProfileOptions,
+  coerceLlmProfileSelection,
+  getDefaultThinkingForModel,
+  getThinkingOptionsForModel,
+  llmModelProfileKey,
+  parseLlmPipelineVendor,
+  validateLlmProfileSelection,
+  LLM_VENDOR_OPTIONS,
+  GEMINI_MODEL_CATALOG,
+  DOUBAO_MODEL_CATALOG,
+  DOUBAO_JSON_SCHEMA_MODEL_IDS,
+  DOUBAO_SEED_20_REASONING_EFFORT_OPTIONS,
+  DOUBAO_LEGACY_THINKING_OPTIONS,
+  DOUBAO_THINKING_OPTIONS,
+  isDoubaoSeed20CatalogModel,
+  GEMINI_35_FLASH_THINKING_OPTIONS,
+  GEMINI_31_PRO_THINKING_OPTIONS,
+  GEMINI_31_FLASH_LITE_THINKING_OPTIONS,
+  type LlmProfileSelection,
+  type LlmProfileOptionsPayload,
+  type LlmPipelineVendor,
+  type GeminiThinkingLevel,
+  type DoubaoThinkingType,
+  type DoubaoReasoningEffort,
+  type DoubaoThinkingMode,
+} from "./llmProfileCatalog";
+export {
+  DEFAULT_LLM_GENERATION_PARAMS,
+  mergeLlmGenerationParams,
+  readDefaultLlmGenerationParams,
+  type LlmGenerationParams,
+} from "./llmGenerationParams";
 export {
   PIPELINE_COMPILE_INVARIANTS,
   PIPELINE_COMPILE_PHASE_SUMMARY,

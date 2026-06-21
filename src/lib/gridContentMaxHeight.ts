@@ -10,13 +10,36 @@ export function measureGridRowContentMaxHeights(host: HTMLTableElement): number[
 
   for (const tr of dataRows) {
     const cells = Array.from(tr.querySelectorAll<HTMLElement>("td.email-preview-grid-slot"));
-    let rowMax = 0;
-    for (const cell of cells) {
+    if (cells.length === 0) {
+      rowMaxes.push(0);
+      continue;
+    }
+    // 先把整行所有单元格一起放开，再读 scrollHeight：
+    // 逐个放开会被仍锁在旧高度的兄弟单元格把行撑住，读回的是被拉伸的行高而非内容高，
+    // 导致测量值「只增不减」的棘轮（改内容/改 gap/拖拽占位条都会逐次放大行高）。
+    const saved = cells.map((cell) => {
       const prevHeight = cell.style.height;
       const prevMinHeight = cell.style.minHeight;
       cell.style.height = "auto";
       cell.style.minHeight = "0";
+      return { cell, prevHeight, prevMinHeight };
+    });
+    // 拖拽插入占位（.email-preview-grid-cell-insert）是临时 UI，不计入内容高。
+    const hiddenInserts = Array.from(
+      tr.querySelectorAll<HTMLElement>(".email-preview-grid-cell-insert")
+    ).map((el) => {
+      const prevDisplay = el.style.display;
+      el.style.display = "none";
+      return { el, prevDisplay };
+    });
+
+    let rowMax = 0;
+    for (const { cell } of saved) {
       rowMax = Math.max(rowMax, Math.round(cell.scrollHeight));
+    }
+
+    for (const { el, prevDisplay } of hiddenInserts) el.style.display = prevDisplay;
+    for (const { cell, prevHeight, prevMinHeight } of saved) {
       cell.style.height = prevHeight;
       cell.style.minHeight = prevMinHeight;
     }

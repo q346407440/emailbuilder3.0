@@ -105,6 +105,147 @@ function insertRepeatManagedChildAfter(
   }
 }
 
+/** 向 repeat 宿主 children 插入新块后，同步 prototypeChildIds / fallbackChildIds。 */
+export function finalizeRepeatHostChildInsert(host: EmailBlock, newChildId: string): void {
+  const repeat = host.repeat;
+  if (!repeat || !isRepeatHostBlock(host)) return;
+  if (repeat.prototypeChildIds.includes(newChildId) || repeat.fallbackChildIds.includes(newChildId)) {
+    return;
+  }
+
+  const children = host.children ?? [];
+  const newIdx = children.indexOf(newChildId);
+  if (newIdx < 0) return;
+
+  const protoIndices = repeat.prototypeChildIds
+    .map((id) => children.indexOf(id))
+    .filter((i) => i >= 0)
+    .sort((a, b) => a - b);
+
+  if (protoIndices.length === 0) {
+    host.repeat = {
+      ...repeat,
+      prototypeChildIds: [...repeat.prototypeChildIds, newChildId],
+    };
+    return;
+  }
+
+  const regionStart = protoIndices[0]!;
+  const regionEnd = protoIndices[protoIndices.length - 1]!;
+  if (newIdx < regionStart || newIdx > regionEnd + 1) {
+    return;
+  }
+
+  let afterId: string | null = null;
+  for (let i = newIdx - 1; i >= 0; i--) {
+    const cid = children[i]!;
+    if (repeat.prototypeChildIds.includes(cid)) {
+      afterId = cid;
+      break;
+    }
+  }
+
+  if (afterId) {
+    insertRepeatManagedChildAfter(host, afterId, newChildId);
+  } else {
+    host.repeat = {
+      ...repeat,
+      prototypeChildIds: [newChildId, ...repeat.prototypeChildIds],
+    };
+  }
+  syncRepeatManagedChildOrder(host);
+}
+
+function removeRepeatManagedChildRef(host: EmailBlock, childId: string): void {
+  if (!host.repeat) return;
+  const prototypeChildIds = host.repeat.prototypeChildIds.filter((id) => id !== childId);
+  const fallbackChildIds = host.repeat.fallbackChildIds.filter((id) => id !== childId);
+  if (
+    prototypeChildIds.length !== host.repeat.prototypeChildIds.length ||
+    fallbackChildIds.length !== host.repeat.fallbackChildIds.length
+  ) {
+    host.repeat = {
+      ...host.repeat,
+      prototypeChildIds,
+      fallbackChildIds,
+    };
+  }
+}
+
+export function moveBlockToParentIndex(
+  template: EmailTemplate,
+  blockId: string,
+  targetParentId: string,
+  targetInsertIndex: number
+): EmailTemplate {
+  if (blockId === template.rootBlockId) {
+    throw new Error("不能移动邮件根");
+  }
+  const block = template.blocks[blockId];
+  if (!block?.parentId) {
+    throw new Error("当前区块不可移动");
+  }
+  const targetParent = template.blocks[targetParentId];
+  if (!targetParent || !isCanvasInsertParentBlock(targetParent)) {
+    throw new Error("目标父区块不支持容纳子级");
+  }
+
+  const next = clone(template);
+  const moving = next.blocks[blockId];
+  if (!moving?.parentId) throw new Error("当前区块不可移动");
+
+  const oldParentId = moving.parentId;
+  const oldParent = next.blocks[oldParentId];
+  if (!oldParent?.children) throw new Error("父级区块不存在");
+
+  const oldChildren = [...oldParent.children];
+  const oldIndex = oldChildren.indexOf(blockId);
+  if (oldIndex < 0) throw new Error("区块不在父级 children 中");
+
+  const newParent = next.blocks[targetParentId];
+  if (!newParent) throw new Error("目标父区块不存在");
+
+  let insertAt = targetInsertIndex;
+  if (insertAt < 0 || insertAt > (newParent.children?.length ?? 0)) {
+    throw new Error("插入位置无效");
+  }
+
+  if (oldParentId === targetParentId) {
+    if (insertAt > oldIndex) insertAt -= 1;
+    if (insertAt === oldIndex) {
+      throw new Error("位置未变化");
+    }
+  }
+
+  oldChildren.splice(oldIndex, 1);
+  oldParent.children = oldChildren;
+  if (isRepeatHostBlock(oldParent)) {
+    removeRepeatManagedChildRef(oldParent, blockId);
+    syncRepeatManagedChildOrder(oldParent);
+  }
+
+  const newChildren = [...(newParent.children ?? [])];
+  newChildren.splice(insertAt, 0, blockId);
+  newParent.children = newChildren;
+  moving.parentId = targetParentId;
+
+  if (isRepeatHostBlock(newParent)) {
+    finalizeRepeatHostChildInsert(newParent, blockId);
+    syncRepeatManagedChildOrder(newParent);
+  }
+
+  return next;
+}
+
+function isCanvasInsertParentBlock(block: EmailBlock): boolean {
+  return (
+    block.type === "emailRoot" ||
+    block.type === "layout" ||
+    block.type === "grid" ||
+    block.type === "image"
+  );
+}
+
 export function moveBlockAmongSiblings(
   template: EmailTemplate,
   blockId: string,

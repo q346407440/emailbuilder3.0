@@ -52,7 +52,7 @@ let seq = 0;
 const nid = (suffix) => `${P}-${suffix}-${++seq}`.replace(/-+/g, '-');
 
 function borderNone() {
-  return { mode: 'unified', width: '0', style: 'solid', color: 'rgba(0,0,0,0)' };
+  return { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
 }
 
 function themeRef(path) {
@@ -70,6 +70,13 @@ function themeBinding(fieldPath, tokenPath) {
   };
 }
 
+function themeBindingBorderRadius(fieldPrefix, tokenPath) {
+  return ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'].reduce(
+    (acc, corner) => ({ ...acc, ...themeBinding(`${fieldPrefix}.${corner}`, tokenPath) }),
+    {}
+  );
+}
+
 function sectionShell(id, name, opts = {}) {
   const {
     bg = null,
@@ -79,13 +86,12 @@ function sectionShell(id, name, opts = {}) {
   } = opts;
   const padding = pageInline
     ? {
-        mode: 'separate',
         top: padTop,
         right: themeRef('tokens.spacing.pageInline'),
         bottom: padBottom,
         left: themeRef('tokens.spacing.pageInline'),
       }
-    : { mode: 'unified', unified: padBottom === '0' ? '0' : '0 0 20px 0' };
+    : { top: '0', right: '0', bottom: padBottom === '0' ? '0' : '20px', left: '0' };
 
   const bindings = {};
   if (pageInline) {
@@ -102,7 +108,7 @@ function sectionShell(id, name, opts = {}) {
     widthMode: 'fill',
     heightMode: 'hug',
     border: borderNone(),
-    borderRadius: { mode: 'unified', radius: '0' },
+    borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     padding,
   };
   if (bg) ws.backgroundColor = bg;
@@ -129,7 +135,7 @@ function coverImage(id, src, alt, height) {
       widthMode: 'fill',
       heightMode: 'fixed',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       height,
       backgroundImage: {
         src,
@@ -137,7 +143,7 @@ function coverImage(id, src, alt, height) {
         fit: 'cover',
         position: 'center',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       },
     },
   };
@@ -173,7 +179,7 @@ function textBlock(id, name, content, opts = {}) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings,
   };
@@ -192,7 +198,7 @@ function buttonBlock(id, name, label, opts = {}) {
     ...themeBinding('props.buttonStyle.fontSize', 'tokens.typography.body'),
   };
   if (bindRadius && radius?.$themeRef) {
-    Object.assign(bindings, themeBinding('props.buttonStyle.borderRadius.radius', radiusPath));
+    Object.assign(bindings, themeBindingBorderRadius('props.buttonStyle.borderRadius', radiusPath));
   }
   return {
     id,
@@ -207,7 +213,7 @@ function buttonBlock(id, name, label, opts = {}) {
         textColor,
         fontSize: themeRef('tokens.typography.caption'),
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius },
+        borderRadius: { topLeft: radius, topRight: radius, bottomRight: radius, bottomLeft: radius },
         bold: true,
         italic: false,
       },
@@ -217,7 +223,7 @@ function buttonBlock(id, name, label, opts = {}) {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings: {
       ...bindings,
@@ -237,7 +243,7 @@ function iconBlock(id, src, color, size = '24px') {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
   };
 }
@@ -252,7 +258,7 @@ function dividerBlock(id, color = COLORS.white) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       contentAlign: { horizontal: 'center', vertical: 'top' },
     },
   };
@@ -269,7 +275,7 @@ function productCell(id, imgSrc, title, idx) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children: [
       coverImage(`${id}-img`, imgSrc, `Product ${idx + 1} lifestyle`, '200px'),
@@ -310,7 +316,7 @@ function trustCol(id, iconSrc, lines) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children,
   };
@@ -346,7 +352,6 @@ function buildS2() {
     padBottom: '32px',
   });
   promo.wrapperStyle.padding = {
-    mode: 'separate',
     top: '32px',
     right: '24px',
     bottom: '32px',
@@ -363,7 +368,7 @@ function buildS2() {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings: themeBinding('props.gap', 'tokens.spacing.gap'),
     children: [
@@ -420,8 +425,8 @@ function buildS3() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
-        padding: { mode: 'unified', unified: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
       },
       children: PRODUCTS.map((title, i) =>
         productCell(`${P}-s3-p${i}`, PEXELS.products[i], title, i),
@@ -438,7 +443,6 @@ function buildS4() {
     padBottom: '24px',
   });
   sec.wrapperStyle.padding = {
-    mode: 'separate',
     top: '24px',
     right: '16px',
     bottom: '24px',
@@ -455,8 +459,8 @@ function buildS4() {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
-      padding: { mode: 'unified', unified: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
     },
     children: [
       trustCol(`${P}-s4-c1`, ICON.leaf, ['Clean Fabrics + CA Made']),
@@ -474,7 +478,6 @@ function buildS5() {
     padBottom: '24px',
   });
   sec.wrapperStyle.padding = {
-    mode: 'separate',
     top: '16px',
     right: '24px',
     bottom: '24px',
@@ -491,7 +494,7 @@ function buildS5() {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children: [
       iconBlock(`${P}-s5-ig`, ICON.instagram, COLORS.white, '22px'),
@@ -513,7 +516,7 @@ function buildS5() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       },
       children: [
         textBlock(`${P}-s5-brand`, '标题', 'IMBŌDHI', {
@@ -574,7 +577,7 @@ const template = {
     props: {
       backgroundColor: COLORS.cream,
       width: '600px',
-      padding: { mode: 'unified', unified: '0' },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: borderNone(),
       gapMode: 'fixed',
       gap: '0',

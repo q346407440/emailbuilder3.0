@@ -1,39 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import type { InputRef } from "@shoplazza/sds";
+import { useEffect, useState } from "react";
 import type { BlockCatalogEntry } from "../../lib/blockDefaults";
-import type { SectionCatalogItem } from "../../lib/sectionCatalog";
 import {
-  ShopDangerButton,
-  ShopInput,
-  ShopPrimaryButton,
-  ShopSecondaryButton,
-} from "./ShopFormControls";
+  BLOCK_TYPE_SHORT,
+  sortBlockCatalogEntriesForInsertUi,
+} from "../../lib/blockInsertUiCatalog";
+import type { SectionCatalogItem } from "../../lib/sectionCatalog";
+import { ShopSecondaryButton } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
+import { SectionModuleRow } from "./SectionModuleRow";
 
 export type InsertModalTab = "blocks" | "sections";
-
-/** 与 PRD §8.5 一致的展示顺序（非字母序，便于运营扫读）。 */
-const BLOCK_INSERT_UI_ORDER: readonly string[] = [
-  "action.button",
-  "separator.divider",
-  "indicator.progress",
-  "layout.grid",
-  "content.icon",
-  "content.image",
-  "content.text",
-  "layout.container",
-];
-
-const BLOCK_TYPE_SHORT: Record<string, string> = {
-  "action.button": "按钮",
-  "separator.divider": "分割",
-  "indicator.progress": "进度",
-  "layout.grid": "栅格",
-  "content.icon": "图标",
-  "content.image": "图片",
-  "content.text": "文本",
-  "layout.container": "容器",
-};
 
 type Props = {
   visible: boolean;
@@ -47,208 +23,6 @@ type Props = {
   onRenameSection: (masterId: string, name: string) => Promise<void>;
   onDeleteSection: (masterId: string) => Promise<void>;
 };
-
-function SectionModuleRow({
-  item,
-  disabled,
-  onPick,
-  onRenameSection,
-  onDeleteSection,
-}: {
-  item: SectionCatalogItem;
-  disabled?: boolean;
-  onPick: () => void;
-  onRenameSection: (masterId: string, name: string) => Promise<void>;
-  onDeleteSection: (masterId: string) => Promise<void>;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [nameDraft, setNameDraft] = useState(item.name);
-  const [renameError, setRenameError] = useState<string | null>(null);
-  const [renaming, setRenaming] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const inputRef = useRef<InputRef>(null);
-
-  useEffect(() => {
-    if (!editing) {
-      setNameDraft(item.name);
-      setRenameError(null);
-    }
-  }, [item.name, editing]);
-
-  useEffect(() => {
-    if (editing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [editing]);
-
-  const rowDisabled = disabled || renaming || deleting;
-
-  const startEdit = () => {
-    if (rowDisabled || deleteConfirm) return;
-    setNameDraft(item.name);
-    setRenameError(null);
-    setEditing(true);
-  };
-
-  const cancelEdit = () => {
-    setEditing(false);
-    setNameDraft(item.name);
-    setRenameError(null);
-  };
-
-  const submitRename = async () => {
-    const trimmed = nameDraft.trim();
-    if (!trimmed) {
-      setRenameError("名称不能为空");
-      return;
-    }
-    if (trimmed === item.name) {
-      cancelEdit();
-      return;
-    }
-    setRenaming(true);
-    setRenameError(null);
-    try {
-      await onRenameSection(item.masterId, trimmed);
-      setEditing(false);
-    } catch (e) {
-      setRenameError(e instanceof Error ? e.message : "重命名失败");
-    } finally {
-      setRenaming(false);
-    }
-  };
-
-  const confirmDelete = async () => {
-    setDeleting(true);
-    try {
-      await onDeleteSection(item.masterId);
-      setDeleteConfirm(false);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const deleteConfirmMessage = `确定从模块库移除「${item.name}」？将逻辑删除该模块（masterId 保留），无法再从库中插入；当前邮件里已插入的实例不受影响。`;
-
-  if (deleteConfirm) {
-    return (
-      <li
-        className="canvas-insert-modal__module-row canvas-insert-modal__module-row--delete"
-        aria-live="polite"
-      >
-        <p className="canvas-insert-modal__module-delete-text">{deleteConfirmMessage}</p>
-        <div className="canvas-insert-modal__module-delete-actions shop-action-button-group">
-          <ShopSecondaryButton disabled={deleting} onClick={() => setDeleteConfirm(false)}>
-            取消
-          </ShopSecondaryButton>
-          <ShopDangerButton
-            disabled={deleting}
-            loading={deleting}
-            onClick={() => void confirmDelete()}
-          >
-            删除
-          </ShopDangerButton>
-        </div>
-      </li>
-    );
-  }
-
-  return (
-    <li
-      className={
-        editing
-          ? "canvas-insert-modal__module-row canvas-insert-modal__module-row--editing"
-          : "canvas-insert-modal__module-row"
-      }
-    >
-      {editing ? (
-        <div className="canvas-insert-modal__module-edit">
-          <label className="canvas-insert-modal__module-edit-label" htmlFor={`section-name-${item.masterId}`}>
-            模块名称
-          </label>
-          <ShopInput
-            id={`section-name-${item.masterId}`}
-            ref={inputRef}
-            value={nameDraft}
-            maxLength={80}
-            disabled={renaming}
-            onChange={(e) => {
-              setNameDraft(e.target.value);
-              if (renameError) setRenameError(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                void submitRename();
-              }
-              if (e.key === "Escape") {
-                e.preventDefault();
-                cancelEdit();
-              }
-            }}
-          />
-          {renameError ? (
-            <span className="canvas-insert-modal__module-edit-error">{renameError}</span>
-          ) : null}
-          <div className="canvas-insert-modal__module-edit-actions shop-action-button-group">
-            <ShopSecondaryButton disabled={renaming} onClick={cancelEdit}>
-              取消
-            </ShopSecondaryButton>
-            <ShopPrimaryButton
-              disabled={renaming}
-              loading={renaming}
-              onClick={() => void submitRename()}
-            >
-              保存
-            </ShopPrimaryButton>
-          </div>
-        </div>
-      ) : (
-        <>
-          <button
-            type="button"
-            className="canvas-insert-modal__module-main"
-            disabled={rowDisabled}
-            onClick={onPick}
-          >
-            <span
-              className="canvas-insert-modal__module-name"
-              onDoubleClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startEdit();
-              }}
-            >
-              {item.name}
-            </span>
-          </button>
-          <div className="canvas-insert-modal__module-ops shop-action-button-group">
-            <ShopPrimaryButton
-              disabled={rowDisabled}
-              onClick={(e) => {
-                e.stopPropagation();
-                startEdit();
-              }}
-            >
-              重命名
-            </ShopPrimaryButton>
-            <ShopDangerButton
-              disabled={rowDisabled}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeleteConfirm(true);
-              }}
-            >
-              删除
-            </ShopDangerButton>
-          </div>
-        </>
-      )}
-    </li>
-  );
-}
 
 export function CanvasInsertBlockModal({
   visible,
@@ -268,13 +42,7 @@ export function CanvasInsertBlockModal({
     if (visible) setTab("blocks");
   }, [visible]);
 
-  const sortedBlocks = [...entries].sort((a, b) => {
-    const order = new Map(BLOCK_INSERT_UI_ORDER.map((id, i) => [id, i]));
-    const ai = order.get(a.masterId) ?? 99;
-    const bi = order.get(b.masterId) ?? 99;
-    if (ai !== bi) return ai - bi;
-    return a.name.localeCompare(b.name, "zh-CN");
-  });
+  const sortedBlocks = sortBlockCatalogEntriesForInsertUi(entries);
 
   const sortedSections = [...sections].sort((a, b) =>
     a.name.localeCompare(b.name, "zh-CN")
@@ -365,7 +133,7 @@ export function CanvasInsertBlockModal({
               </p>
             </div>
           ) : (
-            <ul className="canvas-insert-modal__module-list">
+            <ul className="section-module-list">
               {sortedSections.map((item) => (
                 <SectionModuleRow
                   key={item.masterId}

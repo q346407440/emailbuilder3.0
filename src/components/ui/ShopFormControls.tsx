@@ -6,20 +6,22 @@ import {
   useState,
   type ChangeEvent,
   type ComponentPropsWithoutRef,
+  type ComponentRef,
+  type CSSProperties,
   type ElementRef,
   type ReactElement,
   type ReactNode,
 } from "react";
-import { Button, Input, Select } from "@shoplazza/sds";
-import type { ButtonProps } from "@shoplazza/sds";
-import type { InputProps, InputRef } from "@shoplazza/sds";
-import type { SelectProps } from "@shoplazza/sds";
+import { Button, Input, Segmented, Select, Space } from "antd";
+import type { ButtonProps } from "antd";
+import type { InputProps, InputRef } from "antd/es/input";
+import type { SegmentedProps } from "antd/es/segmented";
+import type { SelectProps } from "antd/es/select";
 
 const fullWidth = { width: "100%" as const };
 
 /**
- * SDS Input：默认铺满容器宽度，便于 Inspector / 顶栏等表单布局。
- * 与 Shoplazza 后台折扣模块输入框（discount-input-affix-wrapper）一致的观感由 SDS 全局变量保证。
+ * Ant Design Input：默认铺满容器宽度，便于 Inspector / 顶栏等表单布局。
  */
 export const ShopInput = forwardRef<InputRef, InputProps>(function ShopInput(
   { style, ...rest },
@@ -32,16 +34,17 @@ type ShopInputWithSuffixProps = InputProps & {
   suffixText?: ReactNode;
 };
 
-/** 与 Shoplazza 后台一致：输入框右侧可追加补充说明（如 0/100、px、%）。 */
+/** 输入框右侧可追加补充说明（如 0/100、px、%）。 */
 export const ShopInputWithSuffix = forwardRef<InputRef, ShopInputWithSuffixProps>(
   function ShopInputWithSuffix({ style, suffixText, ...rest }, ref) {
+    if (suffixText == null || suffixText === false) {
+      return <Input ref={ref} {...rest} style={{ ...fullWidth, ...style }} />;
+    }
     return (
-      <Input
-        ref={ref}
-        {...rest}
-        addonAfter={suffixText}
-        style={{ ...fullWidth, ...style }}
-      />
+      <Space.Compact className="shop-input-compact" style={{ ...fullWidth, ...style }}>
+        <Input ref={ref} {...rest} />
+        <span className="shop-input-compact__suffix">{suffixText}</span>
+      </Space.Compact>
     );
   }
 );
@@ -96,7 +99,6 @@ export const ShopUnitInput = forwardRef<InputRef, ShopUnitInputProps>(function S
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.trim();
     if (!raw) {
-      // 禁止向父组件提交空串，避免画布/校验拿到非法 CSS（如 gap、字号为空）
       const d = displayValue.trim();
       if (d) {
         setDraftValue(d);
@@ -186,21 +188,67 @@ export const ShopTextArea = forwardRef<
   return <Input.TextArea ref={ref} {...rest} style={{ ...fullWidth, ...style }} />;
 });
 
+type ShopSelectExtraProps = {
+  popupMatchSelectWidth?: boolean;
+  dropdownRender?: (menu: ReactElement) => ReactElement;
+  /** @deprecated 请用 `styles.popup.root` */
+  dropdownStyle?: CSSProperties;
+  /** @deprecated 请用 `onOpenChange` */
+  onDropdownVisibleChange?: (open: boolean) => void;
+};
+
 function ShopSelectInner<ValueType = unknown>(
-  props: SelectProps<ValueType> & {
-    popupMatchSelectWidth?: boolean;
-    dropdownRender?: (menu: ReactElement) => ReactElement;
-  }
+  props: SelectProps<ValueType> & ShopSelectExtraProps
 ) {
-  const { style, ...rest } = props;
-  return <Select<ValueType> {...rest} style={{ ...fullWidth, ...style }} />;
+  const {
+    style,
+    dropdownStyle,
+    onDropdownVisibleChange,
+    styles,
+    onOpenChange,
+    ...rest
+  } = props;
+  const mergedStyles =
+    dropdownStyle != null
+      ? {
+          ...styles,
+          popup: {
+            ...styles?.popup,
+            root: { ...dropdownStyle, ...styles?.popup?.root },
+          },
+        }
+      : styles;
+
+  return (
+    <Select<ValueType>
+      {...rest}
+      styles={mergedStyles}
+      onOpenChange={onOpenChange ?? onDropdownVisibleChange}
+      style={{ ...fullWidth, ...style }}
+    />
+  );
 }
 
-/** SDS Select：替换原生 &lt;select&gt;，用法与 Select 相同（含 ShopSelect.Option）。 */
+/** Ant Design Select：用法与 Select 相同（含 ShopSelect.Option）。 */
 export const ShopSelect = Object.assign(ShopSelectInner, {
   Option: Select.Option,
   OptGroup: Select.OptGroup,
 });
+
+/** Ant Design Segmented：默认 block 铺满容器，用于 Inspector 等表单分段切换。 */
+export function ShopSegmented<ValueType extends string | number>(
+  props: SegmentedProps<ValueType>
+) {
+  const { style, block = true, className, ...rest } = props;
+  return (
+    <Segmented<ValueType>
+      block={block}
+      className={joinClassNames("shop-segmented", className)}
+      style={{ ...fullWidth, ...style }}
+      {...rest}
+    />
+  );
+}
 
 type ShopActionButtonProps = Omit<ButtonProps, "type">;
 
@@ -209,7 +257,7 @@ function joinClassNames(...parts: Array<string | undefined | false>): string {
 }
 
 /** 企业级文字链主操作（确定、保存、重命名等，主题蓝）。 */
-export const ShopPrimaryButton = forwardRef<HTMLElement, ShopActionButtonProps>(
+export const ShopPrimaryButton = forwardRef<ComponentRef<typeof Button>, ShopActionButtonProps>(
   function ShopPrimaryButton({ className, htmlType = "button", ...rest }, ref) {
     return (
       <Button
@@ -224,7 +272,7 @@ export const ShopPrimaryButton = forwardRef<HTMLElement, ShopActionButtonProps>(
 );
 
 /** 企业级文字链次级操作（取消等，中性灰字）。 */
-export const ShopSecondaryButton = forwardRef<HTMLElement, ShopActionButtonProps>(
+export const ShopSecondaryButton = forwardRef<ComponentRef<typeof Button>, ShopActionButtonProps>(
   function ShopSecondaryButton({ className, htmlType = "button", ...rest }, ref) {
     return (
       <Button
@@ -239,7 +287,7 @@ export const ShopSecondaryButton = forwardRef<HTMLElement, ShopActionButtonProps
 );
 
 /** 企业级文字链危险操作（删除、确认删除等，警示红）。 */
-export const ShopDangerButton = forwardRef<HTMLElement, ShopActionButtonProps>(
+export const ShopDangerButton = forwardRef<ComponentRef<typeof Button>, ShopActionButtonProps>(
   function ShopDangerButton({ className, htmlType = "button", ...rest }, ref) {
     return (
       <Button
@@ -252,3 +300,5 @@ export const ShopDangerButton = forwardRef<HTMLElement, ShopActionButtonProps>(
     );
   }
 );
+
+export type { InputRef };

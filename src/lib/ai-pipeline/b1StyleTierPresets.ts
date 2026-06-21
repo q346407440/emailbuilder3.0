@@ -33,8 +33,9 @@ export const B1_TIER_ENUMS = {
 
 /** §7.1.1 管线兜底整表（偶数档）。 */
 export const AI_PIPELINE_B1_FALLBACK_TOKENS = {
-  colors: {
+    colors: {
     primary: "#111827",
+    accent: "#1A1A1A",
     secondary: "#6B7280",
     surface: "#FFFFFF",
   },

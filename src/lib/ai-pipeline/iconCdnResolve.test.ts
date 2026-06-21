@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  resolveIconCdnCandidates,
   resolveIconCdnUrl,
   resolveSlugInIconIndex,
   type IconCdnIndex,
@@ -60,5 +61,26 @@ describe("resolveIconCdnUrl", () => {
     assert.ok(r);
     assert.match(r.src, /\/google\.svg$/);
     assert.equal(r.usedFallback, true);
+  });
+});
+
+describe("resolveIconCdnCandidates", () => {
+  it("首个候选与 resolveIconCdnUrl 一致（主解析结果优先）", () => {
+    const candidates = resolveIconCdnCandidates("tabler", "package-2", 5);
+    const primary = resolveIconCdnUrl("tabler", "package-2");
+    assert.ok(primary);
+    assert.ok(candidates.length >= 1);
+    assert.equal(candidates[0].src, primary.src);
+  });
+
+  it("不超过 limit，且 src 去重", () => {
+    const candidates = resolveIconCdnCandidates("tabler", "package", 3);
+    assert.ok(candidates.length <= 3);
+    const srcs = candidates.map((c) => c.src);
+    assert.equal(new Set(srcs).size, srcs.length);
+  });
+
+  it("未知 pack 返回空数组", () => {
+    assert.deepEqual(resolveIconCdnCandidates("unknown-pack", "package", 5), []);
   });
 });

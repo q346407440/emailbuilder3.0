@@ -112,7 +112,7 @@ description: >-
 
 - **内容与容器四边（至少左右）有内边距**；标题、双列 grid、文案栈等 **不要** 顶在壳的 `border` / 圆角内侧。  
 - **禁止** 为省事把模块壳 **`wrapperStyle.padding` 左右设为 `0`**，指望 **`pageInline`** 在根上「顺带」缩进——根 **`pageInline`** 只解决 **邮件整体相对画布** 的边距，**不会** 在壳内再缩一层。  
-- **推荐**：模块壳 **`padding` 分轴**——JSON 用 **`mode: "separate"`**，上下绑 **`tokens.spacing.section`**、左右绑 **`tokens.spacing.gap`**（与 **`member-welcome` 模块壳同类写法）；**勿**在 **`unified`** 里写 `"8px 0 0 0"` / `"28px 24px"`（见 **`email-template-restore-check` §21**）。子块上零散 `8px` 补丁应收敛到壳。  
+- **推荐**：模块壳 **`padding` 分轴**——JSON 用 **`{ top, right, bottom, left }` 四边平铺**，上下绑 **`tokens.spacing.section`**、左右绑 **`tokens.spacing.gap`**（与 **`member-welcome` 模块壳同类写法）；**禁止** legacy `mode: "separate"` / `unified` 与 CSS 多值简写（见 **`email-template-restore-check` §21**）。子块上零散 `8px` 补丁应收敛到壳。  
 - **间距上限**：**`tokens.spacing.section|gap|pageInline`** 与容器 **`padding` 四边均 ≤24px**（见 **`email-template-restore-check` §19**）；勿用 28/32/40px 撑版心。  
 - **全宽模块**（如贴边头图）：可左右 `0`，但壳内仍须用 **padding / contentAlign** 保证叠字、角标不贴死边；见 **`email-template-restore-check`** 底图叠放条目。
 

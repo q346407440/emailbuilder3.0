@@ -16,7 +16,7 @@ export type LlmResponseFormat = {
   };
 };
 
-/** LLM 调用端口（MVP：豆包；单测：mock）。 */
+/** LLM 调用端口；业务层只依赖 complete()，厂商适配见 adapters/ 与 createLlmClient。 */
 export type LlmClient = {
   complete(messages: LlmMessage[], responseFormat?: LlmResponseFormat): Promise<string>;
 };

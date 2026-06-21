@@ -3,7 +3,25 @@ import { describe, it } from "node:test";
 import {
   buildInspectorTabAvailability,
   resolveInspectorTabForContext,
+  shouldShowInspectorRepeatRegionPanel,
 } from "./inspectorTabPreference";
+
+describe("shouldShowInspectorRepeatRegionPanel", () => {
+  it("仅 repeat 宿主且已选中时展示", () => {
+    assert.equal(
+      shouldShowInspectorRepeatRegionPanel({ type: "layout" } as never, true),
+      true
+    );
+    assert.equal(
+      shouldShowInspectorRepeatRegionPanel({ type: "text" } as never, true),
+      false
+    );
+    assert.equal(
+      shouldShowInspectorRepeatRegionPanel({ type: "layout" } as never, false),
+      false
+    );
+  });
+});
 
 describe("buildInspectorTabAvailability", () => {
   it("普通区块含列表与显隐", () => {
@@ -35,7 +53,7 @@ describe("resolveInspectorTabForContext", () => {
   });
 
   it("偏好 Tab 不可用时回退样式", () => {
-    const canvasAvailability = buildInspectorTabAvailability(true, "emailRoot", false);
-    assert.equal(resolveInspectorTabForContext("list", canvasAvailability), "style");
+    const rootPanelAvailability = buildInspectorTabAvailability(true, "emailRoot", false);
+    assert.equal(resolveInspectorTabForContext("list", rootPanelAvailability), "style");
   });
 });

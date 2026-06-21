@@ -6,7 +6,7 @@ import { logicalDeleteConfirmOptions } from "../../lib/logicalDeleteConfirm";
 import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
 import { useConfirmDialog } from "./ConfirmDialogProvider";
 import { TopbarResourceField } from "./TopbarResourceField";
-import { TOPBAR_RESOURCE_DROPDOWN_STYLE } from "./topbarResourceSelectLayout";
+import { TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE } from "./topbarResourceSelectLayout";
 import { ResourceSelectOptionLabel } from "./ResourceSelectOptionLabel";
 import { ShopCountInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
@@ -63,6 +63,7 @@ export function TopbarTemplateSelect({
     (raw: unknown) => {
       const nextKey = resolveShopSelectStringValue(raw);
       if (!nextKey || nextKey === value) return;
+      setSelectOpen(false);
       onSelect(nextKey);
     },
     [onSelect, value]
@@ -120,6 +121,10 @@ export function TopbarTemplateSelect({
   const selectDisabled = disabled || busy;
   const actionBusy = busy || creating || deleting || renaming;
 
+  useEffect(() => {
+    if (selectDisabled) setSelectOpen(false);
+  }, [selectDisabled]);
+
   const resourceActions = [
     {
       id: "create",
@@ -175,11 +180,11 @@ export function TopbarTemplateSelect({
             placeholder={items.length ? "选择模板" : "暂无模板"}
             disabled={selectDisabled}
             open={selectOpen}
-            onDropdownVisibleChange={(open) => {
+            onOpenChange={(open) => {
               setSelectOpen(open);
               if (open) setActionMenuOpen(false);
             }}
-            dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
+            styles={{ popup: { root: TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE } }}
             getPopupContainer={() => document.body}
             onChange={handleTemplatePick}
           >

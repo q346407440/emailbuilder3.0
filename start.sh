@@ -40,5 +40,24 @@ mkdir -p "$ROOT/logs"
 : > "$AI_LLM_LOG"
 echo "[start] 已清空 AI LLM 交换日志: logs/ai-pipeline-llm.jsonl"
 
+VITE_CACHE="$ROOT/node_modules/.vite"
+LOCK_FILE="$ROOT/package-lock.json"
+LOCK_STAMP="$VITE_CACHE/.package-lock.sha256"
+if [[ -f "$LOCK_FILE" ]]; then
+  CURRENT_LOCK_SHA="$(shasum -a 256 "$LOCK_FILE" | awk '{print $1}')"
+  NEED_VITE_PURGE=0
+  if [[ ! -d "$VITE_CACHE" ]]; then
+    NEED_VITE_PURGE=0
+  elif [[ ! -f "$LOCK_STAMP" ]] || [[ "$(cat "$LOCK_STAMP" 2>/dev/null || true)" != "$CURRENT_LOCK_SHA" ]]; then
+    NEED_VITE_PURGE=1
+  fi
+  if [[ "$NEED_VITE_PURGE" -eq 1 ]]; then
+    echo "[start] 检测到 package-lock 变更，清理 Vite 预构建缓存（避免 504 Outdated Optimize Dep）…"
+    rm -rf "$VITE_CACHE"
+    mkdir -p "$VITE_CACHE"
+    echo "$CURRENT_LOCK_SHA" > "$LOCK_STAMP"
+  fi
+fi
+
 echo "[start] 启动 Vite http://127.0.0.1:5180 与 API http://127.0.0.1:8787 …"
 exec npm run dev:all

@@ -267,21 +267,22 @@ export function ObjectRegionBindModal({
       centered
       destroyOnClose
       maskClosable={false}
-      wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap repeat-region-bind-modal-wrap repeat-region-bind-modal-wrap--wizard shop-section-modal-wrap"
-      bodyStyle={{ paddingTop: 16, paddingRight: 24, paddingBottom: 24, paddingLeft: 24 }}
+      wrapClassName="text-body-var-pill-modal-wrap repeat-region-bind-modal-wrap repeat-region-bind-modal-wrap--wizard shop-section-modal-wrap--picker"
       footer={
         <>
           {onRemove && hasCurrentObjectBind && !viewOnly ? (
             <ShopSecondaryButton onClick={onRemove}>解除对象绑定</ShopSecondaryButton>
           ) : null}
-          <ShopSecondaryButton onClick={onClose}>{viewOnly ? "关闭" : "取消"}</ShopSecondaryButton>
-          {!viewOnly ? (
-            isLastWizardStep ? (
-              <ShopPrimaryButton onClick={onApply}>应用绑定</ShopPrimaryButton>
-            ) : (
-              <ShopPrimaryButton onClick={goNextWizardStep}>下一步</ShopPrimaryButton>
-            )
-          ) : null}
+          <div className="shop-section-modal__footer-actions">
+            <ShopSecondaryButton onClick={onClose}>{viewOnly ? "关闭" : "取消"}</ShopSecondaryButton>
+            {!viewOnly ? (
+              isLastWizardStep ? (
+                <ShopPrimaryButton onClick={onApply}>应用绑定</ShopPrimaryButton>
+              ) : (
+                <ShopPrimaryButton onClick={goNextWizardStep}>下一步</ShopPrimaryButton>
+              )
+            ) : null}
+          </div>
         </>
       }
     >

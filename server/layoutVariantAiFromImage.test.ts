@@ -6,7 +6,9 @@ import assert from "node:assert/strict";
 import {
   validateDesignImageBuffer,
   withLayoutVariantAiTimeout,
+  generateLayoutVariantFromDesignImage,
 } from "./layoutVariantAiFromImage";
+import { MJS_PATCH_PIPELINE_RESERVED_MESSAGE } from "../src/layout-variant-ai-contract/aiFromImagePipeline";
 import { createMockLlmClient } from "../src/lib/ai-pipeline/adapters/mockLlmClient";
 import { runImageToLayoutVariantPipeline } from "../src/lib/ai-pipeline/runImageToLayoutVariantPipeline";
 import { createDefaultAssetResolver } from "../src/lib/ai-pipeline/assetResolve";
@@ -77,6 +79,27 @@ describe("withLayoutVariantAiTimeout", () => {
       (e: unknown) => {
         assert.equal((e as Error & { code?: string }).code, "AI_GENERATION_TIMEOUT");
         assert.equal((e as Error).message, "生成超时，请稍后重试");
+        return true;
+      }
+    );
+  });
+});
+
+describe("generateLayoutVariantFromDesignImage · 方案 1 暂留", () => {
+  it("mjs-patch 拒绝执行", async () => {
+    await assert.rejects(
+      () =>
+        generateLayoutVariantFromDesignImage({
+          emailKey: "ai",
+          layoutVariantId: "test-layout",
+          layoutLabel: "测试",
+          imageBuffer: Buffer.from("png"),
+          mimeType: "image/png",
+          emailBaseDir: path.join(__dirname, "../data/emails/ai"),
+          pipeline: "mjs-patch",
+        }),
+      (e: unknown) => {
+        assert.equal((e as Error).message, MJS_PATCH_PIPELINE_RESERVED_MESSAGE);
         return true;
       }
     );

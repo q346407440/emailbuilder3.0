@@ -1,24 +1,21 @@
+import type { BorderRadiusValueFlat } from "../../../types/email";
 import type { ImageSlotRole } from "../../../layout-variant-ai-contract/compactIr";
+import { borderRadiusUniform, borderRadiusZeroFlat } from "../../boxModelFlat";
 import { parsePxValue } from "../b1StyleTierPresets";
 import type { CompactNode, GroundingSection } from "../types";
 
-export type UnifiedBorderRadiusValue = {
-  mode: "unified";
-  radius: string;
-};
-
-export function zeroBorderRadius(): UnifiedBorderRadiusValue {
-  return { mode: "unified", radius: "0" };
+export function zeroBorderRadius(): BorderRadiusValueFlat {
+  return borderRadiusZeroFlat();
 }
 
 /** B1 panel 档位 > 0 时返回圆角对象，否则 null（保持直角）。 */
-export function panelBorderRadius(panel: string): UnifiedBorderRadiusValue | null {
+export function panelBorderRadius(panel: string): BorderRadiusValueFlat | null {
   if (parsePxValue(panel) <= 0) return null;
-  return { mode: "unified", radius: panel };
+  return borderRadiusUniform(panel);
 }
 
-export function ctaBorderRadius(cta: string): UnifiedBorderRadiusValue {
-  return { mode: "unified", radius: cta };
+export function ctaBorderRadius(cta: string): BorderRadiusValueFlat {
+  return borderRadiusUniform(cta);
 }
 
 function expandHex(hex: string): string {
@@ -70,7 +67,7 @@ export function resolveImageBorderRadiusFromB1(
     role?: ImageSlotRole;
     section?: GroundingSection;
   }
-): UnifiedBorderRadiusValue {
+): BorderRadiusValueFlat {
   const rounded = panelBorderRadius(panel);
   if (!rounded) return zeroBorderRadius();
 

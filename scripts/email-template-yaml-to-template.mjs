@@ -13,6 +13,7 @@ import YAML from "yaml";
 import { normalizeTextBody } from "../src/lib/textBodyFormat.ts";
 import { htmlFragmentToTextBody } from "../src/lib/htmlFragmentToTextBody.ts";
 import { normalizeTemplateContentAlignEffectiveness } from "../src/lib/contentAlignConfigurability.ts";
+import { coerceBoxModelOnContainer } from "../src/lib/boxModelStorage.ts";
 import { normalizeTemplateBlockDefaults } from "../src/lib/templateBlockDefaults.ts";
 import { normalizeImageBlockToWrapperBackgroundShape } from "../src/lib/imageBlockWrapperBackground.ts";
 import { editorGraphToNested } from "../src/lib/templateTreeAdapter.ts";
@@ -178,15 +179,26 @@ function validateCommonNestedFields(container, path, kind) {
 
 function defaultBorder() {
   return {
-    mode: "unified",
-    width: "0",
     style: "solid",
     color: "rgba(0,0,0,0)",
+    top: "0",
+    right: "0",
+    bottom: "0",
+    left: "0",
   };
 }
 
 function defaultBorderRadius() {
-  return { mode: "unified", radius: "0" };
+  return {
+    topLeft: "0",
+    topRight: "0",
+    bottomRight: "0",
+    bottomLeft: "0",
+  };
+}
+
+function paddingZero() {
+  return { top: "0", right: "0", bottom: "0", left: "0" };
 }
 
 function mergeDeep(base, override) {
@@ -213,7 +225,7 @@ function defaultEmailRootProps() {
   return {
     backgroundColor: "#ffffff",
     width: "600px",
-    padding: { mode: "unified", unified: "0" },
+    padding: paddingZero(),
     border: defaultBorder(),
     gapMode: "fixed",
     gap: "0",
@@ -247,7 +259,7 @@ function defaultWrapper(kind, preset) {
       height: "48px",
       backgroundColor: "#d0d0d0",
       border: defaultBorder(),
-      padding: { mode: "unified", unified: "0" },
+      padding: paddingZero(),
     };
   }
   if (kind === "grid") {
@@ -454,6 +466,17 @@ function validateGeneratedBlockShape(block, path) {
   }
 }
 
+function normalizeBoxModelOnBlock(block) {
+  const props = block.props;
+  if (props && typeof props === "object") {
+    coerceBoxModelOnContainer(props);
+  }
+  const ws = block.wrapperStyle;
+  if (ws && typeof ws === "object") {
+    coerceBoxModelOnContainer(ws);
+  }
+}
+
 function ensureBackgroundBorder(kind, block) {
   if (kind === "emailRoot") {
     if (!block.props || typeof block.props !== "object") return;
@@ -588,6 +611,7 @@ function walk(node, parentId, acc, nodePath = "root") {
     bindings: node.bindings && typeof node.bindings === "object" ? node.bindings : {},
   };
   ensureBackgroundBorder(kind, block);
+  normalizeBoxModelOnBlock(block);
 
   acc.blocks[id] = block;
   acc.blockMeta[id] = { blockType, name };

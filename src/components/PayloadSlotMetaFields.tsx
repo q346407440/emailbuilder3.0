@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { toastError } from "../lib/appToast";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import {
@@ -62,7 +62,7 @@ export function usePayloadSlotMetaFields({
     if (result.error) {
       setMetaError(result.error);
       setSlotIdDraft(slot.slotId);
-      message.error(result.error);
+      toastError(result.error);
       return;
     }
     setMetaError("");

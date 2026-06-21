@@ -6,6 +6,12 @@ import { PAYLOAD_SCHEMA_VERSION } from "../payload-contract/types";
 import { META_SCHEMA_VERSION, type EmailMeta } from "../meta-contract";
 import { DEFAULT_PUBLISH_STATUS } from "../publish-status-contract";
 import { assertEmailKeySafe } from "./validate";
+import {
+  borderNoneFlat,
+  borderRadiusZeroFlat,
+  spacingUniform,
+  spacingZero,
+} from "./boxModelFlat";
 
 export type NewEmailScaffold = {
   layoutManifest: LayoutManifest;
@@ -62,6 +68,7 @@ export function buildDefaultTokenPresets(): TokenPresets {
         tokens: {
           colors: {
             primary: "#111111",
+            accent: "#1A1A1A",
             secondary: "#666666",
             surface: "#FFFFFF",
           },
@@ -124,13 +131,8 @@ export function buildBlankLayoutVariantAssets(
         props: {
           backgroundColor: "#ffffff",
           width: "600px",
-          padding: { mode: "unified", unified: "0" },
-          border: {
-            mode: "unified",
-            width: "0",
-            style: "solid",
-            color: "rgba(0,0,0,0)",
-          },
+          padding: spacingZero(),
+          border: borderNoneFlat(),
           gapMode: "fixed",
           gap: "0",
         },
@@ -145,15 +147,10 @@ export function buildBlankLayoutVariantAssets(
           contentAlign: { horizontal: "left", vertical: "top" },
           widthMode: "fill",
           heightMode: "hug",
-          border: {
-            mode: "unified",
-            width: "0",
-            style: "solid",
-            color: "rgba(0,0,0,0)",
-          },
-          borderRadius: { mode: "unified", radius: "0" },
+          border: borderNoneFlat(),
+          borderRadius: borderRadiusZeroFlat(),
           backgroundColor: "#ffffff",
-          padding: { mode: "unified", unified: "16px" },
+          padding: spacingUniform("16px"),
         },
         props: {
           direction: "vertical",
@@ -171,13 +168,8 @@ export function buildBlankLayoutVariantAssets(
           contentAlign: { horizontal: "left", vertical: "top" },
           widthMode: "hug",
           heightMode: "hug",
-          border: {
-            mode: "unified",
-            width: "0",
-            style: "solid",
-            color: "rgba(0,0,0,0)",
-          },
-          borderRadius: { mode: "unified", radius: "0" },
+          border: borderNoneFlat(),
+          borderRadius: borderRadiusZeroFlat(),
         },
         props: {
           textBody: {

@@ -1,8 +1,8 @@
-import { Radio, Table } from "@shoplazza/sds";
+import { Radio, Table } from "antd";
 import type { ReactNode } from "react";
 import { SelectablePickerCheckboxCell } from "./SelectablePickerCheckboxCell";
 
-type SdsTableColumn<T extends object> = {
+type PickerTableColumn<T extends object> = {
   title?: ReactNode;
   key?: string;
   width?: number | string;
@@ -130,7 +130,7 @@ function rowIsDisabled<T extends object>(row: T, selection: PickerTableSelection
 }
 
 /**
- * 弹窗/Inspector 内公共 SDS Table 列表（支持单选 / 多选 / 自定义选择列）。
+ * 弹窗/Inspector 内公共 antd Table 列表（支持单选 / 多选 / 自定义选择列）。
  * {@link SelectablePickerTable} 为其单选封装。
  */
 export function PickerTable<T extends object>({
@@ -144,7 +144,7 @@ export function PickerTable<T extends object>({
   className,
   getRowClassName,
 }: PickerTableProps<T>) {
-  const tableColumns: SdsTableColumn<T>[] = [
+  const tableColumns: PickerTableColumn<T>[] = [
     {
       title: selectionColumnTitle(selection),
       width: 48,
@@ -227,7 +227,7 @@ export type SelectablePickerTableProps<T extends object> = {
   getRowDisabled?: (row: T) => boolean;
 };
 
-/** 单选 + SDS Table（绑定变量等场景） */
+/** 单选 + antd Table（绑定变量等场景） */
 export function SelectablePickerTable<T extends object>({
   ariaLabel,
   rowKey,

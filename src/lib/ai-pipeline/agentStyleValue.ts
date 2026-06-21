@@ -28,7 +28,7 @@ export type ResolvedAgentStyleField = {
   source: "bind" | "literal" | "fallback" | "none";
 };
 
-const FOREGROUND_COLOR_PATHS = ["colors.primary", "colors.secondary"] as const;
+const FOREGROUND_COLOR_PATHS = ["colors.accent", "colors.primary", "colors.secondary"] as const;
 const CONTAINER_BG_COLOR_PATHS = [
   "colors.surface",
   "colors.primary",
@@ -122,7 +122,7 @@ function normalizeTokenPathForValidation(path: string): string | undefined {
   const t = path.trim();
   if (!t) return undefined;
   if (isStandardThemeRefPath(t)) return t;
-  if (/^(primary|secondary|surface)$/.test(t)) return `colors.${t}`;
+  if (/^(primary|accent|secondary|surface)$/.test(t)) return `colors.${t}`;
   if (/^(display|h1|body|caption)$/.test(t)) return `tokens.typography.${t}`;
   if (/^(cta|panel)$/.test(t)) return `tokens.radius.${t}`;
   return undefined;

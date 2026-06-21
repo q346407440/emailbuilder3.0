@@ -37,8 +37,8 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
             link: "",
             position: "center",
             fit: "cover",
-            borderRadius: { mode: "unified", radius: "0" },
-            border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+            borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+            border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
           } as unknown as WrapperBackgroundImage,
         },
         props: {},
@@ -74,12 +74,12 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
             src: "https://example.com/x.jpg",
             position: "center",
             fit: "cover",
-            borderRadius: { mode: "unified", radius: "8px" },
+            borderRadius: { topLeft: "8px", topRight: "8px", bottomRight: "8px", bottomLeft: "8px" },
           } as unknown as WrapperBackgroundImage,
         },
         props: {},
         bindings: {
-          "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "wrapperStyle.backgroundImage.borderRadius.topLeft": {
             slotId: "vipRadius",
             mode: "variable",
             valueType: "string",
@@ -92,7 +92,7 @@ describe("validateTemplateBindings —— 来源胶囊体系约束", () => {
     const issues = validateTemplate(t);
     const violation = issues.find(
       (i) =>
-        i.path === "blocks.img.bindings.wrapperStyle.backgroundImage.borderRadius.radius" &&
+        i.path === "blocks.img.bindings.wrapperStyle.backgroundImage.borderRadius.topLeft" &&
         /border \/ borderRadius 已禁止持久化/.test(i.reason)
     );
     assert.ok(violation, "未捕获禁止持久化的图级圆角 binding");

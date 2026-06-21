@@ -19,14 +19,18 @@
       "backgroundColor": "#FFFFFF",
       "width": "600px",
       "padding": {
-        "mode": "unified",
-        "unified": "0"
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "border": {
-        "mode": "unified",
-        "width": "0",
         "style": "solid",
-        "color": "rgba(0,0,0,0)"
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "gapMode": "fixed",
       "gap": "0"
@@ -58,16 +62,18 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": {
-              "$themeRef": "tokens.radius.panel"
-            }
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundImage": {
             "src": "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
@@ -81,12 +87,6 @@
             "slotId": "tokens.spacing.gap",
             "mode": "theme",
             "tokenPath": "tokens.spacing.gap",
-            "fieldKind": "style"
-          },
-          "wrapperStyle.borderRadius.radius": {
-            "slotId": "tokens.radius.panel",
-            "mode": "theme",
-            "tokenPath": "tokens.radius.panel",
             "fieldKind": "style"
           }
         }

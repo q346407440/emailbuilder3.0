@@ -28,7 +28,7 @@
 | [可拔插式代码开发规范.md](./可拔插式代码开发规范.md) | 通用方法论：函数级可拔插（单一职责、显式 IO、组合优于堆分支）；与源头驱动配套 |
 | [prd.md](./prd.md) | 邮件编辑器产品需求说明（PRD） |
 | [step2-相似品搭配品-derivedFrom-执行计划.md](./step2-相似品搭配品-derivedFrom-执行计划.md) | 派生列表 A/B 执行计划（`easy-email-repeat-binding` 技能索引） |
-| [ai-email-generation-api/](./ai-email-generation-api/) | 以图 AI 创建版式方案与 API 参考 |
+| [ai-email-generation-api/](./ai-email-generation-api/) | AI 管线用到的外部 API 接入（豆包、Pexels、图标 CDN 等） |
 
 ## 方法论文档与 Cursor Rules
 

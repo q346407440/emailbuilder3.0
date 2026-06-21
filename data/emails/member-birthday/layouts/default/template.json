@@ -13,18 +13,22 @@
     },
     "props": {
       "border": {
-        "mode": "unified",
-        "width": "0",
         "style": "solid",
-        "color": "rgba(0,0,0,0)"
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "backgroundColor": {
         "$themeRef": "colors.surface"
       },
       "width": "600px",
       "padding": {
-        "mode": "unified",
-        "unified": "0"
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "gapMode": "fixed",
       "gap": "0"
@@ -60,18 +64,21 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundColor": "#FFFFFF",
           "padding": {
-            "mode": "separate",
             "top": {
               "$themeRef": "tokens.spacing.section"
             },
@@ -139,14 +146,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               },
               "contentAlign": {
                 "horizontal": "left",
@@ -168,14 +179,18 @@
                   "heightMode": "fixed",
                   "height": "48px",
                   "border": {
-                    "mode": "unified",
-                    "width": "0",
                     "style": "solid",
-                    "color": "rgba(0,0,0,0)"
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
                   },
                   "borderRadius": {
-                    "mode": "unified",
-                    "radius": "0"
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
                   },
                   "backgroundImage": {
                     "src": "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/store.svg",
@@ -220,20 +235,23 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundColor": {
             "$themeRef": "colors.surface"
           },
           "padding": {
-            "mode": "separate",
             "top": {
               "$themeRef": "tokens.spacing.section"
             },
@@ -304,14 +322,24 @@
               "heightMode": "fixed",
               "height": "200px",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": {
+                "topLeft": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "topRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomLeft": {
                   "$themeRef": "tokens.radius.panel"
                 }
               },
@@ -335,7 +363,25 @@
                 "fieldKind": "content",
                 "label": "生日主视觉头图"
               },
-              "wrapperStyle.borderRadius.radius": {
+              "wrapperStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomLeft": {
                 "slotId": "tokens.radius.panel",
                 "mode": "theme",
                 "tokenPath": "tokens.radius.panel",
@@ -381,14 +427,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -452,14 +502,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -522,14 +576,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -575,20 +633,23 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundColor": {
             "$themeRef": "colors.surface"
           },
           "padding": {
-            "mode": "separate",
             "top": {
               "$themeRef": "tokens.spacing.section"
             },
@@ -683,14 +744,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -732,20 +797,29 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": {
+                "topLeft": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "topRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomLeft": {
                   "$themeRef": "tokens.radius.panel"
                 }
               },
               "backgroundColor": "#E8F2FA",
               "padding": {
-                "mode": "separate",
                 "top": "16px",
                 "right": "20px",
                 "bottom": "16px",
@@ -757,7 +831,25 @@
               }
             },
             "bindings": {
-              "wrapperStyle.borderRadius.radius": {
+              "wrapperStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomLeft": {
                 "slotId": "tokens.radius.panel",
                 "mode": "theme",
                 "tokenPath": "tokens.radius.panel",
@@ -806,14 +898,18 @@
                   "widthMode": "fill",
                   "heightMode": "hug",
                   "border": {
-                    "mode": "unified",
-                    "width": "0",
                     "style": "solid",
-                    "color": "rgba(0,0,0,0)"
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
                   },
                   "borderRadius": {
-                    "mode": "unified",
-                    "radius": "0"
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
                   }
                 },
                 "bindings": {
@@ -886,14 +982,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -939,20 +1039,23 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundColor": {
             "$themeRef": "colors.surface"
           },
           "padding": {
-            "mode": "separate",
             "top": {
               "$themeRef": "tokens.spacing.section"
             },
@@ -1028,20 +1131,29 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "1px",
                 "style": "solid",
-                "color": "#E8DFD0"
+                "color": "#E8DFD0",
+                "top": "1px",
+                "right": "1px",
+                "bottom": "1px",
+                "left": "1px"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": {
+                "topLeft": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "topRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomLeft": {
                   "$themeRef": "tokens.radius.panel"
                 }
               },
               "backgroundColor": "#FAF6F0",
               "padding": {
-                "mode": "separate",
                 "top": "16px",
                 "right": "16px",
                 "bottom": "16px",
@@ -1059,7 +1171,25 @@
                 "tokenPath": "tokens.spacing.gap",
                 "fieldKind": "style"
               },
-              "wrapperStyle.borderRadius.radius": {
+              "wrapperStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomLeft": {
                 "slotId": "tokens.radius.panel",
                 "mode": "theme",
                 "tokenPath": "tokens.radius.panel",
@@ -1137,14 +1267,18 @@
                   "widthMode": "fixed",
                   "heightMode": "hug",
                   "border": {
-                    "mode": "unified",
-                    "width": "0",
                     "style": "solid",
-                    "color": "rgba(0,0,0,0)"
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
                   },
                   "borderRadius": {
-                    "mode": "unified",
-                    "radius": "0"
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
                   },
                   "width": "38%"
                 },
@@ -1183,28 +1317,20 @@
                   "widthMode": "fill",
                   "heightMode": "fill",
                   "border": {
-                    "mode": "custom",
                     "style": "dashed",
                     "color": "#D4C4B0",
-                    "top": {
-                      "width": "0"
-                    },
-                    "right": {
-                      "width": "0"
-                    },
-                    "bottom": {
-                      "width": "0"
-                    },
-                    "left": {
-                      "width": "1px"
-                    }
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "1px"
                   },
                   "borderRadius": {
-                    "mode": "unified",
-                    "radius": "0"
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
                   },
                   "padding": {
-                    "mode": "separate",
                     "top": "0",
                     "right": "0",
                     "bottom": "0",
@@ -1262,14 +1388,18 @@
                       "widthMode": "fill",
                       "heightMode": "hug",
                       "border": {
-                        "mode": "unified",
-                        "width": "0",
                         "style": "solid",
-                        "color": "rgba(0,0,0,0)"
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
                       },
                       "borderRadius": {
-                        "mode": "unified",
-                        "radius": "0"
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
                       }
                     },
                     "bindings": {
@@ -1332,14 +1462,18 @@
                       "widthMode": "fill",
                       "heightMode": "hug",
                       "border": {
-                        "mode": "unified",
-                        "width": "0",
                         "style": "solid",
-                        "color": "rgba(0,0,0,0)"
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
                       },
                       "borderRadius": {
-                        "mode": "unified",
-                        "radius": "0"
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
                       }
                     },
                     "bindings": {
@@ -1389,20 +1523,23 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundColor": {
             "$themeRef": "colors.surface"
           },
           "padding": {
-            "mode": "separate",
             "top": {
               "$themeRef": "tokens.spacing.section"
             },
@@ -1477,14 +1614,24 @@
                   "$themeRef": "tokens.typography.body"
                 },
                 "border": {
-                  "mode": "unified",
-                  "width": "0",
                   "style": "solid",
-                  "color": "rgba(0,0,0,0)"
+                  "color": "rgba(0,0,0,0)",
+                  "top": "0",
+                  "right": "0",
+                  "bottom": "0",
+                  "left": "0"
                 },
                 "borderRadius": {
-                  "mode": "unified",
-                  "radius": {
+                  "topLeft": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "topRight": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "bottomRight": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "bottomLeft": {
                     "$themeRef": "tokens.radius.cta"
                   }
                 },
@@ -1497,14 +1644,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               },
               "contentAlign": {
                 "horizontal": "center",
@@ -1534,7 +1685,25 @@
                 "tokenPath": "tokens.typography.body",
                 "fieldKind": "style"
               },
-              "props.buttonStyle.borderRadius.radius": {
+              "props.buttonStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.bottomLeft": {
                 "slotId": "tokens.radius.cta",
                 "mode": "theme",
                 "tokenPath": "tokens.radius.cta",
@@ -1562,20 +1731,23 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           },
           "backgroundColor": {
             "$themeRef": "colors.surface"
           },
           "padding": {
-            "mode": "separate",
             "top": {
               "$themeRef": "tokens.spacing.section"
             },
@@ -1675,14 +1847,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -1750,14 +1926,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {
@@ -1833,14 +2013,18 @@
               "widthMode": "fill",
               "heightMode": "hug",
               "border": {
-                "mode": "unified",
-                "width": "0",
                 "style": "solid",
-                "color": "rgba(0,0,0,0)"
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
               },
               "borderRadius": {
-                "mode": "unified",
-                "radius": "0"
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
               }
             },
             "bindings": {

@@ -13,11 +13,10 @@ const FAMILY_TITLE_ZH: Record<string, string> = {
 /** family × scale → 表单项主标题（不含 JSON 键名） */
 const SCALE_TITLE_ZH: Partial<Record<string, Record<string, string>>> = {
   colors: {
-    primary: "主色",
-    secondary: "副色",
-    brand: "品牌主色",
-    accent: "强调色",
-    surface: "主背景",
+    primary: "CTA 色",
+    accent: "品牌强调色",
+    secondary: "弱化色",
+    surface: "背景色",
     surfaceMuted: "次要背景",
     text: "主文字色",
     textMuted: "次要文字色",

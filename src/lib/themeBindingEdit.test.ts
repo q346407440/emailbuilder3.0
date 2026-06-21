@@ -95,10 +95,12 @@ describe("detachThemeFieldBranch", () => {
             backgroundColor: "#ffffff",
             width: "640px",
             border: {
-              mode: "unified",
-              width: "1px",
               style: "solid",
               color: { $themeRef: "colors.surfaceMuted" },
+              top: "1px",
+              right: "1px",
+              bottom: "1px",
+              left: "1px",
             },
           },
           bindings: {

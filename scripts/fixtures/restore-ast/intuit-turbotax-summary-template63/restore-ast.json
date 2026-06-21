@@ -1,0 +1,466 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "#0077C8",
+      "accent": "#C93B59",
+      "secondary": "#6B7280",
+      "surface": "#FFFFFF"
+    },
+    "spacing": {
+      "section": "24px",
+      "gap": "12px",
+      "pageInline": "20px"
+    },
+    "typography": {
+      "display": "32px",
+      "h1": "22px",
+      "body": "15px",
+      "caption": "11px"
+    },
+    "radius": {
+      "panel": "12px",
+      "cta": "999px"
+    }
+  },
+  "tree": {
+    "t": "email",
+    "children": [
+      {
+        "t": "stack",
+        "title": "顶部品牌与登录",
+        "align": "start",
+        "gap": "gap",
+        "box": {
+          "pad": "section",
+          "tone": "surface"
+        },
+        "children": [
+          {
+            "t": "row",
+            "title": "品牌与登录行",
+            "align": "between",
+            "crossAlign": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "stack",
+                "title": "税务品牌区",
+                "align": "start",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "file-invoice",
+                    "pack": "tabler",
+                    "required": true,
+                    "size": "lg",
+                    "tone": "primary"
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "快捷登录区",
+                "align": "end",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "text",
+                    "content": "Kickstart your taxes with one step",
+                    "role": "caption",
+                    "tone": "secondary"
+                  },
+                  {
+                    "t": "button",
+                    "label": "Sign in",
+                    "href": "#"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "W-2 通知条",
+        "align": "start",
+        "gap": "gap",
+        "box": {
+          "pad": "gap",
+          "tone": {
+            "hex": "#262D33"
+          }
+        },
+        "children": [
+          {
+            "t": "row",
+            "title": "W-2 可用提示",
+            "align": "between",
+            "crossAlign": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "row",
+                "title": "W-2 文案组",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "file-invoice",
+                    "pack": "tabler",
+                    "size": "md",
+                    "tone": "surface",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Your W-2 from RGE LLC is available",
+                    "role": "body",
+                    "tone": "surface",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "icon",
+                "query": "chevron-right",
+                "pack": "tabler",
+                "size": "sm",
+                "tone": "surface",
+                "required": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "税季欢迎英雄区",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0ED"
+          }
+        },
+        "children": [
+          {
+            "t": "text",
+            "content": "Welcome to Tax Year",
+            "role": "caption",
+            "tone": "surface",
+            "bold": true
+          },
+          {
+            "t": "image",
+            "query": "2024 tax year celebration typography graphic pink red illustration sparkles",
+            "height": {
+              "px": 200
+            },
+            "required": true
+          },
+          {
+            "t": "text",
+            "content": "Get a head start: Review your info now",
+            "role": "display",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "Smiles Davis, as a returning customer, you're already a step ahead. Just confirm or update your details.",
+            "role": "body"
+          },
+          {
+            "t": "button",
+            "label": "Verify your info",
+            "href": "#"
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "税务摘要宫格",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0ED"
+          }
+        },
+        "children": [
+          {
+            "t": "stack",
+            "title": "2023 回顾宽卡",
+            "align": "start",
+            "gap": "gap",
+            "box": {
+              "pad": "section",
+              "tone": {
+                "hex": "#E8E8E4"
+              },
+              "radius": "panel"
+            },
+            "children": [
+              {
+                "t": "row",
+                "title": "回顾文案与插图",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "stack",
+                    "title": "回顾文案",
+                    "align": "start",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "Smiles Davis, your 2023 tax year in review",
+                        "role": "h1",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "image",
+                    "query": "line art illustration person reviewing tax documents minimalist",
+                    "height": {
+                      "px": 120
+                    },
+                    "aspect": {
+                      "w": 4,
+                      "h": 3
+                    },
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "t": "grid",
+            "title": "摘要双列宫格",
+            "columns": 2,
+            "gap": "gap",
+            "children": [
+              {
+                "t": "stack",
+                "title": "左列摘要卡",
+                "align": "start",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "stack",
+                    "title": "报税开始时间卡",
+                    "align": "start",
+                    "gap": "gap",
+                    "box": {
+                      "pad": "gap",
+                      "tone": {
+                        "hex": "#F4D4DB"
+                      },
+                      "radius": "panel"
+                    },
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "clock",
+                        "pack": "tabler",
+                        "size": "md",
+                        "tone": "accent",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Last year, you started your taxes 4/11/2024",
+                        "role": "body",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "扣除优化卡",
+                    "align": "start",
+                    "gap": "gap",
+                    "box": {
+                      "pad": "gap",
+                      "tone": {
+                        "hex": "#262D33"
+                      },
+                      "radius": "panel"
+                    },
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "cash",
+                        "pack": "tabler",
+                        "size": "md",
+                        "tone": "surface",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "We maximized your deductions. View now >",
+                        "role": "body",
+                        "tone": "accent",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "Premium 使用卡",
+                    "align": "start",
+                    "gap": "gap",
+                    "box": {
+                      "pad": "gap",
+                      "tone": {
+                        "hex": "#E8E8E4"
+                      },
+                      "radius": "panel"
+                    },
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "flag",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "You used TurboTax Premium",
+                        "role": "body",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "右列摘要卡",
+                "align": "start",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "stack",
+                    "title": "联邦退税卡",
+                    "align": "start",
+                    "gap": "gap",
+                    "box": {
+                      "pad": "section",
+                      "tone": {
+                        "hex": "#E8E8E4"
+                      },
+                      "radius": "panel"
+                    },
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "pig-money",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "You got a Federal Refund. View in your account >",
+                        "role": "body",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "申报状态卡",
+                    "align": "start",
+                    "gap": "gap",
+                    "box": {
+                      "pad": "section",
+                      "tone": {
+                        "hex": "#F4D4DB"
+                      },
+                      "radius": "panel"
+                    },
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "rings",
+                        "pack": "tabler",
+                        "size": "md",
+                        "tone": "accent",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Your filing status Married filing jointly",
+                        "role": "body",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "t": "button",
+            "label": "Make updates",
+            "href": "#",
+            "tone": "surface"
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "页脚合规",
+        "align": "start",
+        "gap": "gap",
+        "box": {
+          "pad": "section",
+          "tone": "surface"
+        },
+        "children": [
+          {
+            "t": "text",
+            "content": "This email was sent to: mikenelson01@gmail.com",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "Intuit respects your privacy. To learn more, read our Privacy Statement. If you no longer wish to receive marketing emails, unsubscribe here.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "TurboTax is a registered trademark of Intuit Inc. Terms and conditions apply.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "2800 E. Commerce Center Place, Tucson, AZ 85706",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "© 2024 Intuit Inc. All rights reserved.",
+            "role": "caption",
+            "tone": "secondary"
+          }
+        ]
+      }
+    ]
+  }
+}

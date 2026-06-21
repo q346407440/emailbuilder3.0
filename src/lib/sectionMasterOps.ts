@@ -197,3 +197,69 @@ export function insertSectionIntoTemplate(args: {
 
   return { template: next, insertedBlockId: newRootId };
 }
+
+export function insertSectionAtParentIndex(args: {
+  template: EmailTemplate;
+  parentId: string;
+  insertIndex: number;
+  section: SectionMaster;
+  tokenPresets?: TokenPresets | null;
+}): { template: EmailTemplate; insertedBlockId: string } {
+  const { template, parentId, insertIndex, section, tokenPresets } = args;
+  const parent = template.blocks[parentId];
+  if (!parent) throw new Error("目标父区块不存在");
+  if (
+    parent.type !== "emailRoot" &&
+    parent.type !== "layout" &&
+    parent.type !== "grid" &&
+    parent.type !== "image"
+  ) {
+    throw new Error("当前区块不支持插入子级");
+  }
+  const childCount = parent.children?.length ?? 0;
+  if (insertIndex < 0 || insertIndex > childCount) {
+    throw new Error("插入位置无效");
+  }
+
+  const subtreeIds = collectSubtreeBlockIds(
+    { blocks: section.blocks, rootBlockId: section.rootBlockId } as EmailTemplate,
+    section.rootBlockId
+  );
+
+  const next = clone(template);
+  const idMap = new Map<string, string>();
+
+  for (const oldId of subtreeIds) {
+    const old = section.blocks[oldId];
+    if (!old) continue;
+    idMap.set(oldId, uniqueTemplateBlockId(next, old.type));
+  }
+
+  const newRootId = idMap.get(section.rootBlockId)!;
+
+  for (const oldId of subtreeIds) {
+    const old = section.blocks[oldId]!;
+    const newId = idMap.get(oldId)!;
+    let copied = clone(old) as EmailBlock;
+    copied.id = newId;
+    copied.parentId =
+      oldId === section.rootBlockId
+        ? parentId
+        : (idMap.get(old.parentId!) ?? copied.parentId);
+    copied.children = (old.children ?? []).map((cid) => idMap.get(cid) ?? cid);
+    copied = prepareCatalogBlockForInsert(copied, tokenPresets);
+    next.blocks[newId] = copied;
+    const meta = section.blockMeta?.[oldId];
+    if (meta) {
+      next.blockMeta = next.blockMeta ?? {};
+      next.blockMeta[newId] = { ...meta };
+    }
+  }
+
+  const nextParent = next.blocks[parentId];
+  if (!nextParent) throw new Error("目标父区块不存在");
+  nextParent.children = [...(nextParent.children ?? [])];
+  nextParent.children.splice(insertIndex, 0, newRootId);
+
+  return { template: next, insertedBlockId: newRootId };
+}

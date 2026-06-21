@@ -16,7 +16,7 @@ import {
   setCollectionItemFieldType,
   updateCollectionItemField,
 } from "../lib/collectionItemFieldsTree";
-import DeleteOutlined from "@shoplazza/sds-icons/DeleteOutlined";
+import { DeleteOutlined } from "@ant-design/icons";
 import { ShopInput, ShopSecondaryButton, ShopSelect } from "./ui/ShopFormControls";
 
 const VALUE_TYPES = collectionItemFieldTypesForPicker();

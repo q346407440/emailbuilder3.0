@@ -2,7 +2,7 @@
  * Stage C styleKeys：字面量保底 + 可选主题档位绑定（Agent 语义，E 机械落盘）。
  *
  * - `literal`（或裸字符串）必填：设计图上的实际值。
- * - `tokenPath` / `*Bind` 可选：标准 12 键之一；解析失败则仅用 literal。
+ * - `tokenPath` / `*Bind` 可选：标准 13 键之一；解析失败则仅用 literal。
  */
 
 import { STANDARD_THEME_REF_PATHS } from "../token-preset-contract/theme-ref-paths";
@@ -45,9 +45,10 @@ export type StyleTokenCatalogEntry = {
 };
 
 const COLOR_LABELS: Record<string, string> = {
-  "colors.primary": "主色",
-  "colors.secondary": "副色",
-  "colors.surface": "主背景",
+  "colors.primary": "CTA 色",
+  "colors.accent": "品牌强调色",
+  "colors.secondary": "弱化色",
+  "colors.surface": "背景色",
 };
 
 const TYPO_LABELS: Record<string, string> = {
@@ -59,7 +60,7 @@ const TYPO_LABELS: Record<string, string> = {
 
 /** 从 B1 归一化 tokens 生成 Stage C 可用的档位表（含当前 hex/px）。 */
 export function buildStyleTokenCatalogForPrompt(tokens: {
-  colors: { primary: string; secondary: string; surface: string };
+  colors: { primary: string; accent: string; secondary: string; surface: string };
   typography: { display: string; h1: string; body: string; caption: string };
 }): StyleTokenCatalogEntry[] {
   const rows: StyleTokenCatalogEntry[] = [
@@ -67,7 +68,13 @@ export function buildStyleTokenCatalogForPrompt(tokens: {
       tokenPath: "colors.primary",
       label: COLOR_LABELS["colors.primary"],
       value: tokens.colors.primary,
-      hint: "CTA/按钮背景、强调色块；禁止用于正文/wordmark",
+      hint: "CTA/按钮背景、同色强调块；禁止用于正文/wordmark",
+    },
+    {
+      tokenPath: "colors.accent",
+      label: COLOR_LABELS["colors.accent"],
+      value: tokens.colors.accent,
+      hint: "Logo、标题、链接、价格/徽章等品牌强调字色",
     },
     {
       tokenPath: "colors.secondary",
@@ -148,6 +155,6 @@ export function buildAgentStyleKeysPromptSection(
 ${STANDARD_THEME_REF_PATHS.filter((p) => p.startsWith("colors.") || p.startsWith("tokens.typography.") || p.startsWith("tokens.radius.")).map((p) => `  - ${p}`).join("\n")}
 - **当前档位取值**：
 ${table}
-- **绑定建议**：弱化字色 → \`colors.secondary\`；CTA 底 → \`colors.primary\`；**禁止**字色 Bind \`colors.surface\`
+- **绑定建议**：品牌/标题/链接字色 → \`colors.accent\`；弱化字色 → \`colors.secondary\`；CTA 底 → \`colors.primary\`；**禁止**字色 Bind \`colors.surface\`
 - 省略 *Bind = 仅 literal；禁止写 \`$themeRef\``;
 }

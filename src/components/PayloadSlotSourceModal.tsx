@@ -4,7 +4,8 @@ import { listBuiltinStructureCatalog } from "../api/builtinStructureCatalog";
 import type { BuiltinStructureSummary } from "../payload-contract/builtin-structure-catalog";
 import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
 import { builtinStructureScopeLabel } from "../lib/builtinStructureSlot";
-import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
+import { Field } from "./ui/Field";
+import { ShopPrimaryButton, ShopSecondaryButton, ShopSegmented } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 
@@ -22,6 +23,8 @@ const STRUCTURE_TIER_TABS: ReadonlyArray<{ id: StructureValueTier; label: string
   { id: "object", label: "对象", hint: "一组字段整体绑定到容器内多个区块（不展开多行）。" },
   { id: "collection", label: "列表", hint: "多行 repeating 数据，用于列表 repeat 绑定。" },
 ];
+
+const TIER_EMPTY_MESSAGE = "该类型下暂无可用结构。";
 
 function structureScopeLabel(structure: BuiltinStructureSummary): string {
   return builtinStructureScopeLabel({
@@ -185,7 +188,7 @@ export function PayloadSlotSourceModal({
       destroyOnClose
       maskClosable={false}
       keyboard
-      wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap"
+      wrapClassName="payload-slot-source-modal-wrap text-body-var-pill-modal-wrap shop-section-modal-wrap--picker"
       onCancel={onClose}
       footer={
         <div className="shop-section-modal__footer-actions">
@@ -198,7 +201,7 @@ export function PayloadSlotSourceModal({
         </div>
       }
     >
-      <div className="text-body-inline-var-modal payload-slot-source-modal">
+      <div className="text-body-var-pill-modal payload-slot-source-modal">
         <p className="text-body-var-pill-modal__hint">
           先按类型筛选，再选择内置数据结构；标识与列定义由系统固定，预览数据仅用于编辑器试看。
         </p>
@@ -213,42 +216,31 @@ export function PayloadSlotSourceModal({
           <p className="text-body-var-pill-modal__empty">暂无可用内置变量结构。</p>
         ) : (
           <>
-            <div
-              className="payload-slot-source-modal__segment"
-              role="tablist"
-              aria-label="变量类型"
-            >
-              {STRUCTURE_TIER_TABS.map((tab) => {
-                const count = tierCounts[tab.id];
-                const active = activeTier === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    className={
-                      active
-                        ? "payload-slot-source-modal__segment-item payload-slot-source-modal__segment-item--active"
-                        : "payload-slot-source-modal__segment-item"
-                    }
-                    aria-selected={active}
-                    disabled={count === 0}
-                    onClick={() => handleTierChange(tab.id)}
-                  >
-                    {tab.label}
-                    <span className="payload-slot-source-modal__segment-badge">{count}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <Field label="变量类型">
+              <ShopSegmented<StructureValueTier>
+                value={activeTier}
+                options={STRUCTURE_TIER_TABS.map((tab) => ({
+                  value: tab.id,
+                  disabled: tierCounts[tab.id] === 0,
+                  label: (
+                    <span className="payload-slot-source-modal__segment-label">
+                      {tab.label}
+                      <span className="payload-slot-source-modal__segment-badge">{tierCounts[tab.id]}</span>
+                    </span>
+                  ),
+                }))}
+                onChange={handleTierChange}
+              />
+            </Field>
 
             {activeTierMeta ? (
               <p className="payload-slot-source-modal__tier-hint">{activeTierMeta.hint}</p>
             ) : null}
 
-            {filteredStructures.length === 0 ? (
-              <p className="text-body-var-pill-modal__empty">该类型下暂无可用结构。</p>
-            ) : (
+            <Field label="选择结构" className="inspector-field--modal-table">
+              <p className="text-body-var-pill-modal__hint">
+                在下方表格中单选一条内置结构后点「添加变量」。
+              </p>
               <SelectablePickerTable
                 ariaLabel={`内置变量结构 · ${activeTierMeta?.label ?? ""}`}
                 rowKey={(structure) => structure.structureId}
@@ -260,6 +252,9 @@ export function PayloadSlotSourceModal({
                 radioName="builtin-variable-structure"
                 dataSource={filteredStructures}
                 maxBodyHeight="min(50vh, 440px)"
+                emptyText={
+                  <p className="text-body-var-pill-modal__empty">{TIER_EMPTY_MESSAGE}</p>
+                }
                 columns={[
                   {
                     key: "label",
@@ -290,7 +285,7 @@ export function PayloadSlotSourceModal({
                   },
                 ]}
               />
-            )}
+            </Field>
 
             {selected ? (
               <p className="payload-slot-source-modal__selection" role="status">

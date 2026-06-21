@@ -44,7 +44,7 @@ export function collectionItems(
     return item !== null && typeof item === "object" && !Array.isArray(item);
   });
   const slotDef = payload?.slots?.[repeat.slotId];
-  const filtered = applyCollectionItemVisibility(items, slotDef?.itemVisibility);
+  const filtered = applyCollectionItemVisibility(items, slotDef?.itemVisibility, slotDef);
   const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
   return maxItems !== undefined ? filtered.slice(0, maxItems) : filtered;
 }

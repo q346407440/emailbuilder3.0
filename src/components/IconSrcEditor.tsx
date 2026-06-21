@@ -4,7 +4,7 @@ import type { ProjectIconAsset, ProjectIconManifest } from "../types/iconAsset";
 import { listProjectIconAssets } from "../api/client";
 import { readIconBlockProps } from "../lib/iconBlock";
 import { Field } from "./ui/Field";
-import { ShopSelect } from "./ui/ShopFormControls";
+import { ShopSegmented, ShopSelect } from "./ui/ShopFormControls";
 import { UrlAssetUploadInput } from "./ui/UrlAssetUploadInput";
 
 type IconSrcUiMode = "url" | "library";
@@ -74,8 +74,7 @@ export function IconSrcEditor({
     setManualMode(null);
   }, [block.id]);
 
-  const onModeChange = (nextMode: string) => {
-    const mode: IconSrcUiMode = nextMode === "library" ? "library" : "url";
+  const onModeChange = (mode: IconSrcUiMode) => {
     setManualMode(mode);
     if (mode === "library") {
       const first = libraryItems[0];
@@ -100,13 +99,12 @@ export function IconSrcEditor({
             : "仅作编辑入口；保存到 JSON 的始终是图标 URL（src）。"
         }
       >
-        <ShopSelect value={uiMode} disabled={srcLocked} onChange={onModeChange}>
-          {MODE_OPTIONS.map((opt) => (
-            <ShopSelect.Option key={opt.value} value={opt.value}>
-              {opt.label}
-            </ShopSelect.Option>
-          ))}
-        </ShopSelect>
+        <ShopSegmented<IconSrcUiMode>
+          value={uiMode}
+          disabled={srcLocked}
+          options={[...MODE_OPTIONS]}
+          onChange={onModeChange}
+        />
       </Field>
 
       {uiMode === "url" ? (

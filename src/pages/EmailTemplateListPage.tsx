@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { toastError, toastInfo, toastSuccess, toastWarning } from "../lib/appToast";
 import * as api from "../api/client";
 import { CrmOpsShell } from "../components/crmOps/CrmOpsShell";
 import {
@@ -21,8 +21,11 @@ import {
 import { goToEmailEditorWithContext } from "../lib/appNavigation";
 import { toUserFacingErrorMessage } from "../lib/userFacingError";
 import { isPublishedPublishStatus, type PublishStatus } from "../publish-status-contract";
-import type { AiStepUiState } from "../layout-variant-ai-contract/progress";
-import { reduceAiPipelineProgress } from "../layout-variant-ai-contract/progress";
+import {
+  reduceAiPipelineProgress,
+  buildPendingRestoreAstSteps,
+  type AiStepUiState,
+} from "../layout-variant-ai-contract/progress";
 
 function formatDateTime(value: string | undefined): string {
   if (!value) return "暂无记录";
@@ -70,6 +73,10 @@ export function EmailTemplateListPage() {
   const [metaDirty, setMetaDirty] = useState(false);
   const [metaSaving, setMetaSaving] = useState(false);
   const [metaSaveNonce, setMetaSaveNonce] = useState(0);
+
+  const reportMetaEditorError = useCallback((msg: string) => {
+    toastError(msg);
+  }, []);
 
   const loadCatalog = useCallback(async (options?: { showLoading?: boolean }): Promise<api.EmailTemplateCatalogItem[]> => {
     const showLoading = options?.showLoading ?? true;
@@ -177,12 +184,14 @@ export function EmailTemplateListPage() {
         displayName,
         ...(createMode === "copy" && copySourceKey ? { copyFromEmailKey: copySourceKey } : {}),
       });
-      message.info(createMode === "copy" ? "邮件模板已复制" : "邮件模板已创建");
+      toastInfo(createMode === "copy" ? "邮件模板已复制" : "邮件模板已创建");
       setCreateOpen(false);
       setCopySourceKey(null);
+      // 先刷新列表再选中：否则 selectedEmailKey 尚未出现在 filteredItems 时会被 useEffect 重置为首项
       setTemplateQuery("");
+      setTemplatePublishedOnly(false);
+      await loadCatalog({ showLoading: false });
       setSelectedEmailKey(created.emailKey);
-      await loadCatalog();
     } finally {
       setCreating(false);
     }
@@ -196,7 +205,7 @@ export function EmailTemplateListPage() {
     try {
       await api.putEmailMeta(item.emailKey, { publishStatus });
       await loadCatalog({ showLoading: false });
-      message.info(publishStatus === "published" ? "邮件模板已发布" : "邮件模板已撤回发布");
+      toastInfo(publishStatus === "published" ? "邮件模板已发布" : "邮件模板已撤回发布");
     } finally {
       setTemplateActionBusy(false);
     }
@@ -226,7 +235,7 @@ export function EmailTemplateListPage() {
       await api.patchLayoutVariant(selectedItem.emailKey, renamingDesign.designId, {
         label: normalized,
       });
-      message.info("版式已重命名");
+      toastInfo("版式已重命名");
       setRenamingDesign(null);
       await loadCatalog();
     } catch (err) {
@@ -245,7 +254,7 @@ export function EmailTemplateListPage() {
     try {
       await api.patchLayoutVariant(selectedItem.emailKey, design.designId, { publishStatus });
       await loadCatalog({ showLoading: false });
-      message.info(publishStatus === "published" ? "版式已发布" : "版式已撤回发布");
+      toastInfo(publishStatus === "published" ? "版式已发布" : "版式已撤回发布");
     } finally {
       setDesignActionBusy(false);
     }
@@ -254,7 +263,7 @@ export function EmailTemplateListPage() {
   const deleteDesign = async (design: api.EmailTemplateCatalogDesign) => {
     if (!selectedItem) return;
     if (selectedItem.designs.length <= 1) {
-      message.warning("至少需要保留一个版式");
+      toastWarning("至少需要保留一个版式");
       return;
     }
     const ok = await confirm({
@@ -268,7 +277,7 @@ export function EmailTemplateListPage() {
     setDesignActionBusy(true);
     try {
       await api.deleteLayoutVariant(selectedItem.emailKey, design.designId);
-      message.info("版式已删除");
+      toastInfo("版式已删除");
       await loadCatalog();
     } finally {
       setDesignActionBusy(false);
@@ -285,14 +294,14 @@ export function EmailTemplateListPage() {
     });
     if (!ok) return;
     await api.deleteEmail(item.emailKey);
-    message.info("邮件模板已删除");
+    toastInfo("邮件模板已删除");
     await loadCatalog();
   };
 
   const createDesign = async (payload: LayoutVariantCreateSubmit) => {
     if (!selectedItem) return;
     setDesignCreating(true);
-    setAiPipelineSteps(payload.kind === "ai" ? [] : null);
+    setAiPipelineSteps(payload.kind === "ai" ? buildPendingRestoreAstSteps() : null);
     try {
       const created =
         payload.kind === "ai"
@@ -301,6 +310,8 @@ export function EmailTemplateListPage() {
               payload.label,
               payload.imageFile,
               {
+                pipeline: payload.pipeline,
+                llmProfile: payload.llmProfile,
                 onProgress: (progress) => {
                   setAiPipelineSteps((prev) => reduceAiPipelineProgress(prev, progress));
                 },
@@ -309,7 +320,7 @@ export function EmailTemplateListPage() {
           : await api.createLayoutVariant(selectedItem.emailKey, { label: payload.label });
       setDesignCreateOpen(false);
       setAiPipelineSteps(null);
-      message.info(payload.kind === "ai" ? "版式已生成" : "版式已创建");
+      toastInfo(payload.kind === "ai" ? "版式已生成" : "版式已创建");
       goToEmailEditorWithContext(selectedItem.emailKey, created.layoutVariantId);
     } finally {
       setDesignCreating(false);
@@ -666,7 +677,7 @@ export function EmailTemplateListPage() {
             externalSaveNonce={metaSaveNonce}
             onDirtyChange={setMetaDirty}
             onSavingChange={setMetaSaving}
-            onError={(msg) => message.error(msg)}
+            onError={reportMetaEditorError}
             onSaved={() => void loadCatalog({ showLoading: false })}
           />
         </ShopSectionModal>

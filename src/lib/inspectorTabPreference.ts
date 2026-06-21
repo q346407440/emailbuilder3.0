@@ -1,12 +1,22 @@
 import type { InspectorMainTab } from "../components/AdminInspectorTabs";
+import type { EmailBlock } from "../types/email";
+import { isRepeatHostBlock } from "./repeatHostBlock";
 
 export const INSPECTOR_TAB_FALLBACK: InspectorMainTab = "style";
 
 export type InspectorTabAvailability = Record<InspectorMainTab, boolean>;
 
+/** 仅 layout / grid / image 宿主展示 Inspector「数据组」Tab（与 repeat / object 绑定能力一致） */
+export function shouldShowInspectorRepeatRegionPanel(
+  block: EmailBlock | undefined,
+  hasBlockSelection: boolean
+): boolean {
+  return hasBlockSelection && isRepeatHostBlock(block);
+}
+
 /** 与 Inspector 中 listPane / visibilityPane 是否挂载的规则一致 */
 export function buildInspectorTabAvailability(
-  canvasMode: boolean,
+  emailRootPanel: boolean,
   blockType: string,
   showRepeatRegionPanel: boolean
 ): InspectorTabAvailability {
@@ -15,7 +25,7 @@ export function buildInspectorTabAvailability(
     style: true,
     layout: true,
     list: showRepeatRegionPanel,
-    visibility: !canvasMode && blockType !== "emailRoot",
+    visibility: !emailRootPanel && blockType !== "emailRoot",
   };
 }
 

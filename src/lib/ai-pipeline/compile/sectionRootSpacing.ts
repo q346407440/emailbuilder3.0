@@ -1,16 +1,11 @@
+import type { SpacingValueFlat } from "../../../types/email";
 import { parsePxValue } from "../b1StyleTierPresets";
 import type { CompactNode, GroundingSection } from "../types";
 
 /** 区段壳 padding 单边上限（与 email-template-restore-check §19 一致）。 */
 export const SECTION_ROOT_PADDING_MAX_PX = 24;
 
-export type SectionRootSeparatePadding = {
-  mode: "separate";
-  top: string;
-  right: string;
-  bottom: string;
-  left: string;
-};
+export type SectionRootFlatPadding = SpacingValueFlat;
 
 function clampSectionPaddingPx(px: number): number {
   return Math.min(SECTION_ROOT_PADDING_MAX_PX, Math.max(0, Math.round(px)));
@@ -43,7 +38,7 @@ export function resolveSectionRootPadding(input: {
   section: GroundingSection;
   orderIndex: number;
   spacing: { section: string; pageInline: string };
-}): SectionRootSeparatePadding {
+}): SectionRootFlatPadding {
   const { section, orderIndex, spacing } = input;
   const fullWidth = section.layoutHints?.fullWidth === true;
   const uniform = resolveUniformSectionSpacing(spacing);
@@ -52,7 +47,6 @@ export function resolveSectionRootPadding(input: {
   const inline = fullWidth ? "0" : uniform.horizontal;
 
   return {
-    mode: "separate",
     top,
     right: inline,
     bottom: uniform.vertical,

@@ -1,0 +1,548 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "#000000",
+      "accent": "#1428A0",
+      "secondary": "#757575",
+      "surface": "#FFFFFF"
+    },
+    "spacing": {
+      "section": "24px",
+      "gap": "12px",
+      "pageInline": "16px"
+    },
+    "typography": {
+      "display": "32px",
+      "h1": "18px",
+      "body": "14px",
+      "caption": "11px"
+    },
+    "radius": {
+      "panel": "12px",
+      "cta": "999px"
+    }
+  },
+  "tree": {
+    "t": "email",
+    "children": [
+      {
+        "t": "stack",
+        "title": "头部主推商品",
+        "align": "center",
+        "gap": "gap",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0F0"
+          }
+        },
+        "children": [
+          {
+            "t": "stack",
+            "title": "三星品牌顶栏",
+            "align": "center",
+            "box": {
+              "pad": "gap",
+              "tone": "primary",
+              "radius": "panel"
+            },
+            "children": [
+              {
+                "t": "icon",
+                "query": "brand-samsung",
+                "pack": "simple-icons",
+                "required": true,
+                "size": "lg",
+                "tone": "surface"
+              }
+            ]
+          },
+          {
+            "t": "stack",
+            "title": "主推商品内容",
+            "align": "center",
+            "gap": "gap",
+            "box": {
+              "pad": "section",
+              "tone": "surface",
+              "radius": "panel"
+            },
+            "children": [
+              {
+                "t": "text",
+                "content": "High in demand. Even higher in value.",
+                "role": "display",
+                "bold": true
+              },
+              {
+                "t": "text",
+                "content": "Come back and see if there are new ways to save on your next favorite product.",
+                "role": "body"
+              },
+              {
+                "t": "image",
+                "query": "samsung galaxy note20 rose gold smartphone with s pen product photography white background",
+                "height": {
+                  "px": 320
+                },
+                "required": true
+              },
+              {
+                "t": "text",
+                "content": "Galaxy Note20 5G",
+                "role": "h1",
+                "bold": true
+              },
+              {
+                "t": "button",
+                "label": "BUY NOW",
+                "href": "#",
+                "tone": "surface"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "相似商品推荐",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0F0"
+          }
+        },
+        "children": [
+          {
+            "t": "stack",
+            "title": "相似商品白卡",
+            "align": "center",
+            "gap": "section",
+            "box": {
+              "pad": "section",
+              "tone": "surface",
+              "radius": "panel"
+            },
+            "children": [
+              {
+                "t": "text",
+                "content": "Not the perfect fit? Shop similar must-have products.",
+                "role": "h1",
+                "bold": true
+              },
+              {
+                "t": "grid",
+                "title": "双列相似商品",
+                "columns": 2,
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "stack",
+                    "title": "相似品左卡",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "image",
+                        "query": "samsung galaxy s20 fe navy blue smartphone product front view white background",
+                        "height": {
+                          "px": 200
+                        },
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Galaxy S20 FE 5G",
+                        "role": "body",
+                        "bold": true
+                      },
+                      {
+                        "t": "button",
+                        "label": "BUY NOW",
+                        "href": "#",
+                        "tone": "surface"
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "相似品右卡",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "image",
+                        "query": "samsung galaxy s20 plus grey smartphone product front view white background",
+                        "height": {
+                          "px": 200
+                        },
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Galaxy S20+ 5G",
+                        "role": "body",
+                        "bold": true
+                      },
+                      {
+                        "t": "button",
+                        "label": "BUY NOW",
+                        "href": "#",
+                        "tone": "surface"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "品类导航发现",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0F0"
+          }
+        },
+        "children": [
+          {
+            "t": "stack",
+            "title": "品类导航白卡",
+            "align": "center",
+            "gap": "section",
+            "box": {
+              "pad": "section",
+              "tone": "surface",
+              "radius": "panel"
+            },
+            "children": [
+              {
+                "t": "text",
+                "content": "Or discover our latest offers",
+                "role": "h1",
+                "bold": true
+              },
+              {
+                "t": "grid",
+                "title": "五类品类图标",
+                "columns": 5,
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "stack",
+                    "title": "手机品类",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "device-mobile",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Phones",
+                        "role": "caption",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "电视品类",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "device-tv",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "TV & Home Theater",
+                        "role": "caption",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "平板穿戴品类",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "devices",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Tablets & Wearables",
+                        "role": "caption",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "计算设备品类",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "device-laptop",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Computing",
+                        "role": "caption",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "家电品类",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "icon",
+                        "query": "fridge",
+                        "pack": "tabler",
+                        "size": "md",
+                        "required": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Appliances & Smarthome",
+                        "role": "caption",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "促销价值主张",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0F0"
+          }
+        },
+        "children": [
+          {
+            "t": "stack",
+            "title": "三列促销黑卡",
+            "align": "center",
+            "gap": "section",
+            "box": {
+              "pad": "section",
+              "tone": "primary",
+              "radius": "panel"
+            },
+            "children": [
+              {
+                "t": "grid",
+                "title": "三列促销卖点",
+                "columns": 3,
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "stack",
+                    "title": "免运费卖点",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "Free shipping",
+                        "role": "h1",
+                        "tone": "surface",
+                        "bold": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Get your favorite items, delivered right to your doorstep.",
+                        "role": "caption",
+                        "tone": "surface"
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "积分奖励卖点",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "Get rewarded",
+                        "role": "h1",
+                        "tone": "surface",
+                        "bold": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Earn points on eligible purchases, then redeem for Samsung products & more.",
+                        "role": "caption",
+                        "tone": "surface"
+                      }
+                    ]
+                  },
+                  {
+                    "t": "stack",
+                    "title": "分期付款卖点",
+                    "align": "center",
+                    "gap": "gap",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "Pay later",
+                        "role": "h1",
+                        "tone": "surface",
+                        "bold": true
+                      },
+                      {
+                        "t": "text",
+                        "content": "Convenient financing available with $0 down.",
+                        "role": "caption",
+                        "tone": "surface"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "页脚社交合规",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": {
+            "hex": "#F0F0F0"
+          }
+        },
+        "children": [
+          {
+            "t": "row",
+            "title": "社媒图标行",
+            "align": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "icon",
+                "query": "brand-facebook",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "secondary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "brand-twitter",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "secondary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "brand-youtube",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "secondary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "brand-instagram",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "secondary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "brand-linkedin",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "secondary",
+                "required": true
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "content": "Contact Us | Privacy Policy | Legal | Unsubscribe | View In Browser",
+            "role": "caption",
+            "tone": "secondary",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "© 2021 Samsung Electronics Co., Ltd. All rights reserved.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "Prices and offers are subject to change without notice. Quantities are limited. Samsung reserves the right to modify pricing and correct errors.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "To ensure delivery of Samsung emails, please add samsung@email.samsung.com to your address book or safe sender list.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "Questions? Contact Customer Service for assistance with your order or account.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "Samsung Electronics America, 85 Challenger Road, Ridgefield Park, NJ 07660",
+            "role": "caption",
+            "tone": "secondary"
+          }
+        ]
+      }
+    ]
+  }
+}

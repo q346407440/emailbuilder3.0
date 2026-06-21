@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { validateTemplate } from "./validate";
 import type { EmailTemplate } from "../types/email";
+import { borderNoneFlat, borderRadiusZeroFlat, spacingZero } from "./boxModelFlat";
 
 function minimalTemplate(blockPadding: unknown): EmailTemplate {
   return {
@@ -19,7 +20,7 @@ function minimalTemplate(blockPadding: unknown): EmailTemplate {
         children: ["box"],
         props: {
           width: "600px",
-          padding: { mode: "unified", unified: "0" },
+          padding: spacingZero(),
         },
       },
       box: {
@@ -32,8 +33,8 @@ function minimalTemplate(blockPadding: unknown): EmailTemplate {
           heightMode: "hug",
           contentAlign: { horizontal: "left", vertical: "top" },
           padding: blockPadding,
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          borderRadius: { mode: "unified", radius: "0" },
+          border: borderNoneFlat(),
+          borderRadius: borderRadiusZeroFlat(),
         },
         props: { direction: "vertical", gapMode: "fixed", gap: "0" },
       },
@@ -41,34 +42,56 @@ function minimalTemplate(blockPadding: unknown): EmailTemplate {
   } as EmailTemplate;
 }
 
-describe("validateSpacingValue · unified 仅允许单边长度", () => {
-  test("unified 单值通过", () => {
+describe("validateSpacingValue · 四边平铺", () => {
+  test("四边字面量通过", () => {
     const issues = validateTemplate(
-      minimalTemplate({ mode: "unified", unified: "8px" })
+      minimalTemplate({
+        top: "8px",
+        right: "8px",
+        bottom: "8px",
+        left: "8px",
+      })
     );
     assert.equal(
-      issues.some((i) => i.path.includes("padding") && i.reason.includes("多值简写")),
+      issues.some((i) => i.path.includes("padding")),
       false
     );
   });
 
-  test("unified 四值简写失败", () => {
+  test("单边 CSS 多值简写失败", () => {
     const issues = validateTemplate(
-      minimalTemplate({ mode: "unified", unified: "8px 0 0 0" })
+      minimalTemplate({
+        top: "8px 0 0 0",
+        right: "0",
+        bottom: "0",
+        left: "0",
+      })
     );
     assert.ok(
       issues.some(
         (i) =>
-          i.path === "blocks.box.wrapperStyle.padding.unified" &&
-          i.reason.includes("separate")
+          i.path === "blocks.box.wrapperStyle.padding.top" &&
+          i.reason.includes("多值简写")
       )
     );
   });
 
-  test("separate 四边独立通过", () => {
+  test("legacy mode: unified 拒绝", () => {
+    const issues = validateTemplate(
+      minimalTemplate({ mode: "unified", unified: "8px" })
+    );
+    assert.ok(
+      issues.some(
+        (i) =>
+          i.path === "blocks.box.wrapperStyle.padding" &&
+          i.reason.includes("mode: unified/separate")
+      )
+    );
+  });
+
+  test("四边独立平铺通过", () => {
     const issues = validateTemplate(
       minimalTemplate({
-        mode: "separate",
         top: "8px",
         right: "0",
         bottom: "0",

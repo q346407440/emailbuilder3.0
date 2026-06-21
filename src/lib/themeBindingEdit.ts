@@ -3,10 +3,7 @@ import type { ExpandedTheme } from "../types/theme";
 import { isThemeRef } from "../types/themeRef";
 import { classifyField } from "./blockFieldClassification";
 import { getAtPath, setAtPath } from "./paths";
-import {
-  coercePaddingOnContainer,
-  isPaddingFieldSubPath,
-} from "./spacingValue";
+import { coerceBoxModelOnContainer } from "./boxModelStorage";
 import {
   getBindingUiMeta,
   getThemeRestoreJson,
@@ -74,16 +71,12 @@ export function setTemplateFieldOnly(template: EmailTemplate, blockId: string, b
   if (root === "props") {
     if (sub) setAtPath(b.props as Record<string, unknown>, sub, value);
     else Object.assign(b.props, value as object);
-    if (isPaddingFieldSubPath(sub) || (b.props as Record<string, unknown>).padding !== undefined) {
-      coercePaddingOnContainer(b.props as Record<string, unknown>);
-    }
+    coerceBoxModelOnContainer(b.props as Record<string, unknown>, sub);
   } else if (root === "wrapperStyle") {
     if (!b.wrapperStyle) b.wrapperStyle = {};
     if (sub) setAtPath(b.wrapperStyle as Record<string, unknown>, sub, value);
     else Object.assign(b.wrapperStyle, value as object);
-    if (isPaddingFieldSubPath(sub) || b.wrapperStyle.padding !== undefined) {
-      coercePaddingOnContainer(b.wrapperStyle as Record<string, unknown>);
-    }
+    coerceBoxModelOnContainer(b.wrapperStyle as Record<string, unknown>, sub);
   }
   return t;
 }

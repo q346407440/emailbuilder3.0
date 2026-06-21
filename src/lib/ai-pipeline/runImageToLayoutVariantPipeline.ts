@@ -5,7 +5,7 @@ import {
 } from "../../layout-variant-ai-contract/progress";
 import { AiPipelineError } from "../../layout-variant-ai-contract/errors";
 import { createDefaultAssetResolver } from "./assetResolve";
-import { createDoubaoClient } from "./adapters/doubaoClient";
+import { createDefaultLlmClient } from "./createLlmClient";
 import { wrapLlmClientWithQueue } from "./llmRequestQueue";
 import { mergeSections } from "./mergeSections";
 import { bindThemeRefsAfterAiLowering } from "./bindThemeRefsAfterAiLowering";
@@ -44,7 +44,7 @@ export async function runImageToLayoutVariantPipeline(
   options: RunPipelineOptions = {}
 ): Promise<PipelineRunResult> {
   const pipelineRunId = randomUUID();
-  const innerLlm = options.llm ?? createDoubaoClient();
+  const innerLlm = options.llm ?? createDefaultLlmClient();
   const llm = options.llm ? innerLlm : wrapLlmClientWithQueue(innerLlm);
   const assets = options.assets ?? createDefaultAssetResolver();
   const logger = options.logger ?? createConsolePipelineLogger();

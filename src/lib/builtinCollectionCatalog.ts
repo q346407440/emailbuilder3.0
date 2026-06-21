@@ -76,7 +76,7 @@ export function flattenBuiltinProductRow(product: BuiltinProductMock): Record<st
 export const BUILTIN_PRODUCTS_MOCK: Record<string, unknown>[] =
   BUILTIN_PRODUCTS_MOCK_RAW.map(flattenBuiltinProductRow);
 
-/** 内置商品专辑 mock（10 条，对齐 PRD / Shoplazza Collection） */
+/** 内置商品专辑 mock（10 条，对齐 PRD / 标准 Collection 字段） */
 export const BUILTIN_ALBUMS_MOCK: Record<string, unknown>[] = [
   {
     id: "coll-midnight-neon",

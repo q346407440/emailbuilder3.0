@@ -1,9 +1,10 @@
-import { forwardRef, useMemo, useRef, type ComponentPropsWithoutRef, type ReactNode } from "react";
-import { ColorPicker } from "@shoplazza/sds";
+import { forwardRef, useMemo, useRef, type ComponentPropsWithoutRef, type ComponentRef, type ReactNode } from "react";
+import { ColorPicker } from "antd";
+import type { AggregationColor } from "antd/es/color-picker/color";
 import { Field } from "./Field";
 import { ShopSecondaryButton } from "./ShopFormControls";
 import { useAdaptiveOverlayEdge } from "../../hooks/useAdaptiveOverlayEdge";
-import { antdOverlayEdge } from "../../lib/antdOverlayEdge";
+import { toAntdPlacement } from "../../lib/antdOverlayEdge";
 import {
   parseCssColorToRgba,
   rgbaForPicker,
@@ -22,17 +23,14 @@ export type ColorFieldProps = {
   warning?: string;
 };
 
-/** SDS ColorPicker 回调中的颜色对象 → 统一输出 rgba() */
-function pickerColorToCss(c: {
-  toRgb: () => { r: number; g: number; b: number };
-  getAlpha: () => number;
-}): string {
-  const { r, g, b } = c.toRgb();
-  return rgbaToCss({ r, g, b, a: c.getAlpha() });
+/** Ant Design ColorPicker 回调中的颜色对象 → 统一输出 rgba() */
+function pickerColorToCss(c: AggregationColor): string {
+  const { r, g, b, a } = c.toRgb();
+  return rgbaToCss({ r, g, b, a });
 }
 
 const ColorSwatchTrigger = forwardRef<
-  HTMLElement,
+  ComponentRef<typeof ShopSecondaryButton>,
   ComponentPropsWithoutRef<typeof ShopSecondaryButton> & {
     disabled?: boolean;
     open: boolean;
@@ -60,7 +58,7 @@ const ColorSwatchTrigger = forwardRef<
 });
 
 /**
- * 颜色编辑：点击色块展开 SDS ColorPicker（与 Shoplazza 后台限时促销「配色 · 自定义」交互一致）。
+ * 颜色编辑：点击色块展开 Ant Design ColorPicker。
  */
 export function ColorField({
   label,
@@ -96,18 +94,15 @@ export function ColorField({
           value={pickerValue}
           disabled={disabled}
           disabledAlpha={false}
+          open={open}
           onChange={(c) => onChange(pickerColorToCss(c))}
-          dropdownProps={{
-            ...antdOverlayEdge(overlayEdge),
-            onVisibleChange,
-            overlayClassName,
-            /** 不向触发器追加 sds-dropdown-open，避免与按钮样式叠加引起布局抖动 */
-            openClassName: "",
-            destroyPopupOnHide: true,
-            // 固定挂载到 body，避免展开面板时影响右侧属性区高度计算。
-            getPopupContainer: (triggerNode: HTMLElement) =>
-              triggerNode.ownerDocument?.body ?? triggerNode,
-          }}
+          onOpenChange={onVisibleChange}
+          placement={toAntdPlacement(overlayEdge)}
+          rootClassName={overlayClassName}
+          destroyOnHidden
+          getPopupContainer={(triggerNode) =>
+            triggerNode.ownerDocument?.body ?? triggerNode
+          }
         >
           <div
             ref={triggerWrapRef}

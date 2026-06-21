@@ -39,14 +39,9 @@ const IMG_ALT = "城市天际线（雾中高楼）";
 const IMAGE_TEST_ASSET_BASE =
   process.env.IMAGE_TEST_ASSET_BASE?.replace(/\/$/, "") || "http://127.0.0.1:5180";
 const positionAsset = (name) => `${IMAGE_TEST_ASSET_BASE}/image-test-position/${name}`;
-const BORDER_ZERO = {
-  mode: "unified",
-  width: "0",
-  style: "solid",
-  color: "rgba(0,0,0,0)",
-};
-const RADIUS_SM = { mode: "unified", radius: "4px" };
-const RADIUS_MD = { mode: "unified", radius: "12px" };
+const BORDER_ZERO = { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
+const RADIUS_SM = { topLeft: "4px", topRight: "4px", bottomRight: "4px", bottomLeft: "4px" };
+const RADIUS_MD = { topLeft: "12px", topRight: "12px", bottomRight: "12px", bottomLeft: "12px" };
 
 /** @type {Record<string, object>} */
 const blocks = {};
@@ -137,7 +132,7 @@ function layout(id, parentId, direction, children, wrapperExtra = {}, propsExtra
       heightMode: "hug",
       border: BORDER_ZERO,
       borderRadius: RADIUS_SM,
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
       ...wrapperExtra,
     },
     props: { direction, gapMode: "fixed", gap: "6px", ...propsExtra },
@@ -157,7 +152,7 @@ function grid(id, parentId, children, columns, wrapperExtra = {}, propsExtra = {
       heightMode: "hug",
       border: BORDER_ZERO,
       borderRadius: RADIUS_SM,
-      padding: { mode: "unified", unified: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       ...wrapperExtra,
     },
     props: {
@@ -265,7 +260,7 @@ function chapterHeader(sectionId, parentId, num, title, hint, tint = "#F9FAFB") 
 function section(id, parentId, childIds, bg) {
   const sec = layout(id, parentId, "vertical", childIds, {
     backgroundColor: bg,
-    padding: { mode: "unified", unified: "12px" },
+    padding: { top: "12px", right: "12px", bottom: "12px", left: "12px" },
   });
   addBlock(sec, id, "layout");
   return id;
@@ -316,8 +311,8 @@ function buildGridDemo(cellId, parentId, title, columns, childSpecs, gridExtra =
     layout(cellId, parentId, "vertical", [`${cellId}-lbl`, gridId], {
       widthMode: "fill",
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#E5E7EB" },
-      padding: { mode: "unified", unified: "6px" },
+      border: { style: "solid", color: "#E5E7EB", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
     }),
     title,
     "layout"
@@ -339,8 +334,8 @@ function buildDemoRow(rowId, parentId, title, cellBuilders) {
   addBlock(
     layout(rowId, parentId, "vertical", [`${rowId}-title`, ...cellIds], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#BFDBFE" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#BFDBFE", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     title,
     "layout"
@@ -372,7 +367,7 @@ addBlock(
     props: {
       backgroundColor: "#F3F4F6",
       width: "600px",
-      padding: { mode: "unified", unified: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: BORDER_ZERO,
       gapMode: "fixed",
       gap: "20px",
@@ -613,8 +608,8 @@ buildDemoRow("gt-ch4-row", "gt-ch4", "4 · 外壳样式", [
         { kind: "chip", label: "B", color: "#7C3AED" },
       ],
       {
-        padding: { mode: "unified", unified: "12px" },
-        border: { mode: "unified", width: "2px", style: "solid", color: "#A78BFA" },
+        padding: { top: "12px", right: "12px", bottom: "12px", left: "12px" },
+        border: { style: "solid", color: "#A78BFA", top: "2px", right: "2px", bottom: "2px", left: "2px" },
         backgroundColor: "#F5F3FF",
       }
     ),
@@ -686,10 +681,10 @@ chapterHeader(
         {
           contentAlign: contentAlignFromAxes(combo.h, combo.v),
           backgroundColor: "#F0FDFA",
-          border: { mode: "unified", width: "1px", style: "solid", color: "#99F6E4" },
+          border: { style: "solid", color: "#99F6E4", top: "1px", right: "1px", bottom: "1px", left: "1px" },
           heightMode: "fixed",
           height: "72px",
-          padding: { mode: "unified", unified: "4px" },
+          padding: { top: "4px", right: "4px", bottom: "4px", left: "4px" },
         },
         { gap: "0" }
       ),
@@ -707,7 +702,7 @@ chapterHeader(
       layout(cellId, `${wrapId}-row`, "vertical", [`${cellId}-lbl`, gId], {
         widthMode: "fill",
         backgroundColor: "#FFFFFF",
-        padding: { mode: "unified", unified: "4px" },
+        padding: { top: "4px", right: "4px", bottom: "4px", left: "4px" },
       }),
       combo.label,
       "layout"
@@ -717,8 +712,8 @@ chapterHeader(
   addBlock(
     layout(wrapId, "gt-ch5", "vertical", [`${wrapId}-title`, `${wrapId}-row`], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#67E8F9" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#67E8F9", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "5 速查",
     "layout"
@@ -817,7 +812,7 @@ buildGridDemo(
     { kind: "image", label: "image", opts: { height: "64px", fit: "cover" } },
     { kind: "button", label: "按钮", opts: { bg: "#334155" } },
   ],
-  { padding: { mode: "unified", unified: "6px" } },
+  { padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" } },
   { gap: "10px" }
 );
 
@@ -893,7 +888,7 @@ buildGridDemo(
   {
     heightMode: "fixed",
     height: "100px",
-    padding: { mode: "unified", unified: "10px" },
+    padding: { top: "10px", right: "10px", bottom: "10px", left: "10px" },
     backgroundImage: {
       src: IMG_SRC,
       alt: IMG_ALT,
@@ -933,7 +928,7 @@ buildGridDemo(
     { kind: "chip", label: "R3·A", color: "#065F46" },
     { kind: "chip", label: "R3·B", color: "#065F46" },
   ],
-  { border: { mode: "unified", width: "1px", style: "solid", color: "#6EE7B7" } },
+  { border: { style: "solid", color: "#6EE7B7", top: "1px", right: "1px", bottom: "1px", left: "1px" } },
   { gap: "10px", cellHeightMode: "content-max" }
 );
 
@@ -983,7 +978,7 @@ chapterHeader(
       {
         heightMode: "fixed",
         height: "160px",
-        padding: { mode: "unified", unified: "8px" },
+        padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
         backgroundImage: {
           src: IMG_SRC,
           alt: IMG_ALT,
@@ -1002,8 +997,8 @@ chapterHeader(
   addBlock(
     layout(comboId, "gt-ch10", "vertical", [`${comboId}-lbl`, gId], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FCD34D" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#FCD34D", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "综合",
     "layout"
@@ -1046,7 +1041,7 @@ const tokenPresets = {
       label: "测试预设",
       description: "最小 token",
       tokens: {
-        colors: { primary: "#111827", secondary: "#6B7280", surface: "#FFFFFF" },
+        colors: { primary: "#111827", accent: "#1A1A1A", secondary: "#6B7280", surface: "#FFFFFF" },
         spacing: { section: "12px", gap: "8px", pageInline: "12px" },
         typography: { display: "24px", h1: "18px", body: "13px", caption: "12px" },
         radius: { panel: "4px", cta: "4px" },

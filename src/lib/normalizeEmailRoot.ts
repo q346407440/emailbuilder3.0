@@ -1,55 +1,15 @@
-import type {
-  BorderStyle,
-  BorderValue,
-  EmailBlock,
-  EmailTemplate,
-  LayoutGapMode,
-  WrapperStyle,
-} from "../types/email";
+import type { EmailBlock, EmailTemplate, LayoutGapMode, WrapperStyle } from "../types/email";
 import { isThemeRef } from "../types/themeRef";
 
 import { EMAIL_ROOT_FIXED_WIDTH } from "../render-defaults-contract/values";
+import { borderNoneFlat, normalizeBorderValueForStorage } from "./boxModelFlat";
 import { normalizeSpacingValueForStorage } from "./spacingValue";
 
 const ROOT_FIXED_WIDTH = EMAIL_ROOT_FIXED_WIDTH;
 const ROOT_DEFAULT_BG = "#ffffff";
-const ROOT_DEFAULT_BORDER: BorderValue = {
-  mode: "unified",
-  width: "0",
-  style: "solid",
-  color: "rgba(0,0,0,0)",
-};
 
-function pickBorderStyle(raw: unknown): BorderStyle {
-  return raw === "dashed" || raw === "dotted" ? raw : "solid";
-}
-
-function normalizeRootBorder(value: unknown): BorderValue {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return { ...ROOT_DEFAULT_BORDER };
-  }
-  const raw = value as Record<string, unknown>;
-  const style = pickBorderStyle(raw.style);
-  const color =
-    typeof raw.color === "string" && raw.color.trim() ? raw.color.trim() : "rgba(0,0,0,0)";
-  if (raw.mode === "custom") {
-    const sideWidth = (s: unknown): string => {
-      if (!s || typeof s !== "object") return "0";
-      const w = (s as Record<string, unknown>).width;
-      return typeof w === "string" && w.trim() ? w.trim() : "0";
-    };
-    return {
-      mode: "custom",
-      style,
-      color,
-      top: { width: sideWidth(raw.top) },
-      right: { width: sideWidth(raw.right) },
-      bottom: { width: sideWidth(raw.bottom) },
-      left: { width: sideWidth(raw.left) },
-    };
-  }
-  const width = typeof raw.width === "string" && raw.width.trim() ? raw.width.trim() : "0";
-  return { mode: "unified", width, style, color };
+function normalizeRootBorder(value: unknown) {
+  return normalizeBorderValueForStorage(value ?? borderNoneFlat());
 }
 
 function normalizeRootWrapperStyle(value: unknown): WrapperStyle {

@@ -17,8 +17,8 @@ export function getLayoutSelectDropdownRect() {
   const list = document.querySelector('[role="listbox"]');
   if (!list) return null;
   const dd =
-    list.closest(".sds-select-dropdown") ??
-    list.closest(".sds-select-dropdown-wrap") ??
+    list.closest(".ant-select-dropdown") ??
+    list.closest(".ant-select-dropdown-wrap") ??
     list.parentElement?.closest("[class*='select-dropdown']");
   const target = dd ?? list.parentElement?.parentElement;
   if (!target) return null;

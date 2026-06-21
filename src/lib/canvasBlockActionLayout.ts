@@ -17,9 +17,9 @@ export type CanvasBlockActionColumnLayout = {
 export type CanvasBlockActionLayout = {
   insert: CanvasBlockActionColumnLayout;
   delete: CanvasBlockActionColumnLayout;
-  /** 左侧按钮列 left（相对 stage） */
+  /** 左侧按钮列 left（`position: fixed` 视口坐标） */
   insertLeft: number;
-  /** 右侧删除钮 left（相对 stage） */
+  /** 右侧删除钮 left（`position: fixed` 视口坐标） */
   deleteLeft: number;
 };
 
@@ -45,6 +45,7 @@ export function estimateCanvasBlockActionColumnHeight(
 
 /** 左侧可见操作钮数量（与 App 画布操作列渲染条件一致）。 */
 export function countCanvasLeftActionButtons(args: {
+  canDragMove: boolean;
   siblingMoveEnabled: boolean;
   canDuplicate: boolean;
   supportsChildInsert: boolean;
@@ -52,6 +53,7 @@ export function countCanvasLeftActionButtons(args: {
   canSaveAsSection: boolean;
 }): number {
   let count = 0;
+  if (args.canDragMove) count += 1;
   if (args.siblingMoveEnabled) count += 2;
   if (args.canDuplicate) count += 1;
   if (args.supportsChildInsert) count += 1;
@@ -146,12 +148,17 @@ export function computeCanvasBlockActionLayout(args: {
     ...shared,
     maxColumnHeight: deleteHeight,
   });
-  const anchorLeftInStage = args.horizontalAnchorRect.left - args.stageRect.left;
-  const anchorRightInStage = args.horizontalAnchorRect.right - args.stageRect.left;
+  const stageTop = args.stageRect.top;
   return {
-    insert,
-    delete: del,
-    insertLeft: anchorLeftInStage - insetX - insertColumnWidth,
-    deleteLeft: anchorRightInStage + insetX,
+    insert: {
+      top: stageTop + insert.top,
+      verticalAlign: insert.verticalAlign,
+    },
+    delete: {
+      top: stageTop + del.top,
+      verticalAlign: del.verticalAlign,
+    },
+    insertLeft: args.horizontalAnchorRect.left - insetX - insertColumnWidth,
+    deleteLeft: args.horizontalAnchorRect.right + insetX,
   };
 }

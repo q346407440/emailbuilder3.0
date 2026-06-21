@@ -59,10 +59,10 @@ describe("computeCanvasBlockActionLayout", () => {
       insetX: 20,
       insertColumnWidth: 104,
     });
-    assert.equal(layout.insert.top, 80);
+    assert.equal(layout.insert.top, 180);
     assert.equal(layout.insert.verticalAlign, "top");
-    assert.equal(layout.insertLeft, 200 - 50 - 20 - 104);
-    assert.equal(layout.deleteLeft, 800 - 50 + 20);
+    assert.equal(layout.insertLeft, 200 - 20 - 104);
+    assert.equal(layout.deleteLeft, 800 + 20);
   });
 
   it("选中块靠近 stage 底边时左列底对齐块底", () => {
@@ -84,7 +84,7 @@ describe("computeCanvasBlockActionLayout", () => {
       deleteButtonCount: 1,
     });
     assert.equal(layout.insert.verticalAlign, "bottom");
-    assert.equal(layout.insert.top, blockBottomInStage - columnHeight);
+    assert.equal(layout.insert.top, stageRect.top + (blockBottomInStage - columnHeight));
     assert.equal(layout.delete.verticalAlign, "top");
   });
 
@@ -105,7 +105,7 @@ describe("computeCanvasBlockActionLayout", () => {
       insetX: 20,
       insertColumnWidth: 104,
     });
-    assert.equal(layout.deleteLeft, 575 - 50 + 20);
-    assert.notEqual(layout.deleteLeft, 688 - 50 + 20);
+    assert.equal(layout.deleteLeft, 575 + 20);
+    assert.notEqual(layout.deleteLeft, 688 + 20);
   });
 });

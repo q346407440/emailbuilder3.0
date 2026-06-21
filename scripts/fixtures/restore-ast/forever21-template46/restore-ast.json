@@ -1,0 +1,464 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "#000000",
+      "accent": "#FDD835",
+      "secondary": "#757575",
+      "surface": "#FFFFFF"
+    },
+    "spacing": {
+      "section": "24px",
+      "gap": "12px",
+      "pageInline": "16px"
+    },
+    "typography": {
+      "display": "36px",
+      "h1": "16px",
+      "body": "14px",
+      "caption": "11px"
+    },
+    "radius": {
+      "panel": "0px",
+      "cta": "0px"
+    }
+  },
+  "tree": {
+    "t": "email",
+    "children": [
+      {
+        "t": "stack",
+        "title": "顶部品牌导航",
+        "align": "center",
+        "gap": "gap",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "icon",
+            "query": "hanger",
+            "pack": "tabler",
+            "required": true,
+            "size": "lg",
+            "tone": "accent"
+          },
+          {
+            "t": "row",
+            "title": "主导航栏",
+            "align": "center",
+            "gap": "gap",
+            "children": [
+              { "t": "text", "content": "NEW ARRIVALS", "role": "caption", "bold": true },
+              { "t": "text", "content": "WOMEN", "role": "caption", "bold": true },
+              { "t": "text", "content": "PLUS", "role": "caption", "bold": true },
+              { "t": "text", "content": "MEN", "role": "caption", "bold": true },
+              { "t": "text", "content": "GIRLS", "role": "caption", "bold": true },
+              { "t": "text", "content": "BEAUTY BY", "role": "caption", "bold": true },
+              { "t": "text", "content": "SALE", "role": "caption", "bold": true },
+              { "t": "text", "content": "SPECIAL OFFERS", "role": "caption", "bold": true }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "首屏英雄区",
+        "align": "center",
+        "gap": "gap",
+        "box": { "pad": "section", "tone": { "hex": "#D6EAF8" } },
+        "children": [
+          {
+            "t": "text",
+            "content": "COME ON BACK FOR SOMETHING SHINY AND NEW",
+            "role": "caption",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "The hottest new arrivals are right here",
+            "role": "display",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "The stuff in your closet wants new friends",
+            "role": "body"
+          },
+          { "t": "button", "label": "GET 'EM NOW", "href": "#" },
+          {
+            "t": "image",
+            "query": "person holding large yellow shopping bag white sneakers fashion retail",
+            "height": { "px": 380 },
+            "required": true
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "再看一眼宫格",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "text",
+            "content": "WANNA LOOK AGAIN?",
+            "role": "h1",
+            "bold": true
+          },
+          {
+            "t": "grid",
+            "title": "三列商品宫格",
+            "columns": 3,
+            "gap": "gap",
+            "cellImageHeight": { "px": 280 },
+            "children": [
+              {
+                "t": "stack",
+                "title": "商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "woman white mock neck sweater plaid skirt fashion product"                  },
+                  {
+                    "t": "text",
+                    "content": "MOCK NECK CHENILLE SWEATER",
+                    "role": "body",
+                    "bold": true
+                  },
+                  { "t": "text", "content": "★★★★★", "role": "caption" },
+                  { "t": "text", "content": "$18.00", "role": "h1", "tone": "accent", "bold": true },
+                  { "t": "text", "content": "CHECK IT OUT", "role": "caption" }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "woman lavender purple knit pullover black jeans fashion product"                  },
+                  {
+                    "t": "text",
+                    "content": "OVERSIZED CAT PULLOVER",
+                    "role": "body",
+                    "bold": true
+                  },
+                  { "t": "text", "content": "★★★★★", "role": "caption" },
+                  { "t": "text", "content": "$20.00", "role": "h1", "tone": "accent", "bold": true },
+                  { "t": "text", "content": "CHECK IT OUT", "role": "caption" }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "商品卡",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "woman tan fleece hoodie matching joggers fashion product"                  },
+                  {
+                    "t": "text",
+                    "content": "FLEECE DROP-SLEEVE HOODIE",
+                    "role": "body",
+                    "bold": true
+                  },
+                  { "t": "text", "content": "★★★★★", "role": "caption" },
+                  { "t": "text", "content": "$14.00", "role": "h1", "tone": "accent", "bold": true },
+                  { "t": "text", "content": "CHECK IT OUT", "role": "caption" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "专属推荐列表",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "text",
+            "content": "PICKED JUST FOR YOU",
+            "role": "h1",
+            "bold": true
+          },
+          {
+            "t": "stack",
+            "title": "推荐商品列表",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "row",
+                "title": "推荐商品行",
+                "gap": "gap",
+                "align": "start",
+                "box": { "pad": "gap", "tone": { "hex": "#FFF9E6" } },
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "woman tan fleece cargo joggers fashion product",
+                    "height": { "px": 200 },
+                    "aspect": { "w": 3, "h": 4 }
+                  },
+                  {
+                    "t": "stack",
+                    "title": "商品信息",
+                    "gap": "gap",
+                    "align": "start",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "FLEECE CARGO JOGGERS",
+                        "role": "body",
+                        "bold": true
+                      },
+                      { "t": "text", "content": "★★★★☆", "role": "caption" },
+                      { "t": "text", "content": "$18.00", "role": "h1", "tone": "accent", "bold": true },
+                      { "t": "text", "content": "CHECK IT OUT", "role": "caption" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "t": "row",
+                "title": "推荐商品行",
+                "gap": "gap",
+                "align": "start",
+                "box": { "pad": "gap", "tone": { "hex": "#FFF9E6" } },
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "woman pink pleated twist front cropped cami fashion product",
+                    "height": { "px": 200 },
+                    "aspect": { "w": 3, "h": 4 }
+                  },
+                  {
+                    "t": "stack",
+                    "title": "商品信息",
+                    "gap": "gap",
+                    "align": "start",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "PLEATED TWIST-FRONT CROP TOP",
+                        "role": "body",
+                        "bold": true
+                      },
+                      { "t": "text", "content": "$14.00", "role": "h1", "tone": "accent", "bold": true },
+                      { "t": "text", "content": "CHECK IT OUT", "role": "caption" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "t": "row",
+                "title": "推荐商品行",
+                "gap": "gap",
+                "align": "start",
+                "box": { "pad": "gap", "tone": { "hex": "#FFF9E6" } },
+                "children": [
+                  {
+                    "t": "image",
+                    "query": "woman camouflage print jacket fashion product",
+                    "height": { "px": 200 },
+                    "aspect": { "w": 3, "h": 4 }
+                  },
+                  {
+                    "t": "stack",
+                    "title": "商品信息",
+                    "gap": "gap",
+                    "align": "start",
+                    "children": [
+                      {
+                        "t": "text",
+                        "content": "FRANCO CAMO PRINT JACKET",
+                        "role": "body",
+                        "bold": true
+                      },
+                      { "t": "text", "content": "★★★★★", "role": "caption" },
+                      { "t": "text", "content": "$24.90", "role": "h1", "tone": "accent", "bold": true },
+                      { "t": "text", "content": "CHECK IT OUT", "role": "caption" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "分类导航链接",
+        "align": "center",
+        "gap": "gap",
+        "box": { "pad": "section" },
+        "children": [
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          { "t": "text", "content": "SHOP WOMEN", "role": "body", "bold": true },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          { "t": "text", "content": "SHOP MEN", "role": "body", "bold": true },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          { "t": "text", "content": "SHOP PLUS + CURVE", "role": "body", "bold": true },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          { "t": "text", "content": "SHOP GIRLS", "role": "body", "bold": true },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          { "t": "text", "content": "SHOP ACCESSORIES", "role": "body", "bold": true },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" },
+          { "t": "text", "content": "SHOP BEAUTY", "role": "body", "bold": true },
+          { "t": "divider", "tone": "secondary", "thickness": "hairline" }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "运费促销条",
+        "align": "center",
+        "box": { "pad": "gap", "tone": "primary" },
+        "children": [
+          {
+            "t": "row",
+            "title": "促销文案行",
+            "align": "between",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "text",
+                "content": "FREE STANDARD SHIPPING $50+",
+                "role": "caption",
+                "tone": "surface",
+                "bold": true
+              },
+              {
+                "t": "text",
+                "content": "BUY NOW, PAY LATER WITH AFTERPAY",
+                "role": "caption",
+                "tone": "surface",
+                "bold": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "社交与应用",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "row",
+            "title": "社媒图标行",
+            "align": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "icon",
+                "query": "brand-instagram",
+                "pack": "tabler",
+                "required": true,
+                "size": "md"
+              },
+              {
+                "t": "icon",
+                "query": "brand-youtube",
+                "pack": "tabler",
+                "required": true,
+                "size": "md"
+              },
+              {
+                "t": "icon",
+                "query": "brand-facebook",
+                "pack": "tabler",
+                "required": true,
+                "size": "md"
+              },
+              {
+                "t": "icon",
+                "query": "brand-twitter",
+                "pack": "tabler",
+                "required": true,
+                "size": "md"
+              },
+              {
+                "t": "icon",
+                "query": "brand-snapchat",
+                "pack": "tabler",
+                "required": true,
+                "size": "md"
+              },
+              {
+                "t": "icon",
+                "query": "brand-pinterest",
+                "pack": "tabler",
+                "required": true,
+                "size": "md"
+              }
+            ]
+          },
+          {
+            "t": "stack",
+            "title": "应用下载横幅",
+            "align": "center",
+            "gap": "gap",
+            "box": { "pad": "section", "tone": { "hex": "#E8D5F0" } },
+            "children": [
+              {
+                "t": "text",
+                "content": "DOWNLOAD THE APP FOR 20% OFF YOUR FIRST IN-APP PURCHASE, USE CODE: APP20",
+                "role": "body",
+                "bold": true
+              },
+              {
+                "t": "row",
+                "title": "应用商店按钮",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  { "t": "button", "label": "Download on the App Store", "href": "#" },
+                  { "t": "button", "label": "Get it on Google Play", "href": "#" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "页脚合规",
+        "align": "center",
+        "gap": "gap",
+        "box": { "pad": "section" },
+        "children": [
+          {
+            "t": "text",
+            "content": "FOREVER 21",
+            "role": "h1",
+            "bold": true
+          },
+          { "t": "text", "content": "STORE LOCATIONS & EVENTS", "role": "caption" },
+          {
+            "t": "text",
+            "content": "20% Off Your First In-App Purchase. Use code APP20 at checkout. Valid for new app users only. Exclusions apply. Free standard shipping on orders $50+ before tax. Afterpay available on eligible purchases. See forever21.com for full terms and conditions.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          { "t": "text", "content": "View this email in your browser", "role": "caption", "tone": "secondary" },
+          { "t": "text", "content": "Unsubscribe", "role": "caption", "tone": "secondary" },
+          { "t": "text", "content": "Privacy Policy", "role": "caption", "tone": "secondary" },
+          {
+            "t": "text",
+            "content": "Forever 21, Inc. 3880 N Mission Road Los Angeles, CA 90031",
+            "role": "caption",
+            "tone": "secondary"
+          }
+        ]
+      }
+    ]
+  }
+}

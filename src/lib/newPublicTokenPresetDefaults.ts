@@ -5,6 +5,7 @@ import { DEFAULT_TOKEN_PRESET_ID } from "./defaultTokenPresets";
 export const NEW_PUBLIC_TOKEN_PRESET_DEFAULT_TOKENS: TokenPresetTokens = {
   colors: {
     primary: "#111111",
+    accent: "#FFFFFF",
     secondary: "#666666",
     surface: "#FFFFFF",
   },

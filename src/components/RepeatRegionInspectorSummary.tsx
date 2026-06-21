@@ -8,7 +8,7 @@ import {
   repeatBindingPreviewFields,
   repeatBindingRelationOpsLabel,
 } from "../lib/repeatInspectorSummaryCopy";
-import { normalizeItemVisibility, setCollectionItemVisibilityAt } from "../lib/collectionItemVisibility";
+import { normalizeItemVisibility, setCollectionItemVisibilityAt, collectionSlotAllowsItemVisibility } from "../lib/collectionItemVisibility";
 import { toCollectionItems } from "../lib/payloadSlotDraft";
 import { CollectionFixedLengthField } from "./CollectionFixedLengthField";
 import { ReadonlyCollectionItemPreview } from "./ReadonlyCollectionItemPreview";
@@ -87,10 +87,11 @@ export function RepeatRegionInspectorSummary({
     toCollectionItems(resolvedPreviewValues).length,
     1
   );
-  const itemVisibility = normalizeItemVisibility(
-    previewRowCount,
-    payload?.slots?.[repeat.slotId]?.itemVisibility
-  );
+  const slotDef = payload?.slots?.[repeat.slotId];
+  const allowsItemVisibility = collectionSlotAllowsItemVisibility(slotDef);
+  const itemVisibility = allowsItemVisibility
+    ? normalizeItemVisibility(previewRowCount, slotDef?.itemVisibility)
+    : undefined;
   const mappingRows =
     formatMappingLine && repeat.fieldMappings?.length
       ? repeatBindingMappingRows(repeat, formatMappingLine)
@@ -169,7 +170,11 @@ export function RepeatRegionInspectorSummary({
 
         <Field
           label="数据预览"
-          hint="无数据时不显示行，不占高度。勾选「不展示」与变量面板同步；列表长度见上方；修改数据请至左侧「变量」面板。"
+          hint={
+            allowsItemVisibility
+              ? "无数据时不显示行，不占高度。勾选「不展示」与变量面板同步；列表长度见上方；修改数据请至左侧「变量」面板。"
+              : "无数据时不显示行，不占高度。列表长度见上方；修改数据请至左侧「变量」面板。"
+          }
         >
           <ReadonlyCollectionItemPreview
             slotId={repeat.slotId}
@@ -177,7 +182,7 @@ export function RepeatRegionInspectorSummary({
             values={resolvedPreviewValues}
             itemVisibility={itemVisibility}
             onItemHiddenChange={
-              onItemVisibilityChange
+              allowsItemVisibility && onItemVisibilityChange
                 ? (index, hidden) => {
                     onItemVisibilityChange(
                       setCollectionItemVisibilityAt(itemVisibility, previewRowCount, index, !hidden)

@@ -20,5 +20,11 @@ export const LAYOUT_VARIANT_AI_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 /** LLM 单阶段 Parse 失败后的最大重试次数（§6.2）。 */
 export const AI_PIPELINE_LLM_MAX_RETRIES = 1;
 
+/** 豆包 429 / 5xx / 网络瞬态失败时的退避重试次数（不计入 Parse 重试）。 */
+export const AI_PIPELINE_LLM_MAX_TRANSIENT_RETRIES = 4;
+
+/** 瞬态退避基数（ms）；实际等待 = base * 2^attempt，上限 30s。 */
+export const AI_PIPELINE_LLM_TRANSIENT_BACKOFF_BASE_MS = 3_000;
+
 /** 全局 LLM HTTP 并发上限（含各 stage 与重试，重试优先入队）。 */
 export const AI_PIPELINE_LLM_MAX_CONCURRENCY = 5;

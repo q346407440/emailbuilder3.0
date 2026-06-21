@@ -1,3 +1,4 @@
+import { TOKEN_PRESET_SCALE_FALLBACKS } from "../../token-preset-contract/standard-keys";
 import {
   AI_PIPELINE_B1_FALLBACK_TOKENS,
   B1_RADIUS_TIER_ENUMS,
@@ -87,10 +88,11 @@ function readColors(value: unknown) {
   if (!value || typeof value !== "object") return null;
   const c = value as Record<string, unknown>;
   const primary = normalizeHex(c.primary);
+  const accent = normalizeHex(c.accent) ?? TOKEN_PRESET_SCALE_FALLBACKS.colors.accent;
   const secondary = normalizeHex(c.secondary);
   const surface = normalizeHex(c.surface);
-  if (!primary || !secondary || !surface) return null;
-  return { primary, secondary, surface };
+  if (!primary || !accent || !secondary || !surface) return null;
+  return { primary, accent, secondary, surface };
 }
 
 function readSpacing(value: unknown) {

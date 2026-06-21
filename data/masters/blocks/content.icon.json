@@ -2,7 +2,7 @@
   "schemaVersion": "4.0.0",
   "masterId": "content.icon",
   "name": "图标",
-  "version": "1.0.0",
+  "version": "2026-06-21T14:34:15.895Z",
   "description": "小尺寸图标，src 与跳转链接为内容字段。",
   "runtimeType": "icon",
   "blockType": "content.icon",
@@ -19,14 +19,18 @@
       "backgroundColor": "#FFFFFF",
       "width": "600px",
       "padding": {
-        "mode": "unified",
-        "unified": "0"
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "border": {
-        "mode": "unified",
-        "width": "0",
         "style": "solid",
-        "color": "rgba(0,0,0,0)"
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "gapMode": "fixed",
       "gap": "0"
@@ -44,37 +48,30 @@
           "name": "图标"
         },
         "props": {
-          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.21.0/icons/outline/photo.svg",
-          "link": "",
-          "color": {
-            "$themeRef": "colors.primary"
-          },
-          "size": "20px"
+          "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/google.svg",
+          "size": "24px",
+          "color": "#000000"
         },
         "wrapperStyle": {
-          "contentAlign": {
-            "horizontal": "center",
-            "vertical": "center"
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "widthMode": "hug",
           "heightMode": "hug",
-          "border": {
-            "mode": "unified",
-            "width": "0",
-            "style": "solid",
-            "color": "rgba(0,0,0,0)"
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
-          }
-        },
-        "bindings": {
-          "props.color": {
-            "slotId": "colors.primary",
-            "mode": "theme",
-            "tokenPath": "colors.primary",
-            "fieldKind": "style"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           }
         }
       }

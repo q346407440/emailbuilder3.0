@@ -78,8 +78,8 @@ function templateWithRepeatPrototype(): EmailTemplate {
         props: {
           backgroundColor: "#ffffff",
           width: "600px",
-          padding: { mode: "unified", unified: "0" },
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+          padding: { top: "0", right: "0", bottom: "0", left: "0" },
+          border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
           gapMode: "fixed",
           gap: "0",
         },
@@ -189,6 +189,7 @@ describe("repeatRegion", () => {
         products: {
           label: "商品列表",
           valueType: "collection",
+          scene: "loyalty-internal-admin",
           sceneCollectionPresetId: "testSceneProducts",
           itemFields: [
             { key: "type", label: "类型", valueType: "string" },

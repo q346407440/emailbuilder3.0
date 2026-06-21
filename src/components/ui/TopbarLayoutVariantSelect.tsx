@@ -8,10 +8,11 @@ import { sortVisibleLayoutVariantsByCreatedDesc } from "../../lib/layoutVariantL
 import { useConfirmDialog } from "./ConfirmDialogProvider";
 import { resolveShopSelectStringValue } from "../../lib/shopSelectValue";
 import { TopbarResourceField } from "./TopbarResourceField";
-import { TOPBAR_RESOURCE_DROPDOWN_STYLE } from "./topbarResourceSelectLayout";
+import { TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE } from "./topbarResourceSelectLayout";
 import { ResourceSelectOptionLabel } from "./ResourceSelectOptionLabel";
 import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopSelect } from "./ShopFormControls";
 import { ShopSectionModal } from "./ShopSectionModal";
+import type { LayoutVariantAiFromImagePipeline } from "../../layout-variant-ai-contract/aiFromImagePipeline";
 import {
   LayoutVariantCreateModal,
   type LayoutVariantCreateModalMode,
@@ -30,6 +31,8 @@ type TopbarLayoutVariantSelectProps = {
     options?: {
       copyFromLayoutVariantId?: string;
       designImageFile?: File;
+      aiPipeline?: LayoutVariantAiFromImagePipeline;
+      llmProfile?: import("../../layout-variant-ai-contract/llmProfileCatalog").LlmProfileSelection;
     }
   ) => Promise<void>;
   /** 新建版式弹窗关闭时清理 AI 进度（如失败后点取消） */
@@ -87,6 +90,7 @@ export function TopbarLayoutVariantSelect({
     (raw: unknown) => {
       const nextId = resolveShopSelectStringValue(raw);
       if (!nextId || nextId === value) return;
+      setSelectOpen(false);
       onSelect(nextId);
     },
     [onSelect, value]
@@ -101,6 +105,14 @@ export function TopbarLayoutVariantSelect({
     window.addEventListener("pointerdown", handlePointerDown);
     return () => window.removeEventListener("pointerdown", handlePointerDown);
   }, [actionMenuOpen]);
+
+  const selectDisabled = disabled || busy;
+
+  // 切换版式时父级会立刻 disabled，Ant Design 可能收不到 onOpenChange(false)；
+  // 加载结束 re-enable 后若 selectOpen 仍为 true，下拉会再弹一次。
+  useEffect(() => {
+    if (selectDisabled) setSelectOpen(false);
+  }, [selectDisabled]);
 
   const openRename = () => {
     if (!currentVariant) return;
@@ -161,6 +173,8 @@ export function TopbarLayoutVariantSelect({
     } else if (payload.kind === "ai") {
       await onCreate(payload.label, {
         designImageFile: payload.imageFile,
+        aiPipeline: payload.pipeline,
+        llmProfile: payload.llmProfile,
       });
     } else {
       await onCreate(payload.label);
@@ -170,7 +184,6 @@ export function TopbarLayoutVariantSelect({
 
   if (!manifest) return null;
 
-  const selectDisabled = disabled || busy;
   const selectValue = value ?? manifest.activeLayoutVariantId;
 
   const resourceActions = [
@@ -227,11 +240,11 @@ export function TopbarLayoutVariantSelect({
             disabled={selectDisabled}
             value={selectValue}
             open={selectOpen}
-            onDropdownVisibleChange={(open) => {
+            onOpenChange={(open) => {
               setSelectOpen(open);
               if (open) setActionMenuOpen(false);
             }}
-            dropdownStyle={TOPBAR_RESOURCE_DROPDOWN_STYLE}
+            styles={{ popup: { root: TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE } }}
             onChange={handlePick}
             placeholder="选择版式"
             getPopupContainer={() => document.body}

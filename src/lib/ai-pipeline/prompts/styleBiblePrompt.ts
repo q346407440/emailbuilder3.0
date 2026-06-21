@@ -4,7 +4,8 @@ import type { NormalizedStyleTokens } from "../types";
 export function buildStyleBiblePromptSection(styleTokens: NormalizedStyleTokens): string {
   return `## Global Style Bible（全邮件统一；本区结构须遵守）
 
-- **colors.primary（${styleTokens.colors.primary}）**：仅用于 **action.button 背景** 或设计图里「与 CTA 同色块」的强调底；**禁止**用于 wordmark、标题、正文、商品名（应使用 **#1A1A1A** 或 colors.secondary）
+- **colors.primary（${styleTokens.colors.primary}）**：仅用于 **action.button 背景** 或设计图里「与 CTA 同色块」的强调底；**禁止**用于 wordmark、标题、正文、商品名
+- **colors.accent（${styleTokens.colors.accent}）**：用于 wordmark、标题、正文主色、链接、商品名等品牌强调字色
 - **CTA 按钮文字**：黄/浅底按钮用 **#1A1A1A**；深底按钮用 **#FFFFFF**（写在 styleKeys \`buttonStyle.textColor\` 或省略由程序按 primary 推断）
 - **弱化文案 / 页脚**：colors.secondary 或 #6B7280 档
 - **页头引导链**（如 Book a test ride）：用 **content.text** + decoration: underline，**禁止** action.button

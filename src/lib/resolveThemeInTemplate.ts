@@ -25,8 +25,8 @@ const CSS_SCALAR_FIELD_NAMES = new Set([
   "fillColor",
 ]);
 
-const SPACING_FIELD_NAMES = new Set(["unified", "top", "right", "bottom", "left"]);
-const BORDER_RADIUS_FIELD_NAMES = new Set(["radius", "topLeft", "topRight", "bottomRight", "bottomLeft"]);
+const SPACING_FIELD_NAMES = new Set(["top", "right", "bottom", "left"]);
+const BORDER_RADIUS_FIELD_NAMES = new Set(["topLeft", "topRight", "bottomRight", "bottomLeft"]);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -55,7 +55,9 @@ function isThemeRefAllowed(relativePath: string): boolean {
   const parent = parts.at(-2) ?? "";
   if (parent === "padding" && SPACING_FIELD_NAMES.has(last)) return true;
   if (parent === "borderRadius" && BORDER_RADIUS_FIELD_NAMES.has(last)) return true;
-  if (parent === "border" && (last === "color" || last === "width")) return true;
+  if (parent === "border" && (last === "color" || last === "width" || last === "top" || last === "right" || last === "bottom" || last === "left")) {
+    return true;
+  }
   if (
     parts.length >= 3 &&
     parts.at(-3) === "border" &&

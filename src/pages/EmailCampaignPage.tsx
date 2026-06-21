@@ -1,6 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { Button, Switch, Table } from "@shoplazza/sds";
-import type { TableColumnsType, TablePaginationConfig } from "@shoplazza/sds";
+import { Button } from "antd";
+import {
+  ShopDataTable,
+  ShopSolidButton,
+  ShopSwitch,
+  type TableColumnsType,
+  type TablePaginationConfig,
+} from "../components/ui/ShopDataControls";
 import { CrmOpsShell } from "../components/crmOps/CrmOpsShell";
 import { goToEmailCampaignCreate } from "../lib/appNavigation";
 import {
@@ -87,7 +93,7 @@ export function EmailCampaignPage() {
         key: "enabled",
         width: 72,
         render: (_value, record) => (
-          <Switch checked={record.enabled} onChange={(checked) => toggleEnabled(record.id, checked)} />
+          <ShopSwitch checked={record.enabled} onChange={(checked) => toggleEnabled(record.id, checked)} />
         ),
       },
     ];
@@ -113,12 +119,10 @@ export function EmailCampaignPage() {
     <CrmOpsShell activeNav="emailCampaign">
       <div className="crm-ops__page-head">
         <h4 className="crm-ops__page-title">商家邮件</h4>
-        <Button type="primary" onClick={goToEmailCampaignCreate}>
-          创建邮件
-        </Button>
+        <ShopSolidButton onClick={goToEmailCampaignCreate}>创建邮件</ShopSolidButton>
       </div>
 
-      <Table<EmailCampaignRow>
+      <ShopDataTable<EmailCampaignRow>
         className="crm-ops__campaign-table"
         rowKey="id"
         columns={columns}

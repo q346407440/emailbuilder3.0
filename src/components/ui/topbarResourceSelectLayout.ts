@@ -4,7 +4,11 @@ export const TOPBAR_RESOURCE_SELECT_SLOT_WIDTH = 180;
 /** 顶栏资源下拉面板宽度：容纳底部 5 个操作（新建/复制/重命名/发布或撤回/删除）单行展示 */
 export const TOPBAR_RESOURCE_DROPDOWN_WIDTH = 280;
 
-export const TOPBAR_RESOURCE_DROPDOWN_STYLE = {
+/** 顶栏资源下拉面板样式：用于 Select `styles.popup.root` */
+export const TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE = {
   minWidth: TOPBAR_RESOURCE_DROPDOWN_WIDTH,
   width: TOPBAR_RESOURCE_DROPDOWN_WIDTH,
 } as const;
+
+/** @deprecated 请用 {@link TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE} 与 `styles.popup.root` */
+export const TOPBAR_RESOURCE_DROPDOWN_STYLE = TOPBAR_RESOURCE_DROPDOWN_POPUP_STYLE;

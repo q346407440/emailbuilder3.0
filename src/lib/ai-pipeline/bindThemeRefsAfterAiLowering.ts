@@ -73,35 +73,32 @@ function bindPaddingSides(
   if (!pad || typeof pad !== "object") return { template, bound: 0 };
   let next = template;
   let bound = 0;
-  const mode = (pad as { mode?: string }).mode;
-  if (mode === "separate") {
-    for (const side of ["top", "bottom"] as const) {
-      const r = tryBindScalar(
-        next,
-        tokenPresets,
-        blockId,
-        `wrapperStyle.padding.${side}`,
-        themeRefPathForStorage("spacing", "section")
-      );
-      next = r.template;
-      if (r.bound) bound += 1;
-    }
-    for (const side of ["left", "right"] as const) {
-      const r = tryBindScalar(
-        next,
-        tokenPresets,
-        blockId,
-        `wrapperStyle.padding.${side}`,
-        themeRefPathForStorage("spacing", "pageInline")
-      );
-      next = r.template;
-      if (r.bound) bound += 1;
-    }
+  for (const side of ["top", "bottom"] as const) {
+    const r = tryBindScalar(
+      next,
+      tokenPresets,
+      blockId,
+      `wrapperStyle.padding.${side}`,
+      themeRefPathForStorage("spacing", "section")
+    );
+    next = r.template;
+    if (r.bound) bound += 1;
+  }
+  for (const side of ["left", "right"] as const) {
+    const r = tryBindScalar(
+      next,
+      tokenPresets,
+      blockId,
+      `wrapperStyle.padding.${side}`,
+      themeRefPathForStorage("spacing", "pageInline")
+    );
+    next = r.template;
+    if (r.bound) bound += 1;
   }
   return { template: next, bound };
 }
 
-function bindBorderRadiusRadius(
+function bindFlatBorderRadiusCorner(
   template: EmailTemplate,
   tokenPresets: TokenPresets,
   blockId: string,
@@ -110,7 +107,7 @@ function bindBorderRadiusRadius(
   scale: string
 ): { template: EmailTemplate; bound: boolean } {
   const tokenPath = themeRefPathForStorage(family, scale);
-  return tryBindScalar(template, tokenPresets, blockId, `${bindPathPrefix}.radius`, tokenPath);
+  return tryBindScalar(template, tokenPresets, blockId, `${bindPathPrefix}.topLeft`, tokenPath);
 }
 
 function bindBlock(
@@ -133,7 +130,7 @@ function bindBlock(
     const pad = bindPaddingSides(next, tokenPresets, blockId);
     next = pad.template;
     bound += pad.bound;
-    const panelBr = bindBorderRadiusRadius(
+    const panelBr = bindFlatBorderRadiusCorner(
       next,
       tokenPresets,
       blockId,
@@ -147,7 +144,7 @@ function bindBlock(
 
   if (block.type === "image") {
     bind("props.gap", themeRefPathForStorage("spacing", "gap"));
-    const panelBr = bindBorderRadiusRadius(
+    const panelBr = bindFlatBorderRadiusCorner(
       next,
       tokenPresets,
       blockId,
@@ -161,7 +158,7 @@ function bindBlock(
 
   if (block.type === "button") {
     bind("props.buttonStyle.fontSize", themeRefPathForStorage("typography", "body"));
-    const br = bindBorderRadiusRadius(
+    const br = bindFlatBorderRadiusCorner(
       next,
       tokenPresets,
       blockId,

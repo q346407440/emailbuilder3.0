@@ -19,14 +19,18 @@
       "backgroundColor": "#FFFFFF",
       "width": "600px",
       "padding": {
-        "mode": "unified",
-        "unified": "0"
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "border": {
-        "mode": "unified",
-        "width": "0",
         "style": "solid",
-        "color": "rgba(0,0,0,0)"
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "gapMode": "fixed",
       "gap": "0"
@@ -55,8 +59,16 @@
           "barWidthMode": "fill",
           "barHeight": "10px",
           "barBorderRadius": {
-            "mode": "unified",
-            "radius": {
+            "topLeft": {
+              "$themeRef": "tokens.radius.cta"
+            },
+            "topRight": {
+              "$themeRef": "tokens.radius.cta"
+            },
+            "bottomRight": {
+              "$themeRef": "tokens.radius.cta"
+            },
+            "bottomLeft": {
               "$themeRef": "tokens.radius.cta"
             }
           }
@@ -69,14 +81,18 @@
           "widthMode": "fill",
           "heightMode": "hug",
           "border": {
-            "mode": "unified",
-            "width": "0",
             "style": "solid",
-            "color": "rgba(0,0,0,0)"
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
           }
         },
         "bindings": {
@@ -92,7 +108,25 @@
             "tokenPath": "colors.primary",
             "fieldKind": "style"
           },
-          "props.barBorderRadius.radius": {
+          "props.barBorderRadius.topLeft": {
+            "slotId": "tokens.radius.cta",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.cta",
+            "fieldKind": "style"
+          },
+          "props.barBorderRadius.topRight": {
+            "slotId": "tokens.radius.cta",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.cta",
+            "fieldKind": "style"
+          },
+          "props.barBorderRadius.bottomRight": {
+            "slotId": "tokens.radius.cta",
+            "mode": "theme",
+            "tokenPath": "tokens.radius.cta",
+            "fieldKind": "style"
+          },
+          "props.barBorderRadius.bottomLeft": {
             "slotId": "tokens.radius.cta",
             "mode": "theme",
             "tokenPath": "tokens.radius.cta",

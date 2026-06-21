@@ -1,7 +1,7 @@
 import type { TokenPresetFamily, TokenPresetStandardKey } from "./types";
 
 /**
- * 样式预设标准 12 键 — 机器真源（与 `email-token-preset-standard-scope` 技能对齐）。
+ * 样式预设标准 13 键 — 机器真源（与 `email-token-preset-standard-scope` 技能对齐）。
  * 样例：`data/emails/coupon-available/layouts/default/tokenPresets.json`、`data/token-presets/public-neutral-saas.json`。
  */
 
@@ -13,13 +13,13 @@ export const TOKEN_PRESET_FAMILY_ORDER = [
 ] as const satisfies readonly TokenPresetFamily[];
 
 export const TOKEN_PRESET_SCALE_ORDER: Readonly<Record<TokenPresetFamily, readonly string[]>> = {
-  colors: ["primary", "secondary", "surface"],
+  colors: ["primary", "accent", "secondary", "surface"],
   spacing: ["section", "gap", "pageInline"],
   typography: ["display", "h1", "body", "caption"],
   radius: ["panel", "cta"],
 };
 
-/** 12 个标准 family.scale 条目（固定顺序） */
+/** 13 个标准 family.scale 条目（固定顺序） */
 export const TOKEN_PRESET_STANDARD_KEYS: readonly TokenPresetStandardKey[] =
   TOKEN_PRESET_FAMILY_ORDER.flatMap((family) =>
     (TOKEN_PRESET_SCALE_ORDER[family] ?? []).map((scale) => ({ family, scale }))
@@ -32,13 +32,13 @@ export const TOKEN_PRESET_STANDARD_KEYS: readonly TokenPresetStandardKey[] =
 export const TOKEN_PRESET_SCALE_FALLBACKS: Readonly<
   Record<TokenPresetFamily, Readonly<Record<string, string>>>
 > = {
-  colors: { primary: "#111111", secondary: "#CCCCCC", surface: "#FFFFFF" },
+  colors: { primary: "#111111", accent: "#1A1A1A", secondary: "#CCCCCC", surface: "#FFFFFF" },
   spacing: { section: "0", gap: "16px", pageInline: "20px" },
   typography: { display: "36px", h1: "24px", body: "16px", caption: "12px" },
   radius: { panel: "0", cta: "0" },
 };
 
-/** prompt 用标准键白名单（如 `colors=primary/secondary/surface；spacing=…`）。 */
+/** prompt 用标准键白名单（如 `colors=primary/accent/secondary/surface；spacing=…`）。 */
 export function listStandardTokenScalesForPrompt(): string {
   return TOKEN_PRESET_FAMILY_ORDER.map(
     (family) => `${family}=${(TOKEN_PRESET_SCALE_ORDER[family] ?? []).join("/")}`

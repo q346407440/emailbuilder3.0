@@ -16,6 +16,8 @@ type Params = {
   issues: ValidationIssue[];
   template: EmailTemplate | null;
   selectedBlockRef: VirtualBlockRef | null;
+  /** 右侧面板当前编辑的区块 id（空选中时仍为 rootBlockId） */
+  inspectorPanelBlockId: string | null;
   workbenchView: WorkbenchView;
 };
 
@@ -29,11 +31,14 @@ export function useValidationIssuesForContext({
   issues,
   template,
   selectedBlockRef,
+  inspectorPanelBlockId,
   workbenchView,
 }: Params) {
   const selectedPhysicalBlockId = selectedBlockRef
     ? resolvePhysicalBlockId(selectedBlockRef)
     : null;
+  const fieldContextBlockId =
+    workbenchView === "block" ? inspectorPanelBlockId : selectedPhysicalBlockId;
 
   return useMemo(() => {
     const blockErrorIds = new Set<string>();
@@ -97,7 +102,7 @@ export function useValidationIssuesForContext({
       if (
         inlineBind &&
         parsed.blockId &&
-        selectedPhysicalBlockId === parsed.blockId &&
+        fieldContextBlockId === parsed.blockId &&
         workbenchView === "block"
       ) {
         const prev = issuesByBindPath.get(inlineBind);
@@ -121,5 +126,5 @@ export function useValidationIssuesForContext({
       tokenPresetsError,
       tokenPresetsWarning,
     };
-  }, [issues, template, selectedPhysicalBlockId, workbenchView]);
+  }, [issues, template, fieldContextBlockId, workbenchView]);
 }

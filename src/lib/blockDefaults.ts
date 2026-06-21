@@ -1,6 +1,13 @@
 import type { EmailBlock, EmailTemplate } from "../types/email";
 import { EMAIL_ROOT_FIXED_WIDTH } from "../render-defaults-contract/values";
 import type { ThemeRef } from "../types/themeRef";
+import {
+  borderNoneFlat,
+  borderRadiusUniform,
+  borderRadiusZeroFlat,
+  spacingUniform,
+  spacingZero,
+} from "./boxModelFlat";
 
 const CATALOG_ROOT_ID = "__catalog_root__";
 
@@ -22,7 +29,6 @@ const T = {
 
 function sectionPadding() {
   return {
-    mode: "separate" as const,
     top: T.section,
     right: T.pageInline,
     bottom: T.section,
@@ -31,23 +37,15 @@ function sectionPadding() {
 }
 
 function ctaBorderRadius() {
-  return {
-    mode: "unified" as const,
-    radius: T.radiusCta,
-  };
+  return borderRadiusUniform(T.radiusCta);
 }
 
 function defaultBorder() {
-  return {
-    mode: "unified" as const,
-    width: "0",
-    style: "solid" as const,
-    color: "rgba(0,0,0,0)",
-  };
+  return borderNoneFlat();
 }
 
 function defaultBorderRadius() {
-  return { mode: "unified" as const, radius: "0" };
+  return borderRadiusZeroFlat();
 }
 
 function defaultWrapperBase() {
@@ -240,12 +238,9 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
         borderRadius: defaultBorderRadius(),
         backgroundImage: {
           src: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800",
-          alt: "图片",
           link: "",
           fit: "cover",
           position: "center",
-          borderRadius: { mode: "unified", radius: T.radiusPanel },
-          border: defaultBorder(),
         },
       },
       props: { direction: "vertical", gapMode: "fixed", gap: T.gap },
@@ -307,9 +302,11 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
           textColor: T.colorPrimary,
           fontSize: T.typoBody,
           border: {
-            mode: "unified",
-            width: "1px",
-            style: "solid",
+            ...borderNoneFlat(),
+            top: "1px",
+            right: "1px",
+            bottom: "1px",
+            left: "1px",
             color: T.colorPrimary,
           },
           borderRadius: ctaBorderRadius(),
@@ -358,7 +355,7 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
         widthMode: "fill",
         heightMode: "hug",
         border: defaultBorder(),
-        borderRadius: { mode: "unified", radius: "0" },
+        borderRadius: borderRadiusZeroFlat(),
       },
       props: {
         trackColor: T.colorSurface,
@@ -387,7 +384,7 @@ export function buildCatalogEmailRoot(children: string[]): EmailBlock {
     props: {
       backgroundColor: "#FFFFFF",
       width: EMAIL_ROOT_FIXED_WIDTH,
-      padding: { mode: "unified", unified: "0" },
+      padding: spacingZero(),
       border: defaultBorder(),
       gapMode: "fixed",
       gap: "0",

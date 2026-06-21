@@ -24,7 +24,7 @@ export const EMAIL_CANVAS_BLOCK_ACTION_INSET_X = 20 as const;
 /** 左侧操作钮列宽度，与 `.canvas-block-actions__insert` 一致。 */
 export const EMAIL_CANVAS_BLOCK_ACTION_INSERT_COLUMN_WIDTH = 104 as const;
 
-/** 画布操作钮估算高度（SDS 次级按钮 + 边框），用于顶/底对齐判定（首帧定稿，避免二次校正抖动）。 */
+/** 画布操作钮估算高度（antd 次级按钮 + 边框），用于顶/底对齐判定（首帧定稿，避免二次校正抖动）。 */
 export const EMAIL_CANVAS_BLOCK_ACTION_BUTTON_HEIGHT = 28 as const;
 
 /** 画布操作钮列纵向间距，与 `.canvas-block-actions__insert` 的 gap 一致。 */

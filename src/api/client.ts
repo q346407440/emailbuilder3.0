@@ -8,6 +8,11 @@ import type { BlockInsertPrototype } from "../block-insert-default-contract";
 import type { BlockMaster, SectionMaster } from "../types/master";
 import { getApiBase } from "./apiBase";
 import { LAYOUT_VARIANT_AI_FROM_IMAGE_STREAM_IDLE_TIMEOUT_MS } from "../layout-variant-ai-contract/constants";
+import type { LayoutVariantAiFromImagePipeline } from "../layout-variant-ai-contract/aiFromImagePipeline";
+import type {
+  LlmProfileOptionsPayload,
+  LlmProfileSelection,
+} from "../layout-variant-ai-contract/llmProfileCatalog";
 import type { AiPipelineProgressPayload } from "../layout-variant-ai-contract/progress";
 
 const FETCH_TIMEOUT_MS = 60_000;
@@ -407,17 +412,35 @@ async function readAiFromImageSseResponse(
   return result;
 }
 
+/** 以图 AI 管线可选 LLM 厂商 / 模型 / thinking（与弹窗同源）。 */
+export async function fetchAiPipelineLlmOptions(): Promise<LlmProfileOptionsPayload> {
+  const r = await fetchApi(apiUrl("/ai-pipeline/llm-options"));
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(await errorMessageFromResponse(r, t));
+  }
+  return r.json() as Promise<LlmProfileOptionsPayload>;
+}
+
 /** 以设计图 AI 创建版式（SSE 分步进度 + 落盘）。 */
 export async function createLayoutVariantFromDesignImage(
   emailKey: string,
   label: string,
   imageFile: File,
   options?: {
+    pipeline?: LayoutVariantAiFromImagePipeline;
+    llmProfile?: LlmProfileSelection;
     onProgress?: (payload: AiPipelineProgressPayload) => void;
   }
 ): Promise<CreateLayoutVariantResult> {
   const form = new FormData();
   form.append("label", label.trim());
+  form.append("pipeline", options?.pipeline ?? "restore-ast");
+  if (options?.llmProfile) {
+    form.append("llmVendor", options.llmProfile.vendor);
+    form.append("llmModel", options.llmProfile.model);
+    form.append("llmThinking", options.llmProfile.thinking);
+  }
   form.append("image", imageFile, imageFile.name || "design.png");
   const r = await fetchApi(
     apiUrl(`/emails/${encodeURIComponent(emailKey)}/layout-variants/ai-from-image`),

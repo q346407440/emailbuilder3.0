@@ -116,6 +116,13 @@ export type HorizontalLayoutRowCellsParams = {
   fillRowInnerHeight: boolean;
   slotAlign: { align: "left" | "center" | "right"; valign: TableCellVerticalAlign };
   renderChild: (childId: string) => ReactElement;
+  /** 画布拖拽插入占位（横排：竖条槽位） */
+  insertSlot?: EmailChildInsertSlotConfig;
+};
+
+export type EmailChildInsertSlotConfig = {
+  parentBlockId: string;
+  renderSlot: (insertIndex: number) => ReactElement | null;
 };
 
 /** 横排 layout 内层 `<tr>` 子槽位：fixed gap 间隔列 / gap auto 缝隙列 / 子块列。 */
@@ -131,11 +138,61 @@ export function flatMapHorizontalLayoutRowCells(params: HorizontalLayoutRowCells
     fillRowInnerHeight,
     slotAlign,
     renderChild,
+    insertSlot,
   } = params;
   const gapSlotCount = Math.max(0, childIds.length - 1);
 
+  /** 与容器一致的一列 gap 单元（用于占位条朝向相邻子块一侧的对称间距）。 */
+  const renderColumnGapCell = (key: string) => (
+    <td
+      key={key}
+      aria-hidden
+      style={{
+        ...emailPresentationTdBase(),
+        width: gapPx,
+        minWidth: gapPx,
+        lineHeight: 0,
+        fontSize: 0,
+      }}
+    >
+      <div style={{ width: gapPx, height: 1 }} />
+    </td>
+  );
+  const symmetricColumnGap = !gapAuto && gapPx > 0;
+
+  if (childIds.length === 0 && insertSlot) {
+    const slot = insertSlot.renderSlot(0);
+    if (slot) {
+      return [
+        <td key="insert-slot-0" colSpan={1} style={{ ...emailPresentationTdBase(), verticalAlign: "middle" }}>
+          {slot}
+        </td>,
+      ];
+    }
+  }
+
   return childIds.flatMap((cid, idx) => {
     const cells: ReactElement[] = [];
+    if (idx === 0 && insertSlot) {
+      const slot = insertSlot.renderSlot(0);
+      if (slot) {
+        cells.push(
+          <td
+            key="insert-slot-0"
+            style={{
+              ...emailPresentationTdBase(),
+              verticalAlign: "middle",
+              width: 48,
+              minWidth: 48,
+            }}
+          >
+            {slot}
+          </td>
+        );
+        // 占位条右侧朝向 child0，补一列与容器一致的 gap（左侧为容器起始边，不补）。
+        if (symmetricColumnGap) cells.push(renderColumnGapCell("insert-gap-after-0"));
+      }
+    }
     if (idx > 0 && gapAuto && gapSlotCount > 0 && !omitSpacerGapCells) {
       cells.push(
         <td
@@ -189,6 +246,27 @@ export function flatMapHorizontalLayoutRowCells(params: HorizontalLayoutRowCells
         {renderChild(cid)}
       </td>
     );
+    if (insertSlot) {
+      const slot = insertSlot.renderSlot(idx + 1);
+      if (slot) {
+        // 占位条左侧朝向 child[idx]，先补一列与容器一致的 gap；
+        // 右侧若还有 child[idx+1]，其常规列间距即为右侧 gap，故只在此补左侧，避免重复。
+        if (symmetricColumnGap) cells.push(renderColumnGapCell(`insert-gap-before-${idx + 1}`));
+        cells.push(
+          <td
+            key={`insert-slot-${idx + 1}`}
+            style={{
+              ...emailPresentationTdBase(),
+              verticalAlign: "middle",
+              width: 48,
+              minWidth: 48,
+            }}
+          >
+            {slot}
+          </td>
+        );
+      }
+    }
     return cells;
   });
 }
@@ -209,6 +287,8 @@ type VerticalStackInnerTableProps = {
   parentCrossFallback: CSSProperties["alignItems"] | undefined;
   parentMainFallback: CSSProperties["justifyContent"] | undefined;
   renderChild: (childId: string) => ReactElement;
+  /** 画布拖拽插入占位（纵排：横条槽位） */
+  insertSlot?: EmailChildInsertSlotConfig;
 };
 
 /** 纵排子块栈：仅用 table 行 + gap 分隔行（禁止 flex 纵列）。 */
@@ -226,9 +306,46 @@ export function renderVerticalStackInnerTable(props: VerticalStackInnerTableProp
     parentCrossFallback,
     parentMainFallback,
     renderChild,
+    insertSlot,
   } = props;
   const fillChildCount = countVerticalStackFillHeightChildren(template, childIds);
   let fillChildIndex = 0;
+
+  const renderSlotRow = (insertIndex: number, key: string) => {
+    if (!insertSlot) return null;
+    const slot = insertSlot.renderSlot(insertIndex);
+    if (!slot) return null;
+    return (
+      <tr key={key}>
+        <td
+          align="left"
+          style={{
+            ...emailPresentationTdBase(),
+            ...EMAIL_PRESENTATION_TD_ANTI_STRUT_STYLE,
+            verticalAlign: "top",
+          }}
+        >
+          {slot}
+        </td>
+      </tr>
+    );
+  };
+
+  /** 与容器一致的一条 gap 行（用于占位条两侧对称间距，以及子块之间的常规间距）。 */
+  const renderInsertGapRow = (align: "left" | "center" | "right", key: string) => (
+    <tr key={key} aria-hidden>
+      <td
+        align={align}
+        style={{
+          ...emailPresentationTdBase(),
+          ...EMAIL_PRESENTATION_TD_ANTI_STRUT_STYLE,
+          height: gapFixed,
+        }}
+      >
+        <div style={{ height: gapFixed, width: "1px" }} />
+      </td>
+    </tr>
+  );
 
   return (
     <table
@@ -241,6 +358,7 @@ export function renderVerticalStackInnerTable(props: VerticalStackInnerTableProp
       }}
     >
       <tbody style={stretchColumn ? { height: "100%" } : undefined}>
+        {childIds.length === 0 ? renderSlotRow(0, "insert-slot-0") : null}
         {childIds.map((cid, idx) => {
           const hm = template.blocks[cid]?.wrapperStyle?.heightMode ?? "hug";
           const rowHeight =
@@ -253,22 +371,22 @@ export function renderVerticalStackInnerTable(props: VerticalStackInnerTableProp
               : {};
           const crossAlign = stackCrossAlign(cid, parentCrossFallback);
           const mainValign = stackMainValign(cid, parentMainFallback);
+          const fixedGap = !gapAuto && gapPx > 0;
+          // 占位条激活在该槽时，向「朝向相邻真实块」的一侧补与容器一致的 gap，
+          // 使夹在两块之间的占位条上下间距对称（顶/底边缘那侧贴容器 padding，不补 gap）。
+          const slotActive = Boolean(insertSlot && insertSlot.renderSlot(idx));
           return (
             <Fragment key={cid}>
-              {idx > 0 && !gapAuto && gapPx > 0 ? (
-                <tr aria-hidden>
-                  <td
-                    align={crossAlign}
-                    style={{
-                      ...emailPresentationTdBase(),
-                      ...EMAIL_PRESENTATION_TD_ANTI_STRUT_STYLE,
-                      height: gapFixed,
-                    }}
-                  >
-                    <div style={{ height: gapFixed, width: "1px" }} />
-                  </td>
-                </tr>
-              ) : null}
+              {slotActive && idx > 0 && fixedGap
+                ? renderInsertGapRow(crossAlign, `insert-gap-above-${idx}`)
+                : null}
+              {renderSlotRow(idx, `insert-slot-${idx}`)}
+              {slotActive && fixedGap
+                ? renderInsertGapRow(crossAlign, `insert-gap-below-${idx}`)
+                : null}
+              {!slotActive && idx > 0 && fixedGap
+                ? renderInsertGapRow(crossAlign, `gap-${idx}`)
+                : null}
               <tr style={Object.keys(rowHeight).length > 0 ? rowHeight : undefined}>
                 <td
                   align={crossAlign}
@@ -286,6 +404,17 @@ export function renderVerticalStackInnerTable(props: VerticalStackInnerTableProp
             </Fragment>
           );
         })}
+        {childIds.length > 0 && Boolean(insertSlot && insertSlot.renderSlot(childIds.length)) ? (
+          <Fragment key="insert-slot-tail">
+            {!gapAuto && gapPx > 0
+              ? renderInsertGapRow(
+                  stackCrossAlign(childIds[childIds.length - 1]!, parentCrossFallback),
+                  "insert-gap-above-end"
+                )
+              : null}
+            {renderSlotRow(childIds.length, `insert-slot-${childIds.length}`)}
+          </Fragment>
+        ) : null}
       </tbody>
     </table>
   );

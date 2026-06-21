@@ -3,18 +3,10 @@ import { describe, it } from "node:test";
 import { normalizeSpacingValueForStorage } from "./spacingValue";
 
 describe("normalizeSpacingValueForStorage", () => {
-  it("缺 mode 仅有 unified 时归一为 unified", () => {
-    assert.deepEqual(normalizeSpacingValueForStorage({ unified: "8px" }), {
-      mode: "unified",
-      unified: "8px",
-    });
-  });
-
-  it("缺 mode 仅有分边值时归一为 separate", () => {
+  it("已是四边平铺时保留各边", () => {
     assert.deepEqual(
       normalizeSpacingValueForStorage({ top: "8px", right: "0", bottom: "0", left: "0" }),
       {
-        mode: "separate",
         top: "8px",
         right: "0",
         bottom: "0",
@@ -23,16 +15,30 @@ describe("normalizeSpacingValueForStorage", () => {
     );
   });
 
-  it("保留 separate 各边 $themeRef", () => {
-    const ref = { $themeRef: "tokens.spacing.pageInline" };
-    const out = normalizeSpacingValueForStorage({
-      mode: "separate",
-      top: "0",
-      right: ref,
+  it("缺边对象写入时补齐为四边平铺", () => {
+    assert.deepEqual(normalizeSpacingValueForStorage({ top: "8px" }), {
+      top: "8px",
+      right: "0",
       bottom: "0",
-      left: ref,
+      left: "0",
     });
-    assert.deepEqual(out.right, ref);
-    assert.deepEqual(out.left, ref);
+  });
+
+  it("legacy unified 回落 spacingZero", () => {
+    assert.deepEqual(normalizeSpacingValueForStorage({ mode: "unified", unified: "8px" }), {
+      top: "0",
+      right: "0",
+      bottom: "0",
+      left: "0",
+    });
+  });
+
+  it("缺 mode 仅有 unified 键时回落 spacingZero", () => {
+    assert.deepEqual(normalizeSpacingValueForStorage({ unified: "8px" }), {
+      top: "0",
+      right: "0",
+      bottom: "0",
+      left: "0",
+    });
   });
 });

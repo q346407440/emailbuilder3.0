@@ -85,7 +85,7 @@ export type GroundingResult = {
 export type StyleTokensResult = {
   schemaVersion: string;
   tokens: {
-    colors: { primary: string; secondary: string; surface: string };
+    colors: { primary: string; accent: string; secondary: string; surface: string };
     spacing: { section: string; gap: string; pageInline: string };
     typography: { display: string; h1: string; body: string; caption: string };
     radius: { panel: string; cta: string };
@@ -144,16 +144,18 @@ export type CompactWrapper = {
   backgroundImageRef?: string;
   contentAlign?: { horizontal: string; vertical: string };
   padding?: {
-    mode: string;
-    value?: string;
-    unified?: string;
     top?: string;
     right?: string;
     bottom?: string;
     left?: string;
   };
   backgroundColor?: string;
-  borderRadius?: { mode: string; radius?: string };
+  borderRadius?: {
+    topLeft?: string;
+    topRight?: string;
+    bottomRight?: string;
+    bottomLeft?: string;
+  };
 };
 
 export type CompactNode = {

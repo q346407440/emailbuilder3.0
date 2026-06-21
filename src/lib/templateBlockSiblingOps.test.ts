@@ -6,6 +6,7 @@ import {
   duplicateBlockBelow,
   getBlockSiblingMoveState,
   moveBlockAmongSiblings,
+  moveBlockToParentIndex,
 } from "./templateBlockSiblingOps";
 
 function baseTemplate(): EmailTemplate {
@@ -30,8 +31,8 @@ function baseTemplate(): EmailTemplate {
         props: {
           width: "600px",
           backgroundColor: "#fff",
-          padding: { mode: "unified", unified: "0" },
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+          padding: { top: "0", right: "0", bottom: "0", left: "0" },
+          border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
           gapMode: "fixed",
           gap: "0",
         },
@@ -99,6 +100,19 @@ describe("templateBlockSiblingOps", () => {
 
   it("下移后 children 顺序交换", () => {
     const next = moveBlockAmongSiblings(baseTemplate(), "a", "down");
+    assert.deepEqual(next.blocks.row?.children, ["b", "a"]);
+  });
+
+  it("moveBlockToParentIndex：可跨父级移动", () => {
+    const start = baseTemplate();
+    const next = moveBlockToParentIndex(start, "b", "root", 1);
+    assert.deepEqual(next.blocks.row?.children, ["a"]);
+    assert.deepEqual(next.blocks.root?.children, ["row", "b"]);
+    assert.equal(next.blocks.b?.parentId, "root");
+  });
+
+  it("moveBlockToParentIndex：同父级换位", () => {
+    const next = moveBlockToParentIndex(baseTemplate(), "a", "row", 2);
     assert.deepEqual(next.blocks.row?.children, ["b", "a"]);
   });
 

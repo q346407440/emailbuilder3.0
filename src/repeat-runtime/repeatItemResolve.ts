@@ -41,7 +41,7 @@ export function resolveRepeatItemsForExpansion(
     });
     if (resolved.ok) {
       const slotDef = payload.slots?.[repeat.slotId];
-      const filtered = applyCollectionItemVisibility(resolved.items, slotDef?.itemVisibility);
+      const filtered = applyCollectionItemVisibility(resolved.items, slotDef?.itemVisibility, slotDef);
       const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
       return maxItems !== undefined ? filtered.slice(0, maxItems) : filtered;
     }
@@ -51,7 +51,7 @@ export function resolveRepeatItemsForExpansion(
   if (!Array.isArray(raw)) return [];
   const items = raw.filter(isRecord);
   const slotDef = payload?.slots?.[repeat.slotId];
-  const filtered = applyCollectionItemVisibility(items, slotDef?.itemVisibility);
+  const filtered = applyCollectionItemVisibility(items, slotDef?.itemVisibility, slotDef);
   const maxItems = resolveRepeatExpansionMaxItems(repeat, payload);
   return maxItems !== undefined ? filtered.slice(0, maxItems) : filtered;
 }

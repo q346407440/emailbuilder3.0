@@ -83,4 +83,22 @@ describe("callLlmStageWithRetry feedback", () => {
       (e: unknown) => e instanceof AiPipelineError && e.code === "VALIDATION_FAILED"
     );
   });
+
+  it("429 瞬态错误退避重试后成功", async () => {
+    let calls = 0;
+    const err429 = new Error("豆包 API 429") as Error & { status?: number };
+    err429.status = 429;
+
+    const result = await callLlmStageWithRetry(
+      { stage: "RA", maxRetries: 0, maxTransientRetries: 2 },
+      async () => {
+        calls += 1;
+        if (calls === 1) throw err429;
+        return { ok: true };
+      }
+    );
+
+    assert.deepEqual(result, { ok: true });
+    assert.equal(calls, 2);
+  });
 });

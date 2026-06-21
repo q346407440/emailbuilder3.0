@@ -14,7 +14,7 @@ describe("resolveImageBorderRadiusFromB1", () => {
 
   it("card 图使用 panel 圆角", () => {
     const r = resolveImageBorderRadiusFromB1(panel, { role: "card" });
-    assert.equal(r.radius, "12px");
+    assert.equal(r.topLeft, "12px");
   });
 
   it("全宽 hero 为直角", () => {
@@ -26,17 +26,17 @@ describe("resolveImageBorderRadiusFromB1", () => {
       hasOverlay: true,
     };
     const r = resolveImageBorderRadiusFromB1(panel, { role: "hero", section });
-    assert.equal(r.radius, "0");
+    assert.equal(r.topLeft, "0");
   });
 
   it("logo 为直角", () => {
     const r = resolveImageBorderRadiusFromB1(panel, { role: "logo" });
-    assert.equal(r.radius, "0");
+    assert.equal(r.topLeft, "0");
   });
 
   it("panel=0 时一律直角", () => {
     const r = resolveImageBorderRadiusFromB1("0", { role: "card" });
-    assert.equal(r.radius, "0");
+    assert.equal(r.topLeft, "0");
   });
 });
 
@@ -52,11 +52,11 @@ describe("stripCompactBorderRadiusTree", () => {
   it("递归剥离 compact borderRadius", () => {
     const root: CompactNode = {
       kind: "layout.container",
-      wrapper: { borderRadius: { mode: "unified", radius: "8px" }, widthMode: "fill" },
+      wrapper: { borderRadius: { topLeft: "8px", topRight: "8px", bottomRight: "8px", bottomLeft: "8px" }, widthMode: "fill" },
       children: [
         {
           kind: "content.text",
-          wrapper: { borderRadius: { mode: "unified", radius: "4px" } },
+          wrapper: { borderRadius: { topLeft: "4px", topRight: "4px", bottomRight: "4px", bottomLeft: "4px" } },
         },
       ],
     };
@@ -68,7 +68,17 @@ describe("stripCompactBorderRadiusTree", () => {
 
 describe("ctaBorderRadius", () => {
   it("返回 B1 cta 档位", () => {
-    assert.deepEqual(ctaBorderRadius("8px"), { mode: "unified", radius: "8px" });
-    assert.deepEqual(zeroBorderRadius(), { mode: "unified", radius: "0" });
+    assert.deepEqual(ctaBorderRadius("8px"), {
+      topLeft: "8px",
+      topRight: "8px",
+      bottomRight: "8px",
+      bottomLeft: "8px",
+    });
+    assert.deepEqual(zeroBorderRadius(), {
+      topLeft: "0",
+      topRight: "0",
+      bottomRight: "0",
+      bottomLeft: "0",
+    });
   });
 });

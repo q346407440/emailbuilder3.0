@@ -1,11 +1,12 @@
 import { useRef, useState, type ChangeEvent } from "react";
+import { Space } from "antd";
 import { uploadProjectIconAsset, uploadProjectImageAsset } from "../../api/client";
 import {
   isProjectIconUploadFile,
   isProjectImageUploadFile,
   toAbsoluteProjectAssetUrl,
 } from "../../lib/projectAssetUpload";
-import { ShopInput, ShopSecondaryButton } from "./ShopFormControls";
+import { ShopInput } from "./ShopFormControls";
 
 export type UrlAssetUploadKind = "image" | "icon";
 
@@ -80,23 +81,23 @@ export function UrlAssetUploadInput({
         aria-hidden
         onChange={onFileChange}
       />
-      <ShopInput
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        disabled={disabled || uploading}
-        onChange={(e) => onChange(e.target.value)}
-        addonAfter={
-          <ShopSecondaryButton
-            htmlType="button"
-            className="url-asset-upload-input__btn"
-            disabled={disabled || uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploading ? "上传中…" : "本地上传"}
-          </ShopSecondaryButton>
-        }
-      />
+      <Space.Compact className="shop-input-compact url-asset-upload-input__compact" block>
+        <ShopInput
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          disabled={disabled || uploading}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <button
+          type="button"
+          className="shop-input-compact__suffix shop-input-compact__suffix--primary url-asset-upload-input__suffix"
+          disabled={disabled || uploading}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploading ? "上传中…" : "本地上传"}
+        </button>
+      </Space.Compact>
       {uploadError ? (
         <p className="url-asset-upload-input__error" role="alert">
           {uploadError}

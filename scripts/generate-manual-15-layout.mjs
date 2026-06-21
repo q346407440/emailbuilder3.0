@@ -59,8 +59,15 @@ function themeBinding(fieldPath, tokenPath) {
   };
 }
 
+function themeBindingBorderRadius(fieldPrefix, tokenPath) {
+  return ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'].reduce(
+    (acc, corner) => ({ ...acc, ...themeBinding(`${fieldPrefix}.${corner}`, tokenPath) }),
+    {}
+  );
+}
+
 function borderNone() {
-  return { mode: 'unified', width: '0', style: 'solid', color: 'rgba(0,0,0,0)' };
+  return { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
 }
 
 function sectionShell(id, name) {
@@ -74,10 +81,8 @@ function sectionShell(id, name) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
-      padding: {
-        mode: 'separate',
-        top: '0',
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+      padding: { top: '0',
         right: themeRef('tokens.spacing.pageInline'),
         bottom: themeRef('tokens.spacing.section'),
         left: themeRef('tokens.spacing.pageInline'),
@@ -107,7 +112,7 @@ function hLayout(id, alignH = 'center', children = []) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings: themeBinding('props.gap', 'tokens.spacing.gap'),
     children,
@@ -125,7 +130,7 @@ function vLayout(id, alignH = 'center', gap = themeRef('tokens.spacing.gap'), ch
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings: typeof gap === 'object' && gap.$themeRef ? themeBinding('props.gap', 'tokens.spacing.gap') : {},
     children,
@@ -167,7 +172,7 @@ function textBlock(id, name, content, opts = {}) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings,
   };
@@ -188,7 +193,7 @@ function buttonBlock(id, name, label, opts = {}) {
         textColor: '#1A1A1A',
         fontSize: themeRef('tokens.typography.body'),
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: themeRef('tokens.radius.cta') },
+        borderRadius: { topLeft: themeRef('tokens.radius.cta'), topRight: themeRef('tokens.radius.cta'), bottomRight: themeRef('tokens.radius.cta'), bottomLeft: themeRef('tokens.radius.cta') },
         bold: true,
         italic: false,
       },
@@ -198,12 +203,12 @@ function buttonBlock(id, name, label, opts = {}) {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings: {
       ...themeBinding('props.buttonStyle.backgroundColor', 'colors.primary'),
       ...themeBinding('props.buttonStyle.fontSize', 'tokens.typography.body'),
-      ...themeBinding('props.buttonStyle.borderRadius.radius', 'tokens.radius.cta'),
+      ...themeBindingBorderRadius('props.buttonStyle.borderRadius', 'tokens.radius.cta'),
     },
   };
 }
@@ -219,7 +224,7 @@ function iconBlock(id, src, color, size = '32px', alignH = 'center') {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
   };
 }
@@ -235,7 +240,7 @@ function bgImageBlock(id, src, alt, height, overlayChildren = [], vertical = 'ce
       widthMode: 'fill',
       heightMode: 'fixed',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: themeRef('tokens.radius.panel') },
+      borderRadius: { topLeft: themeRef('tokens.radius.panel'), topRight: themeRef('tokens.radius.panel'), bottomRight: themeRef('tokens.radius.panel'), bottomLeft: themeRef('tokens.radius.panel') },
       height,
       backgroundImage: {
         src,
@@ -246,7 +251,7 @@ function bgImageBlock(id, src, alt, height, overlayChildren = [], vertical = 'ce
     },
     bindings: {
       ...themeBinding('props.gap', 'tokens.spacing.gap'),
-      ...themeBinding('wrapperStyle.borderRadius.radius', 'tokens.radius.panel'),
+      ...themeBindingBorderRadius('wrapperStyle.borderRadius', 'tokens.radius.panel'),
     },
     children: overlayChildren,
   };
@@ -263,8 +268,8 @@ function gridBlock(id, columns, children, gap = '8px') {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
-      padding: { mode: 'unified', unified: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
     },
     children,
   };
@@ -598,7 +603,7 @@ const template = {
     props: {
       backgroundColor: '#F3F4F6',
       width: '600px',
-      padding: { mode: 'unified', unified: '0' },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: borderNone(),
       gapMode: 'fixed',
       gap: '0',

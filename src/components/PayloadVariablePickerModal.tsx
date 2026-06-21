@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import type { EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import { slotValueTypeLabelForPicker } from "../payload-contract/variable-slot-compatibility";
+import { Field } from "./ui/Field";
 import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
+
+const EMPTY_MESSAGE =
+  "当前没有符合该字段类型的可绑定变量，请先在变量列表中点击「添加变量」。";
 
 function formatSlotDisplayValue(slot: ExternalVariableSlotInfo, payload: EmailPayload): string {
   const detached = payload.detachedVariableSlotIds?.includes(slot.slotId);
@@ -98,7 +102,7 @@ export function PayloadVariablePickerModal({
       destroyOnClose
       maskClosable={false}
       keyboard
-      wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap"
+      wrapClassName="text-body-var-pill-modal-wrap shop-section-modal-wrap--picker"
       onCancel={onClose}
       footer={
         <div className="shop-section-modal__footer-actions">
@@ -115,7 +119,7 @@ export function PayloadVariablePickerModal({
         </div>
       }
     >
-      <div className="text-body-inline-var-modal">
+      <div className="text-body-var-pill-modal">
         <div
           className={
             previewText.trim()
@@ -133,54 +137,51 @@ export function PayloadVariablePickerModal({
           )}
         </div>
 
-        {scalarSlots.length === 0 ? (
-          <p className="text-body-var-pill-modal__empty">
-            当前没有符合该字段类型的可绑定变量，请先在变量列表中点击「添加变量」。
+        <Field label="选择变量" className="inspector-field--modal-table">
+          <p className="text-body-var-pill-modal__hint">
+            在下方表格中单选一个变量后点「确定」。列表类（collection）变量不在此选择。
           </p>
-        ) : (
-          <>
-            <p className="text-body-var-pill-modal__hint">
-              在下方表格中单选一个变量后点「确定」。列表类（collection）变量不在此选择。
-            </p>
-            <SelectablePickerTable
-              ariaLabel="可选 payload 变量"
-              rowKey={(slot) => slot.slotId}
-              selectedKey={selectedSlotId}
-              onSelect={setSelectedSlotId}
-              radioName="payload-var-picker-slot"
-              dataSource={scalarSlots}
-              columns={[
-                {
-                  key: "label",
-                  title: "名称",
-                  render: (slot) => slot.label ?? slot.slotId,
+          <SelectablePickerTable
+            ariaLabel="可选 payload 变量"
+            rowKey={(slot) => slot.slotId}
+            selectedKey={selectedSlotId}
+            onSelect={setSelectedSlotId}
+            radioName="payload-var-picker-slot"
+            dataSource={scalarSlots}
+            emptyText={
+              <p className="text-body-var-pill-modal__empty">{EMPTY_MESSAGE}</p>
+            }
+            columns={[
+              {
+                key: "label",
+                title: "名称",
+                render: (slot) => slot.label ?? slot.slotId,
+              },
+              {
+                key: "id",
+                title: "标识",
+                render: (slot) => (
+                  <code className="selectable-picker-table__mono">{slot.slotId}</code>
+                ),
+              },
+              {
+                key: "type",
+                title: "类型",
+                width: 72,
+                render: (slot) => slotValueTypeLabelForPicker(slot.valueType),
+              },
+              {
+                key: "value",
+                title: "当前值",
+                ellipsis: true,
+                render: (slot) => {
+                  const displayValue = formatSlotDisplayValue(slot, payload);
+                  return <span title={displayValue}>{displayValue}</span>;
                 },
-                {
-                  key: "id",
-                  title: "标识",
-                  render: (slot) => (
-                    <code className="selectable-picker-table__mono">{slot.slotId}</code>
-                  ),
-                },
-                {
-                  key: "type",
-                  title: "类型",
-                  width: 72,
-                  render: (slot) => slotValueTypeLabelForPicker(slot.valueType),
-                },
-                {
-                  key: "value",
-                  title: "当前值",
-                  ellipsis: true,
-                  render: (slot) => {
-                    const displayValue = formatSlotDisplayValue(slot, payload);
-                    return <span title={displayValue}>{displayValue}</span>;
-                  },
-                },
-              ]}
-            />
-          </>
-        )}
+              },
+            ]}
+          />
+        </Field>
 
         {formError ? (
           <p className="text-body-inline-var-modal__error" role="alert">

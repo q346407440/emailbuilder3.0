@@ -23,13 +23,8 @@ const EMAIL_KEY = "hug-fill-gap-test";
 const OUT = path.join(REPO, "data", "emails", EMAIL_KEY);
 const LAYOUT_DIR = path.join(OUT, "layouts", "default");
 
-const BORDER_ZERO = {
-  mode: "unified",
-  width: "0",
-  style: "solid",
-  color: "rgba(0,0,0,0)",
-};
-const RADIUS_SM = { mode: "unified", radius: "4px" };
+const BORDER_ZERO = { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
+const RADIUS_SM = { topLeft: "4px", topRight: "4px", bottomRight: "4px", bottomLeft: "4px" };
 
 const MODE_COLOR = { hug: "#2563EB", fill: "#DC2626", fixed: "#7C3AED" };
 
@@ -117,7 +112,7 @@ function layout(id, parentId, direction, children, wrapperExtra = {}, propsExtra
       heightMode: "hug",
       border: BORDER_ZERO,
       borderRadius: RADIUS_SM,
-      padding: { mode: "unified", unified: "6px" },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
       ...wrapperExtra,
     },
     props: { direction, gapMode: "fixed", gap: "12px", ...propsExtra },
@@ -128,7 +123,7 @@ function layout(id, parentId, direction, children, wrapperExtra = {}, propsExtra
 function section(id, parentId, childIds, bg) {
   const sec = layout(id, parentId, "vertical", childIds, {
     backgroundColor: bg,
-    padding: { mode: "unified", unified: "12px" },
+    padding: { top: "12px", right: "12px", bottom: "12px", left: "12px" },
   });
   addBlock(sec, id, "layout");
   return id;
@@ -205,8 +200,8 @@ function buildGapCell(cellId, parentId, cfg) {
     widthMode,
     heightMode,
     backgroundColor,
-    border: { mode: "unified", width: "1px", style: "solid", color: borderColor },
-    padding: { mode: "unified", unified: "6px" },
+    border: { style: "solid", color: borderColor, top: "1px", right: "1px", bottom: "1px", left: "1px" },
+    padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
   };
   if (width) ws.width = width;
   if (height) ws.height = height;
@@ -220,8 +215,8 @@ function buildGapCell(cellId, parentId, cfg) {
     layout(cellId, parentId, "vertical", [`${cellId}-cap`, layId], {
       widthMode: "fill",
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#E2E8F0" },
-      padding: { mode: "unified", unified: "4px" },
+      border: { style: "solid", color: "#E2E8F0", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "4px", right: "4px", bottom: "4px", left: "4px" },
     }),
     caption,
     "layout"
@@ -250,8 +245,8 @@ function stageLayout(id, parentId, direction, childIds, parent) {
     widthMode,
     heightMode,
     backgroundColor,
-    border: { mode: "unified", width: "1px", style: "solid", color: borderColor },
-    padding: { mode: "unified", unified: "6px" },
+    border: { style: "solid", color: borderColor, top: "1px", right: "1px", bottom: "1px", left: "1px" },
+    padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
   };
   if (width) ws.width = width;
   if (height) ws.height = height;
@@ -276,8 +271,8 @@ function buildDemoRow(rowId, parentId, rowTitle, builders) {
   addBlock(
     layout(rowId, parentId, "vertical", [`${rowId}-title`, ...cellIds], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#94A3B8" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#94A3B8", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }, { gap: "10px" }),
     rowTitle,
     "layout"
@@ -311,7 +306,7 @@ addBlock(
     props: {
       backgroundColor: "#F3F4F6",
       width: "600px",
-      padding: { mode: "unified", unified: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: BORDER_ZERO,
       gapMode: "fixed",
       gap: "16px",
@@ -805,7 +800,7 @@ chapterHeader(
     layout(outerId, wrapId, "vertical", [`${wrapId}-tag`, innerId], {
       widthMode: FILL,
       backgroundColor: "#E5E7EB",
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "外层",
     "layout"
@@ -821,8 +816,8 @@ chapterHeader(
   addBlock(
     layout(wrapId, "hfg-ch7", "vertical", [`${wrapId}-title`, outerId], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FCD34D" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#FCD34D", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "7A",
     "layout"
@@ -917,7 +912,7 @@ const tokenPresets = {
       label: "测试预设",
       description: "最小 token",
       tokens: {
-        colors: { primary: "#111827", secondary: "#6B7280", surface: "#FFFFFF" },
+        colors: { primary: "#111827", accent: "#1A1A1A", secondary: "#6B7280", surface: "#FFFFFF" },
         spacing: { section: "12px", gap: "8px", pageInline: "12px" },
         typography: { display: "24px", h1: "18px", body: "13px", caption: "12px" },
         radius: { panel: "4px", cta: "4px" },

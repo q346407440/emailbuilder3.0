@@ -36,6 +36,7 @@ import {
   SLOT_VALUE_TYPE_SET,
 } from "./value-types";
 import { isObjectFieldScalarType, OBJECT_FIELD_SCALAR_TYPES } from "./object-fields";
+import { collectionSlotAllowsItemVisibility } from "../lib/collectionItemVisibility";
 
 const COLLECTION_FIXED_LENGTH_MIN = 1;
 const COLLECTION_FIXED_LENGTH_MAX = 10;
@@ -712,6 +713,11 @@ export function validatePayloadSlotDefinition(
     }
     issues.push(...validateCollectionDataSource(`${path}.dataSource`, slot.dataSource));
     issues.push(...validateCollectionItemVisibility(`${path}.itemVisibility`, slot.itemVisibility));
+    if (slot.itemVisibility !== undefined && !collectionSlotAllowsItemVisibility(slot)) {
+      issues.push(
+        issue(`${path}.itemVisibility`, "仅 loyalty 内部后台专用列表变量可声明 itemVisibility")
+      );
+    }
     issues.push(...validateDeprecatedCollectionDisplayFields(path, slot));
   } else if (valueType === "object") {
     if (slot.itemFields !== undefined) {

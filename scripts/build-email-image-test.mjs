@@ -52,15 +52,10 @@ const IMG_SRC_POSITION_SQUARE = positionAsset("position-markers-square.png");
 const IMG_SRC_POSITION_SPAN_LR = positionAsset("position-markers-span-lr.png");
 const IMG_SRC_POSITION_SPAN_TB = positionAsset("position-markers-span-tb.png");
 
-const BORDER_ZERO = {
-  mode: "unified",
-  width: "0",
-  style: "solid",
-  color: "rgba(0,0,0,0)",
-};
-const RADIUS_SM = { mode: "unified", radius: "4px" };
-const RADIUS_MD = { mode: "unified", radius: "12px" };
-const RADIUS_LG = { mode: "unified", radius: "24px" };
+const BORDER_ZERO = { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
+const RADIUS_SM = { topLeft: "4px", topRight: "4px", bottomRight: "4px", bottomLeft: "4px" };
+const RADIUS_MD = { topLeft: "12px", topRight: "12px", bottomRight: "12px", bottomLeft: "12px" };
+const RADIUS_LG = { topLeft: "24px", topRight: "24px", bottomRight: "24px", bottomLeft: "24px" };
 
 /** 与 src/lib/imageObjectPosition.ts IMAGE_OBJECT_POSITION_PRESETS 一致 */
 const POSITION_PRESETS = [
@@ -143,7 +138,7 @@ function layout(id, parentId, direction, children, wrapperExtra = {}, propsExtra
       heightMode: "hug",
       border: BORDER_ZERO,
       borderRadius: RADIUS_SM,
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
       ...wrapperExtra,
     },
     props: { direction, gapMode: "fixed", gap: "6px", ...propsExtra },
@@ -225,7 +220,7 @@ function chapterHeader(sectionId, parentId, num, title, hint, tint = "#F9FAFB") 
 function section(id, parentId, childIds, bg) {
   const sec = layout(id, parentId, "vertical", childIds, {
     backgroundColor: bg,
-    padding: { mode: "unified", unified: "12px" },
+    padding: { top: "12px", right: "12px", bottom: "12px", left: "12px" },
   });
   addBlock(sec, id, "layout");
   return id;
@@ -271,8 +266,8 @@ function buildCompareRow(rowId, parentId, title, cells) {
       layout(cellId, rowId, "vertical", [`${cellId}-lbl`, `${cellId}-img`], {
         widthMode: "fill",
         backgroundColor: "#FFFFFF",
-        border: { mode: "unified", width: "1px", style: "solid", color: "#BFDBFE" },
-        padding: { mode: "unified", unified: "6px" },
+        border: { style: "solid", color: "#BFDBFE", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+        padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
       }),
       cell.label,
       "layout"
@@ -346,8 +341,8 @@ function buildPositionGrid(gridId, parentId, opts = {}) {
         layout(cellId, rowId, "vertical", [`${cellId}-lbl`, `${cellId}-img`], {
           widthMode: "fill",
           backgroundColor: "#FFFBEB",
-          border: { mode: "unified", width: "1px", style: "solid", color: "#FED7AA" },
-          padding: { mode: "unified", unified: "4px" },
+          border: { style: "solid", color: "#FED7AA", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+          padding: { top: "4px", right: "4px", bottom: "4px", left: "4px" },
         }),
         preset.label,
         "layout"
@@ -358,8 +353,8 @@ function buildPositionGrid(gridId, parentId, opts = {}) {
   addBlock(
     layout(gridId, parentId, "vertical", [`${gridId}-title`, ...rowIds], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FDBA74" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#FDBA74", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "九宫格",
     "layout"
@@ -390,7 +385,7 @@ addBlock(
     props: {
       backgroundColor: "#F3F4F6",
       width: "600px",
-      padding: { mode: "unified", unified: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: BORDER_ZERO,
       gapMode: "fixed",
       gap: "20px",
@@ -554,8 +549,8 @@ for (const demo of sizeDemos) {
     layout(cellId, "it-ch4-sizes", "vertical", [`${cellId}-lbl`, `${cellId}-img`], {
       widthMode: "fill",
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#DDD6FE" },
-      padding: { mode: "unified", unified: "6px" },
+      border: { style: "solid", color: "#DDD6FE", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
     }),
     demo.label,
     "layout"
@@ -564,8 +559,8 @@ for (const demo of sizeDemos) {
 addBlock(
   layout("it-ch4-sizes", "it-ch4", "vertical", ["it-ch4-sizes-title", ...sizeCellIds], {
     backgroundColor: "#FFFFFF",
-    border: { mode: "unified", width: "1px", style: "solid", color: "#C4B5FD" },
-    padding: { mode: "unified", unified: "8px" },
+    border: { style: "solid", color: "#C4B5FD", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+    padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
   }),
   "尺寸矩阵",
   "layout"
@@ -579,15 +574,15 @@ buildCompareRow("it-ch5-style", "it-ch5", "5 · 样式对照", [
     label: "无描边\n圆角 0",
     imgOpts: {
       height: "100px",
-      wrapperRadius: { mode: "unified", radius: "0" },
-      bgRadius: { mode: "unified", radius: "0" },
+      wrapperRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+      bgRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
   },
   {
     label: "图级圆角 12px\nwrapper 0",
     imgOpts: {
       height: "100px",
-      wrapperRadius: { mode: "unified", radius: "0" },
+      wrapperRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       bgRadius: RADIUS_MD,
     },
   },
@@ -596,14 +591,14 @@ buildCompareRow("it-ch5-style", "it-ch5", "5 · 样式对照", [
     imgOpts: {
       height: "100px",
       wrapperRadius: RADIUS_LG,
-      bgRadius: { mode: "unified", radius: "0" },
+      bgRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
   },
   {
     label: "图级描边 3px\n#DC2626",
     imgOpts: {
       height: "100px",
-      bgBorder: { mode: "unified", width: "3px", style: "solid", color: "#DC2626" },
+      bgBorder: { style: "solid", color: "#DC2626", top: "3px", right: "3px", bottom: "3px", left: "3px" },
       bgRadius: RADIUS_MD,
     },
   },
@@ -683,15 +678,15 @@ addBlock(
 addBlock(
   layout(ovId, "it-ch7-overlay", "vertical", [`${ovId}-lbl`, ovImg], {
     backgroundColor: "#FFFFFF",
-    border: { mode: "unified", width: "1px", style: "solid", color: "#FCD34D" },
-    padding: { mode: "unified", unified: "8px" },
+    border: { style: "solid", color: "#FCD34D", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+    padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
   }),
   "叠层卡",
   "layout"
 );
 addBlock(
   layout("it-ch7-overlay", "it-ch7", "vertical", [ovId], {
-    padding: { mode: "unified", unified: "0" },
+    padding: { top: "0", right: "0", bottom: "0", left: "0" },
     border: BORDER_ZERO,
   }),
   "第7节内容",
@@ -766,8 +761,8 @@ chapterHeader(
       layout(cellId, rowId, "vertical", [`${cellId}-lbl`, blockChildId], {
         widthMode: "fill",
         backgroundColor: "#FFFFFF",
-        border: { mode: "unified", width: "1px", style: "solid", color: "#CBD5E1" },
-        padding: { mode: "unified", unified: "6px" },
+        border: { style: "solid", color: "#CBD5E1", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+        padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
       }),
       spec.label,
       "layout"
@@ -776,8 +771,8 @@ chapterHeader(
   addBlock(
     layout(rowId, "it-ch8", "vertical", [`${rowId}-title`, ...cellIds], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#94A3B8" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#94A3B8", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "对照行",
     "layout"
@@ -823,8 +818,8 @@ addBlock(
 addBlock(
   layout("it-ch9-var", "it-ch9", "vertical", ["it-ch9-var-hint", "it-ch9-var-img"], {
     backgroundColor: "#FFFFFF",
-    border: { mode: "unified", width: "1px", style: "solid", color: "#A7F3D0" },
-    padding: { mode: "unified", unified: "8px" },
+    border: { style: "solid", color: "#A7F3D0", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+    padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
   }),
   "变量区",
   "layout"
@@ -872,7 +867,7 @@ const tokenPresets = {
       label: "测试预设",
       description: "最小 token",
       tokens: {
-        colors: { primary: "#111827", secondary: "#6B7280", surface: "#FFFFFF" },
+        colors: { primary: "#111827", accent: "#1A1A1A", secondary: "#6B7280", surface: "#FFFFFF" },
         spacing: { section: "12px", gap: "8px", pageInline: "12px" },
         typography: { display: "24px", h1: "18px", body: "13px", caption: "12px" },
         radius: { panel: "4px", cta: "4px" },

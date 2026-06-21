@@ -34,7 +34,7 @@ test("applyContractIssueAutofix 修复 2026-06-10 线上失败的全部 5 条机
     type: "layout",
     wrapperStyle: {
       widthMode: "fixed",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#000" },
+      border: { style: "solid", color: "#000", top: "1px", right: "1px", bottom: "1px", left: "1px" },
     },
     children: [],
   });
@@ -60,10 +60,10 @@ test("applyContractIssueAutofix 修复 2026-06-10 线上失败的全部 5 条机
     },
   };
   const issues = [
-    "blocks.ai-s7-ig-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
-    "blocks.ai-s7-yt-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
-    "blocks.ai-s7-x-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
-    "blocks.ai-s7-pin-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
+    "blocks.ai-s7-ig-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（四角 0 也要显式）",
+    "blocks.ai-s7-yt-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（四角 0 也要显式）",
+    "blocks.ai-s7-x-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（四角 0 也要显式）",
+    "blocks.ai-s7-pin-wrapper.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（四角 0 也要显式）",
     `tokenPresets.json/tokenPresets.presets.default.tokens.spacing.pageInline: 容器间距不得超过 ${EMAIL_CONTAINER_SPACING_MAX_PX}px（当前 32px）`,
   ];
 
@@ -73,8 +73,10 @@ test("applyContractIssueAutofix 修复 2026-06-10 线上失败的全部 5 条机
   for (const id of ["ai-s7-ig-wrapper", "ai-s7-yt-wrapper", "ai-s7-x-wrapper", "ai-s7-pin-wrapper"]) {
     const block = findBlockByIdInTemplateTree(result.template, id);
     assert.deepEqual((block!.wrapperStyle as Record<string, unknown>).borderRadius, {
-      mode: "unified",
-      radius: "0",
+      topLeft: "0",
+      topRight: "0",
+      bottomRight: "0",
+      bottomLeft: "0",
     });
   }
   const fixedTokens = result.tokenPresets as typeof tokenPresets;
@@ -93,7 +95,7 @@ test("applyContractIssueAutofix 幂等：已修复产物上重跑无新改动", 
   const template = makeTemplate([
     {
       id: "ai-s1-box",
-      wrapperStyle: { borderRadius: { mode: "unified", radius: "0" } },
+      wrapperStyle: { borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" } },
       children: [],
     },
   ]);
@@ -101,7 +103,7 @@ test("applyContractIssueAutofix 幂等：已修复产物上重跑无新改动", 
     template,
     tokenPresets: null,
     issues: [
-      "blocks.ai-s1-box.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
+      "blocks.ai-s1-box.wrapperStyle.borderRadius: 涉及背景的圆角字段必须显式写入（四角 0 也要显式）",
     ],
   });
   assert.equal(result.fixes.length, 0);

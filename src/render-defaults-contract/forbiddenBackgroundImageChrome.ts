@@ -22,10 +22,14 @@ function isChromeBindPath(path: string): boolean {
 
 function remapChromeBindingKey(bindPath: string): string | null {
   if (bindPath.startsWith("wrapperStyle.backgroundImage.borderRadius")) {
-    return bindPath.replace(
+    let next = bindPath.replace(
       "wrapperStyle.backgroundImage.borderRadius",
       "wrapperStyle.borderRadius"
     );
+    if (next.endsWith(".radius")) {
+      next = next.replace(/\.radius$/, ".topLeft");
+    }
+    return next;
   }
   if (bindPath.startsWith("wrapperStyle.backgroundImage.border")) {
     return bindPath.replace("wrapperStyle.backgroundImage.border", "wrapperStyle.border");

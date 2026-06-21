@@ -4,6 +4,7 @@ import { normalizeButtonContentAlign } from "./buttonContentAlign";
 import { ensureLayoutContentAlignPersisted } from "./layoutContentAlign";
 import { ensureWrapperContentAlignPersisted } from "./wrapperContentAlign";
 import { coercePaddingOnContainerIfChanged } from "./spacingValue";
+import { spacingZero } from "./boxModelFlat";
 /**
  * 模板加载时补齐结构默认值与 contentAlign 有效性（禁止字段由 validate 报错，不在此静默删除）。
  */
@@ -24,10 +25,10 @@ export function normalizeTemplateBlockDefaults(template: EmailTemplate): boolean
     if (block.type === "grid") {
       const ws = block.wrapperStyle as Record<string, unknown> | undefined;
       if (!ws || typeof ws !== "object" || Array.isArray(ws)) {
-        block.wrapperStyle = { padding: { mode: "unified", unified: "0" } };
+        block.wrapperStyle = { padding: spacingZero() };
         changed = true;
       } else if (ws.padding === undefined || ws.padding === null) {
-        ws.padding = { mode: "unified", unified: "0" };
+        ws.padding = spacingZero();
         changed = true;
       }
     }

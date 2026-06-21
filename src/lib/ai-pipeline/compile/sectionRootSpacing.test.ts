@@ -31,7 +31,6 @@ describe("resolveSectionRootPadding", () => {
       spacing,
     });
     assert.deepEqual(pad, {
-      mode: "separate",
       top: "16px",
       right: "20px",
       bottom: "16px",

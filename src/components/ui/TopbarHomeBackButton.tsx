@@ -1,4 +1,4 @@
-import ArrowLeftOutlined from "@shoplazza/sds-icons/ArrowLeftOutlined";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { goToEmailTemplateList } from "../../lib/appNavigation";
 
 /** 编辑器顶栏：返回邮件模板列表页 */

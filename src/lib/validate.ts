@@ -4,6 +4,13 @@ import {
   type EmailTemplate,
 } from "../types/email";
 import { isThemeRef } from "../types/themeRef";
+import {
+  isFlatBorderRadiusValue,
+  isFlatBorderValue,
+  isFlatSpacingValue,
+  SPACING_SIDES,
+  BORDER_RADIUS_CORNERS,
+} from "./boxModelFlat";
 import { classifyField } from "./blockFieldClassification";
 import { validateTemplateBlockContracts } from "../block-contract/validate";
 import {
@@ -86,7 +93,7 @@ function validateSpacingValue(path: string, raw: unknown, issues: ValidationIssu
     issues.push({
       path,
       reason:
-        "边距值须为单边长度（如 8px、0），禁止使用 CSS 多值简写；四边不同请使用 mode: separate",
+        "边距值须为单边长度（如 8px、0），禁止使用 CSS 多值简写",
     });
   }
 }
@@ -97,21 +104,16 @@ function validateSpacingObject(
   issues: ValidationIssue[]
 ): void {
   if (!spacing || typeof spacing !== "object") return;
-  const obj = spacing as Record<string, unknown>;
-  if (obj.mode === "unified") {
-    validateSpacingValue(`${path}.unified`, obj.unified, issues);
-    return;
-  }
-  if (obj.mode === "separate") {
-    validateSpacingValue(`${path}.top`, obj.top, issues);
-    validateSpacingValue(`${path}.right`, obj.right, issues);
-    validateSpacingValue(`${path}.bottom`, obj.bottom, issues);
-    validateSpacingValue(`${path}.left`, obj.left, issues);
+  if (isFlatSpacingValue(spacing)) {
+    for (const side of SPACING_SIDES) {
+      validateSpacingValue(`${path}.${side}`, (spacing as Record<string, unknown>)[side], issues);
+    }
     return;
   }
   issues.push({
     path,
-    reason: "间距对象须显式包含 mode: unified 或 separate",
+    reason:
+      "间距对象须为四边平铺（top/right/bottom/left）；禁止 mode: unified/separate",
   });
 }
 
@@ -299,38 +301,31 @@ function validateBorderConfig(
     if (required) {
       issues.push({
         path,
-        reason: "涉及背景时必须配置描边（mode=unified、width=0、color=透明色也需要显式写出）",
+        reason: "涉及背景时必须配置描边（四边宽 0 + style + color 也需显式写出）",
       });
     }
     return;
   }
   if (typeof raw !== "object" || Array.isArray(raw)) {
-    issues.push({ path, reason: "描边必须为两级模式对象（mode: unified | custom）" });
+    issues.push({
+      path,
+      reason:
+        "描边须为四边平铺（top/right/bottom/left 宽 + style + color）；禁止 mode: unified/custom",
+    });
     return;
   }
-  const b = raw as Record<string, unknown>;
-  if (b.mode === "unified") {
-    validateRequiredString(`${path}.width`, b.width, issues);
-    validateBorderStyleField(`${path}.style`, b.style, issues);
-    validateRequiredString(`${path}.color`, b.color, issues);
-    return;
-  }
-  if (b.mode === "custom") {
-    validateBorderStyleField(`${path}.style`, b.style, issues);
-    validateRequiredString(`${path}.color`, b.color, issues);
-    for (const side of ["top", "right", "bottom", "left"] as const) {
-      const s = b[side];
-      if (!s || typeof s !== "object" || Array.isArray(s)) {
-        issues.push({ path: `${path}.${side}`, reason: "自定义描边四边对象必须显式存在" });
-        continue;
-      }
-      validateRequiredString(`${path}.${side}.width`, (s as Record<string, unknown>).width, issues);
+  if (isFlatBorderValue(raw)) {
+    validateBorderStyleField(`${path}.style`, (raw as Record<string, unknown>).style, issues);
+    validateRequiredString(`${path}.color`, (raw as Record<string, unknown>).color, issues);
+    for (const side of SPACING_SIDES) {
+      validateRequiredString(`${path}.${side}`, (raw as Record<string, unknown>)[side], issues);
     }
     return;
   }
   issues.push({
-    path: `${path}.mode`,
-    reason: "描边 mode 必填，仅允许 unified 或 custom",
+    path,
+    reason:
+      "描边须为四边平铺（top/right/bottom/left 宽 + style + color）；禁止 mode: unified/custom",
   });
 }
 
@@ -345,30 +340,28 @@ function validateBorderRadiusConfig(
     if (required) {
       issues.push({
         path,
-        reason: "涉及背景的圆角字段必须显式写入（mode=unified、radius=0 也要显式）",
+        reason: "涉及背景的圆角字段必须显式写入（四角 0 也要显式）",
       });
     }
     return;
   }
   if (typeof raw !== "object" || Array.isArray(raw)) {
-    issues.push({ path, reason: "圆角必须为两级模式对象（mode: unified | corners）" });
+    issues.push({
+      path,
+      reason: "圆角须为四角平铺（topLeft/topRight/bottomRight/bottomLeft）",
+    });
     return;
   }
-  const r = raw as Record<string, unknown>;
-  if (r.mode === "unified") {
-    validateRequiredString(`${path}.radius`, r.radius, issues);
-    return;
-  }
-  if (r.mode === "corners") {
-    validateRequiredString(`${path}.topLeft`, r.topLeft, issues);
-    validateRequiredString(`${path}.topRight`, r.topRight, issues);
-    validateRequiredString(`${path}.bottomRight`, r.bottomRight, issues);
-    validateRequiredString(`${path}.bottomLeft`, r.bottomLeft, issues);
+  if (isFlatBorderRadiusValue(raw)) {
+    for (const corner of BORDER_RADIUS_CORNERS) {
+      validateRequiredString(`${path}.${corner}`, (raw as Record<string, unknown>)[corner], issues);
+    }
     return;
   }
   issues.push({
-    path: `${path}.mode`,
-    reason: "圆角 mode 必填，仅允许 unified 或 corners",
+    path,
+    reason:
+      "圆角须为四角平铺（topLeft/topRight/bottomRight/bottomLeft）；禁止 mode: unified/corners",
   });
 }
 

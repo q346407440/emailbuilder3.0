@@ -23,7 +23,7 @@ describe("tokenPresetStandardOrder", () => {
       fs.readFileSync(path.join(process.cwd(), "data/token-presets/public-neutral-saas.json"), "utf8")
     );
     const scales = Object.keys(raw.presets.default.tokens.colors);
-    assert.deepEqual(sortTokenPresetScales("colors", scales), ["primary", "secondary", "surface"]);
+    assert.deepEqual(sortTokenPresetScales("colors", scales), ["primary", "accent", "secondary", "surface"]);
   });
 
   it("未知键排在标准键之后", () => {
@@ -42,10 +42,10 @@ describe("tokenPresetStandardOrder", () => {
   it("normalizeTokenPresetTokens 将乱序键规范为标准顺序", () => {
     const shuffled = {
       radius: { cta: "9999px", panel: "10px" },
-      colors: { surface: "#fff", primary: "#111", secondary: "#666" },
+      colors: { surface: "#fff", primary: "#111", accent: "#1A1A1A", secondary: "#666" },
     };
     const normalized = normalizeTokenPresetTokens(shuffled);
     assert.deepEqual(Object.keys(normalized), ["colors", "radius"]);
-    assert.deepEqual(Object.keys(normalized.colors), ["primary", "secondary", "surface"]);
+    assert.deepEqual(Object.keys(normalized.colors), ["primary", "accent", "secondary", "surface"]);
   });
 });

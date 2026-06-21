@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { toastError, toastSuccess } from "../lib/appToast";
 import type { BindingCollectionField, EmailPayload } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import { builtinPreviewItemsForSlot, extractArrayFromJsonRoot } from "../lib/collectionDataSource";
@@ -203,14 +203,14 @@ export function CollectionDataSourceBindModal({
     const trimmed = jsonText.trim();
     if (!trimmed) {
       setJsonError("请粘贴 JSON 数据");
-      message.error("请粘贴 JSON 数据");
+      toastError("请粘贴 JSON 数据");
       return false;
     }
 
     const sampleResult = parseCollectionJsonSample(trimmed);
     if (!sampleResult.ok) {
       setJsonError(sampleResult.error);
-      message.error(sampleResult.error);
+      toastError(sampleResult.error);
       return false;
     }
 
@@ -222,14 +222,14 @@ export function CollectionDataSourceBindModal({
     if (effectiveItemFields.length === 0) {
       const err = "未能从 JSON 首项推断出列表行字段，请检查数据结构";
       setJsonError(err);
-      message.error(err);
+      toastError(err);
       return false;
     }
 
     const fieldErr = validateCollectionItemFields(effectiveItemFields);
     if (fieldErr) {
       setJsonError(fieldErr);
-      message.error(fieldErr);
+      toastError(fieldErr);
       return false;
     }
 
@@ -238,7 +238,7 @@ export function CollectionDataSourceBindModal({
     const depthCheck = validateCollectionFieldMapDepth(effectiveItemFields, map);
     if (!depthCheck.ok) {
       setJsonError(depthCheck.error);
-      message.error(depthCheck.error);
+      toastError(depthCheck.error);
       return false;
     }
 
@@ -247,7 +247,7 @@ export function CollectionDataSourceBindModal({
     });
     if (!result.ok) {
       setJsonError(result.error);
-      message.error(result.error);
+      toastError(result.error);
       return false;
     }
 
@@ -274,7 +274,7 @@ export function CollectionDataSourceBindModal({
     if (snapshot.kind === "builtin") {
       const err = validateCollectionItemFields(itemFields);
       if (err) {
-        message.error(err);
+        toastError(err);
         return;
       }
       const items = builtinPreviewItemsForSlot(
@@ -294,7 +294,7 @@ export function CollectionDataSourceBindModal({
     }
 
     if (!applyJsonImport(snapshot.jsonPaste)) return;
-    message.success("已导入，请在右侧核对列表行字段与数据预览。");
+    toastSuccess("已导入，请在右侧核对列表行字段与数据预览。");
     onApply();
   };
 

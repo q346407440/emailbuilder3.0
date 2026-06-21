@@ -28,7 +28,7 @@ describe("tokenPresetFamilyTitleZh", () => {
 
 describe("tokenPresetScaleTitleKnown", () => {
   it("已知为 true", () => {
-    assert.equal(tokenPresetScaleTitleKnown("colors", "brand"), true);
+    assert.equal(tokenPresetScaleTitleKnown("colors", "accent"), true);
   });
   it("未知为 false", () => {
     assert.equal(tokenPresetScaleTitleKnown("colors", "unknownColor"), false);

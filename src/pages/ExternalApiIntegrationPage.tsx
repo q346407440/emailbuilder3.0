@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { message } from "@shoplazza/sds";
-import { TemplateValidationDock } from "../components/TemplateValidationDock";
 import { toastError, toastSuccess } from "../lib/appToast";
+import { TemplateValidationDock } from "../components/TemplateValidationDock";
 import { validationSaveBlockedMessage } from "../lib/validationIssueDisplay";
 import type { ValidationIssue } from "../lib/validate";
 import type { EmailListItem, EmailPayload, EmailTemplate } from "../types/email";
@@ -43,7 +42,7 @@ import { TopbarLayoutVariantSelect } from "../components/ui/TopbarLayoutVariantS
 import { TopbarTemplateSelect } from "../components/ui/TopbarTemplateSelect";
 import { ShopPrimaryButton, ShopSecondaryButton, ShopSelect, ShopTextArea } from "../components/ui/ShopFormControls";
 import "../app.css";
-import "../sds-admin-field-overrides.css";
+import "../antd-admin-field-overrides.css";
 
 function readSearchParams(): URLSearchParams {
   return new URLSearchParams(window.location.search);
@@ -443,9 +442,9 @@ export function ExternalApiIntegrationPage() {
   const copyText = useCallback(async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      message.success(`已复制${label}`);
+      toastSuccess(`已复制${label}`);
     } catch {
-      message.error("复制失败，请手动选择文本复制");
+      toastError("复制失败，请手动选择文本复制");
     }
   }, []);
 

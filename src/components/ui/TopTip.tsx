@@ -1,5 +1,5 @@
-import { Tooltip } from "@shoplazza/sds";
-import QuestionOutlined from "@shoplazza/sds-icons/QuestionOutlined";
+import { Tooltip } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import { antdOverlayEdge } from "../../lib/antdOverlayEdge";
 
 type Props = {
@@ -7,12 +7,12 @@ type Props = {
   ariaLabel?: string;
 };
 
-/** 属性面板统一提示触发器：SDS Tooltip + SDS 问号图标 */
+/** 属性面板统一提示触发器：Ant Design Tooltip + 问号图标 */
 export function TopTip({ content, ariaLabel }: Props) {
   return (
-    <Tooltip title={content} {...antdOverlayEdge("top")} innerOverflow="wrap">
+    <Tooltip title={content} {...antdOverlayEdge("top")}>
       <span className="inspector-field__hint-trigger" aria-label={ariaLabel ?? `提示：${content}`}>
-        <QuestionOutlined />
+        <QuestionCircleOutlined />
       </span>
     </Tooltip>
   );

@@ -42,8 +42,8 @@ function templateWithProps(props: Record<string, unknown>): EmailTemplate {
         props: {
           width: "600px",
           backgroundColor: "#fff",
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-          padding: { mode: "unified", unified: "0" },
+          border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
+          padding: { top: "0", right: "0", bottom: "0", left: "0" },
           gapMode: "fixed",
           gap: "0",
           ...props,
@@ -61,7 +61,12 @@ describe("resolveThemeInTemplate", () => {
   it("解析白名单字段中的 $themeRef 对象", () => {
     const input = templateWithProps({
       backgroundColor: { $themeRef: "colors.brand" },
-      padding: { mode: "unified", unified: { $themeRef: "tokens.spacing.section" } },
+      padding: {
+        top: { $themeRef: "tokens.spacing.section" },
+        right: { $themeRef: "tokens.spacing.section" },
+        bottom: { $themeRef: "tokens.spacing.section" },
+        left: { $themeRef: "tokens.spacing.section" },
+      },
       gap: { $themeRef: "tokens.spacing.section" },
     });
 
@@ -70,8 +75,10 @@ describe("resolveThemeInTemplate", () => {
     assert.equal(result.issues.length, 0);
     assert.equal(result.template ? rootProps(result.template).backgroundColor : undefined, "#0056a8");
     assert.deepEqual(result.template ? rootProps(result.template).padding : undefined, {
-      mode: "unified",
-      unified: "24px",
+      top: "24px",
+      right: "24px",
+      bottom: "24px",
+      left: "24px",
     });
     assert.equal(result.template ? rootProps(result.template).gap : undefined, "24px");
     assert.notEqual(result.template, input);
@@ -79,22 +86,38 @@ describe("resolveThemeInTemplate", () => {
 
   it("解析嵌套描边与圆角字段", () => {
     const input = templateWithProps({
-      border: { mode: "unified", width: "1px", style: "solid", color: { $themeRef: "colors.text" } },
-      borderRadius: { mode: "unified", radius: { $themeRef: "tokens.radius.md" } },
+      border: {
+        style: "solid",
+        color: { $themeRef: "colors.text" },
+        top: "1px",
+        right: "1px",
+        bottom: "1px",
+        left: "1px",
+      },
+      borderRadius: {
+        topLeft: { $themeRef: "tokens.radius.md" },
+        topRight: { $themeRef: "tokens.radius.md" },
+        bottomRight: { $themeRef: "tokens.radius.md" },
+        bottomLeft: { $themeRef: "tokens.radius.md" },
+      },
     });
 
     const result = resolveThemeInTemplate(input, theme);
 
     assert.equal(result.issues.length, 0);
     assert.deepEqual(result.template ? rootProps(result.template).border : undefined, {
-      mode: "unified",
-      width: "1px",
       style: "solid",
       color: "#1a1a1a",
+      top: "1px",
+      right: "1px",
+      bottom: "1px",
+      left: "1px",
     });
     assert.deepEqual(result.template ? rootProps(result.template).borderRadius : undefined, {
-      mode: "unified",
-      radius: "8px",
+      topLeft: "8px",
+      topRight: "8px",
+      bottomRight: "8px",
+      bottomLeft: "8px",
     });
   });
 
@@ -143,8 +166,8 @@ describe("resolveThemeInTemplate", () => {
           props: {
             width: "600px",
             backgroundColor: "#fff",
-            border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
-            padding: { mode: "unified", unified: "0" },
+            border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
+            padding: { top: "0", right: "0", bottom: "0", left: "0" },
             gapMode: "fixed",
             gap: "0",
           },
@@ -185,7 +208,12 @@ describe("resolveThemeInTemplate", () => {
           parentId: null,
           children: [],
           wrapperStyle: {
-            borderRadius: { mode: "unified", radius: { $themeRef: "tokens.radius.md" } },
+            borderRadius: {
+              topLeft: { $themeRef: "tokens.radius.md" },
+              topRight: { $themeRef: "tokens.radius.md" },
+              bottomRight: { $themeRef: "tokens.radius.md" },
+              bottomLeft: { $themeRef: "tokens.radius.md" },
+            },
             backgroundImage: {
               src: "https://example.com/x.png",
               position: "center",
@@ -194,7 +222,7 @@ describe("resolveThemeInTemplate", () => {
           },
           props: {},
           bindings: {
-            "wrapperStyle.borderRadius.radius": {
+            "wrapperStyle.borderRadius.topLeft": {
               slotId: "tokens.radius.md",
               mode: "theme",
               tokenPath: "tokens.radius.md",
@@ -207,10 +235,13 @@ describe("resolveThemeInTemplate", () => {
 
     const result = resolveThemeInTemplate(input, theme);
     assert.equal(result.issues.length, 0);
-    const br = result.template?.blocks["img1"]?.wrapperStyle?.borderRadius as
-      | { mode: string; radius: string }
-      | undefined;
-    assert.deepEqual(br, { mode: "unified", radius: "8px" });
+    const br = result.template?.blocks["img1"]?.wrapperStyle?.borderRadius;
+    assert.deepEqual(br, {
+      topLeft: "8px",
+      topRight: "8px",
+      bottomRight: "8px",
+      bottomLeft: "8px",
+    });
   });
 
   it("bakeThemeRefs 可烘焙合法 themeRef", () => {

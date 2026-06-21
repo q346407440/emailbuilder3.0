@@ -1,12 +1,15 @@
 import type { CSSProperties } from "react";
 import type { WrapperHeightMode, WrapperStyle, WrapperWidthMode } from "../types/email";
 import {
+  ensureFlatSpacing,
+  isFlatBorderRadiusValue,
+  isFlatBorderValue,
+} from "./boxModelFlat";
+import {
   normalizeWrapperDimensionMode,
   resolveWrapperHeightCss,
   resolveWrapperWidthCss,
 } from "./canvasDimensionResolve";
-
-type WS = WrapperStyle;
 
 function normalizeSpaceValue(raw: unknown): string | undefined {
   if (typeof raw !== "string") return undefined;
@@ -25,18 +28,12 @@ function normalizeWrapperHeightMode(raw: unknown): WrapperHeightMode {
 /** 将 SpacingValue 映射为 CSS padding 简写（供 wrapperStyle.padding 等复用） */
 export function paddingToCss(p: unknown): string | undefined {
   if (!p || typeof p !== "object") return undefined;
-  const o = p as Record<string, unknown>;
-  if (o.mode === "unified" || (o.mode === undefined && o.unified !== undefined)) {
-    return normalizeSpaceValue(o.unified);
-  }
-  if (o.mode === "separate") {
-    const t = normalizeSpaceValue(o.top) ?? "0";
-    const r = normalizeSpaceValue(o.right) ?? "0";
-    const b = normalizeSpaceValue(o.bottom) ?? "0";
-    const l = normalizeSpaceValue(o.left) ?? "0";
-    return `${t} ${r} ${b} ${l}`;
-  }
-  return undefined;
+  const flat = ensureFlatSpacing(p);
+  const t = normalizeSpaceValue(flat.top) ?? "0";
+  const r = normalizeSpaceValue(flat.right) ?? "0";
+  const b = normalizeSpaceValue(flat.bottom) ?? "0";
+  const l = normalizeSpaceValue(flat.left) ?? "0";
+  return `${t} ${r} ${b} ${l}`;
 }
 
 function normalizeBorderStyleSafe(raw: unknown): "solid" | "dashed" | "dotted" {
@@ -44,36 +41,27 @@ function normalizeBorderStyleSafe(raw: unknown): "solid" | "dashed" | "dotted" {
 }
 
 function sideWidth(raw: unknown): string | undefined {
-  if (!raw || typeof raw !== "object") return undefined;
-  return normalizeSpaceValue((raw as Record<string, unknown>).width);
+  return normalizeSpaceValue(raw);
 }
 
-/** 把描边对象映射为 CSS。`unified` → `border`；`custom` → 4 个 longhand（width=0 的边跳过）。 */
+/** 把描边对象映射为 CSS（须为四边平铺）。 */
 export function borderToCss(raw: unknown): CSSProperties {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  const o = raw as Record<string, unknown>;
-  const style = normalizeBorderStyleSafe(o.style);
-  const color = typeof o.color === "string" && o.color.trim() ? o.color.trim() : undefined;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw) || !isFlatBorderValue(raw)) return {};
+  const flat = raw;
+  const style = normalizeBorderStyleSafe(flat.style);
+  const color = typeof flat.color === "string" && flat.color.trim() ? flat.color.trim() : undefined;
   if (!color) return {};
-  if (o.mode === "unified") {
-    const width = normalizeSpaceValue(o.width);
-    if (!width) return {};
-    return { border: `${width} ${style} ${color}` };
-  }
-  if (o.mode === "custom") {
-    const out: CSSProperties = {};
-    const apply = (key: keyof CSSProperties, raw: unknown) => {
-      const w = sideWidth(raw);
-      if (!w) return;
-      (out as Record<string, string>)[key as string] = `${w} ${style} ${color}`;
-    };
-    apply("borderTop", o.top);
-    apply("borderRight", o.right);
-    apply("borderBottom", o.bottom);
-    apply("borderLeft", o.left);
-    return out;
-  }
-  return {};
+  const out: CSSProperties = {};
+  const applyFlat = (key: keyof CSSProperties, width: unknown) => {
+    const w = normalizeSpaceValue(width);
+    if (!w) return;
+    (out as Record<string, string>)[key as string] = `${w} ${style} ${color}`;
+  };
+  applyFlat("borderTop", flat.top);
+  applyFlat("borderRight", flat.right);
+  applyFlat("borderBottom", flat.bottom);
+  applyFlat("borderLeft", flat.left);
+  return out;
 }
 
 /** 解析 CSS border 简写或 longhand 的首段宽度（px）；无法解析时视为 0。 */
@@ -94,28 +82,26 @@ export function borderCssHasVisibleWidth(css: CSSProperties): boolean {
   return false;
 }
 
-/** 把圆角对象映射为 CSS。`unified` → `borderRadius`；`corners` → 4 个 longhand。 */
+/** 把圆角对象映射为 CSS（须为四角平铺）。 */
 export function borderRadiusToCss(raw: unknown): CSSProperties {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  const o = raw as Record<string, unknown>;
-  if (o.mode === "unified") {
-    const r = normalizeSpaceValue(o.radius);
-    return r ? { borderRadius: r } : {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw) || !isFlatBorderRadiusValue(raw)) {
+    return {};
   }
-  if (o.mode === "corners") {
-    const tl = normalizeSpaceValue(o.topLeft);
-    const tr = normalizeSpaceValue(o.topRight);
-    const br = normalizeSpaceValue(o.bottomRight);
-    const bl = normalizeSpaceValue(o.bottomLeft);
-    if (!tl || !tr || !br || !bl) return {};
-    return {
-      borderTopLeftRadius: tl,
-      borderTopRightRadius: tr,
-      borderBottomRightRadius: br,
-      borderBottomLeftRadius: bl,
-    };
+  const flat = raw;
+  const tl = normalizeSpaceValue(flat.topLeft);
+  const tr = normalizeSpaceValue(flat.topRight);
+  const br = normalizeSpaceValue(flat.bottomRight);
+  const bl = normalizeSpaceValue(flat.bottomLeft);
+  if (!tl || !tr || !br || !bl) return {};
+  if (tl === tr && tr === br && br === bl) {
+    return { borderRadius: tl };
   }
-  return {};
+  return {
+    borderTopLeftRadius: tl,
+    borderTopRightRadius: tr,
+    borderBottomRightRadius: br,
+    borderBottomLeftRadius: bl,
+  };
 }
 
 export type WrapperStyleToCssOptions = {

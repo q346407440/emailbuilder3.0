@@ -75,7 +75,7 @@ export const PIPELINE_COMPILE_INVARIANTS: readonly PipelineInvariant[] = [
     id: "D-LAYOUT-4",
     phase: "D",
     summary:
-      "B1 section/pageInline 写入全区统一区段壳 padding.separate；首区 top=0；fullWidth 左右 0；禁止逐区 gapAbove/gapBelow 破坏整齐度",
+      "B1 section/pageInline 写入全区统一区段壳 padding 四边平铺；首区 top=0；fullWidth 左右 0；禁止逐区 gapAbove/gapBelow 破坏整齐度",
     onViolation: "normalize_in_d",
   },
   {

@@ -105,17 +105,51 @@ export async function searchPexels(
   }
 }
 
-/** 按目标宽度挑选最合适的 src 档位。 */
-export function pickPexelsSrc(photo: PexelsPhoto, targetWidth: number): string {
-  if (targetWidth >= 1200) return photo.src.large2x;
-  if (targetWidth >= 600) return photo.src.large;
-  if (targetWidth >= 350) return photo.src.medium;
-  return photo.src.small;
+/** 挑选写入模板的 Pexels 直链。本项目只贴 URL 不下载，统一用 original 避免小档被 CSS 放大发糊。 */
+export function pickPexelsSrc(photo: PexelsPhoto, _targetWidth?: number): string {
+  return photo.src.original;
 }
 
 export type PexelsBestOutcome =
   | { ok: true; match: PexelsImageMatch }
   | { ok: false; reason: PexelsFailureReason; detail?: string };
+
+export type PexelsCandidatesOutcome =
+  | { ok: true; matches: PexelsImageMatch[] }
+  | { ok: false; reason: PexelsFailureReason; detail?: string };
+
+/** 将一张 Pexels 照片按目标宽度挑档后归一为 match。 */
+function toPexelsMatch(
+  photo: PexelsPhoto,
+  targetWidth: number,
+  query: string
+): PexelsImageMatch {
+  return {
+    url: pickPexelsSrc(photo, targetWidth),
+    alt: photo.alt || query,
+    photographer: photo.photographer,
+  };
+}
+
+/**
+ * 搜索并返回多张候选（按目标宽度挑档），供调用方逐个验活、不可访问则取下一张。
+ * 命中顺序即 Pexels 相关度顺序。
+ */
+export async function searchPexelsCandidates(
+  query: string,
+  targetWidth: number,
+  limit: number,
+  orientation?: PexelsOrientation
+): Promise<PexelsCandidatesOutcome> {
+  const outcome = await searchPexels(query, { perPage: limit, orientation });
+  if (!outcome.ok) {
+    return { ok: false, reason: outcome.reason, detail: outcome.detail };
+  }
+  return {
+    ok: true,
+    matches: outcome.photos.map((photo) => toPexelsMatch(photo, targetWidth, query)),
+  };
+}
 
 /**
  * 搜索并返回最佳一张（供以图还原管线 / 占位图填充）。
@@ -130,15 +164,7 @@ export async function searchPexelsBest(
   if (!outcome.ok) {
     return { ok: false, reason: outcome.reason, detail: outcome.detail };
   }
-  const photo = outcome.photos[0]!;
-  return {
-    ok: true,
-    match: {
-      url: pickPexelsSrc(photo, targetWidth),
-      alt: photo.alt || query,
-      photographer: photo.photographer,
-    },
-  };
+  return { ok: true, match: toPexelsMatch(outcome.photos[0]!, targetWidth, query) };
 }
 
 /** 将英文搜索词拆分为关键词数组（分词去重，供扩展本地缓存时使用）。 */

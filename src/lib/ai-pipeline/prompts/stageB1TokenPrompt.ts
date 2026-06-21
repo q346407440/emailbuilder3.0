@@ -10,6 +10,7 @@ export function buildStageB1TokenSystemPrompt(
 {
   "colors": {
     "primary": "#111827",
+    "accent": "#1A1A1A",
     "secondary": "#6B7280",
     "surface": "#FFFFFF"
   },
@@ -21,8 +22,9 @@ export function buildStageB1TokenSystemPrompt(
 }
 
 字段说明：
-- colors.primary：主色（按钮、强调元素），hex 六位
-- colors.secondary：次要色（分隔线、辅助文字）
+- colors.primary：CTA 色（按钮、同色强调块），hex 六位
+- colors.accent：品牌强调色（Logo、标题、链接、价格/徽章），hex 六位
+- colors.secondary：弱化色（分隔线、辅助文字）
 - colors.surface：卡片/内容区表面色
 - spacingPreset：compact | standard | spacious | generous
 - typographyPreset：compact | standard | large

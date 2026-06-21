@@ -38,8 +38,7 @@ skills **只**保留流程与交付检查语义；**禁止**在 skills 内维护
 - [ ] 无「页面主容器」无意义中间 layout（见 **`validate.ts`** / **`email-config-motherboard`**）。
 - [ ] **`emailRoot.props`**：`gapMode` / `gap`（`gap` 非空）；根 **`direction` / `contentAlign`** 不写（见 **`render-defaults-contract`**）。
 - [ ] 除 **`emailRoot`** 外：双轴 **`wrapperStyle.contentAlign`**（**禁止非法 `wrapperStyle` 字段）。
-- [ ] **`border` / `borderRadius`** 两级 mode 对象；无字符串短写（迁移见 **`package.json`** `migrate:border-mode`）。
-- [ ] **`SpacingValue`**：`unified` 仅单边长度；四边不同用 **`separate`**；禁止 unified 多值简写（**`validate.ts`**）。
+- [ ] **box-model 平铺**：padding/border/borderRadius 四边/四角平铺；禁止 legacy `mode` 与 CSS 多值简写（**`validate.ts`** 直接拒绝；工厂 **`src/lib/boxModelFlat.ts`**）
 - [ ] Inspector 与 JSON 能力对齐（新增字段时同步三处）。
 - [ ] 无「读旧字段兜底」的分支代码。
 - [ ] skills 无与 **`block-contract`** / **`render-defaults-contract`** 冲突的第二份键表。

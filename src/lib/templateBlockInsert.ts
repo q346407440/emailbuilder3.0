@@ -87,3 +87,53 @@ export function insertCatalogBlockIntoTemplate(args: {
   return { template: next, insertedBlockId: newId };
 }
 
+export function insertCatalogBlockAtParentIndex(args: {
+  template: EmailTemplate;
+  parentId: string;
+  insertIndex: number;
+  entry: BlockCatalogEntry;
+  tokenPresets?: TokenPresets | null;
+  blockMastersById?: Readonly<Record<string, BlockMaster>> | null;
+}): { template: EmailTemplate; insertedBlockId: string } {
+  const { template, parentId, insertIndex, entry, tokenPresets, blockMastersById } = args;
+  const parent = template.blocks[parentId];
+  if (!parent) throw new Error("目标父区块不存在");
+  if (
+    parent.type !== "emailRoot" &&
+    parent.type !== "layout" &&
+    parent.type !== "grid" &&
+    parent.type !== "image"
+  ) {
+    throw new Error("当前区块不支持插入子级");
+  }
+  const childCount = parent.children?.length ?? 0;
+  if (insertIndex < 0 || insertIndex > childCount) {
+    throw new Error("插入位置无效");
+  }
+
+  const next = structuredClone(template) as EmailTemplate;
+  const newId = uniqueTemplateBlockId(next, entry.runtimeType);
+  const rawBlock = buildCatalogSampleBlock(entry, newId, parentId, blockMastersById);
+  const newBlock = prepareCatalogBlockForInsert(
+    {
+      ...structuredClone(rawBlock),
+      id: newId,
+      parentId,
+    } as EmailBlock,
+    tokenPresets
+  );
+
+  next.blocks[newId] = newBlock;
+  const nextParent = next.blocks[parentId];
+  nextParent.children = [...(nextParent.children ?? [])];
+  nextParent.children.splice(insertIndex, 0, newId);
+  next.blockMeta = {
+    ...(next.blockMeta ?? {}),
+    [newId]: {
+      blockType: entry.blockType,
+      name: entry.name,
+    },
+  };
+  return { template: next, insertedBlockId: newId };
+}
+

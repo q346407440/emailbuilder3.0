@@ -6,9 +6,12 @@ import {
   filterSlotsForVariablePicker,
   slotValueTypeLabelForPicker,
 } from "../payload-contract/variable-slot-compatibility";
+import { Field } from "./ui/Field";
 import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
+
+const EMPTY_MESSAGE = "当前没有可绑定的变量，请先在变量列表中点击「添加变量」。";
 
 function formatSlotDisplayValue(slot: ExternalVariableSlotInfo, payload: EmailPayload): string {
   const detached = payload.detachedVariableSlotIds?.includes(slot.slotId);
@@ -91,7 +94,7 @@ export function TextBodyVariablePillModal({
       destroyOnClose
       maskClosable={false}
       keyboard
-      wrapClassName="text-body-var-pill-modal-wrap"
+      wrapClassName="text-body-var-pill-modal-wrap shop-section-modal-wrap--picker"
       onCancel={onClose}
       footer={
         <>
@@ -118,12 +121,11 @@ export function TextBodyVariablePillModal({
           <div className="shop-section-modal__selection-banner" title={meta.displayText}>
             当前：{meta.label}（{meta.slotId}）· {meta.displayText}
           </div>
-          <p className="text-body-var-pill-modal__hint">
-            在下方表格中单选一个 payload 变量后点「确定」完成绑定（不支持列表）。也可解除绑定，将当前预览文字烘焙为普通文本。
-          </p>
-          {scalarSlots.length === 0 ? (
-            <p className="text-body-var-pill-modal__empty">当前没有可绑定的变量，请先在变量列表中点击「添加变量」。</p>
-          ) : (
+
+          <Field label="选择变量" className="inspector-field--modal-table">
+            <p className="text-body-var-pill-modal__hint">
+              在下方表格中单选一个 payload 变量后点「确定」完成绑定（不支持列表）。也可解除绑定，将当前预览文字烘焙为普通文本。
+            </p>
             <SelectablePickerTable
               ariaLabel="可选 payload 变量"
               rowKey={(slot) => slot.slotId}
@@ -131,6 +133,7 @@ export function TextBodyVariablePillModal({
               onSelect={setSelectedSlotId}
               radioName="text-body-var-pill-slot"
               dataSource={scalarSlots}
+              emptyText={<p className="text-body-var-pill-modal__empty">{EMPTY_MESSAGE}</p>}
               columns={[
                 {
                   key: "label",
@@ -168,7 +171,7 @@ export function TextBodyVariablePillModal({
                 },
               ]}
             />
-          )}
+          </Field>
         </div>
       ) : null}
     </ShopSectionModal>

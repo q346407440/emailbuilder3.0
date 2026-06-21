@@ -1,0 +1,490 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "#1F5138",
+      "accent": "#34E0A1",
+      "secondary": "#5C6B63",
+      "surface": "#FFFFFF"
+    },
+    "spacing": {
+      "section": "24px",
+      "gap": "12px",
+      "pageInline": "20px"
+    },
+    "typography": {
+      "display": "30px",
+      "h1": "20px",
+      "body": "15px",
+      "caption": "11px"
+    },
+    "radius": {
+      "panel": "12px",
+      "cta": "999px"
+    }
+  },
+  "tree": {
+    "t": "email",
+    "children": [
+      {
+        "t": "stack",
+        "title": "顶部品牌导航",
+        "align": "center",
+        "gap": "gap",
+        "box": { "pad": "section", "tone": "surface" },
+        "children": [
+          {
+            "t": "row",
+            "title": "品牌顶栏行",
+            "align": "center",
+            "crossAlign": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "icon",
+                "query": "brand-tripadvisor",
+                "pack": "tabler",
+                "size": "lg",
+                "tone": "primary",
+                "required": true
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "content": "Hotels  |  Things to Do  |  Restaurants",
+            "role": "caption",
+            "tone": "primary"
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "用户问候条",
+        "align": "start",
+        "gap": "gap",
+        "box": { "pad": "gap", "tone": "primary", "radius": "panel" },
+        "children": [
+          {
+            "t": "row",
+            "title": "问候与资料入口",
+            "align": "between",
+            "crossAlign": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "row",
+                "title": "用户问候组",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "user",
+                    "pack": "tabler",
+                    "size": "sm",
+                    "tone": "accent",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Hi, Smiles",
+                    "role": "body",
+                    "tone": "accent",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "text",
+                "content": "Your profile",
+                "role": "body",
+                "tone": "accent",
+                "bold": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "首屏英雄区",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section", "tone": "surface" },
+        "children": [
+          {
+            "t": "text",
+            "content": "Plan. Book. Share. Earn rewards.",
+            "role": "display",
+            "tone": "primary",
+            "bold": true
+          },
+          {
+            "t": "image",
+            "query": "overlapping smartphones travel app rewards mockup screens lime green",
+            "height": { "px": 280 },
+            "required": true
+          },
+          {
+            "t": "text",
+            "content": "With Tripadvisor Rewards, you earn when you plan, book, and share—only in the app. No points. No tiers. No hidden fees.",
+            "role": "body",
+            "tone": "primary"
+          },
+          {
+            "t": "text",
+            "content": "Download now and get $30 off Things to Do.*",
+            "role": "body",
+            "tone": "primary",
+            "bold": true
+          },
+          {
+            "t": "button",
+            "label": "Join in the app",
+            "href": "#",
+            "width": "fill"
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "App 功能亮点",
+        "align": "center",
+        "gap": "section",
+        "box": { "pad": "section", "tone": "surface" },
+        "children": [
+          {
+            "t": "text",
+            "content": "It's better in the app",
+            "role": "h1",
+            "tone": "primary",
+            "bold": true
+          },
+          {
+            "t": "stack",
+            "title": "功能列表",
+            "align": "start",
+            "gap": "section",
+            "children": [
+              {
+                "t": "row",
+                "title": "Trip Cash 返现",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "coins",
+                    "pack": "tabler",
+                    "size": "md",
+                    "tone": "accent",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Get 5% back in Trip Cash on over 600,000 hotels and 400,000 experiences to save on future trips",
+                    "role": "body",
+                    "tone": "primary"
+                  }
+                ]
+              },
+              {
+                "t": "row",
+                "title": "价格匹配保障",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "arrow-down",
+                    "pack": "tabler",
+                    "size": "md",
+                    "tone": "accent",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Book confidently with our price match guarantee**",
+                    "role": "body",
+                    "tone": "primary"
+                  }
+                ]
+              },
+              {
+                "t": "row",
+                "title": "额外奖励",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "trophy",
+                    "pack": "tabler",
+                    "size": "md",
+                    "tone": "accent",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Earn bonus rewards beyond booking",
+                    "role": "body",
+                    "tone": "primary"
+                  }
+                ]
+              },
+              {
+                "t": "row",
+                "title": "移动端组织",
+                "align": "start",
+                "crossAlign": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "device-mobile",
+                    "pack": "tabler",
+                    "size": "md",
+                    "tone": "accent",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Stay organized, get guidance, and more on the go",
+                    "role": "body",
+                    "tone": "primary"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "t": "button",
+            "label": "Get the details",
+            "href": "#",
+            "width": "fill"
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "欢迎优惠横幅",
+        "align": "center",
+        "gap": "section",
+        "box": {
+          "pad": "section",
+          "tone": { "hex": "#C8E650" },
+          "radius": "panel"
+        },
+        "children": [
+          {
+            "t": "text",
+            "content": "Claim your Welcome Offer: $30 off Things to Do*",
+            "role": "h1",
+            "tone": "primary",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "Only in the app. Download now and start saving.",
+            "role": "body",
+            "tone": "primary"
+          },
+          {
+            "t": "button",
+            "label": "Get the app",
+            "href": "#",
+            "width": "fill"
+          },
+          {
+            "t": "row",
+            "title": "装饰图标组",
+            "align": "center",
+            "crossAlign": "center",
+            "gap": "section",
+            "children": [
+              {
+                "t": "icon",
+                "query": "cash-plus",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "primary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "discount",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "primary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "world",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "primary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "ticket",
+                "pack": "tabler",
+                "size": "md",
+                "tone": "primary",
+                "required": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "t": "stack",
+        "title": "页脚合规",
+        "align": "start",
+        "gap": "gap",
+        "box": { "pad": "section", "tone": "surface" },
+        "children": [
+          {
+            "t": "icon",
+            "query": "brand-tripadvisor",
+            "pack": "tabler",
+            "size": "md",
+            "tone": "primary",
+            "required": true
+          },
+          {
+            "t": "text",
+            "content": "This email was sent to: mikenelson01@gmail.com",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "Tripadvisor LLC, 400 1st Avenue, Needham, MA 02494, USA. Please do not reply to this email; this inbox is not monitored.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "*$30 off Things to Do welcome offer valid for new app users. Terms and conditions apply. **Price match guarantee subject to eligibility and booking terms.",
+            "role": "caption",
+            "tone": "secondary"
+          },
+          {
+            "t": "text",
+            "content": "Go to Tripadvisor  |  Unsubscribe",
+            "role": "caption",
+            "tone": "primary",
+            "bold": true
+          },
+          {
+            "t": "text",
+            "content": "Privacy and Cookies Statement  |  Contact Us",
+            "role": "caption",
+            "tone": "primary",
+            "bold": true
+          },
+          {
+            "t": "row",
+            "title": "应用商店入口",
+            "align": "center",
+            "crossAlign": "center",
+            "gap": "section",
+            "children": [
+              {
+                "t": "stack",
+                "title": "苹果商店",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "brand-apple",
+                    "pack": "tabler",
+                    "size": "lg",
+                    "tone": "primary",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "Download on the App Store",
+                    "role": "caption",
+                    "tone": "primary",
+                    "bold": true
+                  }
+                ]
+              },
+              {
+                "t": "stack",
+                "title": "谷歌商店",
+                "align": "center",
+                "gap": "gap",
+                "children": [
+                  {
+                    "t": "icon",
+                    "query": "brand-google-play",
+                    "pack": "tabler",
+                    "size": "lg",
+                    "tone": "primary",
+                    "required": true
+                  },
+                  {
+                    "t": "text",
+                    "content": "GET IT ON Google Play",
+                    "role": "caption",
+                    "tone": "primary",
+                    "bold": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "t": "row",
+            "title": "社媒关注",
+            "align": "start",
+            "crossAlign": "center",
+            "gap": "gap",
+            "children": [
+              {
+                "t": "text",
+                "content": "Follow us for travel inspo:",
+                "role": "caption",
+                "tone": "primary"
+              },
+              {
+                "t": "icon",
+                "query": "brand-facebook",
+                "pack": "tabler",
+                "size": "sm",
+                "tone": "primary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "brand-instagram",
+                "pack": "tabler",
+                "size": "sm",
+                "tone": "primary",
+                "required": true
+              },
+              {
+                "t": "icon",
+                "query": "brand-tiktok",
+                "pack": "tabler",
+                "size": "sm",
+                "tone": "primary",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

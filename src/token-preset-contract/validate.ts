@@ -1,8 +1,4 @@
-import {
-  EMAIL_CONTAINER_SPACING_MAX_PX,
-  parseSpacingPx,
-  spacingPxExceedsMax,
-} from "../lib/spacingPxCap";
+import { parseSpacingPx } from "../lib/spacingPxCap";
 import { validateOptionalDeletedAtField } from "../lib/logicalDelete";
 import type { TokenPresets } from "../types/tokenPreset";
 import { TOKEN_PRESET_SCHEMA_VERSION } from "./version";
@@ -18,7 +14,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-/** 校验单个 `presets.*.tokens` 对象：仅允许标准 family/scale，且 12 键齐全 */
+/** 校验单个 `presets.*.tokens` 对象：仅允许标准 family/scale，且 13 键齐全 */
 export function validateTokenPresetTokens(
   tokensPath: string,
   tokens: Record<string, unknown>
@@ -64,11 +60,6 @@ export function validateTokenPresetTokens(
           issues.push({
             path: `${scalesPath}.${scale}`,
             reason: `spacing 档位须为 px 数值（如 16px）`,
-          });
-        } else if (spacingPxExceedsMax(raw)) {
-          issues.push({
-            path: `${scalesPath}.${scale}`,
-            reason: `容器间距不得超过 ${EMAIL_CONTAINER_SPACING_MAX_PX}px（当前 ${raw}）`,
           });
         }
       }

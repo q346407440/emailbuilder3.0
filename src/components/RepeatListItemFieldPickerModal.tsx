@@ -4,9 +4,12 @@ import {
   collectionItemFieldValueTypeLabel,
   formatCollectionFirstItemFieldExample,
 } from "../lib/repeatListItemField";
+import { Field } from "./ui/Field";
 import { ShopPrimaryButton, ShopSecondaryButton } from "./ui/ShopFormControls";
 import { SelectablePickerTable } from "./ui/SelectablePickerTable";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
+
+const EMPTY_MESSAGE = "当前列表未声明可映射的项字段。";
 
 export type RepeatListItemFieldPickerModalProps = {
   visible: boolean;
@@ -54,7 +57,7 @@ export function RepeatListItemFieldPickerModal({
       destroyOnClose
       maskClosable={false}
       keyboard
-      wrapClassName="text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap"
+      wrapClassName="text-body-var-pill-modal-wrap shop-section-modal-wrap--picker"
       onCancel={onClose}
       footer={
         <div className="shop-section-modal__footer-actions">
@@ -105,7 +108,7 @@ function ListItemFieldPickerBody({
   previewFieldLabel: string;
 }) {
   return (
-    <div className="text-body-inline-var-modal">
+    <div className="text-body-var-pill-modal">
       <p className="text-body-var-pill-modal__hint">
         列表「{collectionLabel}」的字段：在此选择本输入框要显示的字段，不可切换为其他列表或固定内容。
       </p>
@@ -127,50 +130,47 @@ function ListItemFieldPickerBody({
         )}
       </div>
 
-      {itemFields.length === 0 ? (
-        <p className="text-body-var-pill-modal__empty">当前列表未声明可映射的项字段。</p>
-      ) : (
-        <>
-          <p className="text-body-var-pill-modal__hint">
-            在下方表格中选择一个字段后点「确定」。「首项示例」列取自列表的第一条数据。
-          </p>
-          <SelectablePickerTable
-            ariaLabel="可选列表项字段"
-            rowKey={(field) => field.key}
-            selectedKey={selectedKey}
-            onSelect={onSelectKey}
-            radioName="repeat-list-item-field-picker"
-            dataSource={itemFields}
-            columns={[
-              {
-                key: "label",
-                title: "名称",
-                render: (field) => field.label || field.key,
+      <Field label="选择字段" className="inspector-field--modal-table">
+        <p className="text-body-var-pill-modal__hint">
+          在下方表格中选择一个字段后点「确定」。「首项示例」列取自列表的第一条数据。
+        </p>
+        <SelectablePickerTable
+          ariaLabel="可选列表项字段"
+          rowKey={(field) => field.key}
+          selectedKey={selectedKey}
+          onSelect={onSelectKey}
+          radioName="repeat-list-item-field-picker"
+          dataSource={itemFields}
+          emptyText={<p className="text-body-var-pill-modal__empty">{EMPTY_MESSAGE}</p>}
+          columns={[
+            {
+              key: "label",
+              title: "名称",
+              render: (field) => field.label || field.key,
+            },
+            {
+              key: "id",
+              title: "标识",
+              render: (field) => <code className="selectable-picker-table__mono">{field.key}</code>,
+            },
+            {
+              key: "type",
+              title: "类型",
+              width: 72,
+              render: (field) => collectionItemFieldValueTypeLabel(field.valueType),
+            },
+            {
+              key: "value",
+              title: "首项示例",
+              ellipsis: true,
+              render: (field) => {
+                const exampleValue = formatCollectionFirstItemFieldExample(payload, slotId, field.key);
+                return <span title={exampleValue}>{exampleValue}</span>;
               },
-              {
-                key: "id",
-                title: "标识",
-                render: (field) => <code className="selectable-picker-table__mono">{field.key}</code>,
-              },
-              {
-                key: "type",
-                title: "类型",
-                width: 72,
-                render: (field) => collectionItemFieldValueTypeLabel(field.valueType),
-              },
-              {
-                key: "value",
-                title: "首项示例",
-                ellipsis: true,
-                render: (field) => {
-                  const exampleValue = formatCollectionFirstItemFieldExample(payload, slotId, field.key);
-                  return <span title={exampleValue}>{exampleValue}</span>;
-                },
-              },
-            ]}
-          />
-        </>
-      )}
+            },
+          ]}
+        />
+      </Field>
     </div>
   );
 }

@@ -170,54 +170,42 @@ export type RepeatRegionBinding = {
   description?: string;
 };
 
-export type SpacingValue = {
-  mode: "unified" | "separate";
-  unified?: string | ThemeRef;
-  top?: string | ThemeRef;
-  right?: string | ThemeRef;
-  bottom?: string | ThemeRef;
-  left?: string | ThemeRef;
+/** 内边距：四边平铺（方案 2 / 新模板首选；无 mode）。 */
+export type SpacingValueFlat = {
+  top: string | ThemeRef;
+  right: string | ThemeRef;
+  bottom: string | ThemeRef;
+  left: string | ThemeRef;
 };
+
+/** 内边距：四边平铺（落盘真源；无 mode）。 */
+export type SpacingValue = SpacingValueFlat;
 
 export type BorderStyle = "solid" | "dashed" | "dotted";
 
-/** 描边：四边统一（覆盖 95% 场景） */
-export type BorderUnified = {
-  mode: "unified";
-  width: string;
+/** 描边：四边平铺宽度（style/color 四边共用）。 */
+export type BorderValueFlat = {
   style: BorderStyle;
-  color: string;
+  color: string | ThemeRef;
+  top: string;
+  right: string;
+  bottom: string;
+  left: string;
 };
 
-/** 描边：颜色与样式四边通用，仅每边宽度独立（width: "0" 即不画该边） */
-export type BorderCustom = {
-  mode: "custom";
-  style: BorderStyle;
-  color: string;
-  top: { width: string };
-  right: { width: string };
-  bottom: { width: string };
-  left: { width: string };
+/** 描边：四边平铺。 */
+export type BorderValue = BorderValueFlat;
+
+/** 圆角：四角平铺。 */
+export type BorderRadiusValueFlat = {
+  topLeft: string | ThemeRef;
+  topRight: string | ThemeRef;
+  bottomRight: string | ThemeRef;
+  bottomLeft: string | ThemeRef;
 };
 
-export type BorderValue = BorderUnified | BorderCustom;
-
-/** 圆角：四角统一 */
-export type BorderRadiusUnified = {
-  mode: "unified";
-  radius: string;
-};
-
-/** 圆角：四角独立 */
-export type BorderRadiusCorners = {
-  mode: "corners";
-  topLeft: string;
-  topRight: string;
-  bottomRight: string;
-  bottomLeft: string;
-};
-
-export type BorderRadiusValue = BorderRadiusUnified | BorderRadiusCorners;
+/** 圆角：四角平铺。 */
+export type BorderRadiusValue = BorderRadiusValueFlat;
 
 export type TextDecoration = "none" | "underline" | "line-through" | "overline";
 

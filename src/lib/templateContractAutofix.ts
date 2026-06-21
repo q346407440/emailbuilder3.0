@@ -7,11 +7,12 @@
  * - 仅收录确定性修复（补文档化默认值、clamp 到契约上限）；需要语义判断的问题一律不碰；
  * - 输入不被原地修改，返回深拷贝后的修复结果；幂等（同一 issue 修复后再跑无新改动）。
  *
- * 与文本层 mjsAutofix 的分工：mjs 源码里动态拼接的 block id（模板字符串）在文本层不可寻址，
+ * 与文本层 patch 自动修复的分工（方案 1 已下线）：mjs 源码里动态拼接的 block id 在文本层不可寻址，
  * 而 validate 的 issue 路径在 JSON 树里永远可寻址——机械修复的最终兜底在本层。
  */
 
 import { clampSpacingPxString, EMAIL_CONTAINER_SPACING_MAX_PX } from "./spacingPxCap";
+import { borderRadiusZeroFlat } from "./boxModelFlat";
 import { isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
 import {
   inferSemanticBlockTypeForMeta,
@@ -105,7 +106,7 @@ function resolvePresetTokens(ctx: FixContext, presetId: string): AnyRecord | nul
 /** 单条 issue 的修复器：命中且实际修改时返回 true。 */
 type IssueFixer = (issueLine: string, ctx: FixContext) => boolean;
 
-/** 涉及背景/描边的 wrapperStyle.borderRadius 必填 → 补显式 radius=0（文档化默认）。 */
+/** 涉及背景/描边的 wrapperStyle.borderRadius 必填 → 补显式四角 0（文档化默认）。 */
 const fixMissingWrapperBorderRadius: IssueFixer = (issueLine, ctx) => {
   const m = /^blocks\.([^.]+)\.wrapperStyle\.borderRadius: 涉及背景的圆角字段必须显式写入/.exec(
     issueLine
@@ -116,8 +117,8 @@ const fixMissingWrapperBorderRadius: IssueFixer = (issueLine, ctx) => {
   const wrapperStyle = block.wrapperStyle;
   if (!isRecord(wrapperStyle)) return false;
   if (wrapperStyle.borderRadius != null) return false;
-  wrapperStyle.borderRadius = { mode: "unified", radius: "0" };
-  ctx.fixes.push(`blocks.${m[1]} 补 wrapperStyle.borderRadius（unified/0）`);
+  wrapperStyle.borderRadius = borderRadiusZeroFlat();
+  ctx.fixes.push(`blocks.${m[1]} 补 wrapperStyle.borderRadius（四角 0）`);
   return true;
 };
 

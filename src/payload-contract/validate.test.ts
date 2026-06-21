@@ -26,8 +26,8 @@ function minimalTemplate(bindings: EmailTemplate["blocks"]["root"]["bindings"]):
         props: {
           width: "600px",
           backgroundColor: "#fff",
-          padding: { mode: "unified", unified: "0" },
-          border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+          padding: { top: "0", right: "0", bottom: "0", left: "0" },
+          border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
           gapMode: "fixed",
           gap: "0",
         },
@@ -268,7 +268,7 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
     assert.equal(ok.length, 0);
   });
 
-  it("collection itemVisibility 支持按行下标配置", () => {
+  it("collection itemVisibility 支持按行下标配置（loyalty 内部专用列表）", () => {
     const template = minimalTemplate({
       "props.items": {
         mode: "variable",
@@ -285,6 +285,7 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
       products: {
         label: "products",
         valueType: "collection",
+        scene: "loyalty-internal-admin",
         itemFields: [
           { key: "type", label: "类型", valueType: "string", required: true },
           { key: "title", label: "名称", valueType: "string", required: true },
@@ -297,6 +298,25 @@ describe("payload-contract · validatePayloadAgainstTemplate", () => {
       validPayload({ products: [{ type: "A", title: "一" }] }, slots)
     );
     assert.equal(issues.length, 0);
+  });
+
+  it("非 loyalty 内部列表不可声明 itemVisibility", () => {
+    const template = minimalTemplate({});
+    const payload = validPayload(
+      {},
+      {
+        products: {
+          label: "products",
+          valueType: "collection",
+          itemFields: [{ key: "title", label: "名称", valueType: "string", required: true }],
+          itemVisibility: [true, false],
+        },
+      }
+    );
+    const issues = validatePayloadAgainstTemplate(template, payload);
+    assert.ok(
+      issues.some((i) => i.path.endsWith("itemVisibility") && i.reason.includes("loyalty 内部后台"))
+    );
   });
 
   it("collection itemVisibility 非法配置应报错", () => {

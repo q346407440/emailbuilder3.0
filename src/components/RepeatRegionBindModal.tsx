@@ -314,7 +314,7 @@ export function RepeatRegionBindModal({
       wrapClassName={`text-body-inline-var-modal-wrap text-body-var-pill-modal-wrap repeat-region-bind-modal-wrap repeat-region-bind-modal-wrap--wizard${
         viewOnly ? " repeat-region-bind-modal-wrap--view-only" : ""
       }`}
-      bodyStyle={{ paddingTop: 16, paddingRight: 24, paddingBottom: 24, paddingLeft: 24 }}
+      bodyStyle={{ padding: "16px 0 24px" }}
       onCancel={onClose}
       footer={
         <div className="repeat-region-bind-modal__footer">

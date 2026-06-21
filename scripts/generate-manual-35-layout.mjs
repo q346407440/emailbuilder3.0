@@ -59,11 +59,11 @@ const EXTRAS_ROWS = [
 ];
 
 function borderNone() {
-  return { mode: 'unified', width: '0', style: 'solid', color: 'rgba(0,0,0,0)' };
+  return { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
 }
 
 function padSeparate({ top = '0', right = '0', bottom = '0', left = '0' }) {
-  return { mode: 'separate', top, right, bottom, left };
+  return { top, right, bottom, left };
 }
 
 function themeRef(path) {
@@ -84,7 +84,6 @@ function themeBinding(fieldPath, tokenPath) {
 function sectionShell(id, name, opts = {}) {
   const { bg = null, pageInline = true, padTop = '0', padBottom = themeRef('tokens.spacing.section') } = opts;
   const padding = {
-    mode: 'separate',
     top: padTop,
     right: pageInline ? themeRef('tokens.spacing.pageInline') : '0',
     bottom: padBottom,
@@ -102,7 +101,7 @@ function sectionShell(id, name, opts = {}) {
     widthMode: 'fill',
     heightMode: 'hug',
     border: borderNone(),
-    borderRadius: { mode: 'unified', radius: '0' },
+    borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     padding,
   };
   if (bg) ws.backgroundColor = bg;
@@ -129,7 +128,7 @@ function coverImage(id, src, alt, height, opts = {}) {
       widthMode: 'fill',
       heightMode: 'fixed',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       height,
       backgroundImage: {
         src,
@@ -137,7 +136,7 @@ function coverImage(id, src, alt, height, opts = {}) {
         fit,
         position,
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       },
     },
   };
@@ -174,7 +173,7 @@ function textBlock(id, name, content, opts = {}) {
       widthMode,
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings,
   };
@@ -191,7 +190,7 @@ function iconBlock(id, src, color, size = '24px') {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
   };
 }
@@ -211,7 +210,7 @@ function buttonBlock(id, name, label, opts = {}) {
         textColor,
         fontSize: themeRef('tokens.typography.body'),
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         bold: true,
         italic: false,
       },
@@ -221,7 +220,7 @@ function buttonBlock(id, name, label, opts = {}) {
       widthMode: 'hug',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     bindings: themeBinding('props.buttonStyle.fontSize', 'tokens.typography.body'),
   };
@@ -237,7 +236,7 @@ function dividerBlock(id, color = COLORS.divider) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       contentAlign: { horizontal: 'center', vertical: 'top' },
     },
   };
@@ -257,8 +256,8 @@ function circleIconBadge(id, src, iconColor = COLORS.white) {
       height: '36px',
       backgroundColor: COLORS.black,
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '18px' },
-      padding: { mode: 'unified', unified: '6px' },
+      borderRadius: { topLeft: '18px', topRight: '18px', bottomRight: '18px', bottomLeft: '18px' },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
     },
     children: [iconBlock(`${id}-ic`, src, iconColor, '22px')],
   };
@@ -275,7 +274,7 @@ function sectionTitleRow(id, iconSrc, title) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       padding: padSeparate({ bottom: '12px' }),
     },
     children: [
@@ -319,7 +318,7 @@ function detailRow(id, label, value, opts = {}) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       padding: padSeparate({ top: '10px', bottom: '10px' }),
     },
     children: [
@@ -333,7 +332,7 @@ function detailRow(id, label, value, opts = {}) {
           widthMode: 'fill',
           heightMode: 'hug',
           border: borderNone(),
-          borderRadius: { mode: 'unified', radius: '0' },
+          borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         },
         children: [
           textBlock(`${id}-lbl`, '正文', label, {
@@ -351,7 +350,7 @@ function detailRow(id, label, value, opts = {}) {
               widthMode: 'fill',
               heightMode: 'hug',
               border: borderNone(),
-              borderRadius: { mode: 'unified', radius: '0' },
+              borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
             },
             children: valueChildren,
           },
@@ -382,8 +381,8 @@ function dateBox(id, title, dayName, dayNum, monthYear, timeNote, linkText = nul
         height: '140px',
         backgroundColor: COLORS.black,
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
-        padding: { mode: 'unified', unified: '12px' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
+        padding: { top: "12px", right: "12px", bottom: "12px", left: "12px" },
       },
       children: [
         textBlock(`${id}-dow`, '说明', dayName, {
@@ -430,7 +429,7 @@ function dateBox(id, title, dayName, dayNum, monthYear, timeNote, linkText = nul
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children,
   };
@@ -447,7 +446,7 @@ function quickLinkRow(id, iconSrc, label) {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       padding: padSeparate({ top: '10px', bottom: '10px' }),
     },
     children: [
@@ -470,7 +469,6 @@ function buildS1() {
     padBottom: '24px',
   });
   sec.wrapperStyle.padding = {
-    mode: 'separate',
     top: '24px',
     right: '20px',
     bottom: '24px',
@@ -487,7 +485,7 @@ function buildS1() {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children: [
       {
@@ -500,7 +498,7 @@ function buildS1() {
           widthMode: 'fill',
           heightMode: 'hug',
           border: borderNone(),
-          borderRadius: { mode: 'unified', radius: '0' },
+          borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         },
         children: [
           textBlock(`${P}-s1-citizen`, '标题', 'citizen', {
@@ -541,7 +539,7 @@ function buildS1() {
               heightMode: 'hug',
               backgroundColor: COLORS.black,
               border: borderNone(),
-              borderRadius: { mode: 'unified', radius: '0' },
+              borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
               padding: padSeparate({ top: '8px', right: '12px', bottom: '8px', left: '12px' }),
             },
             children: [
@@ -570,7 +568,7 @@ function buildS1() {
           heightMode: 'hug',
           width: '160px',
           border: borderNone(),
-          borderRadius: { mode: 'unified', radius: '0' },
+          borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         },
         children: [
           coverImage(
@@ -599,7 +597,7 @@ function buildS2() {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children: [
       dateBox(`${P}-s2-in`, 'check-in', 'Tuesday', '30', 'may 2023', 'from 2:00 PM', 'can I check in early?'),
@@ -626,7 +624,7 @@ function buildS3() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       },
       children: rows,
     },
@@ -640,7 +638,7 @@ function buildS3() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         padding: padSeparate({ top: '16px' }),
       },
       children: [
@@ -674,7 +672,7 @@ function buildS4() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       },
       children: rows,
     },
@@ -724,7 +722,7 @@ function buildS7() {
       heightMode: 'hug',
       width: '48px',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '24px' },
+      borderRadius: { topLeft: '24px', topRight: '24px', bottomRight: '24px', bottomLeft: '24px' },
     },
     children: [coverImage(`${P}-s7-photo`, PEXELS.helpAvatar, 'Support agent portrait', '48px')],
   };
@@ -738,7 +736,7 @@ function buildS7() {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
       padding: padSeparate({ bottom: '16px' }),
     },
     children: [
@@ -760,7 +758,7 @@ function buildS7() {
       widthMode: 'fill',
       heightMode: 'hug',
       border: borderNone(),
-      borderRadius: { mode: 'unified', radius: '0' },
+      borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
     },
     children: [
       buttonBlock(`${P}-s7-b1`, '按钮', 'find the hotel', { bg: COLORS.black }),
@@ -786,7 +784,7 @@ function buildS8() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         padding: padSeparate({ top: '16px', bottom: '16px' }),
       },
       children: [
@@ -800,7 +798,7 @@ function buildS8() {
             widthMode: 'fill',
             heightMode: 'hug',
             border: borderNone(),
-            borderRadius: { mode: 'unified', radius: '0' },
+            borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
           },
           children: [
             textBlock(`${P}-s8-cit`, '标题', 'citizen', {
@@ -825,7 +823,7 @@ function buildS8() {
             widthMode: 'hug',
             heightMode: 'hug',
             border: borderNone(),
-            borderRadius: { mode: 'unified', radius: '0' },
+            borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
           },
           children: [
             textBlock(`${P}-s8-fb`, '链接', 'Facebook', {
@@ -867,7 +865,7 @@ function buildS8() {
         widthMode: 'fill',
         heightMode: 'hug',
         border: borderNone(),
-        borderRadius: { mode: 'unified', radius: '0' },
+        borderRadius: { topLeft: "0", topRight: "0", bottomRight: "0", bottomLeft: "0" },
         padding: padSeparate({ top: '12px' }),
       },
       children: [
@@ -895,7 +893,7 @@ const tokenPresets = {
       label: '模板35手工还原（citizenM 预订确认）',
       description: '客户服务 3 设计图手工还原；图源 Pexels、图标 jsDelivr。',
       tokens: {
-        colors: { primary: '#000000', secondary: '#6B7280', surface: '#FFFFFF' },
+        colors: { primary: '#000000', accent: '#1A1A1A', secondary: '#6B7280', surface: '#FFFFFF' },
         spacing: { section: '16px', gap: '12px', pageInline: '24px' },
         typography: { display: '36px', h1: '18px', body: '14px', caption: '12px' },
         radius: { panel: '0', cta: '0' },
@@ -918,7 +916,7 @@ const template = {
     props: {
       backgroundColor: COLORS.white,
       width: '600px',
-      padding: { mode: 'unified', unified: '0' },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: borderNone(),
       gapMode: 'fixed',
       gap: '0',

@@ -6,7 +6,6 @@ import {
   goToEmailTemplateList,
   useAppPath,
 } from "../../lib/appNavigation";
-import { CrmOpsLocaleProvider } from "./CrmOpsLocaleProvider";
 import "../../crm-ops-shell.css";
 
 export type CrmOpsNavKey = "emailCampaign" | "templateEditor";
@@ -136,9 +135,7 @@ export function CrmOpsShell({ activeNav, children }: CrmOpsShellProps) {
           </nav>
         </aside>
 
-        <main className="crm-ops__main">
-          <CrmOpsLocaleProvider>{children}</CrmOpsLocaleProvider>
-        </main>
+        <main className="crm-ops__main">{children}</main>
       </div>
     </div>
   );

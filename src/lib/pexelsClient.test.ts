@@ -14,7 +14,7 @@ function fakePhoto(sizes: PexelsPhoto["src"]): PexelsPhoto {
 }
 
 describe("pickPexelsSrc", () => {
-  it("按目标宽度选择档位", () => {
+  it("统一使用 original 直链（与 targetWidth 无关）", () => {
     const src = {
       original: "o",
       large2x: "l2",
@@ -25,10 +25,9 @@ describe("pickPexelsSrc", () => {
       tiny: "t",
     };
     const photo = fakePhoto(src);
-    assert.equal(pickPexelsSrc(photo, 1400), "l2");
-    assert.equal(pickPexelsSrc(photo, 800), "l");
-    assert.equal(pickPexelsSrc(photo, 400), "m");
-    assert.equal(pickPexelsSrc(photo, 100), "s");
+    assert.equal(pickPexelsSrc(photo, 100), "o");
+    assert.equal(pickPexelsSrc(photo, 1400), "o");
+    assert.equal(pickPexelsSrc(photo), "o");
   });
 });
 

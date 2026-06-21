@@ -1,10 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "@shoplazza/sds/dist/sds.css";
+import { AppAntdProvider } from "./components/ui/AppAntdProvider";
 import AppShell from "./AppShell";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AppShell />
+    <AppAntdProvider>
+      <AppShell />
+    </AppAntdProvider>
   </StrictMode>
 );

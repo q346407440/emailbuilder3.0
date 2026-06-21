@@ -142,48 +142,93 @@ export function resolveSlugInIconIndex(
   return { slug: index.slugs[0] ?? fallback, usedFallback: true };
 }
 
+/** 各包的 svg 是否可着色（simple-icons 为品牌色固定，不可 tint）。 */
+const PACK_TINTABLE: Record<string, boolean> = {
+  "simple-icons": false,
+  tabler: true,
+  lucide: true,
+};
+
+function packIndexName(pack: string): "simple-icons" | "tabler" | "lucide" | null {
+  if (pack === "simple-icons" || pack === "tabler" || pack === "lucide") return pack;
+  return null;
+}
+
+function buildIconResult(
+  index: IconCdnIndex,
+  resolvedSlug: string,
+  pack: string,
+  usedFallback: boolean
+): IconCdnResolveResult {
+  return {
+    src: `${index.cdnBase}/${resolvedSlug}.svg`,
+    tintable: PACK_TINTABLE[pack] ?? true,
+    resolvedSlug,
+    usedFallback,
+  };
+}
+
 export function resolveIconCdnUrl(
   pack: string,
   iconQuery: string
 ): IconCdnResolveResult | null {
   const slug = normalizeIconSlug(iconQuery);
   if (!slug) return null;
+  const name = packIndexName(pack);
+  if (!name) return null;
 
-  switch (pack) {
-    case "simple-icons": {
-      const index = loadIconIndex("simple-icons");
-      const { slug: resolved, usedFallback } = resolveSlugInIconIndex(slug, index);
-      if (!index.slugs.includes(resolved)) return null;
-      return {
-        src: `${index.cdnBase}/${resolved}.svg`,
-        tintable: false,
-        resolvedSlug: resolved,
-        usedFallback,
-      };
-    }
-    case "tabler": {
-      const index = loadIconIndex("tabler");
-      const { slug: resolved, usedFallback } = resolveSlugInIconIndex(slug, index);
-      return {
-        src: `${index.cdnBase}/${resolved}.svg`,
-        tintable: true,
-        resolvedSlug: resolved,
-        usedFallback,
-      };
-    }
-    case "lucide": {
-      const index = loadIconIndex("lucide");
-      const { slug: resolved, usedFallback } = resolveSlugInIconIndex(slug, index);
-      return {
-        src: `${index.cdnBase}/${resolved}.svg`,
-        tintable: true,
-        resolvedSlug: resolved,
-        usedFallback,
-      };
-    }
-    default:
-      return null;
+  const index = loadIconIndex(name);
+  const { slug: resolved, usedFallback } = resolveSlugInIconIndex(slug, index);
+  // simple-icons 历史行为：解析结果不在索引内则视为未命中
+  if (name === "simple-icons" && !index.slugs.includes(resolved)) return null;
+  return buildIconResult(index, resolved, pack, usedFallback);
+}
+
+/**
+ * 产出多个候选图标 URL：主解析结果优先，其后是同索引内的近似 slug（前缀/包含匹配），
+ * 供调用方逐个验活、不可访问则取下一个。最多 limit 个，按 src 去重。
+ */
+export function resolveIconCdnCandidates(
+  pack: string,
+  iconQuery: string,
+  limit: number
+): IconCdnResolveResult[] {
+  const slug = normalizeIconSlug(iconQuery);
+  if (!slug) return [];
+  const name = packIndexName(pack);
+  if (!name) return [];
+
+  const index = loadIconIndex(name);
+  const results: IconCdnResolveResult[] = [];
+  const seenSlug = new Set<string>();
+  const push = (resolvedSlug: string, usedFallback: boolean): void => {
+    if (results.length >= limit) return;
+    if (name === "simple-icons" && !index.slugs.includes(resolvedSlug)) return;
+    if (seenSlug.has(resolvedSlug)) return;
+    seenSlug.add(resolvedSlug);
+    results.push(buildIconResult(index, resolvedSlug, pack, usedFallback));
+  };
+
+  // 1) 主解析结果（与 resolveIconCdnUrl 同源）
+  const primary = resolveSlugInIconIndex(slug, index);
+  push(primary.slug, primary.usedFallback);
+
+  // 2) 同索引近似 slug（前缀/包含），按与查询长度差排序后补足
+  const near = index.slugs
+    .filter(
+      (s) =>
+        s !== primary.slug &&
+        (s.startsWith(slug) ||
+          slug.startsWith(s) ||
+          (slug.length >= 4 && (s.includes(slug) || slug.includes(s))))
+    )
+    .sort((a, b) => Math.abs(a.length - slug.length) - Math.abs(b.length - slug.length));
+  for (const s of near) {
+    if (results.length >= limit) break;
+    push(s, false);
   }
+
+  return results;
 }
 
 export function listSimpleIconSlugsForPrompt(limit = 20): string[] {

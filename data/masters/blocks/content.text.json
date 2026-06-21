@@ -2,7 +2,7 @@
   "schemaVersion": "4.0.0",
   "masterId": "content.text",
   "name": "文本",
-  "version": "2026-06-05T02:54:05.646Z",
+  "version": "1.0.0",
   "description": "富文本段落，支持字号、颜色与对齐。",
   "runtimeType": "text",
   "blockType": "content.text",
@@ -19,14 +19,18 @@
       "backgroundColor": "#FFFFFF",
       "width": "600px",
       "padding": {
-        "mode": "unified",
-        "unified": "0"
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "border": {
-        "mode": "unified",
-        "width": "0",
         "style": "solid",
-        "color": "rgba(0,0,0,0)"
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
       },
       "gapMode": "fixed",
       "gap": "0"
@@ -44,41 +48,61 @@
           "name": "文本"
         },
         "props": {
-          "bold": true,
-          "color": "#1F2937",
-          "italic": false,
           "textBody": {
             "paragraphs": [
               {
                 "runs": [
                   {
-                    "text": "🎉 Your have",
-                    "color": "rgb(12, 113, 255)"
+                    "text": "示例正文"
                   }
                 ]
               }
             ]
           },
-          "fontSize": "28px",
+          "fontSize": {
+            "$themeRef": "tokens.typography.body"
+          },
+          "color": {
+            "$themeRef": "colors.primary"
+          },
+          "bold": false,
+          "italic": false,
           "decoration": "none"
         },
         "wrapperStyle": {
-          "height": "100px",
-          "border": {
-            "mode": "unified",
-            "width": "0",
-            "style": "solid",
-            "color": "rgba(0,0,0,0)"
+          "contentAlign": {
+            "horizontal": "left",
+            "vertical": "top"
           },
           "widthMode": "fill",
-          "heightMode": "fixed",
-          "contentAlign": {
-            "horizontal": "center",
-            "vertical": "center"
+          "heightMode": "hug",
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
           },
           "borderRadius": {
-            "mode": "unified",
-            "radius": "0"
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          }
+        },
+        "bindings": {
+          "props.fontSize": {
+            "slotId": "tokens.typography.body",
+            "mode": "theme",
+            "tokenPath": "tokens.typography.body",
+            "fieldKind": "style"
+          },
+          "props.color": {
+            "slotId": "colors.primary",
+            "mode": "theme",
+            "tokenPath": "colors.primary",
+            "fieldKind": "style"
           }
         }
       }

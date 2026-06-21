@@ -1,3 +1,4 @@
+import { borderRadiusUniform, BORDER_RADIUS_CORNERS } from "../boxModelFlat";
 import { tokenStoragePath } from "../../token-preset-contract/standard-keys";
 import type { CompactStyleRawValue } from "../../layout-variant-ai-contract/agentStyleKeys";
 import type { EmailBlock } from "../../types/email";
@@ -35,7 +36,7 @@ export function coerceBoolean(value: unknown, fallback = false): boolean {
   return fallback;
 }
 
-/** 12 键点路径 → 字面量值。 */
+/** 13 键点路径 → 字面量值。 */
 export function resolveTokenPathLiteral(
   path: string,
   tokens: NormalizedStyleTokens
@@ -97,9 +98,11 @@ function writeResolvedToTargets(
     if (sub === "borderRadius") {
       const radiusVal = useThemeRef ? value : resolved.literal;
       if (radiusVal !== undefined) {
-        buttonStyle.borderRadius = { mode: "unified", radius: radiusVal };
+        buttonStyle.borderRadius = borderRadiusUniform(radiusVal as string);
         if (useThemeRef) {
-          agentBoundPaths.push(`${bindPath}.radius`);
+          for (const corner of BORDER_RADIUS_CORNERS) {
+            agentBoundPaths.push(`${bindPath}.${corner}`);
+          }
         }
       }
     } else if (useThemeRef) {
@@ -123,7 +126,7 @@ function writeResolvedToTargets(
   }
 
   if (styleKey === "borderRadius" && resolved.literal) {
-    wrapperStyle.borderRadius = { mode: "unified", radius: resolved.literal };
+    wrapperStyle.borderRadius = borderRadiusUniform(resolved.literal);
     return;
   }
 

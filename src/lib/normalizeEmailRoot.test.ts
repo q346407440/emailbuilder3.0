@@ -54,8 +54,8 @@ describe("normalizeEmailRootBlock", () => {
         width: "600px",
         outerBackgroundColor: "#f5f5f5",
         backgroundColor: "#ffffff",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       })
@@ -70,8 +70,8 @@ describe("normalizeEmailRootBlock", () => {
         width: "600px",
         backgroundColor: "#ffffff",
         legacyRootKey: "removed",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       })
@@ -85,8 +85,8 @@ describe("normalizeEmailRootBlock", () => {
     const t = buildTemplate({
       width: "600px",
       backgroundColor: "#ffffff",
-      padding: { mode: "unified", unified: "0" },
-      border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
+      border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
       gapMode: "fixed",
       gap: "0",
     });
@@ -110,8 +110,8 @@ describe("normalizeEmailRootBlock", () => {
     const t = buildTemplate({
       width: "600px",
       backgroundColor: "#ffffff",
-      padding: { mode: "unified", unified: "0" },
-      border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
+      border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
       gapMode: "fixed",
       gap: "0",
     });
@@ -136,14 +136,12 @@ describe("normalizeEmailRootBlock", () => {
       buildTemplate({
         width: "600px",
         backgroundColor: "#ffffff",
-        padding: {
-          mode: "separate",
-          top: "0",
+        padding: { top: "0",
           right: pageInlineRef,
           bottom: "0",
           left: pageInlineRef,
         },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: { $themeRef: "tokens.spacing.gap" },
       })
@@ -160,8 +158,8 @@ describe("normalizeEmailRootBlock", () => {
       buildTemplate({
         width: "580px",
         backgroundColor: "#ffffff",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       })
@@ -175,8 +173,8 @@ describe("normalizeEmailRootBlock", () => {
       buildTemplate({
         width: "580px",
         backgroundColor: "#ffffff",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       })
@@ -192,8 +190,8 @@ describe("validateTemplate · 废弃根遗留字段与 fontMode", () => {
         width: "600px",
         outerBackgroundColor: "#f5f5f5",
         backgroundColor: "#ffffff",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       })
@@ -210,8 +208,8 @@ describe("validateTemplate · 废弃根遗留字段与 fontMode", () => {
         width: "600px",
         backgroundColor: "#ffffff",
         legacyRootKey: "x",
-        padding: { mode: "unified", unified: "0" },
-        border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+        padding: { top: "0", right: "0", bottom: "0", left: "0" },
+        border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
         gapMode: "fixed",
         gap: "0",
       })
@@ -225,8 +223,8 @@ describe("validateTemplate · 废弃根遗留字段与 fontMode", () => {
     const t = buildTemplate({
       width: "600px",
       backgroundColor: "#ffffff",
-      padding: { mode: "unified", unified: "0" },
-      border: { mode: "unified", width: "0", style: "solid", color: "rgba(0,0,0,0)" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
+      border: { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" },
       gapMode: "fixed",
       gap: "0",
     });

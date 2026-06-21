@@ -128,7 +128,7 @@ description: >-
 **根因**：模块壳 **`wrapperStyle.padding` 左右为 `0`**（或仅子块上写 `8px` 补丁），误以为根 **`emailRoot` + `tokens.spacing.pageInline`** 会同时承担 **壳内** 留白——**pageInline 只作用邮件整体相对画布**，不缩进壳内子树。  
 **做法**：  
 - 在 **可见模块壳** 上补 **分轴 padding**：上下 **`tokens.spacing.section`**，左右 **`tokens.spacing.gap`**（或稿面等价 px），并写齐 **`bindings.tokenPath`**。  
-- 去掉子块上重复的左右 `8px` 补丁，统一由壳控制；标题与 grid 之间用壳内 **`layout.props.gap`**，或 grid **`wrapperStyle.padding` 仅上边距**（**`mode: "separate"`** + `top`，**勿** `unified: "8px 0 0 0"`）。  
+- 去掉子块上重复的左右 `8px` 补丁，统一由壳控制；标题与 grid 之间用壳内 **`layout.props.gap`**，或 grid **`wrapperStyle.padding.top`** 仅写上边距（**勿**在任一边写 `"8px 0 0 0"` 简写）。  
 - 规范与三层分工见 **`email-template-restore-guide`** § 容器内留白。
 
 ### 18. 横排应在容器内相对居中，却贴容器左缘
@@ -180,17 +180,17 @@ description: >-
 - [ ] **底图叠放**：**`padding` + 父级双轴 `contentAlign`**；**无非法 wrapperStyle 字段、无 `overlayInset`**（§6、§11）；叠放区居中先改 **父级容器内内容摆放**，**勿**误改子块 **`hug`**（§20）  
 - [ ] **text**：**`textBody`**、无手写 **`style=`**（§8）  
 - [ ] **细线**：优先 **`separator.divider`**（§9）  
-- [ ] **边框/圆角两级 mode**、**icon 仅契约字段** 等 → **以校验器输出为准**  
+- [ ] **边框/圆角**：padding/border/borderRadius 均为 **四边/四角平铺**；**无** legacy `mode`（§21）
 - [ ] **圆角与缝**：根 **`gap`** 与多模块壳 **`borderRadius`** 无 §16 反模式；深色下字标/底对比可辨（§16）  
 - [ ] **壳内留白**：可见模块壳（白卡/浅底 section）内容与壳边有间距；壳左右 **非** 仅靠根 **`pageInline`**（§17）  
-- [ ] **`SpacingValue`**：`unified` 仅单边；四边不同用 **`separate`**；**无** `"8px 0 0 0"` 类简写（§21）
+- [ ] **box-model 平铺**：padding/border/borderRadius 均为四边/四角平铺；**无** legacy `mode`；**无** CSS 多值简写（§21）
 - [ ] **间距上限**：`tokens.spacing` 的 **section / gap / pageInline** 与模块壳 **`padding` 四边** 均 **≤24px**（§19）
 
-### 21. `unified` padding 里写 CSS 多值简写（如 `8px 0 0 0`）
+### 21. padding 任一边写 CSS 多值简写（如 `8px 0 0 0`）
 
-**现象**：Inspector 显示「四边统一 8px」，画布只有顶部留白；或 **`validate:all`** 报 unified 多值简写。  
-**根因**：把 CSS **`padding` 简写**写进 **`mode: "unified"`** 的 **`unified` 字符串**；与 Inspector「四边统一」语义（四边**同值**）不一致。  
-**做法**：四边相同 → **`{ "mode": "unified", "unified": "8px" }`**；仅顶/或四边不同 → **`mode: "separate"`** + **`top/right/bottom/left`**（可绑 token）。禁止 **`"28px 24px"`** 等写在 unified。存量：**`npm run normalize:spacing-unified:write`**。真源 **`src/lib/validate.ts`** · **`validateSpacingValue`**。
+**现象**：画布只有顶部留白；或 **`validate:all`** 报多值简写。  
+**根因**：把 CSS **`padding` 简写**写进 **`top/right/bottom/left` 任一键**。  
+**做法**：四边分别写 **`top/right/bottom/left`**（可绑 token）；四边同值则四键同字面量或同 `$themeRef`。禁止 **`"28px 24px"`** 等简写与 legacy `mode`。真源 **`src/lib/boxModelFlat.ts`** · **`validate.ts`**。
 
 ## §19 容器间距上限（24px）
 

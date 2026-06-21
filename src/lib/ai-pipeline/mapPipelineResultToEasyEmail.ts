@@ -2,6 +2,13 @@ import type { EmailBlock, EmailTemplate } from "../../types/email";
 import { isThemeRef } from "../../types/themeRef";
 import { EMAIL_TEMPLATE_SCHEMA_VERSION } from "../../types/email";
 import type { TokenPresets } from "../../types/tokenPreset";
+import {
+  borderNoneFlat,
+  borderRadiusUniform,
+  borderRadiusZeroFlat,
+  ensureFlatSpacing,
+  spacingZero,
+} from "../boxModelFlat";
 import { layoutVariantBlockIdPrefix, buildDefaultTokenPresets } from "../scaffoldNewEmail";
 import { normalizeTokenPresetTokens } from "../../token-preset-contract/standard-keys";
 import { AI_PIPELINE_PLACEHOLDER_IMAGE_URL } from "./constants";
@@ -55,16 +62,11 @@ type BlockAcc = {
 };
 
 function defaultShellBorder() {
-  return {
-    mode: "unified" as const,
-    width: "0",
-    style: "solid" as const,
-    color: "rgba(0,0,0,0)",
-  };
+  return borderNoneFlat();
 }
 
 function defaultBorderRadius() {
-  return zeroBorderRadius();
+  return borderRadiusZeroFlat();
 }
 
 function applyColoredContainerBorderRadius(
@@ -82,7 +84,7 @@ function applyColoredContainerBorderRadius(
   ) {
     return;
   }
-  wrapperStyle.borderRadius = { mode: "unified", radius: panel };
+  wrapperStyle.borderRadius = borderRadiusUniform(panel);
 }
 
 function findTextParagraph(
@@ -120,18 +122,7 @@ function wrapperFromCompact(
   if (dims.height) ws.height = dims.height;
   if (wrapper?.backgroundColor) ws.backgroundColor = wrapper.backgroundColor;
   if (wrapper?.padding) {
-    const pad = wrapper.padding;
-    if (pad.mode === "separate") {
-      ws.padding = {
-        mode: "separate",
-        top: pad.top ?? "0",
-        right: pad.right ?? "0",
-        bottom: pad.bottom ?? "0",
-        left: pad.left ?? "0",
-      };
-    } else if (pad.mode === "unified" && (pad.unified || pad.value)) {
-      ws.padding = { mode: "unified", unified: pad.unified ?? pad.value };
-    }
+    ws.padding = ensureFlatSpacing(wrapper.padding as import("../../types/email").SpacingValue);
   }
   void tokens;
   return ws;
@@ -282,7 +273,7 @@ function mapCompactNode(
         fit: imagePreset.backgroundImageFit,
         position: img?.position ?? "center",
       };
-      if (parsePxValue(imageRadius.radius) > 0) {
+      if (parsePxValue(imageRadius.topLeft) > 0) {
         wrapperStyle.borderRadius = imageRadius;
       }
       props = {
@@ -332,12 +323,7 @@ function mapCompactNode(
               typeof bg === "string" ? bg : draft.styleTokens.colors.primary
             ),
           fontSize: styledButtonStyle.fontSize ?? draft.styleTokens.typography.body,
-          border: {
-            mode: "unified",
-            width: "0",
-            style: "solid",
-            color: "rgba(0,0,0,0)",
-          },
+          border: borderNoneFlat(),
           borderRadius: ctaBorderRadius(draft.styleTokens.radius.cta),
           bold: coerceBoolean(props.bold, false),
           italic: coerceBoolean(props.italic, false),
@@ -443,7 +429,6 @@ export function mapPipelineResultToEasyEmail(draft: MapPipelineInput): MapPipeli
             spacing: draft.styleTokens.spacing,
           })
         : {
-            mode: "separate" as const,
             top: "0",
             right: draft.styleTokens.spacing.pageInline,
             bottom: draft.styleTokens.spacing.section,
@@ -495,7 +480,7 @@ export function mapPipelineResultToEasyEmail(draft: MapPipelineInput): MapPipeli
       // B1 emailBackground = 邮件主体底色 → emailRoot.props.backgroundColor（非禁止的 outerBackgroundColor / 工作区灰）
       backgroundColor: draft.canvas.emailBackground,
       width: EMAIL_ROOT_FIXED_WIDTH,
-      padding: { mode: "unified", unified: "0" },
+      padding: spacingZero(),
       border: defaultShellBorder(),
       gapMode: "fixed",
       gap: "0",

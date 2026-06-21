@@ -10,6 +10,8 @@ type PickerTreeTableProps = {
   ariaLabel: string;
   columns: PickerTreeTableColumn[];
   body: ReactNode;
+  /** 无数据时在 tbody 内展示空状态（保留表头与表格容器） */
+  emptyText?: ReactNode;
   className?: string;
   role?: "radiogroup" | "group";
   ariaReadonly?: boolean;
@@ -23,18 +25,21 @@ export function PickerTreeTable({
   ariaLabel,
   columns,
   body,
+  emptyText,
   className,
   role = "radiogroup",
   ariaReadonly = false,
 }: PickerTreeTableProps) {
+  const showEmpty = emptyText != null && body == null;
+
   return (
     <div
       className={["text-body-var-pill-modal__table-wrap repeat-region-bind-modal__table-viewport", className]
         .filter(Boolean)
         .join(" ")}
-      role={role}
+      role={showEmpty ? "group" : role}
       aria-label={ariaLabel}
-      aria-readonly={ariaReadonly || undefined}
+      aria-readonly={showEmpty || ariaReadonly || undefined}
     >
       <table className="text-body-var-pill-modal__table">
         <thead>
@@ -46,7 +51,17 @@ export function PickerTreeTable({
             ))}
           </tr>
         </thead>
-        <tbody>{body}</tbody>
+        <tbody>
+          {showEmpty ? (
+            <tr className="picker-tree-table__empty-row">
+              <td className="picker-tree-table__empty-cell" colSpan={columns.length}>
+                {emptyText}
+              </td>
+            </tr>
+          ) : (
+            body
+          )}
+        </tbody>
       </table>
     </div>
   );

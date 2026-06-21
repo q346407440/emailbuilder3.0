@@ -1,4 +1,4 @@
-import EraserOutlined from "@shoplazza/sds-icons/EraserOutlined";
+import { ClearOutlined } from "@ant-design/icons";
 import {
   useEffect,
   useRef,
@@ -6,8 +6,9 @@ import {
   type KeyboardEventHandler,
   type MouseEventHandler,
 } from "react";
-import { ColorPicker, message } from "@shoplazza/sds";
-import type { InputRef } from "@shoplazza/sds";
+import { ColorPicker } from "antd";
+import { toastError } from "../lib/appToast";
+import type { AggregationColor } from "antd/es/color-picker/color";
 import type { EmailPayload, TextBody } from "../types/email";
 import type { ExternalVariableSlotInfo } from "../lib/payloadSlots";
 import type { TextBodyDefaults } from "../lib/textBodyFormat";
@@ -21,10 +22,10 @@ import {
   TEXT_BODY_VAR_PILL_CLASS,
   type TextBodyVariableRunMeta,
 } from "../lib/textBodyEditorFormat";
-import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopUnitInput } from "./ui/ShopFormControls";
+import { ShopInput, ShopPrimaryButton, ShopSecondaryButton, ShopUnitInput, type InputRef } from "./ui/ShopFormControls";
 import { ShopSectionModal } from "./ui/ShopSectionModal";
 import { useAdaptiveOverlayEdge } from "../hooks/useAdaptiveOverlayEdge";
-import { antdOverlayEdge } from "../lib/antdOverlayEdge";
+import { toAntdPlacement } from "../lib/antdOverlayEdge";
 import { parseCssColorToRgba, rgbaForPicker, rgbaToCss } from "../lib/colorCss";
 
 type Props = {
@@ -479,7 +480,7 @@ export function TextRichEditor({
     restoreSelection();
     const rng = selRange.current;
     if (!rng || !rangeInsideEditor(rng, root) || rng.collapsed) {
-      message.error("请先在正文中选中要改字号的文字。");
+      toastError("请先在正文中选中要改字号的文字。");
       return;
     }
     const current = resolveSingleFontSizeInRange(rng, root);
@@ -627,12 +628,12 @@ export function TextRichEditor({
     }
     const rng = selRange.current;
     if (!rng || !rangeInsideEditor(rng, root) || rng.collapsed) {
-      message.error("请先在正文中选中要设为变量的文字。");
+      toastError("请先在正文中选中要设为变量的文字。");
       return;
     }
     const selectedText = selectionPlainPreview(rng);
     if (!selectedText) {
-      message.error("当前选区没有可转换为变量的文字。");
+      toastError("当前选区没有可转换为变量的文字。");
       return;
     }
     setVariableSelectionPreview(selectedText);
@@ -646,7 +647,7 @@ export function TextRichEditor({
     restoreSelection();
     const rng = selRange.current;
     if (!rng || !rangeInsideEditor(rng, root) || rng.collapsed) {
-      message.error("请先在正文中选中要设为变量的文字。");
+      toastError("请先在正文中选中要设为变量的文字。");
       return;
     }
     document.execCommand("insertText", false, `{{ ${slotId} }}`);
@@ -854,24 +855,23 @@ export function TextRichEditor({
             <ColorPicker
               value={pickerColorValue}
               disabledAlpha={false}
-              onChange={(c: { toRgb: () => { r: number; g: number; b: number }; getAlpha: () => number }) => {
-                const { r, g, b } = c.toRgb();
-                const next = rgbaToCss({ r, g, b, a: c.getAlpha() });
+              open={colorPickerOpen}
+              onChange={(c: AggregationColor) => {
+                const { r, g, b, a } = c.toRgb();
+                const next = rgbaToCss({ r, g, b, a });
                 setRunColorDraft(next);
                 exec("foreColor", next);
               }}
-              dropdownProps={{
-                ...antdOverlayEdge(overlayEdge),
-                onVisibleChange: (visible: boolean) => {
-                  if (visible) syncRunColorDraftFromSelection();
-                  onVisibleChange(visible);
-                },
-                overlayClassName,
-                openClassName: "",
-                destroyPopupOnHide: true,
-                getPopupContainer: (triggerNode: HTMLElement) =>
-                  triggerNode.ownerDocument?.body ?? triggerNode,
+              onOpenChange={(visible: boolean) => {
+                if (visible) syncRunColorDraftFromSelection();
+                onVisibleChange(visible);
               }}
+              placement={toAntdPlacement(overlayEdge)}
+              rootClassName={overlayClassName}
+              destroyOnHidden
+              getPopupContainer={(triggerNode) =>
+                triggerNode.ownerDocument?.body ?? triggerNode
+              }
             >
               <div
                 ref={colorTriggerWrapRef}
@@ -892,8 +892,8 @@ export function TextRichEditor({
             onMouseDown={captureSelection}
             onClick={() => exec("removeFormat")}
           >
-            <EraserOutlined
-              className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--sds"
+            <ClearOutlined
+              className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--antd"
               aria-hidden
             />
           </ShopSecondaryButton>

@@ -15,7 +15,7 @@ export type AiPipelineUiStep = {
 /** 豆包 mjs 管线：首次生成 + 最多 2 次重试。 */
 export const MANUAL_RESTORE_MJS_MAX_ATTEMPTS = 3;
 
-/** 以图 AI 创建（豆包 mjs 管线）前端步骤。 */
+/** 豆包 mjs 管线前端步骤（方案 1 暂留；实现下线后仅保留步骤定义供未来复用）。 */
 export const MANUAL_RESTORE_MJS_UI_STEPS_INITIAL: readonly AiPipelineUiStep[] = [
   { id: "MR:VisualBlueprint", label: "识别视觉规格" },
   { id: "MR:ResolveAssets", label: "搜索远程素材（Pexels/CDN）" },
@@ -27,6 +27,20 @@ export const MANUAL_RESTORE_MJS_UI_STEPS_INITIAL: readonly AiPipelineUiStep[] = 
 
 export function buildPendingManualRestoreSteps(): AiStepUiState[] {
   return MANUAL_RESTORE_MJS_UI_STEPS_INITIAL.map((step) => ({
+    ...step,
+    status: "pending" as const,
+  }));
+}
+
+/** 以图 AI 创建（RestoreAst 三步骤管线）前端步骤；失败不重试。 */
+export const RESTORE_AST_UI_STEPS_INITIAL: readonly AiPipelineUiStep[] = [
+  { id: "RA:GenerateAst", label: "生成语义结构（RestoreAst）" },
+  { id: "RA:ResolveAssets", label: "搜索图片与图标" },
+  { id: "RA:Assemble", label: "组装版式与校验" },
+] as const;
+
+export function buildPendingRestoreAstSteps(): AiStepUiState[] {
+  return RESTORE_AST_UI_STEPS_INITIAL.map((step) => ({
     ...step,
     status: "pending" as const,
   }));

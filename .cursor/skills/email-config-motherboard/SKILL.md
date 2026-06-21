@@ -89,7 +89,7 @@ description: >-
 3. **横排图标条 / 整组居中**：见 **`email-template-restore-check`** §5、**`easy-email-concepts`**。  
 4. **底图叠放**：`backgroundImage` 有效时 **`padding` 语义**见 **`render-defaults-contract`** **`semantic.backgroundPadding`**。  
 5. **grid**：外壳尺寸 vs **`props.cell*`** vs **`props.gap`** → **`src/block-contract/by-type/layout.grid.ts`**。  
-6. **`SpacingValue`（padding）**：**`unified.unified`** 仅允许**单边**长度；四边不同 → **`mode: "separate"`**。
+6. **`SpacingValue` / `BorderValue` / `BorderRadiusValue`**：JSON **永远四边/四角平铺**（`top/right/bottom/left` 或 `topLeft/…`）；**禁止** `mode: unified/separate/custom/corners`。工厂见 **`src/lib/boxModelFlat.ts`** · 校验 **`validate.ts`**。
 
 ## 禁止事项（摘要）
 

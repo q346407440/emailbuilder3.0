@@ -15,9 +15,10 @@ import type { BorderRadiusValue, ButtonBlockProps } from "../../types/email";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(__dirname, "__fixtures__/minimal-one-section.json");
 
-/** 仅在 unified 圆角上读取 radius，narrow BorderRadiusValue 联合类型。 */
-function unifiedRadius(borderRadius: BorderRadiusValue | undefined): string | undefined {
-  return borderRadius?.mode === "unified" ? borderRadius.radius : undefined;
+/** 读取四角相同时的圆角 px（须为四角平铺）。 */
+function uniformRadius(borderRadius: BorderRadiusValue | undefined): string | undefined {
+  if (!borderRadius) return undefined;
+  return borderRadius.topLeft;
 }
 
 describe("normalizeStyleTokens", () => {
@@ -62,7 +63,6 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     const shell = output.template.blocks["fixture-ai-layout-ai-test-s1-sec"];
     assert.ok(shell, "应有区段壳 block");
     assert.deepEqual(shell?.wrapperStyle?.padding, {
-      mode: "separate",
       top: "0",
       right: "20px",
       bottom: "16px",
@@ -70,7 +70,7 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     });
     const colors = output.tokenPresets.presets.default.tokens.colors;
     assert.ok(colors, "应有 colors token");
-    assert.deepEqual(Object.keys(colors), ["primary", "secondary", "surface"]);
+    assert.deepEqual(Object.keys(colors), ["primary", "accent", "secondary", "surface"]);
     const button = Object.values(output.template.blocks).find((b) => b.type === "button");
     const buttonProps = button?.props as ButtonBlockProps | undefined;
     assert.equal(unifiedRadius(buttonProps?.buttonStyle?.borderRadius), "8px");
@@ -230,15 +230,14 @@ describe("mapPipelineResultToEasyEmail fixture", () => {
     const output = mapPipelineResultToEasyEmail(draft);
     const shell = output.template.blocks["fixture-ai-layout-ai-test-s1-sec"];
     assert.deepEqual(shell?.wrapperStyle?.padding, {
-      mode: "separate",
       top: "0",
       right: "0",
       bottom: "16px",
       left: "0",
     });
     const hero = output.template.blocks["fixture-ai-layout-ai-test-s1-b0"];
-    assert.equal(hero?.wrapperStyle?.padding?.mode, "unified");
-    assert.equal(hero?.wrapperStyle?.padding?.unified, "32px");
+    assert.equal(hero?.wrapperStyle?.padding?.top, "32px");
+    assert.equal(hero?.wrapperStyle?.padding?.right, "32px");
     assert.equal(unifiedRadius(hero?.wrapperStyle?.borderRadius), "0");
   });
 

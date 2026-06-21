@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { toastError } from "../lib/appToast";
 import type { BindingCollectionField } from "../types/email";
 import { normalizeCollectionItemFields } from "../payload-contract/collection-item-fields";
 import { validateCollectionItemFields } from "../lib/collectionItemFieldsEdit";
@@ -37,7 +37,7 @@ export function CollectionItemFieldsModal({
     const normalized = normalizeCollectionItemFields(draft);
     const err = validateCollectionItemFields(normalized);
     if (err) {
-      message.error(err);
+      toastError(err);
       return;
     }
     onApply(normalized);

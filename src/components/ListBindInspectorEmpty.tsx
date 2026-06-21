@@ -23,19 +23,17 @@ function InspectorTextAction({
 }
 
 type Props = {
-  disabled?: boolean;
-  disabledReason?: string;
   onConfigure: () => void;
 };
 
 /** 未配置数据组绑定时的 Inspector 空态（对齐变量面板 Field + 文字操作） */
-export function ListBindInspectorEmpty({ disabled, disabledReason, onConfigure }: Props) {
+export function ListBindInspectorEmpty({ onConfigure }: Props) {
   return (
     <div className="inspector-list-bind-panel">
       <Field
         label="数据组绑定"
         headerExtra={
-          <InspectorTextAction disabled={disabled} title={disabledReason} onClick={onConfigure}>
+          <InspectorTextAction onClick={onConfigure}>
             配置绑定
           </InspectorTextAction>
         }

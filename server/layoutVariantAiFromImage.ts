@@ -11,9 +11,13 @@ import {
   AiPipelineError,
   isAiPipelineError,
 } from "../src/layout-variant-ai-contract/errors";
-import { runManualRestoreViaDoubao } from "../src/lib/ai-pipeline/manual-restore/runManualRestoreViaDoubao";
+import {
+  MJS_PATCH_PIPELINE_RESERVED_MESSAGE,
+  type LayoutVariantAiFromImagePipeline,
+} from "../src/layout-variant-ai-contract/aiFromImagePipeline";
+import { runRestoreAstFromDesignImage } from "../src/lib/ai-pipeline/restore-ast/runRestoreAstFromDesignImage";
+import type { LlmProfileSelection } from "../src/layout-variant-ai-contract/llmProfileCatalog";
 import { LlmStageFailure } from "../src/lib/ai-pipeline/llmRetryFeedback";
-import { parseTemplateFromDisk } from "../src/lib/templateTreeAdapter";
 import type { PipelineProgressReporter } from "../src/lib/ai-pipeline/ports/PipelineProgressReporter";
 
 export type LayoutVariantAiGenerateInput = {
@@ -23,6 +27,8 @@ export type LayoutVariantAiGenerateInput = {
   imageBuffer: Buffer;
   mimeType: string;
   emailBaseDir: string;
+  pipeline?: LayoutVariantAiFromImagePipeline;
+  llmProfile?: LlmProfileSelection;
 };
 
 export type LayoutVariantAiGenerateOptions = {
@@ -32,7 +38,8 @@ export type LayoutVariantAiGenerateOptions = {
 export type LayoutVariantAiGenerateResult = {
   template: EmailTemplate;
   tokenPresets: TokenPresets;
-  mjsPath: string;
+  logDir?: string;
+  pipeline: LayoutVariantAiFromImagePipeline;
   /** 保底交付时未消除的 validate/视觉门问题（全过为空数组） */
   validationIssues: string[];
 };
@@ -86,7 +93,7 @@ function wrapPipelineError(e: unknown): Error {
     (err as Error & { code?: string }).code = "AI_GENERATION_FAILED";
     return err;
   }
-  if (e instanceof Error && /DOUBAO_API_KEY|LLM_PIPELINE_MODEL|PEXELS_API_KEY/.test(e.message)) {
+  if (e instanceof Error && /DOUBAO_API_KEY|LLM_PIPELINE_MODEL|GEMINI_API_KEY|PEXELS_API_KEY/.test(e.message)) {
     const err = new Error("AI 生成服务未配置，请联系管理员");
     (err as Error & { code?: string }).code = "AI_GENERATION_FAILED";
     return err;
@@ -101,13 +108,18 @@ function wrapPipelineError(e: unknown): Error {
   return err;
 }
 
-/** 根据设计图生成版式 template + tokenPresets（豆包 mjs manual-restore 管线）。 */
+/** 根据设计图生成版式 template + tokenPresets（RestoreAst 三步骤管线；方案 1 暂留未实现）。 */
 export async function generateLayoutVariantFromDesignImage(
   input: LayoutVariantAiGenerateInput,
   options: LayoutVariantAiGenerateOptions = {}
 ): Promise<LayoutVariantAiGenerateResult> {
+  const pipeline = input.pipeline ?? "restore-ast";
+  if (pipeline === "mjs-patch") {
+    throw new AiPipelineError("AI_GENERATION_FAILED", MJS_PATCH_PIPELINE_RESERVED_MESSAGE);
+  }
+
   const runId = randomUUID();
-  const stagingRoot = path.join(input.emailBaseDir, ".ai-staging", runId);
+  const stagingRoot = path.join(input.emailBaseDir, ".ai-staging-restore-ast", runId);
   const stagingDir = path.join(stagingRoot, "layout-out");
   const imagePath = path.join(stagingRoot, `design${mimeToExtension(input.mimeType)}`);
 
@@ -115,34 +127,31 @@ export async function generateLayoutVariantFromDesignImage(
   await fs.writeFile(imagePath, input.imageBuffer);
 
   try {
-    const restored = await runManualRestoreViaDoubao({
-      imagePath,
-      outputEmailKey: input.emailKey,
-      displayName: input.layoutLabel.trim() || input.layoutVariantId,
-      persistMode: "layout-only",
-      stagingDir,
-      layoutVariantId: input.layoutVariantId,
-      progress: options.progress,
-    });
-
-    const templateRaw = JSON.parse(
-      await fs.readFile(path.join(stagingDir, "template.json"), "utf8")
-    ) as unknown;
-    const tokenPresetsRaw = JSON.parse(
-      await fs.readFile(path.join(stagingDir, "tokenPresets.json"), "utf8")
-    ) as unknown;
+    const restored = await runRestoreAstFromDesignImage(
+      {
+        emailKey: input.emailKey,
+        layoutVariantId: input.layoutVariantId,
+        layoutLabel: input.layoutLabel.trim() || input.layoutVariantId,
+        imagePath,
+        imageBuffer: input.imageBuffer,
+        mimeType: input.mimeType,
+        stagingDir,
+      },
+      { progress: options.progress, llmProfile: input.llmProfile }
+    );
 
     return {
-      template: parseTemplateFromDisk(templateRaw),
-      tokenPresets: tokenPresetsRaw as TokenPresets,
-      mjsPath: restored.mjsPath,
+      template: restored.template,
+      tokenPresets: restored.tokenPresets,
+      logDir: restored.logDir,
+      pipeline,
       validationIssues: restored.validationIssues,
     };
   } catch (e) {
     throw wrapPipelineError(e);
   } finally {
     await fs.rm(stagingRoot, { recursive: true, force: true }).catch(() => {
-      /* 清理 staging 失败则忽略 */
+      /* 清理临时 staging；核验材料在 logs/restore-ast-* */
     });
   }
 }

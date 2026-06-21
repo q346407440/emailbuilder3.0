@@ -16,7 +16,7 @@ export const STANDARD_THEME_REF_PATHS: readonly string[] = [
 
 const STANDARD_THEME_REF_SET = new Set(STANDARD_THEME_REF_PATHS);
 
-/** 是否为仓库标准 12 键之一（用于文档与可选 lint；字段能否挂 `$themeRef` 仍由 resolveThemeInTemplate 按字段路径判断） */
+/** 是否为仓库标准 13 键之一（用于文档与可选 lint；字段能否挂 `$themeRef` 仍由 resolveThemeInTemplate 按字段路径判断） */
 export function isStandardThemeRefPath(path: string): boolean {
   return STANDARD_THEME_REF_SET.has(path.trim());
 }

@@ -91,7 +91,10 @@ import { validateSchemaArtifact, type SchemaArtifactId } from "../src/schema-reg
 import { buildRepeatPreviewModel, previewModelToFlatTemplate } from "../src/repeat-runtime";
 import { applyVisibilityRules } from "../src/lib/visibility";
 import { softDeleteLayoutVariant } from "../src/lib/layoutVariantLogicalDelete";
+import { parseLayoutVariantAiFromImagePipeline } from "../src/layout-variant-ai-contract/aiFromImagePipeline";
+import { validateLlmProfileSelection } from "../src/layout-variant-ai-contract/llmProfileCatalog";
 import { createPipelineProgressReporter } from "../src/lib/ai-pipeline/ports/PipelineProgressReporter";
+import { getAiPipelineLlmOptions } from "./aiPipelineLlmOptions";
 import {
   generateLayoutVariantFromDesignImage,
   validateDesignImageBuffer,
@@ -1497,6 +1500,10 @@ app.post("/api/v1/emails/:emailKey/layout-variants", async (c) => {
   }
 });
 
+app.get("/api/v1/ai-pipeline/llm-options", (c) => {
+  return c.json(getAiPipelineLlmOptions());
+});
+
 app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => {
   const emailKey = c.req.param("emailKey");
   const bad = assertEmailKeySafe(emailKey);
@@ -1529,6 +1536,36 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
     return c.json({ error: { code: "VALIDATION_FAILED", message: imageIssue } }, 400);
   }
 
+  const pipeline = parseLayoutVariantAiFromImagePipeline(
+    typeof body.pipeline === "string" ? body.pipeline : undefined
+  );
+
+  const llmOptions = getAiPipelineLlmOptions();
+  const llmProfileResult = validateLlmProfileSelection(
+    {
+      vendor:
+        typeof body.llmVendor === "string" && body.llmVendor.trim()
+          ? body.llmVendor
+          : llmOptions.defaults.vendor,
+      model:
+        typeof body.llmModel === "string" && body.llmModel.trim()
+          ? body.llmModel
+          : llmOptions.defaults.model,
+      thinking:
+        typeof body.llmThinking === "string" && body.llmThinking.trim()
+          ? body.llmThinking
+          : llmOptions.defaults.thinking,
+    },
+    llmOptions
+  );
+  if (!llmProfileResult.ok) {
+    return c.json(
+      { error: { code: "VALIDATION_FAILED", message: llmProfileResult.message } },
+      400
+    );
+  }
+  const llmProfile = llmProfileResult.profile;
+
   const base = emailBaseDir(DATA_ROOT, emailKey);
   let manifest: LayoutManifest;
   try {
@@ -1553,7 +1590,8 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
     );
   }
 
-  const variantDescription = "AI 从设计图生成";
+  const variantDescription =
+    pipeline === "restore-ast" ? "AI 从设计图生成（RestoreAst）" : "AI 从设计图生成";
 
   return streamSSE(c, async (stream) => {
     const writeProgress = (payload: unknown) =>
@@ -1566,7 +1604,6 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
       });
     });
 
-    let persistStarted = false;
     try {
       const generated = await generateLayoutVariantFromDesignImage(
         {
@@ -1576,12 +1613,12 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
           imageBuffer,
           mimeType,
           emailBaseDir: base,
+          pipeline,
+          llmProfile,
         },
         { progress }
       );
 
-      progress.forStep("MR:Persist").start();
-      persistStarted = true;
       const created = await persistNewLayoutVariantOnDisk(
         {
           base,
@@ -1594,20 +1631,17 @@ app.post("/api/v1/emails/:emailKey/layout-variants/ai-from-image", async (c) => 
         },
         atomicWriteJson
       );
-      progress.forStep("MR:Persist").succeed();
       scheduleEmailsChanged("api_write", emailKey);
       await stream.writeSSE({
         event: "done",
         data: JSON.stringify({
           ...created,
-          mjsPath: generated.mjsPath,
+          pipeline: generated.pipeline,
+          logDir: generated.logDir,
           validationIssues: generated.validationIssues,
         }),
       });
     } catch (e) {
-      if (persistStarted) {
-        progress.forStep("MR:Persist").fail();
-      }
       const code = (e as Error & { code?: string }).code;
       const message = e instanceof Error ? e.message : "生成失败，请稍后重试";
       await stream.writeSSE({

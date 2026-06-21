@@ -17,6 +17,7 @@ import type { ButtonHTMLAttributes } from "react";
 import { Field } from "./ui/Field";
 import { ShopSecondaryButton } from "./ui/ShopFormControls";
 import {
+  collectionSlotAllowsItemVisibility,
   normalizeItemVisibility,
   setCollectionItemVisibilityAt,
 } from "../lib/collectionItemVisibility";
@@ -97,6 +98,7 @@ export function CollectionVariablePanel({
 
   const previewValues = previewPayload.values[slot.slotId];
   const readonlyMockPreview = builtinManaged || scenePresetManaged || valuesReadonly;
+  const allowsItemVisibility = collectionSlotAllowsItemVisibility(effectiveEntry);
   const manualFormReady = itemFields.length > 0 && !detached && !readonlyMockPreview;
   const itemFieldStructureSig = useMemo(
     () => itemFields.map((f) => `${f.key}:${f.valueType ?? ""}`).join("|"),
@@ -202,10 +204,13 @@ export function CollectionVariablePanel({
           {...(panelLayout
             ? {}
             : {
-                hint:
-                  manualFormReady
+                hint: manualFormReady
+                  ? allowsItemVisibility
                     ? "切换 Tab 逐条改值；子列表点「编辑」。勾选「不展示」后该行不出现在画布。"
-                    : "切换查看每条数据；勾选「不展示」后该行不会出现在画布列表。",
+                    : "切换 Tab 逐条改值；子列表点「编辑」。"
+                  : allowsItemVisibility
+                    ? "切换查看每条数据；勾选「不展示」后该行不会出现在画布列表。"
+                    : "切换查看每条数据。",
               })}
         >
           <CollectionItemPreview
@@ -227,25 +232,28 @@ export function CollectionVariablePanel({
                 : undefined
             }
             disabled={detached}
-            itemVisibility={effectiveItemVisibility}
-            visibilityDisabled={detached || readonlyMockPreview}
-            onItemHiddenChange={(index, hidden) => {
-              if (readonlyMockPreview) return;
-              const current = ensureDraft();
-              const nextVisibility = setCollectionItemVisibilityAt(
-                draft?.slotDefPatch?.itemVisibility ?? effectiveEntry?.itemVisibility,
-                fixedLength,
-                index,
-                !hidden
-              );
-              onDraftChange({
-                ...current,
-                slotDefPatch: {
-                  ...(current.slotDefPatch ?? {}),
-                  itemVisibility: nextVisibility,
-                },
-              });
-            }}
+            itemVisibility={allowsItemVisibility ? effectiveItemVisibility : undefined}
+            visibilityDisabled={detached || !allowsItemVisibility}
+            onItemHiddenChange={
+              allowsItemVisibility && !detached
+                ? (index, hidden) => {
+                    const current = ensureDraft();
+                    const nextVisibility = setCollectionItemVisibilityAt(
+                      draft?.slotDefPatch?.itemVisibility ?? effectiveEntry?.itemVisibility,
+                      fixedLength,
+                      index,
+                      !hidden
+                    );
+                    onDraftChange({
+                      ...current,
+                      slotDefPatch: {
+                        ...(current.slotDefPatch ?? {}),
+                        itemVisibility: nextVisibility,
+                      },
+                    });
+                  }
+                : undefined
+            }
             onFieldChange={(rowIndex, fieldKey, value) => {
               if (readonlyMockPreview) return;
               const current = ensureDraft();

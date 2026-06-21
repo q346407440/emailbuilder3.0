@@ -11,6 +11,7 @@ const styleTokensFieldsSchema = z.object({
   tokens: z.object({
     colors: z.object({
       primary: z.string().regex(HEX_COLOR_RE),
+      accent: z.string().regex(HEX_COLOR_RE).optional(),
       secondary: z.string().regex(HEX_COLOR_RE),
       surface: z.string().regex(HEX_COLOR_RE),
     }),

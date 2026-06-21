@@ -46,8 +46,10 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
           children: [],
           wrapperStyle: {
             borderRadius: {
-              mode: "unified",
-              radius: { $themeRef: "tokens.radius.none" },
+              topLeft: { $themeRef: "tokens.radius.none" },
+              topRight: { $themeRef: "tokens.radius.none" },
+              bottomRight: { $themeRef: "tokens.radius.none" },
+              bottomLeft: { $themeRef: "tokens.radius.none" },
             },
             backgroundImage: {
               src: "https://example.com/a.png",
@@ -75,8 +77,10 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
         easyEmailBindingUi: {
           themeRestoreJson: {
             [pk]: JSON.stringify({
-              mode: "unified",
-              radius: { $themeRef: "tokens.radius.none" },
+              topLeft: { $themeRef: "tokens.radius.none" },
+              topRight: { $themeRef: "tokens.radius.none" },
+              bottomRight: { $themeRef: "tokens.radius.none" },
+              bottomLeft: { $themeRef: "tokens.radius.none" },
             }),
           },
         },
@@ -97,8 +101,10 @@ describe("getInspectFieldBindMode（主题解除 meta 优先于字面量 $themeR
           children: [],
           wrapperStyle: {
             borderRadius: {
-              mode: "unified",
-              radius: { $themeRef: "tokens.radius.none" },
+              topLeft: { $themeRef: "tokens.radius.none" },
+              topRight: { $themeRef: "tokens.radius.none" },
+              bottomRight: { $themeRef: "tokens.radius.none" },
+              bottomLeft: { $themeRef: "tokens.radius.none" },
             },
             backgroundImage: {
               src: "https://example.com/a.png",
@@ -155,7 +161,7 @@ describe("template43 v2 主视觉块：解除主题圆角", () => {
     const blockAfter = next.blocks[bid];
     assert.ok(blockAfter);
     assert.equal(getInspectFieldBindMode(next, blockAfter, payload, bid, bindPath), "themeDetached");
-    assert.equal(getInspectFieldBindMode(next, blockAfter, payload, bid, "props.borderRadius.radius"), "free");
+    assert.equal(getInspectFieldBindMode(next, blockAfter, payload, bid, "props.borderRadius.topLeft"), "free");
     assert.equal(hasThemeRefInTemplateField(next, bid, bindPath), false);
 
     const beforeBlock = raw.blocks[bid];
@@ -168,7 +174,7 @@ describe("template43 v2 主视觉块：解除主题圆角", () => {
     assert.ok(reboundBlock);
     assert.equal(getInspectFieldBindMode(rebound, reboundBlock, payload, bid, bindPath), "themeFollow");
     assert.equal(
-      getInspectFieldBindMode(rebound, reboundBlock, payload, bid, "props.borderRadius.radius"),
+      getInspectFieldBindMode(rebound, reboundBlock, payload, bid, "props.borderRadius.topLeft"),
       "themeFollow"
     );
   });

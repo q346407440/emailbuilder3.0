@@ -25,7 +25,7 @@ export type BuiltinProductListConfig = {
   rowGranularity?: BuiltinProductRowGranularity;
   /** 候选商品池来源 */
   rangeMode: BuiltinProductRangeMode;
-  /** 已选商品 id（Shoplazza 风格 mock 的 product.id） */
+  /** 已选商品 id（内置商品 mock 的 product.id） */
   selectedSpuIds?: string[];
   /** 按 SKU Tab 勾选的规格键；列表行仍为 SPU，嵌套 skus 列仅展示已选规格 */
   skuSelection?: BuiltinSkuSelectionKey[];

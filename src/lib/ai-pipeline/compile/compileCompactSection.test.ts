@@ -74,7 +74,7 @@ describe("compileCompactSectionRoot", () => {
   it("剥离区域根 layout.container 的 padding（区段留白由 E 区段壳写入）", () => {
     const root: CompactNode = {
       kind: "layout.container",
-      wrapper: { padding: { mode: "unified", unified: "20px" }, widthMode: "fill" },
+      wrapper: { padding: { top: "20px", right: "20px", bottom: "20px", left: "20px" }, widthMode: "fill" },
       props: { direction: "vertical" },
     };
     const out = compileCompactSectionRoot(root, sectionCenter);
@@ -93,11 +93,11 @@ describe("compileCompactSectionRoot", () => {
       kind: "content.image",
       wrapper: {
         backgroundImageRef: "s1-img-0",
-        padding: { mode: "unified", unified: "32px" },
+        padding: { top: "32px", right: "32px", bottom: "32px", left: "32px" },
       },
     };
     const out = compileCompactSectionRoot(root, section);
-    assert.equal(out?.wrapper?.padding?.unified ?? out?.wrapper?.padding?.value, "32px");
+    assert.equal(out?.wrapper?.padding?.top, "32px");
   });
 
   it("编译后叠放配图 vertical 为 center", () => {
@@ -170,7 +170,7 @@ describe("compileCompactSectionRoot", () => {
   it("剥离 compact 树中的 borderRadius", () => {
     const root: CompactNode = {
       kind: "layout.container",
-      wrapper: { borderRadius: { mode: "unified", radius: "12px" }, widthMode: "fill" },
+      wrapper: { borderRadius: { topLeft: "12px", topRight: "12px", bottomRight: "12px", bottomLeft: "12px" }, widthMode: "fill" },
     };
     const out = compileCompactSectionRoot(root, sectionCenter);
     assert.equal(out?.wrapper?.borderRadius, undefined);

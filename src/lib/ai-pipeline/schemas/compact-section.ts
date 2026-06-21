@@ -21,16 +21,19 @@ const compactWrapperSchema: z.ZodType<Record<string, unknown>> = z
       .optional(),
     padding: z
       .object({
-        mode: z.string(),
-        value: z.string().optional(),
-        unified: z.string().optional(),
+        top: z.string().optional(),
+        right: z.string().optional(),
+        bottom: z.string().optional(),
+        left: z.string().optional(),
       })
       .optional(),
     backgroundColor: z.string().optional(),
     borderRadius: z
       .object({
-        mode: z.string(),
-        radius: z.string().optional(),
+        topLeft: z.string().optional(),
+        topRight: z.string().optional(),
+        bottomRight: z.string().optional(),
+        bottomLeft: z.string().optional(),
       })
       .optional(),
   })

@@ -30,13 +30,13 @@ describe("forbiddenBackgroundImageChrome", () => {
           backgroundImage: {
             src: "https://example.com/x.jpg",
             fit: "cover",
-            border: { mode: "unified", width: "0", style: "solid", color: "#000" },
-            borderRadius: { mode: "unified", radius: "8px" },
+            border: { style: "solid", color: "#000", top: "0", right: "0", bottom: "0", left: "0" },
+            borderRadius: { topLeft: "8px", topRight: "8px", bottomRight: "8px", bottomLeft: "8px" },
           } as unknown as WrapperBackgroundImage,
         },
         props: {},
         bindings: {
-          "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "wrapperStyle.backgroundImage.borderRadius.topLeft": {
             slotId: "r",
             mode: "theme",
             tokenPath: "tokens.radius.md",
@@ -64,13 +64,13 @@ describe("forbiddenBackgroundImageChrome", () => {
           backgroundImage: {
             src: "https://example.com/x.jpg",
             fit: "cover",
-            borderRadius: { mode: "unified", radius: "12px" },
-            border: { mode: "unified", width: "0", style: "solid", color: "#000" },
+            borderRadius: { topLeft: "12px", topRight: "12px", bottomRight: "12px", bottomLeft: "12px" },
+            border: { style: "solid", color: "#000", top: "0", right: "0", bottom: "0", left: "0" },
           } as unknown as WrapperBackgroundImage,
         },
         props: {},
         bindings: {
-          "wrapperStyle.backgroundImage.borderRadius.radius": {
+          "wrapperStyle.backgroundImage.borderRadius.topLeft": {
             slotId: "tokens.radius.panel",
             mode: "theme",
             tokenPath: "tokens.radius.panel",
@@ -84,14 +84,16 @@ describe("forbiddenBackgroundImageChrome", () => {
     assert.equal("border" in bg, false);
     assert.equal("borderRadius" in bg, false);
     assert.deepEqual(t.blocks.img?.wrapperStyle?.borderRadius, {
-      mode: "unified",
-      radius: "12px",
+      topLeft: "12px",
+      topRight: "12px",
+      bottomRight: "12px",
+      bottomLeft: "12px",
     });
     assert.equal(
-      "wrapperStyle.backgroundImage.borderRadius.radius" in (t.blocks.img?.bindings ?? {}),
+      "wrapperStyle.backgroundImage.borderRadius.topLeft" in (t.blocks.img?.bindings ?? {}),
       false
     );
-    assert.ok(t.blocks.img?.bindings?.["wrapperStyle.borderRadius.radius"]);
+    assert.ok(t.blocks.img?.bindings?.["wrapperStyle.borderRadius.topLeft"]);
     assert.deepEqual(validateForbiddenBackgroundImageChrome(t), []);
   });
 });

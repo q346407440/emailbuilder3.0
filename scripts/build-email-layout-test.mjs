@@ -34,13 +34,8 @@ const EMAIL_KEY = "layout-test";
 const OUT = path.join(REPO, "data", "emails", EMAIL_KEY);
 const LAYOUT_DIR = path.join(OUT, "layouts", "default");
 
-const BORDER_ZERO = {
-  mode: "unified",
-  width: "0",
-  style: "solid",
-  color: "rgba(0,0,0,0)",
-};
-const RADIUS_SM = { mode: "unified", radius: "4px" };
+const BORDER_ZERO = { style: "solid", color: "rgba(0,0,0,0)", top: "0", right: "0", bottom: "0", left: "0" };
+const RADIUS_SM = { topLeft: "4px", topRight: "4px", bottomRight: "4px", bottomLeft: "4px" };
 
 /** @type {Record<string, object>} */
 const blocks = {};
@@ -122,7 +117,7 @@ function layout(id, parentId, direction, children, wrapperExtra = {}, propsExtra
       heightMode: "hug",
       border: BORDER_ZERO,
       borderRadius: RADIUS_SM,
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
       ...wrapperExtra,
     },
     props: { direction, gapMode: "fixed", gap: "6px", ...propsExtra },
@@ -149,7 +144,7 @@ function chapterHeader(sectionId, parentId, num, title, hint, tint = "#F9FAFB") 
 function section(id, parentId, childIds, bg) {
   const sec = layout(id, parentId, "vertical", childIds, {
     backgroundColor: bg,
-    padding: { mode: "unified", unified: "12px" },
+    padding: { top: "12px", right: "12px", bottom: "12px", left: "12px" },
   });
   addBlock(sec, id, "layout");
   return id;
@@ -162,7 +157,7 @@ function stage(id, parentId, direction, childIds, { height, width, contentAlign,
     heightMode: height ? "fixed" : "hug",
     contentAlign: contentAlign ?? { horizontal: "left", vertical: "top" },
     backgroundColor: bg,
-    padding: { mode: "unified", unified: "6px" },
+    padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
   };
   if (height) ws.height = height;
   if (width) ws.width = width;
@@ -190,8 +185,8 @@ function buildVerticalMainAxisRow(rowId, parentId, rowHint) {
     const col = layout(colId, rowId, "vertical", [`${colId}-lbl`, innerId], {
       widthMode: "fill",
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#A7F3D0" },
-      padding: { mode: "unified", unified: "6px" },
+      border: { style: "solid", color: "#A7F3D0", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
     });
     addBlock(col, labels[v], "layout");
     return colId;
@@ -226,8 +221,8 @@ function buildHorizontalMainAxisCol(colId, parentId, hAlign) {
   const col = layout(colId, parentId, "vertical", [`${colId}-lbl`, innerId], {
     widthMode: "fill",
     backgroundColor: "#FFFFFF",
-    border: { mode: "unified", width: "1px", style: "solid", color: "#DDD6FE" },
-    padding: { mode: "unified", unified: "6px" },
+    border: { style: "solid", color: "#DDD6FE", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+    padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
   });
   addBlock(col, labels[hAlign], "layout");
 }
@@ -274,8 +269,8 @@ function buildSingleChildAlignGrid(gridId, parentId, parentDirection, title, hin
         layout(cellId, rowId, "vertical", [`${cellId}-lbl`, stageId], {
           widthMode: "fill",
           backgroundColor: "#FAFAFF",
-          border: { mode: "unified", width: "1px", style: "solid", color: "#E5E7EB" },
-          padding: { mode: "unified", unified: "4px" },
+          border: { style: "solid", color: "#E5E7EB", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+          padding: { top: "4px", right: "4px", bottom: "4px", left: "4px" },
         }),
         cfg.cornerLabel,
         "layout"
@@ -289,8 +284,8 @@ function buildSingleChildAlignGrid(gridId, parentId, parentDirection, title, hin
   addBlock(
     layout(gridId, parentId, "vertical", [`${gridId}-title`, ...rowIds], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#C7D2FE" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#C7D2FE", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     title,
     "layout"
@@ -351,8 +346,8 @@ function buildDualChildAxisGrid(gridId, parentId, innerDirection, title, hint, s
         layout(cellId, rowId, "vertical", [`${cellId}-lbl`, innerId], {
           widthMode: "fill",
           backgroundColor: "#FAFAFF",
-          border: { mode: "unified", width: "1px", style: "solid", color: "#E5E7EB" },
-          padding: { mode: "unified", unified: "4px" },
+          border: { style: "solid", color: "#E5E7EB", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+          padding: { top: "4px", right: "4px", bottom: "4px", left: "4px" },
         }),
         `${main.label}${cross.label}`,
         "layout"
@@ -364,8 +359,8 @@ function buildDualChildAxisGrid(gridId, parentId, innerDirection, title, hint, s
   addBlock(
     layout(gridId, parentId, "vertical", [`${gridId}-title`, ...rowIds], {
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#A7F3D0" },
-      padding: { mode: "unified", unified: "8px" },
+      border: { style: "solid", color: "#A7F3D0", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     title,
     "layout"
@@ -391,8 +386,8 @@ function buildStackChildSizeDemo(cellId, parentId, title, hint, spec) {
     layout(cellId, parentId, "vertical", [`${cellId}-lbl`, stageId], {
       widthMode: "fill",
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FDE68A" },
-      padding: { mode: "unified", unified: "6px" },
+      border: { style: "solid", color: "#FDE68A", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
     }),
     title,
     "layout"
@@ -418,8 +413,8 @@ function buildRowChildSizeDemo(cellId, parentId, title, hint, spec) {
     layout(cellId, parentId, "vertical", [`${cellId}-lbl`, stageId], {
       widthMode: "fill",
       backgroundColor: "#FFFFFF",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#DDD6FE" },
-      padding: { mode: "unified", unified: "6px" },
+      border: { style: "solid", color: "#DDD6FE", top: "1px", right: "1px", bottom: "1px", left: "1px" },
+      padding: { top: "6px", right: "6px", bottom: "6px", left: "6px" },
     }),
     title,
     "layout"
@@ -446,7 +441,7 @@ addBlock(
     props: {
       backgroundColor: "#F3F4F6",
       width: "600px",
-      padding: { mode: "unified", unified: "0" },
+      padding: { top: "0", right: "0", bottom: "0", left: "0" },
       border: BORDER_ZERO,
       gapMode: "fixed",
       gap: "20px",
@@ -529,9 +524,9 @@ chapterHeader(
   addBlock(chip(`${id}-b`, inner, "fill B", "#B91C1C", "fill"), "B");
   addBlock(
     layout(id, "lt-ch1-e", "vertical", [`${id}-lbl`, inner], {
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FCA5A5" },
+      border: { style: "solid", color: "#FCA5A5", top: "1px", right: "1px", bottom: "1px", left: "1px" },
       backgroundColor: "#FFF",
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "E1",
     "layout"
@@ -548,9 +543,9 @@ chapterHeader(
   addBlock(
     layout(id, "lt-ch1-e", "vertical", [`${id}-lbl`, inner], {
       heightMode: "hug",
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FCA5A5" },
+      border: { style: "solid", color: "#FCA5A5", top: "1px", right: "1px", bottom: "1px", left: "1px" },
       backgroundColor: "#FFF",
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "E2",
     "layout"
@@ -579,9 +574,9 @@ chapterHeader(
   );
   addBlock(
     layout(id, "lt-ch1-e", "vertical", [`${id}-lbl`, inner], {
-      border: { mode: "unified", width: "1px", style: "solid", color: "#FCA5A5" },
+      border: { style: "solid", color: "#FCA5A5", top: "1px", right: "1px", bottom: "1px", left: "1px" },
       backgroundColor: "#FFF",
-      padding: { mode: "unified", unified: "8px" },
+      padding: { top: "8px", right: "8px", bottom: "8px", left: "8px" },
     }),
     "E3",
     "layout"
@@ -789,7 +784,7 @@ const hugDemo = layout("lt-ch5-hug-demo", "lt-ch5-hug", "horizontal", ["lt-5b-a"
   widthMode: "hug",
   heightMode: "hug",
   backgroundColor: "#E7E5E4",
-  border: { mode: "unified", width: "1px", style: "solid", color: "#D6D3D1" },
+  border: { style: "solid", color: "#D6D3D1", top: "1px", right: "1px", bottom: "1px", left: "1px" },
 });
 addBlock(hugDemo, "hug 父", "layout");
 addBlock(chip("lt-5b-a", "lt-ch5-hug-demo", "hug A", "#78716C"), "A");
@@ -837,7 +832,7 @@ const tokenPresets = {
       label: "测试预设",
       description: "最小 token",
       tokens: {
-        colors: { primary: "#111827", secondary: "#6B7280", surface: "#FFFFFF" },
+        colors: { primary: "#111827", accent: "#1A1A1A", secondary: "#6B7280", surface: "#FFFFFF" },
         spacing: { section: "12px", gap: "8px", pageInline: "12px" },
         typography: { display: "24px", h1: "18px", body: "13px", caption: "12px" },
         radius: { panel: "4px", cta: "4px" },

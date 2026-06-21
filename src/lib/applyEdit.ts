@@ -2,10 +2,7 @@ import type { EmailBlock, EmailPayload, EmailTemplate } from "../types/email";
 import { ensureLayoutContentAlignPersisted } from "./layoutContentAlign";
 import { deleteAtPath, getAtPath, setAtPath } from "./paths";
 import { interpolateTextValue } from "./interpolateText";
-import {
-  coercePaddingOnContainer,
-  isPaddingFieldSubPath,
-} from "./spacingValue";
+import { coerceBoxModelOnContainer } from "./boxModelStorage";
 
 function clone<T>(v: T): T {
   return structuredClone(v);
@@ -33,9 +30,10 @@ export function applyBlockField(
     }
   }
 
-  const t = clone(template);
-  const b = t.blocks[blockId];
-  if (!b) return { template, payload };
+  // 结构共享：blocks 为扁平 map（children 以 id 引用），改一个 block 无需深拷贝整树。
+  // 仅浅拷贝模板与 blocks map，并深拷贝被改的那个 block，其余 block 复用原引用。
+  const b = clone(block);
+  const t: EmailTemplate = { ...template, blocks: { ...template.blocks, [blockId]: b } };
 
   const [root, ...rest] = bindPath.split(".");
   const sub = rest.join(".");
@@ -44,9 +42,7 @@ export function applyBlockField(
       if (value === null) deleteAtPath(b.props as Record<string, unknown>, sub);
       else setAtPath(b.props as Record<string, unknown>, sub, value);
     } else Object.assign(b.props, value as object);
-    if (isPaddingFieldSubPath(sub) || (b.props as Record<string, unknown>).padding !== undefined) {
-      coercePaddingOnContainer(b.props as Record<string, unknown>);
-    }
+    coerceBoxModelOnContainer(b.props as Record<string, unknown>, sub);
     if (b.type === "layout" && sub === "direction") {
       ensureLayoutContentAlignPersisted(b);
     }
@@ -56,9 +52,7 @@ export function applyBlockField(
       if (value === null) deleteAtPath(b.wrapperStyle as Record<string, unknown>, sub);
       else setAtPath(b.wrapperStyle as Record<string, unknown>, sub, value);
     } else Object.assign(b.wrapperStyle, value as object);
-    if (isPaddingFieldSubPath(sub) || b.wrapperStyle.padding !== undefined) {
-      coercePaddingOnContainer(b.wrapperStyle as Record<string, unknown>);
-    }
+    coerceBoxModelOnContainer(b.wrapperStyle as Record<string, unknown>, sub);
   }
 
   return { template: t, payload };
@@ -69,16 +63,19 @@ export function applyRootCanvasField(
   bindPath: string,
   value: unknown
 ): EmailTemplate {
-  const t = clone(template);
-  const root = t.blocks[t.rootBlockId];
-  if (!root || root.type !== "emailRoot") return t;
+  // 结构共享：仅深拷贝根 block，其余复用原引用。
+  const originalRoot = template.blocks[template.rootBlockId];
+  if (!originalRoot || originalRoot.type !== "emailRoot") return template;
+  const root = clone(originalRoot);
+  const t: EmailTemplate = {
+    ...template,
+    blocks: { ...template.blocks, [template.rootBlockId]: root },
+  };
   const [rootKey, ...rest] = bindPath.split(".");
   if (rootKey !== "props") return t;
   const sub = rest.join(".");
   if (sub) setAtPath(root.props as Record<string, unknown>, sub, value);
-  if (isPaddingFieldSubPath(sub) || root.props.padding !== undefined) {
-    coercePaddingOnContainer(root.props as Record<string, unknown>);
-  }
+  coerceBoxModelOnContainer(root.props as Record<string, unknown>, sub);
   return t;
 }
 

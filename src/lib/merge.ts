@@ -52,7 +52,8 @@ export function mergeTemplatePayload(
                   (item): item is Record<string, unknown> =>
                     item !== null && typeof item === "object" && !Array.isArray(item)
                 ),
-                slotDef.itemVisibility
+                slotDef.itemVisibility,
+                slotDef
               )
             : rawSlotVal;
         const slotVal =
