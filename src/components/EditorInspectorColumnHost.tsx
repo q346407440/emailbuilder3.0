@@ -12,6 +12,7 @@ import type { ExpandedTheme } from "../types/theme";
 import type { RepeatPreviewModel } from "../repeat-binding-contract";
 
 type Props = {
+  layoutPrewarmed?: boolean;
   template: EmailTemplate;
   payload: EmailPayload;
   previewPayload: EmailPayload;
@@ -71,6 +72,7 @@ export const EditorInspectorColumnHost = memo(function EditorInspectorColumnHost
   return (
     <WorkbenchSideSlot
       activeView={workbenchView}
+      layoutPrewarmed={props.layoutPrewarmed}
       blockPane={
         <Inspector
           template={props.template}

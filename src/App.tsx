@@ -99,6 +99,8 @@ import { CanvasInsertBlockModal } from "./components/ui/CanvasInsertBlockModal";
 import { SaveSectionModal } from "./components/ui/SaveSectionModal";
 import { ShopSectionModal } from "./components/ui/ShopSectionModal";
 import { useEmailDiskPersist } from "./hooks/useEmailDiskPersist";
+import { useEditorLayoutPrewarm } from "./hooks/useEditorLayoutPrewarm";
+import { prewarmEditorInspectorLookups } from "./lib/editorIdlePrewarm";
 import {
   emailDataSyncEditorSnapshot,
   shouldShowEmailDataSyncToast,
@@ -1013,6 +1015,36 @@ export default function App() {
     emailLoadBusy || layoutVariantBusy
       ? previewModel
       : (deferredResolvedPreview?.previewModel ?? null);
+
+  const editorLayoutPrewarmReady = Boolean(
+    template && previewModel && !emailLoadBusy && !layoutVariantBusy
+  );
+  const layoutPrewarmed = useEditorLayoutPrewarm(editorLayoutPrewarmReady);
+
+  useEffect(() => {
+    if (!layoutPrewarmed || !template || !previewModel) return;
+
+    let cancelled = false;
+    const schedule =
+      typeof requestIdleCallback === "function"
+        ? (cb: () => void) => requestIdleCallback(cb, { timeout: 3000 })
+        : (cb: () => void) => window.setTimeout(cb, 400);
+
+    const cancel =
+      typeof cancelIdleCallback === "function"
+        ? (id: number) => cancelIdleCallback(id)
+        : (id: number) => window.clearTimeout(id);
+
+    const id = schedule(() => {
+      if (cancelled) return;
+      prewarmEditorInspectorLookups(template, previewModel);
+    });
+
+    return () => {
+      cancelled = true;
+      cancel(id);
+    };
+  }, [layoutPrewarmed, template, previewModel]);
 
   const validationIssues = useMemo(() => {
     if (!deferredTemplate || !deferredPayload) return [];
@@ -2161,7 +2193,7 @@ export default function App() {
               role="tab"
               aria-selected={workbenchView === view}
               className={`topbar__view-btn ${workbenchView === view ? "topbar__view-btn--active" : ""}`}
-              onClick={() => setWorkbenchView(view)}
+              onClick={() => startTransition(() => setWorkbenchView(view))}
             >
               {label}
             </button>
@@ -2285,6 +2317,7 @@ export default function App() {
           </div>
         ) : null}
         <EditorLeftPanelHost
+          layoutPrewarmed={layoutPrewarmed}
           template={template}
           payload={payload}
           previewModel={previewModel}
@@ -2326,7 +2359,7 @@ export default function App() {
                 }
                 aria-pressed={canvasPreviewViewport === "desktop"}
                 title="桌面预览（600px 视窗）"
-                onClick={() => setCanvasPreviewViewport("desktop")}
+                onClick={() => startTransition(() => setCanvasPreviewViewport("desktop"))}
               >
                 桌面
               </button>
@@ -2339,7 +2372,7 @@ export default function App() {
                 }
                 aria-pressed={canvasPreviewViewport === "mobile"}
                 title="移动预览（375px 视窗）"
-                onClick={() => setCanvasPreviewViewport("mobile")}
+                onClick={() => startTransition(() => setCanvasPreviewViewport("mobile"))}
               >
                 移动
               </button>
@@ -2403,6 +2436,7 @@ export default function App() {
           />
         </section>
         <EditorInspectorColumnHost
+          layoutPrewarmed={layoutPrewarmed}
           template={template}
           payload={payload}
           previewPayload={previewPayload!}

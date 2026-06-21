@@ -11,6 +11,7 @@ import { WorkspaceBlockLeftPanel } from "./WorkspaceBlockLeftPanel";
 import { useEditorUiActions, useEditorUiSelector } from "../editor-ui/react";
 
 type Props = {
+  layoutPrewarmed?: boolean;
   template: EmailTemplate;
   payload: EmailPayload;
   previewModel: RepeatPreviewModel | null;
@@ -45,6 +46,7 @@ export const EditorLeftPanelHost = memo(function EditorLeftPanelHost(props: Prop
   return (
     <WorkbenchSideSlot
       activeView={workbenchView}
+      layoutPrewarmed={props.layoutPrewarmed}
       blockPane={
         props.previewModel ? (
           <WorkspaceBlockLeftPanel

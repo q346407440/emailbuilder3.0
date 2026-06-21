@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Tabs } from "@shoplazza/sds";
+import { Tabs } from "antd";
 
 /** 与属性面板「内容 / 样式 / 布局 / 列表 / 显隐」栏对应的受控 key */
 export type InspectorMainTab = "content" | "style" | "layout" | "list" | "visibility";
@@ -7,19 +7,16 @@ export type InspectorMainTab = "content" | "style" | "layout" | "list" | "visibi
 type Props = {
   active: InspectorMainTab;
   onChange: (tab: InspectorMainTab) => void;
-  /** 与折扣后台「全部 / 未开始 / 进行中」一致：SDS Tabs 顶栏 + 底部选中墨条（取样 flashclothing 折扣活动页） */
   contentPane: ReactNode;
   stylePane: ReactNode;
   layoutPane: ReactNode;
-  /** 数据组绑定（列表 repeat / 对象映射）：仅当选中区块处于可配置宿主上下文时展示。 */
   listPane?: ReactNode;
-  /** 仅普通 block 展示；邮件根节点不需要显隐配置。 */
   visibilityPane?: ReactNode;
 };
 
 /**
- * 属性面板专用 Tabs：封装 @shoplazza/sds 的 Tabs，统一样式类名便于与工作台对齐。
- * destroyInactiveTabPane=false：切换 Tab 时保留面板挂载状态（如富文本编辑器）。
+ * 属性面板专用 Tabs：封装 Ant Design Tabs，统一样式类名便于与工作台对齐。
+ * destroyOnHidden=false：切换 Tab 时保留面板挂载状态（如富文本编辑器）。
  */
 export function AdminInspectorTabs({
   active,
@@ -30,33 +27,55 @@ export function AdminInspectorTabs({
   listPane,
   visibilityPane,
 }: Props) {
+  const items = [
+    {
+      key: "content",
+      label: "内容",
+      forceRender: true,
+      children: <div className="inspector-tab-panel">{contentPane}</div>,
+    },
+    {
+      key: "style",
+      label: "样式",
+      forceRender: true,
+      children: <div className="inspector-tab-panel">{stylePane}</div>,
+    },
+    {
+      key: "layout",
+      label: "布局",
+      forceRender: true,
+      children: <div className="inspector-tab-panel">{layoutPane}</div>,
+    },
+    ...(listPane
+      ? [
+          {
+            key: "list",
+            label: "数据组",
+            forceRender: true,
+            children: <div className="inspector-tab-panel">{listPane}</div>,
+          },
+        ]
+      : []),
+    ...(visibilityPane
+      ? [
+          {
+            key: "visibility",
+            label: "显隐",
+            forceRender: true,
+            children: <div className="inspector-tab-panel">{visibilityPane}</div>,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <Tabs
       className="admin-inspector-tabs"
       activeKey={active}
       onChange={(key) => onChange(key as InspectorMainTab)}
-      destroyInactiveTabPane={false}
+      destroyOnHidden={false}
       size="small"
-    >
-      <Tabs.TabPane tab="内容" key="content">
-        <div className="inspector-tab-panel">{contentPane}</div>
-      </Tabs.TabPane>
-      <Tabs.TabPane tab="样式" key="style">
-        <div className="inspector-tab-panel">{stylePane}</div>
-      </Tabs.TabPane>
-      <Tabs.TabPane tab="布局" key="layout">
-        <div className="inspector-tab-panel">{layoutPane}</div>
-      </Tabs.TabPane>
-      {listPane ? (
-        <Tabs.TabPane tab="数据组" key="list">
-          <div className="inspector-tab-panel">{listPane}</div>
-        </Tabs.TabPane>
-      ) : null}
-      {visibilityPane ? (
-        <Tabs.TabPane tab="显隐" key="visibility">
-          <div className="inspector-tab-panel">{visibilityPane}</div>
-        </Tabs.TabPane>
-      ) : null}
-    </Tabs>
+      items={items}
+    />
   );
 }
