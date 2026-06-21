@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import type { TokenPresets } from "../types/tokenPreset";
 import { logicalDeleteConfirmOptions } from "../lib/logicalDeleteConfirm";
 import { tokenPresetFieldLabelZh, tokenPresetFamilyTitleZh, tokenPresetScaleTitleKnown } from "../lib/tokenPresetFieldLabels";
@@ -36,7 +36,7 @@ function tokenPresetSectionLayout(family: string): "1col" | "2col" | "4col" {
   return "1col";
 }
 
-export function TokenPresetInspector({
+function TokenPresetInspectorImpl({
   tokenPresets,
   dirty,
   listSelection,
@@ -251,3 +251,5 @@ export function TokenPresetInspector({
     </aside>
   );
 }
+
+export const TokenPresetInspector = memo(TokenPresetInspectorImpl);

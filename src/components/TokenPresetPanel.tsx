@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { TokenPresets } from "../types/tokenPreset";
 import { GlobalTokenPresetCreateModal } from "./GlobalTokenPresetCreateModal";
 import { SidebarNavRow } from "./ui/SidebarNavRow";
@@ -15,7 +15,7 @@ type Props = {
   localValidationHint?: string;
 };
 
-export function TokenPresetPanel({
+function TokenPresetPanelImpl({
   tokenPresets,
   globalTokenPresets,
   activeListKey,
@@ -109,3 +109,5 @@ export function TokenPresetPanel({
     </>
   );
 }
+
+export const TokenPresetPanel = memo(TokenPresetPanelImpl);

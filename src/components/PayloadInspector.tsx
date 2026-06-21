@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { memo, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import {
   collectPayloadVariableSlots,
@@ -522,7 +522,7 @@ function SlotEditor({
   );
 }
 
-export function PayloadInspector({
+function PayloadInspectorImpl({
   template,
   payload,
   slotDrafts = {},
@@ -794,3 +794,5 @@ function PayloadInspectorPanelActive({
     </aside>
   );
 }
+
+export const PayloadInspector = memo(PayloadInspectorImpl);

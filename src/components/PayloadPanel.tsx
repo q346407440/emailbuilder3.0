@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import type { EmailPayload, EmailTemplate } from "../types/email";
 import { collectPayloadVariableSlots } from "../lib/payloadSlots";
 import { payloadSlotValueTypeLabel } from "../payload-contract/value-type-labels";
@@ -51,7 +51,7 @@ function slotMeta(
   return `${type} · ${structureLabel} · ${slot.bindings.length} 处`;
 }
 
-export function PayloadPanel({
+function PayloadPanelImpl({
   template,
   payload,
   selectedSlotId,
@@ -64,7 +64,10 @@ export function PayloadPanel({
 }: Props) {
   const [sourceModalOpen, setSourceModalOpen] = useState(false);
 
-  const slots = collectPayloadVariableSlots(template, payload);
+  const slots = useMemo(
+    () => collectPayloadVariableSlots(template, payload),
+    [template, payload]
+  );
   const activeSlotId = selectedSlotId ?? slots[0]?.slotId ?? null;
 
   async function commitNewVariable(nextPayload: EmailPayload, slotId: string) {
@@ -169,3 +172,6 @@ export function PayloadPanel({
     </>
   );
 }
+
+/** 变量列表侧栏：App 频繁重渲染时不应连带重算全模板槽扫描。 */
+export const PayloadPanel = memo(PayloadPanelImpl);

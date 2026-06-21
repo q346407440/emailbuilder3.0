@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { message } from "@shoplazza/sds";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toastError, toastInfo, toastSuccess, toastWarning } from "../lib/appToast";
 import type {
-  BorderRadiusValue,
-  BorderValue,
   EmailBlock,
   EmailPayload,
   EmailTemplate,
   RepeatFieldMapping,
-  SpacingValue,
 } from "../types/email";
 import { applyBlockField, bindingMeta } from "../lib/applyEdit";
+import { boxModelSideDisplayValue, ensureFlatSpacing, normalizeBorderRadiusValueForStorage, normalizeBorderValueForStorage } from "../lib/boxModelFlat";
 import { applyBackgroundImageFitChange } from "../lib/backgroundImageFitEdit";
 import { backgroundImageFitUsesPosition } from "../render-defaults-contract/backgroundImageFitSemantics";
 import { toUserFacingErrorMessage } from "../lib/userFacingError";
@@ -26,6 +24,7 @@ import {
   ShopInput,
   ShopPrimaryButton,
   ShopSecondaryButton,
+  ShopSegmented,
   ShopSelect,
   ShopUnitInput,
 } from "./ui/ShopFormControls";
@@ -54,6 +53,7 @@ import {
 } from "./BuiltinCollectionRulesFields";
 import { patchPayloadBuiltinCollectionSortPolicy } from "../lib/collectionBuiltinRulesPayload";
 import { patchPayloadCollectionSlot } from "../lib/collectionDataSource";
+import { collectionSlotAllowsItemVisibility } from "../lib/collectionItemVisibility";
 import {
   applyCollectionFixedLengthChange,
   collectionFixedLengthEditability,
@@ -86,10 +86,12 @@ import type { TextBody } from "../types/email";
 import type { ExpandedTheme } from "../types/theme";
 import type { TokenPresets } from "../types/tokenPreset";
 import type { ReactNode } from "react";
-import { AdminInspectorTabs, type InspectorMainTab } from "./AdminInspectorTabs";
+import type { InspectorMainTab } from "./AdminInspectorTabs";
+import { InspectorBlockTabsShell } from "./inspector/InspectorBlockTabsShell";
 import {
   buildInspectorTabAvailability,
   resolveInspectorTabForContext,
+  shouldShowInspectorRepeatRegionPanel,
 } from "../lib/inspectorTabPreference";
 import { InspectorBlockNameField } from "./InspectorBlockNameField";
 import { saveBlockMasterInsertDefault } from "../api/client";
@@ -152,6 +154,10 @@ import { getAtPath } from "../lib/paths";
 import { collectPayloadVariableSlots } from "../lib/payloadSlots";
 import { layoutVariantTemplatePathHint } from "../lib/layoutVariantPathHint";
 import {
+  isEmailRootInspectorPanel,
+  type InspectorPanelTarget,
+} from "../lib/inspectorPanelTarget";
+import {
   listRepeatMappableContentBindPaths,
   repeatMappingTargetLabel,
 } from "../lib/repeatMappableContentBindPaths";
@@ -169,6 +175,8 @@ type Props = {
   template: EmailTemplate;
   payload: EmailPayload;
   selectedBlockRef: VirtualBlockRef | null;
+  /** 右侧面板编辑对象（空选中时仍为邮件根，与 selectedBlockRef 解耦） */
+  panelTarget: InspectorPanelTarget;
   previewModel: RepeatPreviewModel | null;
   onUpdate: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onTemplateChange: (nextTemplate: EmailTemplate, options?: TemplateChangeOptions) => void;
@@ -194,9 +202,7 @@ type Props = {
 
 type TextBlock = Extract<EmailBlock, { type: "text" }>;
 type BorderStyleOption = "solid" | "dashed" | "dotted";
-type BorderModeOption = BorderValue["mode"];
-type BorderRadiusModeOption = BorderRadiusValue["mode"];
-type SpacingModeOption = SpacingValue["mode"];
+type WrapperDimensionMode = "hug" | "fill" | "fixed";
 type RepeatCollectionCandidate = {
   key: string;
   slotId: string;
@@ -477,169 +483,15 @@ function normalizeBorderStyle(value: unknown): BorderStyleOption {
   return "solid";
 }
 
-function recordOrNull(value: unknown): Record<string, unknown> | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  return value as Record<string, unknown>;
-}
-
-function readString(value: unknown, fallback: string): string {
-  return typeof value === "string" && value.trim() ? value : fallback;
-}
-
-function readBorderSideWidth(value: unknown, fallback = "0"): string {
-  const record = recordOrNull(value);
-  return readString(record?.width, fallback);
-}
-
-function normalizeBorderValue(raw: unknown): BorderValue {
-  const record = recordOrNull(raw);
-  const style = normalizeBorderStyle(record?.style);
-  const color = readString(record?.color, TRANSPARENT_BORDER_COLOR);
-  if (record?.mode === "custom") {
-    return {
-      mode: "custom",
-      style,
-      color,
-      top: { width: readBorderSideWidth(record.top) },
-      right: { width: readBorderSideWidth(record.right) },
-      bottom: { width: readBorderSideWidth(record.bottom) },
-      left: { width: readBorderSideWidth(record.left) },
-    };
-  }
-  return {
-    mode: "unified",
-    width: readString(record?.width, "0"),
-    style,
-    color,
-  };
-}
-
-function borderWidthForUnified(border: BorderValue): string {
-  if (border.mode === "unified") return border.width;
-  const widths = [border.top.width, border.right.width, border.bottom.width, border.left.width];
-  return widths.find((width) => width.trim() && width.trim() !== "0" && width.trim() !== "0px") ?? widths[0] ?? "0";
-}
-
-function borderValueForMode(raw: unknown, mode: BorderModeOption): BorderValue {
-  const current = normalizeBorderValue(raw);
-  if (mode === "custom") {
-    const width = borderWidthForUnified(current);
-    return {
-      mode,
-      style: current.style,
-      color: current.color,
-      top: { width: current.mode === "custom" ? current.top.width : width },
-      right: { width: current.mode === "custom" ? current.right.width : width },
-      bottom: { width: current.mode === "custom" ? current.bottom.width : width },
-      left: { width: current.mode === "custom" ? current.left.width : width },
-    };
-  }
-  return {
-    mode,
-    width: borderWidthForUnified(current),
-    style: current.style,
-    color: current.color,
-  };
-}
-
-function normalizeBorderRadiusValue(raw: unknown): BorderRadiusValue {
-  const record = recordOrNull(raw);
-  if (record?.mode === "corners") {
-    return {
-      mode: "corners",
-      topLeft: readString(record.topLeft, "0"),
-      topRight: readString(record.topRight, "0"),
-      bottomRight: readString(record.bottomRight, "0"),
-      bottomLeft: readString(record.bottomLeft, "0"),
-    };
-  }
-  return {
-    mode: "unified",
-    radius: readString(record?.radius, "0"),
-  };
-}
-
-function radiusForUnified(radius: BorderRadiusValue): string {
-  if (radius.mode === "unified") return radius.radius;
-  const radii = [radius.topLeft, radius.topRight, radius.bottomRight, radius.bottomLeft];
-  return radii.find((value) => value.trim() && value.trim() !== "0" && value.trim() !== "0px") ?? radii[0] ?? "0";
-}
-
-function borderRadiusValueForMode(raw: unknown, mode: BorderRadiusModeOption): BorderRadiusValue {
-  const current = normalizeBorderRadiusValue(raw);
-  if (mode === "corners") {
-    const radius = radiusForUnified(current);
-    return {
-      mode,
-      topLeft: current.mode === "corners" ? current.topLeft : radius,
-      topRight: current.mode === "corners" ? current.topRight : radius,
-      bottomRight: current.mode === "corners" ? current.bottomRight : radius,
-      bottomLeft: current.mode === "corners" ? current.bottomLeft : radius,
-    };
-  }
-  return {
-    mode,
-    radius: radiusForUnified(current),
-  };
-}
-
-function normalizeSpacingValue(raw: unknown): SpacingValue {
-  const record = recordOrNull(raw);
-  if (record?.mode === "separate") {
-    return {
-      mode: "separate",
-      top: readString(record.top, "0"),
-      right: readString(record.right, "0"),
-      bottom: readString(record.bottom, "0"),
-      left: readString(record.left, "0"),
-    };
-  }
-  return {
-    mode: "unified",
-    unified: readString(record?.unified, "0"),
-  };
-}
-
-function spacingSideToInputValue(value: string | ThemeRef | undefined): string {
-  if (value === undefined) return "0";
-  if (typeof value === "string") return value;
-  return value.$themeRef;
-}
-
-function spacingForUnified(spacing: SpacingValue): string {
-  if (spacing.mode === "unified") return spacingSideToInputValue(spacing.unified);
-  const values = [spacing.top, spacing.right, spacing.bottom, spacing.left].filter(
-    (value): value is string => typeof value === "string"
-  );
-  return values.find((value) => value.trim() && value.trim() !== "0" && value.trim() !== "0px") ?? values[0] ?? "0";
-}
-
-function spacingValueForMode(raw: unknown, mode: SpacingModeOption): SpacingValue {
-  const current = normalizeSpacingValue(raw);
-  if (mode === "separate") {
-    const unified = spacingForUnified(current);
-    return {
-      mode,
-      top: current.mode === "separate" ? current.top : unified,
-      right: current.mode === "separate" ? current.right : unified,
-      bottom: current.mode === "separate" ? current.bottom : unified,
-      left: current.mode === "separate" ? current.left : unified,
-    };
-  }
-  return {
-    mode,
-    unified: spacingForUnified(current),
-  };
-}
-
 function InspectorEmptyTabHint() {
   return <p className="inspector__muted">当前分类下暂无可编辑项。</p>;
 }
 
-export function Inspector({
+function InspectorImpl({
   template,
   payload,
   selectedBlockRef,
+  panelTarget,
   previewModel,
   onUpdate,
   onTemplateChange,
@@ -658,7 +510,11 @@ export function Inspector({
   const effectivePayload = previewPayload ?? payload;
   const selectedBlockId = selectedBlockRef ? resolvePhysicalBlockId(selectedBlockRef) : null;
   const root = template.blocks[template.rootBlockId];
-  const canvasMode = selectedBlockRef === null;
+  const emailRootPanel = isEmailRootInspectorPanel(panelTarget);
+  const hasBlockSelection = selectedBlockRef !== null;
+  const panelBlockId = panelTarget.blockId;
+  const panelBlock = template.blocks[panelBlockId];
+  const showRootInspectorUi = emailRootPanel || panelBlock?.type === "emailRoot";
   /** 切换区块时尽量保持上次选中的 Tab；当前区块无该 Tab 时回退「样式」 */
   const [inspectorTab, setInspectorTab] = useState<InspectorMainTab>("style");
   const preferredInspectorTabRef = useRef<InspectorMainTab>("style");
@@ -682,29 +538,15 @@ export function Inspector({
   const [textVarPillModalMeta, setTextVarPillModalMeta] = useState<TextBodyVariableRunMeta | null>(null);
   const [savingInsertDefault, setSavingInsertDefault] = useState(false);
   const inspectorTabContext = useMemo(() => {
-    const rootBlock = template.blocks[template.rootBlockId];
-    if (!rootBlock) {
-      return buildInspectorTabAvailability(true, "emailRoot", false);
-    }
-    const activeBlock = canvasMode
-      ? rootBlock
-      : selectedBlockId
-        ? template.blocks[selectedBlockId]
-        : undefined;
+    const activeBlock = panelBlock;
     if (!activeBlock) {
-      return buildInspectorTabAvailability(canvasMode, "layout", false);
+      return buildInspectorTabAvailability(showRootInspectorUi, "layout", false);
     }
-    const resolvedRepeat = canvasMode
-      ? null
-      : selectedBlockRef
-        ? resolveRepeatContextForRef(template, selectedBlockRef)
-        : null;
-    const showRepeatRegionPanel =
-      Boolean(resolvedRepeat) || (!canvasMode && activeBlock.type !== "emailRoot");
-    return buildInspectorTabAvailability(canvasMode, activeBlock.type, showRepeatRegionPanel);
-  }, [canvasMode, selectedBlockRef, template]);
+    const showRepeatRegionPanel = shouldShowInspectorRepeatRegionPanel(activeBlock, hasBlockSelection);
+    return buildInspectorTabAvailability(showRootInspectorUi, activeBlock.type, showRepeatRegionPanel);
+  }, [showRootInspectorUi, panelBlockId, panelBlock, selectedBlockRef, template]);
 
-  const inspectorBlockKey = canvasMode ? "__canvas__" : (selectedBlockId ?? "__none__");
+  const inspectorBlockKey = emailRootPanel ? "__email-root-panel__" : panelBlockId;
 
   const setInspectorTabPersist = useCallback((tab: InspectorMainTab) => {
     preferredInspectorTabRef.current = tab;
@@ -753,14 +595,14 @@ export function Inspector({
     [template, payload]
   );
 
-  const block = canvasMode ? root : selectedBlockId ? template.blocks[selectedBlockId] : undefined;
+  const block = panelBlock;
 
   const repeatExpansionGroupCount = useMemo(() => {
     if (!previewModel || !selectedBlockRef || selectedBlockRef.kind !== "repeat-item") return 0;
     return countRepeatExpansionGroupMembers(previewModel, selectedBlockRef);
   }, [previewModel, selectedBlockRef]);
 
-  const ownRepeatForFixedLength = !canvasMode && block ? block.repeat ?? null : null;
+  const ownRepeatForFixedLength = hasBlockSelection && block ? block.repeat ?? null : null;
   const ownRepeatFixedLengthEdit = useMemo(() => {
     if (!ownRepeatForFixedLength) return null;
     const editability = collectionFixedLengthEditability(payload, ownRepeatForFixedLength.slotId, {
@@ -783,7 +625,11 @@ export function Inspector({
     emailKey && layoutVariantId
       ? layoutVariantTemplatePathHint(emailKey, layoutVariantId)
       : null;
-  const panelLabel = canvasMode ? "画布设置（邮件根节点）" : "区块设置";
+  const panelLabel = emailRootPanel
+    ? "画布设置（邮件根节点）"
+    : block.type === "emailRoot"
+      ? "邮件根节点"
+      : "区块设置";
   const buildCopyLocatorText = () => {
     if (!templatePathHint) return "";
     const lines = [
@@ -799,31 +645,31 @@ export function Inspector({
   const onCopyLocator = async () => {
     const text = buildCopyLocatorText();
     if (!text) {
-      message.error("当前缺少模板定位信息，无法复制");
+      toastError("当前缺少模板定位信息，无法复制");
       return;
     }
     try {
       await navigator.clipboard.writeText(text);
-      message.success("已复制定位信息");
+      toastSuccess("已复制定位信息");
     } catch {
-      message.error("复制失败，请手动复制");
+      toastError("复制失败，请手动复制");
     }
   };
 
   const resolvedRepeatContext =
-    canvasMode || !selectedBlockRef
+    !selectedBlockRef
       ? null
       : resolveRepeatContextForRef(template, selectedBlockRef);
   const repeatCollectionCandidates = buildRepeatCollectionCandidates(template, payload);
   const objectBindCandidates = buildObjectBindCandidates(template, payload);
   const currentRepeat = resolvedRepeatContext?.repeat ?? null;
   // 绑定目标 = 当前选中的可作宿主容器自身（self-repeat：绑哪个容器复制哪个）。
-  const repeatBindHostId = !canvasMode && isRepeatHostBlock(block) ? id : "";
-  const ownRepeat = !canvasMode ? block.repeat ?? null : null;
-  const ownObjectBind = !canvasMode ? block.objectBind ?? null : null;
+  const repeatBindHostId = hasBlockSelection && isRepeatHostBlock(block) ? id : "";
+  const ownRepeat = hasBlockSelection ? block.repeat ?? null : null;
+  const ownObjectBind = hasBlockSelection ? block.objectBind ?? null : null;
   const repeatBindPrototypeChildIds = repeatBindHostId ? [repeatBindHostId] : [];
   // 外层 repeat：供「父项子列表」候选；行模板内子块查看绑定时跳过当前列表宿主本身。
-  const enclosingParentRepeat = canvasMode
+  const enclosingParentRepeat = !hasBlockSelection
     ? null
     : findEnclosingParentRepeatBinding(template, id, {
         skipRepeatHostId:
@@ -910,19 +756,17 @@ export function Inspector({
     ? buildRepeatTargetFieldOptions(template, [objectBindHostId])
     : [];
   const objectCandidate = objectBindCandidates.find((c) => c.key === objectSlotId);
-  const objectBindDisabledReason = (() => {
-    if (canvasMode) return "请先在画布中选中要绑定的容器。";
+  const dataGroupEntryEmptyMessage = (() => {
+    if (!hasBlockSelection) return "请先在画布中选中要绑定的容器。";
     if (!objectBindHostId) {
       return "请选中布局容器、栅格或图片区块后再绑定。";
     }
     if (dataGroupEntryCandidates.length === 0) {
       return "当前没有可用的列表或对象变量，请先在数据变量面板添加。";
     }
-    return null;
+    return undefined;
   })();
-  const objectBindDisabled = Boolean(objectBindDisabledReason);
-  const showRepeatRegionPanel =
-    Boolean(resolvedRepeatContext) || (!canvasMode && block.type !== "emailRoot");
+  const showRepeatRegionPanel = shouldShowInspectorRepeatRegionPanel(block, hasBlockSelection);
 
   const resetRepeatBindDrafts = (candidate: RepeatCollectionCandidate | undefined) => {
     if (!candidate || !repeatBindHostId) {
@@ -1086,11 +930,11 @@ export function Inspector({
   const applyObjectFromModal = () => {
     const candidate = objectCandidate;
     if (!candidate) {
-      message.error("请选择一个对象变量。");
+      toastError("请选择一个对象变量。");
       return;
     }
     if (!objectBindHostId) {
-      message.error("无法确定绑定容器，请先在画布中选中布局容器、栅格或图片区块。");
+      toastError("无法确定绑定容器，请先在画布中选中布局容器、栅格或图片区块。");
       return;
     }
     try {
@@ -1109,26 +953,26 @@ export function Inspector({
         })
       );
       setObjectModalOpen(false);
-      message.success("对象绑定已应用");
+      toastSuccess("对象绑定已应用");
     } catch (error) {
-      message.error(toUserFacingErrorMessage(error, "对象绑定失败，请检查所选容器后重试。"));
+      toastError(toUserFacingErrorMessage(error, "对象绑定失败，请检查所选容器后重试。"));
     }
   };
 
   const removeObjectBind = () => {
     if (!objectBindHostId || !ownObjectBind) return;
     onTemplateChange(removeObjectRegionBinding(template, objectBindHostId));
-    message.success("对象绑定已解除");
+    toastSuccess("对象绑定已解除");
   };
 
   const applyRepeatFromModal = () => {
     const candidate = repeatCandidate;
     if (!candidate) {
-      message.error("请选择一个列表变量。");
+      toastError("请选择一个列表变量。");
       return;
     }
     if (!repeatBindHostId) {
-      message.error("无法确定列表行模板，请先在画布中选中要循环的容器。");
+      toastError("无法确定列表行模板，请先在画布中选中要循环的容器。");
       return;
     }
     try {
@@ -1169,9 +1013,9 @@ export function Inspector({
         )
       );
       setRepeatModalOpen(false);
-      message.success("列表绑定已应用");
+      toastSuccess("列表绑定已应用");
     } catch (error) {
-      message.error(toUserFacingErrorMessage(error, "列表绑定失败，请检查所选容器后重试。"));
+      toastError(toUserFacingErrorMessage(error, "列表绑定失败，请检查所选容器后重试。"));
     }
   };
 
@@ -1191,7 +1035,7 @@ export function Inspector({
     });
     setRepeatUnbindModalOpen(false);
     setRepeatModalOpen(false);
-    message.success("列表绑定已解除");
+    toastSuccess("列表绑定已解除");
   };
 
   const handleRepeatSlotChange = (slotId: string) => {
@@ -1355,12 +1199,18 @@ export function Inspector({
               editLabel="编辑绑定"
               onUnbind={removeRepeat}
               unbindTitle="选择解除方式：保留全部行，或仅保留行模板"
-              onItemVisibilityChange={(itemVisibility) => {
-                onUpdate({
-                  template,
-                  payload: patchPayloadCollectionSlot(payload, ownRepeat.slotId, { itemVisibility }),
-                });
-              }}
+              onItemVisibilityChange={
+                collectionSlotAllowsItemVisibility(payload?.slots?.[ownRepeat.slotId])
+                  ? (itemVisibility) => {
+                      onUpdate({
+                        template,
+                        payload: patchPayloadCollectionSlot(payload, ownRepeat.slotId, {
+                          itemVisibility,
+                        }),
+                      });
+                    }
+                  : undefined
+              }
               collectionFixedLength={
                 ownRepeatFixedLengthEdit?.fixedLength ??
                 readPayloadCollectionFixedLength(payload, ownRepeat.slotId)
@@ -1386,11 +1236,7 @@ export function Inspector({
                 」的循环行内，可在此绑定该项的子列表或其他列表，实现嵌套复制。
               </p>
             ) : null}
-            <ListBindInspectorEmpty
-              disabled={objectBindDisabled}
-              disabledReason={objectBindDisabledReason ?? undefined}
-              onConfigure={openDataGroupBindConfigure}
-            />
+            <ListBindInspectorEmpty onConfigure={openDataGroupBindConfigure} />
           </>
         ) : currentRepeat ? (
           <RepeatRegionInspectorSummary
@@ -1407,11 +1253,7 @@ export function Inspector({
             editLabel="查看绑定"
           />
         ) : (
-          <ListBindInspectorEmpty
-            disabled={objectBindDisabled}
-            disabledReason={objectBindDisabledReason ?? undefined}
-            onConfigure={openDataGroupBindConfigure}
-          />
+          <ListBindInspectorEmpty onConfigure={openDataGroupBindConfigure} />
         )}
       </InspectorPanelSection>
     ) : null;
@@ -1422,6 +1264,7 @@ export function Inspector({
       visible={dataGroupEntryOpen}
       candidates={dataGroupEntryCandidates}
       selectedKey={dataGroupEntryKey}
+      emptyMessage={dataGroupEntryEmptyMessage}
       onSelectKey={setDataGroupEntryKey}
       onClose={() => setDataGroupEntryOpen(false)}
       onContinue={continueDataGroupEntry}
@@ -1514,12 +1357,12 @@ export function Inspector({
     readInspectorDisplayValue(b, payload, mergedBlockForId(b.id), bindPath, template);
 
   const catalogEntryForSave =
-    canvasMode || block.type === "emailRoot"
+    showRootInspectorUi || block.type === "emailRoot"
       ? undefined
       : resolveCatalogEntryForBlock(template, block);
 
   const onSaveInsertDefault = async () => {
-    if (!catalogEntryForSave || canvasMode) return;
+    if (!catalogEntryForSave || showRootInspectorUi) return;
     setSavingInsertDefault(true);
     try {
       const prototype = extractBlockInsertPrototype({
@@ -1532,9 +1375,9 @@ export function Inspector({
       });
       const result = await saveBlockMasterInsertDefault(catalogEntryForSave.masterId, prototype);
       onBlockMasterSaved?.(result.master);
-      message.success(`「${result.componentLabel}」的插入默认配置已保存`);
+      toastSuccess(`「${result.componentLabel}」的插入默认配置已保存`);
     } catch (e) {
-      message.error(e instanceof Error ? e.message : "保存插入默认配置失败");
+      toastError(e instanceof Error ? e.message : "保存插入默认配置失败");
     } finally {
       setSavingInsertDefault(false);
     }
@@ -1561,7 +1404,7 @@ export function Inspector({
 
   // K：当前容器处于某 repeat 内时，其「可绑定业务内容字段」由列表项映射决定，
   // 一律置灰只读（含尚未映射的字段），不在此手动改源/改值。
-  const repeatContentBindPaths = !canvasMode ? listRepeatMappableContentBindPaths(block) : [];
+  const repeatContentBindPaths = hasBlockSelection ? listRepeatMappableContentBindPaths(block) : [];
   const isRepeatContentLocked = (blockId: string, bindPath: string): boolean =>
     blockId === id && Boolean(resolvedRepeatContext) && repeatContentBindPaths.includes(bindPath);
   const isObjectContentLocked = (blockId: string, bindPath: string): boolean =>
@@ -1684,33 +1527,101 @@ export function Inspector({
     );
   };
 
+  const renderSegmentedInputRow = <T extends string>(opts: {
+    label: string;
+    value: T;
+    hint?: string;
+    onChange: (next: T) => void;
+    options: Array<{ value: T; label: ReactNode; disabled?: boolean; title?: string }>;
+    disabled?: boolean;
+    headerExtra?: ReactNode;
+  }) => {
+    return (
+      <Field label={opts.label} hint={opts.hint} headerExtra={opts.headerExtra}>
+        <ShopSegmented<T>
+          value={opts.value}
+          disabled={opts.disabled}
+          options={opts.options.map((option) => ({
+            value: option.value,
+            disabled: option.disabled,
+            label:
+              option.title && typeof option.label === "string" ? (
+                <span title={option.title}>{option.label}</span>
+              ) : (
+                option.label
+              ),
+          }))}
+          onChange={opts.onChange}
+        />
+      </Field>
+    );
+  };
+
+  const renderWrapperDimensionModeRow = (opts: {
+    label: string;
+    value: WrapperDimensionMode;
+    hint?: string;
+    axis: "width" | "height";
+    disableFill: boolean;
+    onChange: (next: WrapperDimensionMode) => void;
+  }) => {
+    const modeOptions: Array<{ value: WrapperDimensionMode; label: string; title: string }> = [
+      { value: "hug", label: "跟随内容", title: "跟随内容（hug）" },
+      { value: "fill", label: "铺满父级", title: "铺满父级（fill）" },
+      { value: "fixed", label: "自定义", title: "自定义（fixed）" },
+    ];
+    return (
+      <Field label={opts.label} hint={opts.hint}>
+        <ShopSegmented<WrapperDimensionMode>
+          value={opts.value}
+          options={modeOptions.map((option) => ({
+            value: option.value,
+            disabled: option.value === "fill" ? opts.disableFill : false,
+            label: (
+              <span
+                title={
+                  option.value === "fill" && opts.disableFill
+                    ? getFillOptionTitle(opts.axis, opts.disableFill)
+                    : option.title
+                }
+              >
+                {option.label}
+              </span>
+            ),
+          }))}
+          onChange={opts.onChange}
+        />
+      </Field>
+    );
+  };
+
   const visibilityPanel =
     block.type === "emailRoot" ? null : (
       <>
         <h3 className="inspector__subtitle">显示条件</h3>
         <section className="inspector__section">
-          {renderSelectInputRow({
-            label: "显示方式",
-            value: visibilityRule ? "conditional" : "always",
-            hint: "选择条件显示后，仅在条件满足时显示。",
-            onChange: (next) => {
-              if (next === "always") {
-                updateBlockVisibility(undefined);
-                return;
-              }
-              if (visibilityRule) return;
-              const candidate = visibilitySlotCandidates[0];
-              if (!candidate) {
-                message.error("当前没有可用变量，无法配置条件显示。");
-                return;
-              }
-              updateBlockVisibility(createVisibilityRule(candidate));
-            },
-            options: [
-              { value: "always", label: "始终显示" },
-              { value: "conditional", label: "条件显示" },
-            ],
-          })}
+          <Field label="显示方式" hint="选择条件显示后，仅在条件满足时显示。">
+            <ShopSegmented<"always" | "conditional">
+              value={visibilityRule ? "conditional" : "always"}
+              options={[
+                { value: "always", label: "始终显示" },
+                { value: "conditional", label: "条件显示" },
+              ]}
+              onChange={(next) => {
+                if (next === "always") {
+                  updateBlockVisibility(undefined);
+                  return;
+                }
+                if (visibilityRule) return;
+                const candidate = visibilitySlotCandidates[0];
+                if (!candidate) {
+                  toastError("当前没有可用变量，无法配置条件显示。");
+                  return;
+                }
+                updateBlockVisibility(createVisibilityRule(candidate));
+              }}
+            />
+          </Field>
           {visibilityRule ? (
             <>
           <Field
@@ -1769,7 +1680,7 @@ export function Inspector({
               })}
               {visibilityOperatorSpec?.requiresCompareValue ? (
                 visibilityOperatorSpec.compareValueType === "boolean" ? (
-                  renderSelectInputRow({
+                  renderSegmentedInputRow({
                     label: "比较值",
                     value: visibilityRule.compareValue === false ? "false" : "true",
                     onChange: (next) =>
@@ -1816,8 +1727,19 @@ export function Inspector({
       </>
     );
 
+  const wrapBoxModelSection = (title: string | undefined, body: ReactNode) => {
+    if (!title) return body;
+    return (
+      <div className="inspector__box-model-group">
+        <h3 className="inspector__subtitle inspector__subtitle--nested">{title}</h3>
+        <div className="inspector__box-model-fields">{body}</div>
+      </div>
+    );
+  };
+
   const renderBorderEditor = (opts: {
     labelPrefix: string;
+    sectionTitle?: string;
     basePath: string;
     value: unknown;
     getHint?: (path: string) => string | undefined;
@@ -1832,102 +1754,33 @@ export function Inspector({
       opts.bindTargetBlock
         ? isInspectFollowLocked(template, opts.bindTargetBlock, payload, `${opts.basePath}.${suffix}`)
         : opts.controlsDisabled === true;
-    const border = normalizeBorderValue(opts.value);
+    const border = normalizeBorderValueForStorage(opts.value);
     const prefixed = (label: string) => (opts.labelPrefix ? `${opts.labelPrefix}${label}` : label);
     const hint = (path: string) => opts.getHint?.(path) ?? BORDER_DEFAULT_HINT;
     const push = (suffix: string, value: unknown) => opts.onChange(`${opts.basePath}.${suffix}`, value);
-    const onModeChange = (next: string) => {
-      const mode: BorderModeOption = next === "custom" ? "custom" : "unified";
-      opts.onChange(opts.basePath, borderValueForMode(border, mode));
-    };
+    const borderColorDisplay =
+      opts.bindTargetBlock && opts.bindBasePath
+        ? readDisplayColorString(opts.bindTargetBlock, `${opts.bindBasePath}.color`) ||
+          (typeof border.color === "string" ? border.color : border.color.$themeRef)
+        : typeof border.color === "string"
+          ? border.color
+          : border.color.$themeRef;
 
-    return (
+    return wrapBoxModelSection(
+      opts.sectionTitle,
       <>
-        <div
-          className={
-            border.mode === "custom"
-              ? "inspector-field-row inspector-field-row--single-full"
-              : "inspector-field-row"
-          }
-        >
-          {renderSelectInputRow({
-            label: prefixed("描边模式"),
-            value: border.mode,
-            hint: "统一模式用于四边相同；自定义模式可分别设置上、右、下、左宽度。",
-            onChange: onModeChange,
-            disabled: rowLocked("mode"),
-            options: [
-              { value: "unified", label: "四边统一" },
-              { value: "custom", label: "四边独立" },
-            ],
-          })}
-          {border.mode === "unified"
-            ? renderUnitInputRow({
-                label: prefixed("描边宽度"),
-                value: border.width,
-                unit: "px",
-                hint: hint(`${opts.basePath}.width`),
-                onChange: (next) => push("width", next.trim() || "0"),
-                disabled: rowLocked("width"),
-              })
-            : null}
-        </div>
-        {border.mode === "custom" ? (
-          <>
-            <div className="inspector-field-row">
-              {renderUnitInputRow({
-                label: `${BORDER_SIDE_LABELS.top}宽度`,
-                value: border.top.width,
-                unit: "px",
-                hint: hint(`${opts.basePath}.top.width`),
-                onChange: (next) => push("top.width", next.trim() || "0"),
-                disabled: rowLocked("top.width"),
-              })}
-              {renderUnitInputRow({
-                label: `${BORDER_SIDE_LABELS.right}宽度`,
-                value: border.right.width,
-                unit: "px",
-                hint: hint(`${opts.basePath}.right.width`),
-                onChange: (next) => push("right.width", next.trim() || "0"),
-                disabled: rowLocked("right.width"),
-              })}
-            </div>
-            <div className="inspector-field-row">
-              {renderUnitInputRow({
-                label: `${BORDER_SIDE_LABELS.bottom}宽度`,
-                value: border.bottom.width,
-                unit: "px",
-                hint: hint(`${opts.basePath}.bottom.width`),
-                onChange: (next) => push("bottom.width", next.trim() || "0"),
-                disabled: rowLocked("bottom.width"),
-              })}
-              {renderUnitInputRow({
-                label: `${BORDER_SIDE_LABELS.left}宽度`,
-                value: border.left.width,
-                unit: "px",
-                hint: hint(`${opts.basePath}.left.width`),
-                onChange: (next) => push("left.width", next.trim() || "0"),
-                disabled: rowLocked("left.width"),
-              })}
-            </div>
-          </>
-        ) : null}
         <div className="inspector-field-row">
-          {renderSelectInputRow({
-            label: prefixed("描边样式"),
-            value: border.style,
-            hint: hint(`${opts.basePath}.style`),
-            onChange: (next) => push("style", next),
-            disabled: rowLocked("style"),
-            options: BORDER_STYLE_OPTIONS,
-          })}
+          <Field label={prefixed("描边样式")} hint={hint(`${opts.basePath}.style`)}>
+            <ShopSegmented<BorderStyleOption>
+              value={normalizeBorderStyle(border.style)}
+              disabled={rowLocked("style")}
+              options={BORDER_STYLE_OPTIONS}
+              onChange={(next) => push("style", next)}
+            />
+          </Field>
           {renderColorInputRow({
             label: prefixed("描边颜色"),
-            value:
-              opts.bindTargetBlock && opts.bindBasePath
-                ? readDisplayColorString(opts.bindTargetBlock, `${opts.bindBasePath}.color`) ||
-                  border.color
-                : border.color,
+            value: borderColorDisplay,
             hint: hint(`${opts.basePath}.color`),
             onChange: (next) => push("color", next || TRANSPARENT_BORDER_COLOR),
             disabled: rowLocked("color"),
@@ -1937,12 +1790,49 @@ export function Inspector({
                 : undefined,
           })}
         </div>
+        <div className="inspector-field-row">
+          {renderUnitInputRow({
+            label: `${BORDER_SIDE_LABELS.top}宽度`,
+            value: boxModelSideDisplayValue(border.top as string | ThemeRef | undefined),
+            unit: "px",
+            hint: hint(`${opts.basePath}.top`),
+            onChange: (next) => push("top", next.trim() || "0"),
+            disabled: rowLocked("top"),
+          })}
+          {renderUnitInputRow({
+            label: `${BORDER_SIDE_LABELS.right}宽度`,
+            value: boxModelSideDisplayValue(border.right as string | ThemeRef | undefined),
+            unit: "px",
+            hint: hint(`${opts.basePath}.right`),
+            onChange: (next) => push("right", next.trim() || "0"),
+            disabled: rowLocked("right"),
+          })}
+        </div>
+        <div className="inspector-field-row">
+          {renderUnitInputRow({
+            label: `${BORDER_SIDE_LABELS.bottom}宽度`,
+            value: boxModelSideDisplayValue(border.bottom as string | ThemeRef | undefined),
+            unit: "px",
+            hint: hint(`${opts.basePath}.bottom`),
+            onChange: (next) => push("bottom", next.trim() || "0"),
+            disabled: rowLocked("bottom"),
+          })}
+          {renderUnitInputRow({
+            label: `${BORDER_SIDE_LABELS.left}宽度`,
+            value: boxModelSideDisplayValue(border.left as string | ThemeRef | undefined),
+            unit: "px",
+            hint: hint(`${opts.basePath}.left`),
+            onChange: (next) => push("left", next.trim() || "0"),
+            disabled: rowLocked("left"),
+          })}
+        </div>
       </>
     );
   };
 
   const renderBorderRadiusEditor = (opts: {
     labelPrefix: string;
+    sectionTitle?: string;
     basePath: string;
     value: unknown;
     getHint?: (path: string) => string | undefined;
@@ -1955,102 +1845,65 @@ export function Inspector({
       opts.bindTargetBlock
         ? isInspectFollowLocked(template, opts.bindTargetBlock, payload, `${opts.basePath}.${suffix}`)
         : opts.controlsDisabled === true;
-    const prefixed = (label: string) => (opts.labelPrefix ? `${opts.labelPrefix}${label}` : label);
 
-    const radius = normalizeBorderRadiusValue(opts.value);
+    const radius = normalizeBorderRadiusValueForStorage(opts.value);
     const hint = (path: string) => opts.getHint?.(path) ?? RADIUS_DEFAULT_HINT;
     const push = (suffix: string, value: unknown) => opts.onChange(`${opts.basePath}.${suffix}`, value);
-    const onModeChange = (next: string) => {
-      const mode: BorderRadiusModeOption = next === "corners" ? "corners" : "unified";
-      opts.onChange(opts.basePath, borderRadiusValueForMode(radius, mode));
-    };
     const bindHeader = (suffix: string) =>
       opts.bindTargetBlock && opts.bindBasePath
         ? fieldBindHeader(opts.bindTargetBlock, `${opts.bindBasePath}.${suffix}`)
         : undefined;
 
-    return (
+    return wrapBoxModelSection(
+      opts.sectionTitle,
       <>
-        <div
-          className={
-            radius.mode === "corners"
-              ? "inspector-field-row inspector-field-row--single-full"
-              : "inspector-field-row"
-          }
-        >
-          {renderSelectInputRow({
-            label: prefixed("圆角模式"),
-            value: radius.mode,
-            hint: "统一模式用于四角相同；四角独立模式可分别设置左上、右上、右下、左下。",
-            onChange: onModeChange,
-            disabled: rowLocked("mode"),
-            options: [
-              { value: "unified", label: "四角统一" },
-              { value: "corners", label: "四角独立" },
-            ],
+        <div className="inspector-field-row">
+          {renderUnitInputRow({
+            label: `${RADIUS_CORNER_LABELS.topLeft}圆角`,
+            value: boxModelSideDisplayValue(radius.topLeft),
+            unit: "px",
+            hint: hint(`${opts.basePath}.topLeft`),
+            onChange: (next) => push("topLeft", next.trim() || "0"),
+            disabled: rowLocked("topLeft"),
+            headerExtra: bindHeader("topLeft"),
           })}
-          {radius.mode === "unified"
-            ? renderUnitInputRow({
-                label: prefixed("圆角"),
-                value: radius.radius,
-                unit: "px",
-                hint: hint(`${opts.basePath}.radius`),
-                onChange: (next) => push("radius", next.trim() || "0"),
-                disabled: rowLocked("radius"),
-                headerExtra: bindHeader("radius"),
-              })
-            : null}
+          {renderUnitInputRow({
+            label: `${RADIUS_CORNER_LABELS.topRight}圆角`,
+            value: boxModelSideDisplayValue(radius.topRight),
+            unit: "px",
+            hint: hint(`${opts.basePath}.topRight`),
+            onChange: (next) => push("topRight", next.trim() || "0"),
+            disabled: rowLocked("topRight"),
+            headerExtra: bindHeader("topRight"),
+          })}
         </div>
-        {radius.mode === "corners" ? (
-          <>
-            <div className="inspector-field-row">
-              {renderUnitInputRow({
-                label: `${RADIUS_CORNER_LABELS.topLeft}圆角`,
-                value: radius.topLeft,
-                unit: "px",
-                hint: hint(`${opts.basePath}.topLeft`),
-                onChange: (next) => push("topLeft", next.trim() || "0"),
-                disabled: rowLocked("topLeft"),
-                headerExtra: bindHeader("topLeft"),
-              })}
-              {renderUnitInputRow({
-                label: `${RADIUS_CORNER_LABELS.topRight}圆角`,
-                value: radius.topRight,
-                unit: "px",
-                hint: hint(`${opts.basePath}.topRight`),
-                onChange: (next) => push("topRight", next.trim() || "0"),
-                disabled: rowLocked("topRight"),
-                headerExtra: bindHeader("topRight"),
-              })}
-            </div>
-            <div className="inspector-field-row">
-              {renderUnitInputRow({
-                label: `${RADIUS_CORNER_LABELS.bottomRight}圆角`,
-                value: radius.bottomRight,
-                unit: "px",
-                hint: hint(`${opts.basePath}.bottomRight`),
-                onChange: (next) => push("bottomRight", next.trim() || "0"),
-                disabled: rowLocked("bottomRight"),
-                headerExtra: bindHeader("bottomRight"),
-              })}
-              {renderUnitInputRow({
-                label: `${RADIUS_CORNER_LABELS.bottomLeft}圆角`,
-                value: radius.bottomLeft,
-                unit: "px",
-                hint: hint(`${opts.basePath}.bottomLeft`),
-                onChange: (next) => push("bottomLeft", next.trim() || "0"),
-                disabled: rowLocked("bottomLeft"),
-                headerExtra: bindHeader("bottomLeft"),
-              })}
-            </div>
-          </>
-        ) : null}
+        <div className="inspector-field-row">
+          {renderUnitInputRow({
+            label: `${RADIUS_CORNER_LABELS.bottomRight}圆角`,
+            value: boxModelSideDisplayValue(radius.bottomRight),
+            unit: "px",
+            hint: hint(`${opts.basePath}.bottomRight`),
+            onChange: (next) => push("bottomRight", next.trim() || "0"),
+            disabled: rowLocked("bottomRight"),
+            headerExtra: bindHeader("bottomRight"),
+          })}
+          {renderUnitInputRow({
+            label: `${RADIUS_CORNER_LABELS.bottomLeft}圆角`,
+            value: boxModelSideDisplayValue(radius.bottomLeft),
+            unit: "px",
+            hint: hint(`${opts.basePath}.bottomLeft`),
+            onChange: (next) => push("bottomLeft", next.trim() || "0"),
+            disabled: rowLocked("bottomLeft"),
+            headerExtra: bindHeader("bottomLeft"),
+          })}
+        </div>
       </>
     );
   };
 
   const renderSpacingEditor = (opts: {
     labelPrefix: string;
+    sectionTitle?: string;
     basePath: string;
     value: unknown;
     getHint?: (path: string) => string | undefined;
@@ -2063,95 +1916,57 @@ export function Inspector({
       opts.bindTargetBlock
         ? isInspectFollowLocked(template, opts.bindTargetBlock, payload, `${opts.basePath}.${suffix}`)
         : opts.controlsDisabled === true;
-    const spacing = normalizeSpacingValue(opts.value);
-    const prefixed = (label: string) => (opts.labelPrefix ? `${opts.labelPrefix}${label}` : label);
+    const spacing = ensureFlatSpacing(opts.value as import("../types/email").SpacingValue | undefined);
     const hint = (path: string) => opts.getHint?.(path) ?? SPACING_DEFAULT_HINT;
     const push = (suffix: string, value: unknown) => opts.onChange(`${opts.basePath}.${suffix}`, value);
-    const onModeChange = (next: string) => {
-      const mode: SpacingModeOption = next === "separate" ? "separate" : "unified";
-      opts.onChange(opts.basePath, spacingValueForMode(spacing, mode));
-    };
     const bindHeader = (suffix: string) =>
       opts.bindTargetBlock && opts.bindBasePath
         ? fieldBindHeader(opts.bindTargetBlock, `${opts.bindBasePath}.${suffix}`)
         : undefined;
 
-    return (
+    return wrapBoxModelSection(
+      opts.sectionTitle,
       <>
-        <div
-          className={
-            spacing.mode === "separate"
-              ? "inspector-field-row inspector-field-row--single-full"
-              : "inspector-field-row"
-          }
-        >
-          {renderSelectInputRow({
-            label: prefixed("内边距模式"),
-            value: spacing.mode,
-            hint: "统一模式用于四边相同；四边独立模式可分别设置上、右、下、左。",
-            onChange: onModeChange,
-            disabled: rowLocked("mode"),
-            options: [
-              { value: "unified", label: "四边统一" },
-              { value: "separate", label: "四边独立" },
-            ],
+        <div className="inspector-field-row">
+          {renderUnitInputRow({
+            label: `${SPACING_SIDE_LABELS.top}内边距`,
+            value: boxModelSideDisplayValue(spacing.top),
+            unit: "px",
+            hint: hint(`${opts.basePath}.top`),
+            onChange: (next) => push("top", next.trim() || "0"),
+            disabled: rowLocked("top"),
+            headerExtra: bindHeader("top"),
           })}
-          {spacing.mode === "unified"
-            ? renderUnitInputRow({
-                label: prefixed("内边距"),
-                value: spacingSideToInputValue(spacing.unified),
-                unit: "px",
-                hint: hint(`${opts.basePath}.unified`),
-                onChange: (next) => push("unified", next.trim() || "0"),
-                disabled: rowLocked("unified"),
-                headerExtra: bindHeader("unified"),
-              })
-            : null}
+          {renderUnitInputRow({
+            label: `${SPACING_SIDE_LABELS.right}内边距`,
+            value: boxModelSideDisplayValue(spacing.right),
+            unit: "px",
+            hint: hint(`${opts.basePath}.right`),
+            onChange: (next) => push("right", next.trim() || "0"),
+            disabled: rowLocked("right"),
+            headerExtra: bindHeader("right"),
+          })}
         </div>
-        {spacing.mode === "separate" ? (
-          <>
-            <div className="inspector-field-row">
-              {renderUnitInputRow({
-                label: `${SPACING_SIDE_LABELS.top}内边距`,
-                value: spacingSideToInputValue(spacing.top),
-                unit: "px",
-                hint: hint(`${opts.basePath}.top`),
-                onChange: (next) => push("top", next.trim() || "0"),
-                disabled: rowLocked("top"),
-                headerExtra: bindHeader("top"),
-              })}
-              {renderUnitInputRow({
-                label: `${SPACING_SIDE_LABELS.right}内边距`,
-                value: spacingSideToInputValue(spacing.right),
-                unit: "px",
-                hint: hint(`${opts.basePath}.right`),
-                onChange: (next) => push("right", next.trim() || "0"),
-                disabled: rowLocked("right"),
-                headerExtra: bindHeader("right"),
-              })}
-            </div>
-            <div className="inspector-field-row">
-              {renderUnitInputRow({
-                label: `${SPACING_SIDE_LABELS.bottom}内边距`,
-                value: spacingSideToInputValue(spacing.bottom),
-                unit: "px",
-                hint: hint(`${opts.basePath}.bottom`),
-                onChange: (next) => push("bottom", next.trim() || "0"),
-                disabled: rowLocked("bottom"),
-                headerExtra: bindHeader("bottom"),
-              })}
-              {renderUnitInputRow({
-                label: `${SPACING_SIDE_LABELS.left}内边距`,
-                value: spacingSideToInputValue(spacing.left),
-                unit: "px",
-                hint: hint(`${opts.basePath}.left`),
-                onChange: (next) => push("left", next.trim() || "0"),
-                disabled: rowLocked("left"),
-                headerExtra: bindHeader("left"),
-              })}
-            </div>
-          </>
-        ) : null}
+        <div className="inspector-field-row">
+          {renderUnitInputRow({
+            label: `${SPACING_SIDE_LABELS.bottom}内边距`,
+            value: boxModelSideDisplayValue(spacing.bottom),
+            unit: "px",
+            hint: hint(`${opts.basePath}.bottom`),
+            onChange: (next) => push("bottom", next.trim() || "0"),
+            disabled: rowLocked("bottom"),
+            headerExtra: bindHeader("bottom"),
+          })}
+          {renderUnitInputRow({
+            label: `${SPACING_SIDE_LABELS.left}内边距`,
+            value: boxModelSideDisplayValue(spacing.left),
+            unit: "px",
+            hint: hint(`${opts.basePath}.left`),
+            onChange: (next) => push("left", next.trim() || "0"),
+            disabled: rowLocked("left"),
+            headerExtra: bindHeader("left"),
+          })}
+        </div>
       </>
     );
   };
@@ -2161,6 +1976,7 @@ export function Inspector({
       <fieldset className="inspector-bound-fieldset">
         {renderSpacingEditor({
           labelPrefix: "容器",
+          sectionTitle: "外层容器 · 边距",
           basePath: "wrapperStyle.padding",
           value: rd(target, "wrapperStyle.padding"),
           getHint: (path) => readDisplayHint(target, path),
@@ -2325,23 +2141,40 @@ export function Inspector({
     | "wrapperStyle.backgroundImage.link";
   const overlayStackGapModeRow = (layoutBlock: OverlayStackBlock) => {
     const raw = rd(layoutBlock, "props.gapMode");
-    const value = raw === "auto" ? "auto" : "fixed";
-    return renderSelectInputRow({
-      label: "间距模式",
-      value,
-      hint: readDisplayHint(layoutBlock, "props.gapMode"),
-      onChange: (next) => pushBlock(layoutBlock.id, "props.gapMode", next),
-      disabled: isInspectFollowLocked(template, layoutBlock, payload, "props.gapMode"),
-      options: [
-        { value: "fixed", label: "固定像素（gap）" },
-        {
-          value: "auto",
-          label: "自动均分（主轴剩余空间）",
-          title:
-            "纵向时按容器高度、横向时按容器宽度，将主轴剩余空间均分到相邻子项之间；子项高度/宽度为 hug 且无剩余空间时与紧凑排列一致。",
-        },
-      ],
-    });
+    const value: "fixed" | "auto" = raw === "auto" ? "auto" : "fixed";
+    const autoTitle =
+      "纵向时按容器高度、横向时按容器宽度，将主轴剩余空间均分到相邻子项之间；子项高度/宽度为 hug 且无剩余空间时与紧凑排列一致。";
+    return (
+      <Field label="间距模式" hint={readDisplayHint(layoutBlock, "props.gapMode")}>
+        <ShopSegmented<"fixed" | "auto">
+          value={value}
+          disabled={isInspectFollowLocked(template, layoutBlock, payload, "props.gapMode")}
+          options={[
+            { value: "fixed", label: <span title="固定像素（gap）">固定像素</span> },
+            { value: "auto", label: <span title={autoTitle}>自动均分</span> },
+          ]}
+          onChange={(next) => pushBlock(layoutBlock.id, "props.gapMode", next)}
+        />
+      </Field>
+    );
+  };
+
+  const overlayStackDirectionRow = (layoutBlock: OverlayStackBlock) => {
+    const direction = layoutBlock.props.direction ?? "vertical";
+    const value: "vertical" | "horizontal" =
+      direction === "horizontal" ? "horizontal" : "vertical";
+    return (
+      <Field label="排列方向">
+        <ShopSegmented<"vertical" | "horizontal">
+          value={value}
+          options={[
+            { value: "vertical", label: "纵向排列" },
+            { value: "horizontal", label: "横向排列" },
+          ]}
+          onChange={(next) => applyStructuralWrapperLayoutEdit("props.direction", next)}
+        />
+      </Field>
+    );
   };
 
   const overlayStackTextRow = (
@@ -2439,19 +2272,27 @@ export function Inspector({
 
   const layoutContainerBgFitSelectRow = (target: EmailBlock, label: string) => {
     const bindPath = "wrapperStyle.backgroundImage.fit";
-    return renderSelectInputRow({
-      label,
-      value: readDisplayString(target, bindPath) || "cover",
-      hint: readDisplayHint(target, bindPath),
-      onChange: (next) =>
-        onUpdate(applyBackgroundImageFitChange(template, payload, target.id, next)),
-      disabled: isInspectFollowLocked(template, target, payload, bindPath),
-      headerExtra: fieldBindHeader(target, bindPath),
-      options: [
-        { value: "cover", label: "裁切铺满（cover）" },
-        { value: "contain", label: "完整显示（contain）" },
-      ],
-    });
+    const fitValue = readDisplayString(target, bindPath) || "cover";
+    const value: "cover" | "contain" = fitValue === "contain" ? "contain" : "cover";
+    return (
+      <Field
+        label={label}
+        hint={readDisplayHint(target, bindPath)}
+        headerExtra={fieldBindHeader(target, bindPath)}
+      >
+        <ShopSegmented<"cover" | "contain">
+          value={value}
+          disabled={isInspectFollowLocked(template, target, payload, bindPath)}
+          options={[
+            { value: "cover", label: <span title="裁切铺满（cover）">裁切铺满</span> },
+            { value: "contain", label: <span title="完整显示（contain）">完整显示</span> },
+          ]}
+          onChange={(next) =>
+            onUpdate(applyBackgroundImageFitChange(template, payload, target.id, next))
+          }
+        />
+      </Field>
+    );
   };
 
   const buttonTextRow = (
@@ -2503,7 +2344,7 @@ export function Inspector({
     const widthMode = mode === "fill" || mode === "fixed" ? mode : "hug";
     return (
       <>
-        {renderSelectInputRow({
+        {renderSegmentedInputRow({
           label: "按钮宽度模式",
           value: widthMode,
           hint: "只控制按钮胶囊本体宽度；外层容器宽度仍在「布局」页签的「外层容器 · 布局」中配置。",
@@ -2511,9 +2352,9 @@ export function Inspector({
           disabled: isInspectFollowLocked(template, buttonBlock, payload, modePath),
           headerExtra: fieldBindHeader(buttonBlock, modePath),
           options: [
-            { value: "hug", label: "跟随文字（hug）" },
-            { value: "fill", label: "铺满容器（fill）" },
-            { value: "fixed", label: "自定义（fixed）" },
+            { value: "hug", label: "跟随文字", title: "跟随文字（hug）" },
+            { value: "fill", label: "铺满容器", title: "铺满容器（fill）" },
+            { value: "fixed", label: "自定义", title: "自定义（fixed）" },
           ],
         })}
         {widthMode === "fixed"
@@ -2632,7 +2473,7 @@ export function Inspector({
     const mode = rawMode === "fixed" ? "fixed" : "fill";
     return (
       <>
-        {renderSelectInputRow({
+        {renderSegmentedInputRow({
           label: opts.modeLabel,
           value: mode,
           hint: opts.hint,
@@ -2640,8 +2481,8 @@ export function Inspector({
           disabled: isInspectFollowLocked(template, targetBlock, payload, opts.modePath),
           headerExtra: fieldBindHeader(targetBlock, opts.modePath),
           options: [
-            { value: "fill", label: "铺满容器（fill）" },
-            { value: "fixed", label: "自定义（fixed）" },
+            { value: "fill", label: "铺满容器", title: "铺满容器（fill）" },
+            { value: "fixed", label: "自定义", title: "自定义（fixed）" },
           ],
         })}
         {mode === "fixed"
@@ -2787,6 +2628,7 @@ export function Inspector({
           {layoutContainerBgTextRow(block, "背景链接地址", "wrapperStyle.backgroundImage.link")}
           <div className="inspector-transform-actions">
             <ShopSecondaryButton
+              className="inspector-transform-actions__btn"
               onClick={() => {
                 let nextState = applyBlockField(template, payload, block.id, "wrapperStyle.backgroundImage", null);
                 const rawContainerBg = block.wrapperStyle?.backgroundColor;
@@ -2813,6 +2655,7 @@ export function Inspector({
     return (
       <div className="inspector-transform-actions">
         <ShopPrimaryButton
+          className="inspector-transform-actions__btn"
           onClick={() => {
             const patch: Record<string, unknown> = {
               "wrapperStyle.backgroundImage": {
@@ -2907,14 +2750,16 @@ export function Inspector({
     onUpdate(applyBlockField(template, payload, id, "wrapperStyle.height", next));
   };
 
-  if (canvasMode) {
+  if (showRootInspectorUi) {
     if (root.type !== "emailRoot") {
       return <div className="inspector">根节点类型错误（必须为 emailRoot）</div>;
     }
     return (
       <div className="inspector">
         <div className="inspector__title-row">
-          <h2 className="inspector__title">画布设置（邮件根节点）</h2>
+          <h2 className="inspector__title">
+            {emailRootPanel ? "画布设置（邮件根节点）" : "邮件根节点"}
+          </h2>
           <button
             type="button"
             className="inspector__title-copy-btn"
@@ -2925,12 +2770,14 @@ export function Inspector({
             ⧉
           </button>
         </div>
-        <AdminInspectorTabs
+        <InspectorBlockTabsShell
+          inspectorBlockKey={inspectorBlockKey}
           active={inspectorTab}
           onChange={setInspectorTabPersist}
           contentPane={
-            <section className="inspector__section">
+            <>
               <h3 className="inspector__subtitle">组件 · 内容</h3>
+              <section className="inspector__section">
               {root.wrapperStyle?.backgroundImage ? (
                 <>
                   <Field label="背景图地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.src")}>
@@ -2950,7 +2797,9 @@ export function Inspector({
                     />
                   </Field>
                   <div className="inspector-transform-actions">
-                    <ShopSecondaryButton onClick={() => pushRoot("wrapperStyle.backgroundImage", null)}>
+                    <ShopSecondaryButton
+                      className="inspector-transform-actions__btn"
+                      onClick={() => pushRoot("wrapperStyle.backgroundImage", null)}>
                       关闭背景图
                     </ShopSecondaryButton>
                   </div>
@@ -2959,19 +2808,13 @@ export function Inspector({
               ) : (
                 <div className="inspector-transform-actions">
                   <ShopPrimaryButton
+                    className="inspector-transform-actions__btn"
                     onClick={() =>
                       pushRoot("wrapperStyle.backgroundImage", {
                         src: "",
                         link: "",
                         fit: "cover",
                         position: "center",
-                        border: {
-                          mode: "unified",
-                          width: "0",
-                          style: "solid",
-                          color: TRANSPARENT_BORDER_COLOR,
-                        },
-                        borderRadius: { mode: "unified", radius: "0" },
                       })
                     }
                   >
@@ -2979,7 +2822,8 @@ export function Inspector({
                   </ShopPrimaryButton>
                 </div>
               )}
-            </section>
+              </section>
+            </>
           }
           stylePane={
             <>
@@ -2997,6 +2841,7 @@ export function Inspector({
                 <fieldset className="inspector-bound-fieldset">
                   {renderBorderEditor({
                     labelPrefix: "容器",
+                    sectionTitle: "外层容器 · 描边",
                     basePath: "props.border",
                     value: rd(root, "props.border"),
                     onChange: pushRoot,
@@ -3027,17 +2872,6 @@ export function Inspector({
               </section>
               <h3 className="inspector__subtitle">外层容器 · 布局</h3>
               <section className="inspector__section">
-                <fieldset className="inspector-bound-fieldset">
-                  {renderSpacingEditor({
-                    labelPrefix: "页面",
-                    basePath: "props.padding",
-                    value: rd(root, "props.padding"),
-                    onChange: pushRoot,
-                    bindTargetBlock: root,
-                    bindBasePath: "props.padding",
-                    controlsDisabled: isInspectFollowLocked(template, root, payload, "props.padding"),
-                  })}
-                </fieldset>
                 {(() => {
                   const w = root.props.width;
                   const widthStr = typeof w === "string" ? w.trim() : "";
@@ -3056,6 +2890,18 @@ export function Inspector({
                     </Field>
                   );
                 })()}
+                <fieldset className="inspector-bound-fieldset">
+                  {renderSpacingEditor({
+                    labelPrefix: "页面",
+                    sectionTitle: "外层容器 · 边距",
+                    basePath: "props.padding",
+                    value: rd(root, "props.padding"),
+                    onChange: pushRoot,
+                    bindTargetBlock: root,
+                    bindBasePath: "props.padding",
+                    controlsDisabled: isInspectFollowLocked(template, root, payload, "props.padding"),
+                  })}
+                </fieldset>
               </section>
             </>
           }
@@ -3103,7 +2949,8 @@ export function Inspector({
         </p>
       ) : null}
 
-      <AdminInspectorTabs
+      <InspectorBlockTabsShell
+        inspectorBlockKey={inspectorBlockKey}
         active={inspectorTab}
         onChange={setInspectorTabPersist}
         layoutPane={
@@ -3114,28 +2961,7 @@ export function Inspector({
                 {block.type === "image" ? "组件 · 叠放布局" : "组件 · 布局"}
               </h3>
               <section className="inspector__section">
-                <Field label="排列方向">
-                  <div className="inspector-text-toggle-row" role="toolbar" aria-label="排列方向">
-                    <ShopSecondaryButton
-                      htmlType="button"
-                      aria-label="纵向排列"
-                      aria-pressed={(block.props.direction ?? "vertical") === "vertical"}
-                      className={`inspector-text-toggle-row__btn ${(block.props.direction ?? "vertical") === "vertical" ? "inspector-text-toggle-row__btn--active" : ""}`}
-                      onClick={() => applyStructuralWrapperLayoutEdit("props.direction", "vertical")}
-                    >
-                      纵向排列
-                    </ShopSecondaryButton>
-                    <ShopSecondaryButton
-                      htmlType="button"
-                      aria-label="横向排列"
-                      aria-pressed={(block.props.direction ?? "vertical") === "horizontal"}
-                      className={`inspector-text-toggle-row__btn ${(block.props.direction ?? "vertical") === "horizontal" ? "inspector-text-toggle-row__btn--active" : ""}`}
-                      onClick={() => applyStructuralWrapperLayoutEdit("props.direction", "horizontal")}
-                    >
-                      横向排列
-                    </ShopSecondaryButton>
-                  </div>
-                </Field>
+                {overlayStackDirectionRow(block)}
                 {overlayStackGapModeRow(block)}
                 {rd(block, "props.gapMode") !== "auto"
                   ? overlayStackTextRow(block, "间距", "props.gap")
@@ -3159,7 +2985,7 @@ export function Inspector({
                   />
                 </Field>
                 {gridTextRow(block, "间距", "props.gap")}
-                {renderSelectInputRow({
+                {renderSegmentedInputRow({
                   label: "单元格宽度模式",
                   value: rd(block, "props.cellWidthMode") === "fixed" ? "fixed" : "auto",
                   hint: "只控制每个格子的宽度；grid 自己的外层宽度仍由下方「外层容器 · 布局」控制。",
@@ -3179,14 +3005,14 @@ export function Inspector({
                   disabled: isInspectFollowLocked(template, block, payload, "props.cellWidthMode"),
                   headerExtra: fieldBindHeader(block, "props.cellWidthMode"),
                   options: [
-                    { value: "auto", label: "自动均分（auto）" },
-                    { value: "fixed", label: "固定宽度（fixed）" },
+                    { value: "auto", label: "自动均分", title: "自动均分（auto）" },
+                    { value: "fixed", label: "固定宽度", title: "固定宽度（fixed）" },
                   ],
                 })}
                 {rd(block, "props.cellWidthMode") === "fixed"
                   ? gridTextRow(block, "单元格宽度", "props.cellWidth")
                   : null}
-                {renderSelectInputRow({
+                {renderSegmentedInputRow({
                   label: "单元格高度模式",
                   value: rd(block, "props.cellHeightMode") === "fixed" ? "fixed" : "content-max",
                   hint: "content-max 会按行取该行内最高内容统一格高；fixed 使用单元格高度。",
@@ -3206,8 +3032,12 @@ export function Inspector({
                   disabled: isInspectFollowLocked(template, block, payload, "props.cellHeightMode"),
                   headerExtra: fieldBindHeader(block, "props.cellHeightMode"),
                   options: [
-                    { value: "content-max", label: "按行内容最大高度（content-max）" },
-                    { value: "fixed", label: "固定高度（fixed）" },
+                    {
+                      value: "content-max",
+                      label: "按行最高",
+                      title: "按行内容最大高度（content-max）",
+                    },
+                    { value: "fixed", label: "固定高度", title: "固定高度（fixed）" },
                   ],
                 })}
                 {rd(block, "props.cellHeightMode") === "fixed"
@@ -3225,37 +3055,21 @@ export function Inspector({
               "wrapperStyle.contentAlign.horizontal",
               "wrapperStyle.contentAlign.vertical"
             )}
-            {renderSelectInputRow({
+            {renderWrapperDimensionModeRow({
               label: "宽度模式",
-              value: wrapperWidthModeUi,
+              value: wrapperWidthModeUi as WrapperDimensionMode,
               hint: widthModeHint,
+              axis: "width",
+              disableFill: disableWidthFillByParentRule,
               onChange: (next) => applyWrapperDimensionMode("wrapperStyle.widthMode", next),
-              options: [
-                { value: "hug", label: "跟随内容（hug）" },
-                {
-                  value: "fill",
-                  label: "铺满父级（fill）",
-                  disabled: disableWidthFillByParentRule,
-                  title: getFillOptionTitle("width", disableWidthFillByParentRule),
-                },
-                { value: "fixed", label: "自定义（fixed）" },
-              ],
             })}
-            {renderSelectInputRow({
+            {renderWrapperDimensionModeRow({
               label: "高度模式",
-              value: wrapperHeightModeUi,
+              value: wrapperHeightModeUi as WrapperDimensionMode,
               hint: heightModeHint,
+              axis: "height",
+              disableFill: disableHeightFillByParentRule,
               onChange: onWrapperHeightModeChange,
-              options: [
-                { value: "hug", label: "跟随内容（hug）" },
-                {
-                  value: "fill",
-                  label: "铺满父级（fill）",
-                  disabled: disableHeightFillByParentRule,
-                  title: getFillOptionTitle("height", disableHeightFillByParentRule),
-                },
-                { value: "fixed", label: "自定义（fixed）" },
-              ],
             })}
             {wrapperWidthModeUi === "fixed"
               ? renderUnitInputRow({
@@ -3307,6 +3121,7 @@ export function Inspector({
                 <fieldset className="inspector-bound-fieldset">
                   {renderBorderRadiusEditor({
                     labelPrefix: "按钮",
+                    sectionTitle: "组件 · 圆角",
                     basePath: "props.buttonStyle.borderRadius",
                     value: rd(block, "props.buttonStyle.borderRadius"),
                     getHint: (path) => readDisplayHint(block, path),
@@ -3324,6 +3139,7 @@ export function Inspector({
                 <fieldset className="inspector-bound-fieldset">
                   {renderBorderEditor({
                     labelPrefix: "按钮",
+                    sectionTitle: "组件 · 描边",
                     basePath: "props.buttonStyle.border",
                     value: rd(block, "props.buttonStyle.border"),
                     getHint: (path) => readDisplayHint(block, path),
@@ -3383,6 +3199,7 @@ export function Inspector({
                 <fieldset className="inspector-bound-fieldset">
                   {renderBorderRadiusEditor({
                     labelPrefix: "条带",
+                    sectionTitle: "组件 · 圆角",
                     basePath: "props.barBorderRadius",
                     value: rd(block, "props.barBorderRadius"),
                     getHint: (path) => readDisplayHint(block, path),
@@ -3426,6 +3243,7 @@ export function Inspector({
             <fieldset className="inspector-bound-fieldset">
               {renderBorderRadiusEditor({
                 labelPrefix: "容器",
+                sectionTitle: "外层容器 · 圆角",
                 basePath: "wrapperStyle.borderRadius",
                 value: rd(block, "wrapperStyle.borderRadius"),
                 getHint: (path) => readDisplayHint(block, path),
@@ -3438,6 +3256,7 @@ export function Inspector({
             <fieldset className="inspector-bound-fieldset">
               {renderBorderEditor({
                 labelPrefix: "容器",
+                sectionTitle: "外层容器 · 描边",
                 basePath: "wrapperStyle.border",
                 value: rd(block, "wrapperStyle.border"),
                 getHint: (path) => readDisplayHint(block, path),
@@ -3451,19 +3270,20 @@ export function Inspector({
           </>
         }
         contentPane={
-          <div
-            aria-disabled={resolvedRepeatContext ? true : undefined}
-            style={resolvedRepeatContext ? { opacity: 0.55, pointerEvents: "none" } : undefined}
-          >
-          <h3 className="inspector__subtitle">组件 · 内容</h3>
-          <section className="inspector__section">
+          <>
+            <h3 className="inspector__subtitle">组件 · 内容</h3>
+            <div
+              aria-disabled={resolvedRepeatContext ? true : undefined}
+              style={resolvedRepeatContext ? { opacity: 0.55, pointerEvents: "none" } : undefined}
+            >
+              <section className="inspector__section">
             {block.type === "text" ? (
               <>
                 <Field
                   label="正文（结构化）"
                   hint={
                     textBodyRepeatListItemBinding
-                      ? `正文由列表「${textBodyRepeatListItemBinding.collectionLabel}」的字段「${textBodyRepeatListItemBinding.itemFieldLabel}」驱动，此处只读预览；可点胶囊切换列表字段，或到「列表」Tab 调整映射。`
+                      ? `正文由列表「${textBodyRepeatListItemBinding.collectionLabel}」的字段「${textBodyRepeatListItemBinding.itemFieldLabel}」驱动，此处只读预览；可点胶囊切换列表字段，或选中列表宿主区块后在「数据组」Tab 调整映射。`
                       : textBodyContentMode === "wholeVariable"
                         ? "整段正文跟随 payload 变量，此处只读预览合并结果；请在「变量赋值」中修改。"
                         : textBodyContentMode === "inlineVariable"
@@ -3758,11 +3578,19 @@ export function Inspector({
             {block.type === "grid" && !layoutHasBackgroundImage(block) ? (
               <InspectorEmptyTabHint />
             ) : null}
-          </section>
-          </div>
+              </section>
+            </div>
+          </>
         }
       />
       {repeatModal}
     </div>
   );
 }
+
+/**
+ * Inspector 体量大（数千行）。App 因画布工具条滚动重定位、弹窗开关等无关状态频繁
+ * 重渲染时不应连带重渲染本面板。props 均为稳定引用（onUpdate/onTemplateChange 等为
+ * useCallback，effectiveDesignTokens/previewPayload/validationContext 为 useMemo）。
+ */
+export const Inspector = memo(InspectorImpl);

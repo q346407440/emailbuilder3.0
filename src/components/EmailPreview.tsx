@@ -1,19 +1,23 @@
 import {
   Fragment,
+  memo,
+  useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
   type MouseEventHandler,
   type ReactElement,
 } from "react";
+import { borderRadiusUniform } from "../lib/boxModelFlat";
 import type {
-  BorderRadiusValue,
   EmailTemplate,
   LayoutBlockProps,
   WrapperContentAlign,
   WrapperStyle,
 } from "../types/email";
+import { isCanvasNonBlockClickTarget } from "../lib/canvasEmptySelection";
 import { resolveIconPreviewColor, resolveIconPreviewSrc } from "../lib/iconBlock";
 import { EMAIL_ROOT_FIXED_WIDTH, EMAIL_CANVAS_WORKSPACE_BACKGROUND, BUTTON_INNER_PADDING, BUTTON_INNER_LINE_HEIGHT } from "../render-defaults-contract/values";
 import { IconGlyph } from "./IconGlyph";
@@ -47,7 +51,7 @@ import {
   emailTextContentWrapCss,
 } from "../lib/emailPresentationLayout";
 import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
-import { isRepeatExpansionGroupSelected, previewModelToFlatTemplate } from "../repeat-runtime";
+import { isRepeatExpansionGroupSelected, previewModelToFlatTemplate, refToStableKey } from "../repeat-runtime";
 import {
   FIXED_TEXT_LINE_HEIGHT,
   projectLayoutContentAlign,
@@ -80,10 +84,10 @@ import {
   renderProgressBarTable,
   flatMapHorizontalLayoutRowCells,
   renderVerticalStackInnerTable,
+  type EmailChildInsertSlotConfig,
 } from "../lib/emailPresentationPrimitives";
 import {
   resolveComponentBodyWidthCss,
-  resolveEffectiveLayoutWidth,
   resolveEmailRootShellCss,
   resolvePreviewViewportClipCss,
   parseCssPx,
@@ -92,8 +96,10 @@ import {
 } from "../lib/canvasDimensionResolve";
 import {
   CanvasDimensionPreviewProvider,
-  useCanvasDimensionPreview,
 } from "../lib/canvasDimensionContext";
+import { useCanvasDragInsert, type CanvasDragInsertContextValue } from "./canvas/CanvasDragInsertContext";
+import { decodeCanvasDropSlotId } from "../lib/canvasDragInsert";
+import { resolvePreviewInsertSlotVariant } from "../lib/canvasInsertSlotMeasure";
 import {
   EMAIL_CANVAS_VIEWPORT_DESKTOP_PX,
 } from "../editor-canvas-contract/values";
@@ -108,19 +114,19 @@ type Props = {
   previewViewportPx?: number;
 };
 
-function findRefByPreviewBlockId(
-  model: RepeatPreviewModel,
-  blockId: string
-): VirtualBlockRef | null {
-  const visit = (node: (typeof model)["root"]): VirtualBlockRef | null => {
-    if (node.block.id === blockId) return node.ref;
-    for (const child of node.children) {
-      const found = visit(child);
-      if (found) return found;
-    }
-    return null;
+
+/**
+ * 预构建 previewBlockId → ref 索引（O(n)）。
+ * 替代每个 BlockView 渲染时各做一次整树 DFS（O(n²)）的选中判定。
+ */
+function buildPreviewRefIndex(model: RepeatPreviewModel): Map<string, VirtualBlockRef> {
+  const index = new Map<string, VirtualBlockRef>();
+  const visit = (node: (typeof model)["root"]): void => {
+    index.set(node.block.id, node.ref);
+    for (const child of node.children) visit(child);
   };
-  return visit(model.root);
+  visit(model.root);
+  return index;
 }
 
 /** 画布内链接仅作视觉还原，禁止跳转/新开页，避免误触影响区块选中 */
@@ -195,26 +201,52 @@ function canvasPreviewBlockDataProps(
 type CanvasSelectionContext = {
   previewModel: RepeatPreviewModel;
   selectedBlockRef: VirtualBlockRef | null;
+  /** previewBlockId → ref 索引（O(1) 选中判定，避免每节点整树 DFS） */
+  refIndex: Map<string, VirtualBlockRef>;
   /** 视窗窄于版心时，根选中描边画在视窗层而非 600px 根外壳（避免被 overflow 裁切） */
   rootSelectionOnViewport: boolean;
+  /** 拖拽插入活跃态；变化时 BlockView memo 放行重渲染 */
+  dragSyncKey: string;
 };
 
 /** 画布选中：emailRoot 内层；repeat-item 按展开组（同复制体全部高亮） */
+function isPreviewRootBlockSelected(
+  ctx: CanvasSelectionContext,
+  rootBlockId: string
+): boolean {
+  if (!ctx.selectedBlockRef) return false;
+  const nodeRef = ctx.refIndex.get(rootBlockId);
+  if (!nodeRef) return false;
+  return isRepeatExpansionGroupSelected(ctx.selectedBlockRef, nodeRef);
+}
+
 function selectionClassName(
   ctx: CanvasSelectionContext,
   nodeId: string,
   variant: "email-root-inner" | "node"
 ): string | undefined {
   if (variant === "email-root-inner") {
-    if (ctx.selectedBlockRef !== null) return undefined;
+    if (!isPreviewRootBlockSelected(ctx, nodeId)) return undefined;
     return ctx.rootSelectionOnViewport ? undefined : "email-preview-selected";
   }
   if (!ctx.selectedBlockRef) return undefined;
-  const nodeRef = findRefByPreviewBlockId(ctx.previewModel, nodeId);
+  const nodeRef = ctx.refIndex.get(nodeId);
   if (!nodeRef) return undefined;
   return isRepeatExpansionGroupSelected(ctx.selectedBlockRef, nodeRef)
     ? "email-preview-selected"
     : undefined;
+}
+
+/** BlockView memo 比较用：仅当本节点高亮 class 变化时才需重渲染 */
+function blockViewSelectionDigest(
+  ctx: CanvasSelectionContext,
+  blockId: string,
+  blockType: string | undefined
+): string {
+  if (blockType === "emailRoot") {
+    return selectionClassName(ctx, blockId, "email-root-inner") ?? "";
+  }
+  return selectionClassName(ctx, blockId, "node") ?? "";
 }
 
 /** 横排 layout / 底图叠放：内层行表是否满宽及子槽位列宽（fill 子块吃剩余宽）。 */
@@ -276,8 +308,35 @@ function horizontalRowInnerTableLayout(
   return { innerTableStyle, childTdWidthStyle, childTdWidthAttr, omitSpacerGapCells };
 }
 
+function buildEmailChildInsertSlot(
+  dragInsert: CanvasDragInsertContextValue | null,
+  parentBlockId: string,
+  variant: "bar" | "column"
+): EmailChildInsertSlotConfig | undefined {
+  if (!dragInsert?.isDragging || !dragInsert.activeOverSlotId) return undefined;
+
+  const activeSlot = decodeCanvasDropSlotId(dragInsert.activeOverSlotId);
+  if (!activeSlot || activeSlot.parentPreviewBlockId !== parentBlockId) return undefined;
+
+  const expectedVariant = resolvePreviewInsertSlotVariant(
+    dragInsert.sourceTemplate,
+    parentBlockId,
+    dragInsert.previewModel
+  );
+  if (variant !== expectedVariant) return undefined;
+
+  return {
+    parentBlockId,
+    renderSlot: (insertIndex) => {
+      if (insertIndex !== activeSlot.insertIndex) return null;
+      return dragInsert.renderInsertSlot(parentBlockId, insertIndex, variant);
+    },
+  };
+}
+
 /** 底图叠放层内子区块：与 layout 纵向/横向 + gap 语义对齐 */
 function renderBackgroundImageOverlayChildren(opts: {
+  parentBlockId: string;
   childIds: string[];
   layoutProps?: LayoutBlockProps;
   wrapperStyle?: WrapperStyle;
@@ -285,8 +344,20 @@ function renderBackgroundImageOverlayChildren(opts: {
   template: EmailTemplate;
   canvasSelection: CanvasSelectionContext;
   onSelectBlock: (id: string | null) => void;
+  insertSlot?: EmailChildInsertSlotConfig;
+  columnInsertSlot?: EmailChildInsertSlotConfig;
 }): ReactElement {
-  const { childIds, layoutProps, wrapperStyle, contentAlign, template, canvasSelection, onSelectBlock } = opts;
+  const {
+    childIds,
+    layoutProps,
+    wrapperStyle,
+    contentAlign,
+    template,
+    canvasSelection,
+    onSelectBlock,
+    insertSlot,
+    columnInsertSlot,
+  } = opts;
   const gapMode = normalizeLayoutGapMode(layoutProps?.gapMode);
   const gapFixed = (layoutProps?.gap as string) ?? "8px";
   const gapAuto = gapMode === "auto";
@@ -331,6 +402,7 @@ function renderBackgroundImageOverlayChildren(opts: {
               childTdWidthAttr,
               fillRowInnerHeight,
               slotAlign: layoutChildSlotAlign("horizontal", rowStackAlign),
+              insertSlot: columnInsertSlot ?? insertSlot,
               renderChild: (cid) => (
                 <BlockView
                   id={cid}
@@ -360,6 +432,7 @@ function renderBackgroundImageOverlayChildren(opts: {
       layoutStackMainValignForChild("vertical", rowStackAlign),
     parentCrossFallback: undefined,
     parentMainFallback: undefined,
+    insertSlot,
     renderChild: (cid) => (
       <BlockView
         id={cid}
@@ -385,6 +458,8 @@ function renderWrapperBackgroundImagePreview(opts: {
   selectionKind?: "node" | "email-root-inner";
   outerStyle?: CSSProperties;
   enableHugIntrinsicHeight?: boolean;
+  insertSlot?: EmailChildInsertSlotConfig;
+  columnInsertSlot?: EmailChildInsertSlotConfig;
 }): ReactElement | null {
   const {
     blockId,
@@ -398,6 +473,8 @@ function renderWrapperBackgroundImagePreview(opts: {
     selectionKind = "node",
     outerStyle,
     enableHugIntrinsicHeight,
+    insertSlot,
+    columnInsertSlot,
   } = opts;
   const selectTargetId: string | null =
     opts.selectTargetId === null ? null : opts.selectTargetId ?? blockId;
@@ -437,6 +514,7 @@ function renderWrapperBackgroundImagePreview(opts: {
       onLinkNavigate={stopCanvasLinkNavigation}
     >
       {renderBackgroundImageOverlayChildren({
+        parentBlockId: blockId,
         childIds,
         layoutProps,
         wrapperStyle,
@@ -444,6 +522,8 @@ function renderWrapperBackgroundImagePreview(opts: {
         template,
         canvasSelection,
         onSelectBlock,
+        insertSlot,
+        columnInsertSlot,
       })}
     </WrapperBackgroundImageCanvasShell>
   );
@@ -455,6 +535,28 @@ type BlockViewProps = {
   canvasSelection: CanvasSelectionContext;
   onSelectBlock: (id: string | null) => void;
 };
+
+function canvasSelectionRefKey(ref: VirtualBlockRef | null): string {
+  return ref ? refToStableKey(ref) : "";
+}
+
+function blockViewPropsAreEqual(prev: BlockViewProps, next: BlockViewProps): boolean {
+  if (
+    prev.id !== next.id ||
+    prev.template !== next.template ||
+    prev.onSelectBlock !== next.onSelectBlock ||
+    prev.canvasSelection.dragSyncKey !== next.canvasSelection.dragSyncKey ||
+    canvasSelectionRefKey(prev.canvasSelection.selectedBlockRef) !==
+      canvasSelectionRefKey(next.canvasSelection.selectedBlockRef)
+  ) {
+    return false;
+  }
+  const blockType = prev.template.blocks[prev.id]?.type;
+  return (
+    blockViewSelectionDigest(prev.canvasSelection, prev.id, blockType) ===
+    blockViewSelectionDigest(next.canvasSelection, next.id, blockType)
+  );
+}
 
 function renderGridMatrixSlotChild(params: {
   childId: string;
@@ -479,13 +581,16 @@ function renderGridMatrixSlotChild(params: {
   return wrapStyle ? <div style={wrapStyle}>{childView}</div> : childView;
 }
 
-function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewProps) {
+function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockViewProps) {
+  const dragInsert = useCanvasDragInsert();
+  const barInsertSlot = buildEmailChildInsertSlot(dragInsert, id, "bar");
+  const columnInsertSlot = buildEmailChildInsertSlot(dragInsert, id, "column");
+
   const b = template.blocks[id];
   const gridRef = useRef<HTMLTableElement | null>(null);
   /** content-max：每行内单元格统一高度（非全栅格共用一个最大值，避免行间视觉间距被撑开） */
   const [gridRowMaxHeights, setGridRowMaxHeights] = useState<number[] | null>(null);
   const gridRowHeightsRef = useRef<number[] | null>(null);
-  const dimCtx = useCanvasDimensionPreview();
 
   useLayoutEffect(() => {
     if (!b || b.type !== "grid") return;
@@ -584,12 +689,6 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
     const rootW = props.width;
     const width =
       typeof rootW === "string" && rootW.trim() ? rootW.trim() : EMAIL_ROOT_FIXED_WIDTH;
-    const rootConfiguredWidthPx = dimCtx?.rootConfiguredWidthPx ?? parseCssPx(width) ?? 600;
-    const previewViewportPx = dimCtx?.previewViewportPx ?? rootConfiguredWidthPx;
-    const effectiveLayoutPx = resolveEffectiveLayoutWidth({
-      rootConfiguredWidthPx,
-      previewViewportPx,
-    });
     const rootBorderCss = borderToCss(props.border);
     const contentPadding = paddingToCss(props.padding);
     const rootGapMode = normalizeLayoutGapMode(props.gapMode);
@@ -615,12 +714,14 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
           canvasSelection,
           onSelectBlock,
           overlayPadding: props.padding,
-          selectTargetId: null,
+          selectTargetId: id,
           selectionKind: "email-root-inner",
           outerStyle: {
             margin: "0 auto",
             ...rootBorderCss,
           },
+          insertSlot: barInsertSlot,
+          columnInsertSlot,
         })
       : null;
     if (rootChildren) {
@@ -631,7 +732,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
       <div
         className={innerSel}
         {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
-        onClick={selectBlock(null)}
+        onClick={selectBlock(id)}
         style={{
           ...resolveEmailRootShellCss({ configuredWidth: width }),
           margin: "0 auto",
@@ -640,54 +741,28 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
           ...rootBorderCss,
         }}
       >
-        <table
-          {...emailTablePresentationProps}
-          style={{
-            ...emailPresentationTableStyle,
-            tableLayout: "fixed",
-            width: effectiveLayoutPx,
-            maxWidth: "100%",
-          }}
-        >
-          <tbody>
-            {b.children.map((cid, idx) => (
-              <Fragment key={cid}>
-                {idx > 0 && !rootGapAuto && parseGapPx(rootGapFixed) > 0 ? (
-                  <tr aria-hidden>
-                    <td
-                      style={{
-                        ...tdBase(),
-                        lineHeight: 0,
-                        fontSize: 0,
-                        height: rootGapFixed,
-                      }}
-                    >
-                      <div style={{ height: rootGapFixed, width: "1px" }} />
-                    </td>
-                  </tr>
-                ) : null}
-                <tr>
-                  <td
-                    style={{
-                      ...tdBase(),
-                      verticalAlign: "top",
-                      ...emailPresentationHugSlotAntiStrutStyle(
-                        template.blocks[cid]?.wrapperStyle?.heightMode
-                      ),
-                    }}
-                  >
-                    <BlockView
-                      id={cid}
-                      template={template}
-                      canvasSelection={canvasSelection}
-                      onSelectBlock={onSelectBlock}
-                    />
-                  </td>
-                </tr>
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
+        {renderVerticalStackInnerTable({
+          template,
+          childIds: b.children,
+          gapAuto: rootGapAuto,
+          gapFixed: rootGapFixed,
+          gapPx: parseGapPx(rootGapFixed),
+          stretchColumn: false,
+          tableWidthFull: true,
+          stackCrossAlign: () => "left",
+          stackMainValign: () => "top",
+          parentCrossFallback: undefined,
+          parentMainFallback: undefined,
+          insertSlot: barInsertSlot,
+          renderChild: (cid) => (
+            <BlockView
+              id={cid}
+              template={template}
+              canvasSelection={canvasSelection}
+              onSelectBlock={onSelectBlock}
+            />
+          ),
+        })}
       </div>
     );
   }
@@ -717,6 +792,8 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
         template,
         canvasSelection,
         onSelectBlock,
+        insertSlot: barInsertSlot,
+        columnInsertSlot,
       });
     }
 
@@ -781,6 +858,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                 childTdWidthAttr,
                 fillRowInnerHeight,
                 slotAlign: layoutChildSlotAlign("horizontal", wrapperContentAlign),
+                insertSlot: columnInsertSlot,
                 renderChild: (cid) => (
                   <BlockView
                     id={cid}
@@ -849,6 +927,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
         layoutStackMainValignForChild("vertical", wrapperContentAlign),
       parentCrossFallback: undefined,
       parentMainFallback: undefined,
+      insertSlot: barInsertSlot,
       renderChild: (cid) => (
         <BlockView
           id={cid}
@@ -996,6 +1075,8 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
       canvasSelection,
       onSelectBlock,
       enableHugIntrinsicHeight: true,
+      insertSlot: barInsertSlot,
+      columnInsertSlot,
     });
     if (bgPreview) return bgPreview;
     return renderPresentationLeafShell({
@@ -1114,7 +1195,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
       typeof props.barHeight === "string" && props.barHeight.trim()
         ? props.barHeight.trim()
         : "10px";
-    const defaultBarRadius: BorderRadiusValue = { mode: "unified", radius: "9999px" };
+    const defaultBarRadius = borderRadiusUniform("9999px");
     const barRadiusCss = borderRadiusToCss(props.barBorderRadius ?? defaultBarRadius);
     const barWidthCss = resolveComponentBodyWidthCss({
       mode: props.barWidthMode,
@@ -1171,6 +1252,20 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
 
     const gridSlotContentAlign = b.wrapperStyle?.contentAlign as WrapperContentAlign | undefined;
 
+    const renderGridInsertRow = (insertIndex: number, key: string) => {
+      if (!barInsertSlot) return null;
+      const slot = barInsertSlot.renderSlot(insertIndex);
+      if (!slot) return null;
+      // aria-hidden：占位行是临时拖拽 UI，须排除在 content-max 行高测量的数据行之外（否则行索引错位）。
+      return (
+        <tr key={key} aria-hidden>
+          <td colSpan={gridRowColSpan} style={{ ...tdBase(), verticalAlign: "top" }}>
+            {slot}
+          </td>
+        </tr>
+      );
+    };
+
     const gridTable = (
       <table
         ref={gridRef}
@@ -1184,6 +1279,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
         }}
       >
         <tbody>
+          {ch.length === 0 ? renderGridInsertRow(0, "grid-insert-empty") : null}
           {rows.map((row, ri) => (
             <Fragment key={`grid-row-group-${ri}`}>
               {ri > 0 && gapPx > 0 ? (
@@ -1224,6 +1320,8 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                 const cid = row[ci];
                 const slotContentAlign = gridSlotContentAlign;
                 const slotCellAlign = gridMatrixSlotTableCellAttrs(slotContentAlign);
+                const gridChildInsertIndex = ri * cols + ci;
+                const colInsertSlot = barInsertSlot?.renderSlot(gridChildInsertIndex);
                 return (
                   <Fragment key={`grid-cell-wrap-${ri}-${ci}`}>
                     {ci > 0 && gapPx > 0 ? (
@@ -1261,6 +1359,9 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                           overflow: "hidden",
                         }}
                       >
+                        {colInsertSlot ? (
+                          <div className="email-preview-grid-cell-insert">{colInsertSlot}</div>
+                        ) : null}
                         {renderGridMatrixSlotChild({
                           childId: cid,
                           template,
@@ -1277,7 +1378,11 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
                         }}
                         aria-hidden
                       >
-                        &nbsp;
+                        {colInsertSlot ? (
+                          <div className="email-preview-grid-cell-insert">{colInsertSlot}</div>
+                        ) : (
+                          <>&nbsp;</>
+                        )}
                       </td>
                     )}
                   </Fragment>
@@ -1286,6 +1391,7 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
             </tr>
             </Fragment>
           ))}
+          {ch.length > 0 ? renderGridInsertRow(ch.length, "grid-insert-end") : null}
         </tbody>
       </table>
     );
@@ -1352,17 +1458,48 @@ function BlockView({ id, template, canvasSelection, onSelectBlock }: BlockViewPr
   return null;
 }
 
+const BlockView = memo(BlockViewImpl, blockViewPropsAreEqual);
+
 /** 选中联动滚动画布见 `src/editor-canvas-contract`（`EMAIL_CANVAS_AUTO_SCROLL_ON_BLOCK_SELECT: false`） */
-export function EmailPreview({
+function EmailPreviewImpl({
   previewModel,
   sourceTemplate,
   selectedBlockRef,
   onSelectBlock,
   previewViewportPx = EMAIL_CANVAS_VIEWPORT_DESKTOP_PX,
 }: Props) {
-  const template = previewModelToFlatTemplate(previewModel, sourceTemplate);
+  // 展平 + 逐节点深拷贝代价高，仅在 previewModel / sourceTemplate 变化时重算；
+  // 选中、画布工具条重定位等不改这两者的重渲染将命中缓存，避免每次都全树克隆。
+  const template = useMemo(
+    () => previewModelToFlatTemplate(previewModel, sourceTemplate),
+    [previewModel, sourceTemplate]
+  );
   const rootBlockId = template.rootBlockId;
   const root = template.blocks[rootBlockId];
+
+  // 选中判定的 O(1) 索引，随 previewModel 一次性重建。
+  const refIndex = useMemo(() => buildPreviewRefIndex(previewModel), [previewModel]);
+
+  const handleSelectBlock = useCallback(
+    (blockKey: string | null) => {
+      if (blockKey === null) {
+        onSelectBlock(null);
+        return;
+      }
+      const ref = refIndex.get(blockKey);
+      onSelectBlock(ref ?? { kind: "physical", blockId: blockKey });
+    },
+    [refIndex, onSelectBlock]
+  );
+
+  const handleCanvasEmptyAreaClick: MouseEventHandler<HTMLElement> = useCallback(
+    (e) => {
+      if (!isCanvasNonBlockClickTarget(e.target)) return;
+      handleSelectBlock(null);
+    },
+    [handleSelectBlock]
+  );
+
   if (!root) return <div>缺少根节点</div>;
 
   const rootPropsWidth = (root.props as Record<string, unknown> | undefined)?.width;
@@ -1375,25 +1512,32 @@ export function EmailPreview({
     previewViewportPx,
     rootConfiguredWidthPx
   );
-  const canvasSelection: CanvasSelectionContext = {
-    previewModel,
-    selectedBlockRef,
-    rootSelectionOnViewport,
-  };
-
-  const handleSelectBlock = (blockKey: string | null) => {
-    if (blockKey === null) {
-      onSelectBlock(null);
-      return;
-    }
-    const ref = findRefByPreviewBlockId(previewModel, blockKey);
-    onSelectBlock(ref ?? { kind: "physical", blockId: blockKey });
-  };
+  const dragInsert = useCanvasDragInsert();
+  const dragSyncKey =
+    dragInsert?.enabled && dragInsert.isDragging
+      ? `drag:${dragInsert.activeOverSlotId ?? ""}`
+      : "idle";
+  const canvasSelection = useMemo(
+    (): CanvasSelectionContext => ({
+      previewModel,
+      selectedBlockRef,
+      refIndex,
+      rootSelectionOnViewport,
+      dragSyncKey,
+    }),
+    [previewModel, selectedBlockRef, refIndex, rootSelectionOnViewport, dragSyncKey]
+  );
+  const dimensionPreviewValue = useMemo(
+    () => ({ previewViewportPx, rootConfiguredWidthPx }),
+    [previewViewportPx, rootConfiguredWidthPx]
+  );
 
   return (
     <div
       className="email-preview-canvas-workspace"
+      onClick={handleCanvasEmptyAreaClick}
       style={{
+        position: "relative",
         backgroundColor: EMAIL_CANVAS_WORKSPACE_BACKGROUND,
         minHeight: "100%",
         padding: "24px 16px",
@@ -1403,7 +1547,7 @@ export function EmailPreview({
       <div
         className={[
           "email-preview-viewport",
-          selectedBlockRef === null && rootSelectionOnViewport
+          isPreviewRootBlockSelected(canvasSelection, rootBlockId) && rootSelectionOnViewport
             ? "email-preview-selected"
             : "",
         ]
@@ -1411,9 +1555,7 @@ export function EmailPreview({
           .join(" ")}
         style={resolvePreviewViewportClipCss(previewViewportPx)}
       >
-        <CanvasDimensionPreviewProvider
-          value={{ previewViewportPx, rootConfiguredWidthPx }}
-        >
+        <CanvasDimensionPreviewProvider value={dimensionPreviewValue}>
           <div className="email-preview-scope">
             <BlockView
               id={rootBlockId}
@@ -1427,3 +1569,10 @@ export function EmailPreview({
     </div>
   );
 }
+
+/**
+ * 画布预览整树渲染代价高（深层嵌套 table），App 因画布工具条重定位、弹窗开关、
+ * AI 步骤等无关状态频繁重渲染时不应连带重渲染预览。props 均为稳定引用
+ * （previewModel/sourceTemplate 来自 useMemo，onSelectBlock 为 useCallback）。
+ */
+export const EmailPreview = memo(EmailPreviewImpl);

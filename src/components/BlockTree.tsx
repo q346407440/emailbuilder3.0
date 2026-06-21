@@ -209,7 +209,9 @@ export function BlockTree({
       }
     }
 
-    const rowId = selectedBlockRef ? refToStableKey(selectedBlockRef) : previewModel.root.block.id;
+    if (selectedBlockRef === null) return;
+
+    const rowId = refToStableKey(selectedBlockRef);
     const safe = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(rowId) : rowId.replace(/"/g, '\\"');
 
     const timer = window.setTimeout(() => {
@@ -233,12 +235,9 @@ export function BlockTree({
       : `${blockTypeLabel(block.type)} · ${physicalId.slice(0, 8)}`;
     const hasKids = children.length > 0;
     const selected =
-      selectedBlockRef === null
-        ? block.type === "emailRoot"
-        : isRepeatExpansionGroupSelected(selectedBlockRef, ref);
+      selectedBlockRef !== null && isRepeatExpansionGroupSelected(selectedBlockRef, ref);
     const handleClick = () => {
-      if (block.type === "emailRoot") onSelect(null);
-      else onSelect(ref);
+      onSelect(ref);
     };
 
     const directTag = repeatTagForRef(ref, repeatTagIndex, sourceTemplate);
