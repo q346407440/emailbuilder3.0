@@ -51,7 +51,7 @@ import {
   emailTextContentWrapCss,
 } from "../lib/emailPresentationLayout";
 import type { RepeatPreviewModel, VirtualBlockRef } from "../repeat-binding-contract";
-import { isRepeatExpansionGroupSelected, previewModelToFlatTemplate, refToStableKey } from "../repeat-runtime";
+import { previewModelToFlatTemplate } from "../repeat-runtime";
 import {
   FIXED_TEXT_LINE_HEIGHT,
   projectLayoutContentAlign,
@@ -98,6 +98,7 @@ import {
   CanvasDimensionPreviewProvider,
 } from "../lib/canvasDimensionContext";
 import { useCanvasDragInsert, type CanvasDragInsertContextValue } from "./canvas/CanvasDragInsertContext";
+import { CanvasSelectionOverlay } from "./canvas/CanvasSelectionOverlay";
 import { decodeCanvasDropSlotId } from "../lib/canvasDragInsert";
 import { resolvePreviewInsertSlotVariant } from "../lib/canvasInsertSlotMeasure";
 import {
@@ -198,56 +199,10 @@ function canvasPreviewBlockDataProps(
   };
 }
 
-type CanvasSelectionContext = {
-  previewModel: RepeatPreviewModel;
-  selectedBlockRef: VirtualBlockRef | null;
-  /** previewBlockId → ref 索引（O(1) 选中判定，避免每节点整树 DFS） */
-  refIndex: Map<string, VirtualBlockRef>;
-  /** 视窗窄于版心时，根选中描边画在视窗层而非 600px 根外壳（避免被 overflow 裁切） */
-  rootSelectionOnViewport: boolean;
-  /** 拖拽插入活跃态；变化时 BlockView memo 放行重渲染 */
+/** BlockView 仅感知拖拽同步键；选中描边由 {@link CanvasSelectionOverlay} 绘制。 */
+type CanvasBlockViewContext = {
   dragSyncKey: string;
 };
-
-/** 画布选中：emailRoot 内层；repeat-item 按展开组（同复制体全部高亮） */
-function isPreviewRootBlockSelected(
-  ctx: CanvasSelectionContext,
-  rootBlockId: string
-): boolean {
-  if (!ctx.selectedBlockRef) return false;
-  const nodeRef = ctx.refIndex.get(rootBlockId);
-  if (!nodeRef) return false;
-  return isRepeatExpansionGroupSelected(ctx.selectedBlockRef, nodeRef);
-}
-
-function selectionClassName(
-  ctx: CanvasSelectionContext,
-  nodeId: string,
-  variant: "email-root-inner" | "node"
-): string | undefined {
-  if (variant === "email-root-inner") {
-    if (!isPreviewRootBlockSelected(ctx, nodeId)) return undefined;
-    return ctx.rootSelectionOnViewport ? undefined : "email-preview-selected";
-  }
-  if (!ctx.selectedBlockRef) return undefined;
-  const nodeRef = ctx.refIndex.get(nodeId);
-  if (!nodeRef) return undefined;
-  return isRepeatExpansionGroupSelected(ctx.selectedBlockRef, nodeRef)
-    ? "email-preview-selected"
-    : undefined;
-}
-
-/** BlockView memo 比较用：仅当本节点高亮 class 变化时才需重渲染 */
-function blockViewSelectionDigest(
-  ctx: CanvasSelectionContext,
-  blockId: string,
-  blockType: string | undefined
-): string {
-  if (blockType === "emailRoot") {
-    return selectionClassName(ctx, blockId, "email-root-inner") ?? "";
-  }
-  return selectionClassName(ctx, blockId, "node") ?? "";
-}
 
 /** 横排 layout / 底图叠放：内层行表是否满宽及子槽位列宽（fill 子块吃剩余宽）。 */
 function horizontalRowInnerTableLayout(
@@ -342,7 +297,7 @@ function renderBackgroundImageOverlayChildren(opts: {
   wrapperStyle?: WrapperStyle;
   contentAlign?: { horizontal?: unknown; vertical?: unknown };
   template: EmailTemplate;
-  canvasSelection: CanvasSelectionContext;
+  canvasBlockView: CanvasBlockViewContext;
   onSelectBlock: (id: string | null) => void;
   insertSlot?: EmailChildInsertSlotConfig;
   columnInsertSlot?: EmailChildInsertSlotConfig;
@@ -353,7 +308,7 @@ function renderBackgroundImageOverlayChildren(opts: {
     wrapperStyle,
     contentAlign,
     template,
-    canvasSelection,
+    canvasBlockView,
     onSelectBlock,
     insertSlot,
     columnInsertSlot,
@@ -407,7 +362,7 @@ function renderBackgroundImageOverlayChildren(opts: {
                 <BlockView
                   id={cid}
                   template={template}
-                  canvasSelection={canvasSelection}
+                  canvasBlockView={canvasBlockView}
                   onSelectBlock={onSelectBlock}
                 />
               ),
@@ -437,7 +392,7 @@ function renderBackgroundImageOverlayChildren(opts: {
       <BlockView
         id={cid}
         template={template}
-        canvasSelection={canvasSelection}
+        canvasBlockView={canvasBlockView}
         onSelectBlock={onSelectBlock}
       />
     ),
@@ -451,11 +406,10 @@ function renderWrapperBackgroundImagePreview(opts: {
   childIds: string[];
   layoutProps?: LayoutBlockProps;
   template: EmailTemplate;
-  canvasSelection: CanvasSelectionContext;
+  canvasBlockView: CanvasBlockViewContext;
   onSelectBlock: (id: string | null) => void;
   overlayPadding?: unknown;
   selectTargetId?: string | null;
-  selectionKind?: "node" | "email-root-inner";
   outerStyle?: CSSProperties;
   enableHugIntrinsicHeight?: boolean;
   insertSlot?: EmailChildInsertSlotConfig;
@@ -467,10 +421,9 @@ function renderWrapperBackgroundImagePreview(opts: {
     childIds,
     layoutProps,
     template,
-    canvasSelection,
+    canvasBlockView,
     onSelectBlock,
     overlayPadding,
-    selectionKind = "node",
     outerStyle,
     enableHugIntrinsicHeight,
     insertSlot,
@@ -492,8 +445,6 @@ function renderWrapperBackgroundImagePreview(opts: {
     wrapperStyle?.contentAlign as WrapperContentAlign | undefined
   );
 
-  const nodeSel = selectionClassName(canvasSelection, blockId, selectionKind);
-
   const selectBlock =
     (targetId: string | null): MouseEventHandler<HTMLElement> =>
     (e) => {
@@ -508,7 +459,6 @@ function renderWrapperBackgroundImagePreview(opts: {
   return (
     <WrapperBackgroundImageCanvasShell
       layout={layout}
-      className={nodeSel}
       dataProps={canvasPreviewBlockDataProps(blockId, wrapperStyle)}
       onClick={selectBlock(selectTargetId)}
       onLinkNavigate={stopCanvasLinkNavigation}
@@ -520,7 +470,7 @@ function renderWrapperBackgroundImagePreview(opts: {
         wrapperStyle,
         contentAlign: wrapperContentAlign,
         template,
-        canvasSelection,
+        canvasBlockView,
         onSelectBlock,
         insertSlot,
         columnInsertSlot,
@@ -532,40 +482,27 @@ function renderWrapperBackgroundImagePreview(opts: {
 type BlockViewProps = {
   id: string;
   template: EmailTemplate;
-  canvasSelection: CanvasSelectionContext;
+  canvasBlockView: CanvasBlockViewContext;
   onSelectBlock: (id: string | null) => void;
 };
 
-function canvasSelectionRefKey(ref: VirtualBlockRef | null): string {
-  return ref ? refToStableKey(ref) : "";
-}
-
 function blockViewPropsAreEqual(prev: BlockViewProps, next: BlockViewProps): boolean {
-  if (
-    prev.id !== next.id ||
-    prev.template !== next.template ||
-    prev.onSelectBlock !== next.onSelectBlock ||
-    prev.canvasSelection.dragSyncKey !== next.canvasSelection.dragSyncKey ||
-    canvasSelectionRefKey(prev.canvasSelection.selectedBlockRef) !==
-      canvasSelectionRefKey(next.canvasSelection.selectedBlockRef)
-  ) {
-    return false;
-  }
-  const blockType = prev.template.blocks[prev.id]?.type;
   return (
-    blockViewSelectionDigest(prev.canvasSelection, prev.id, blockType) ===
-    blockViewSelectionDigest(next.canvasSelection, next.id, blockType)
+    prev.id === next.id &&
+    prev.template === next.template &&
+    prev.onSelectBlock === next.onSelectBlock &&
+    prev.canvasBlockView.dragSyncKey === next.canvasBlockView.dragSyncKey
   );
 }
 
 function renderGridMatrixSlotChild(params: {
   childId: string;
   template: EmailTemplate;
-  canvasSelection: CanvasSelectionContext;
+  canvasBlockView: CanvasBlockViewContext;
   onSelectBlock: (id: string | null) => void;
   slotValign: ReturnType<typeof gridMatrixSlotTableCellAttrs>["valign"];
 }): ReactElement {
-  const { childId, template, canvasSelection, onSelectBlock, slotValign } = params;
+  const { childId, template, canvasBlockView, onSelectBlock, slotValign } = params;
   const wrapStyle = gridMatrixSlotChildWrapStyle(
     template.blocks[childId]?.wrapperStyle?.widthMode,
     slotValign
@@ -574,14 +511,14 @@ function renderGridMatrixSlotChild(params: {
     <BlockView
       id={childId}
       template={template}
-      canvasSelection={canvasSelection}
+      canvasBlockView={canvasBlockView}
       onSelectBlock={onSelectBlock}
     />
   );
   return wrapStyle ? <div style={wrapStyle}>{childView}</div> : childView;
 }
 
-function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockViewProps) {
+function BlockViewImpl({ id, template, canvasBlockView, onSelectBlock }: BlockViewProps) {
   const dragInsert = useCanvasDragInsert();
   const barInsertSlot = buildEmailChildInsertSlot(dragInsert, id, "bar");
   const columnInsertSlot = buildEmailChildInsertSlot(dragInsert, id, "column");
@@ -694,7 +631,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
     const rootGapMode = normalizeLayoutGapMode(props.gapMode);
     const rootGapFixed = (props.gap as string) ?? "0";
     const rootGapAuto = rootGapMode === "auto";
-    const innerSel = selectionClassName(canvasSelection, id, "email-root-inner");
     const rootBgImg = b.wrapperStyle?.backgroundImage;
     const hasRootBackgroundImage =
       rootBgImg && typeof rootBgImg.src === "string" && rootBgImg.src.trim().length > 0;
@@ -711,11 +647,10 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
           childIds: b.children,
           layoutProps: props as LayoutBlockProps,
           template,
-          canvasSelection,
+          canvasBlockView,
           onSelectBlock,
           overlayPadding: props.padding,
           selectTargetId: id,
-          selectionKind: "email-root-inner",
           outerStyle: {
             margin: "0 auto",
             ...rootBorderCss,
@@ -730,7 +665,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
 
     return (
       <div
-        className={innerSel}
         {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
         onClick={selectBlock(id)}
         style={{
@@ -758,7 +692,7 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
             <BlockView
               id={cid}
               template={template}
-              canvasSelection={canvasSelection}
+              canvasBlockView={canvasBlockView}
               onSelectBlock={onSelectBlock}
             />
           ),
@@ -766,8 +700,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       </div>
     );
   }
-
-  const nodeSel = selectionClassName(canvasSelection, id, "node");
 
   if (b.type === "layout") {
     const props = b.props;
@@ -790,7 +722,7 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
         childIds: b.children,
         layoutProps: props,
         template,
-        canvasSelection,
+        canvasBlockView,
         onSelectBlock,
         insertSlot: barInsertSlot,
         columnInsertSlot,
@@ -863,7 +795,7 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
                   <BlockView
                     id={cid}
                     template={template}
-                    canvasSelection={canvasSelection}
+                    canvasBlockView={canvasBlockView}
                     onSelectBlock={onSelectBlock}
                   />
                 ),
@@ -875,7 +807,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
 
       return (
         <div
-          className={nodeSel}
           {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
           onClick={selectBlock(id)}
           style={{
@@ -932,7 +863,7 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
         <BlockView
           id={cid}
           template={template}
-          canvasSelection={canvasSelection}
+          canvasBlockView={canvasBlockView}
           onSelectBlock={onSelectBlock}
         />
       ),
@@ -940,7 +871,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
 
     return (
       <div
-        className={nodeSel}
         {...canvasPreviewBlockDataProps(id, b.wrapperStyle)}
         onClick={selectBlock(id)}
         style={{
@@ -1049,7 +979,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       selectBlock(id)(e);
     };
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: onTextClick,
       wrapperStyle: b.wrapperStyle,
@@ -1072,7 +1001,7 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       childIds: b.children,
       layoutProps: b.props,
       template,
-      canvasSelection,
+      canvasBlockView,
       onSelectBlock,
       enableHugIntrinsicHeight: true,
       insertSlot: barInsertSlot,
@@ -1080,7 +1009,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
     });
     if (bgPreview) return bgPreview;
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: selectBlock(id),
       wrapperStyle: b.wrapperStyle,
@@ -1124,7 +1052,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       defaultMode: "hug",
     });
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: selectBlock(id),
       wrapperStyle: b.wrapperStyle,
@@ -1168,7 +1095,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       defaultMode: "fill",
     });
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: selectBlock(id),
       wrapperStyle: b.wrapperStyle,
@@ -1203,7 +1129,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       defaultMode: "fill",
     });
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: selectBlock(id),
       wrapperStyle: b.wrapperStyle,
@@ -1365,7 +1290,7 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
                         {renderGridMatrixSlotChild({
                           childId: cid,
                           template,
-                          canvasSelection,
+                          canvasBlockView,
                           onSelectBlock,
                           slotValign: slotCellAlign.valign,
                         })}
@@ -1405,7 +1330,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
       return (
         <WrapperBackgroundImageCanvasShell
           layout={gridBgLayout}
-          className={nodeSel}
           dataProps={canvasPreviewBlockDataProps(id, b.wrapperStyle)}
           onClick={selectBlock(id)}
           onLinkNavigate={stopCanvasLinkNavigation}
@@ -1416,7 +1340,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
     }
 
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: selectBlock(id),
       wrapperStyle: b.wrapperStyle,
@@ -1434,7 +1357,6 @@ function BlockViewImpl({ id, template, canvasSelection, onSelectBlock }: BlockVi
     const link = typeof props.link === "string" ? props.link.trim() : "";
     const iconNode = <IconGlyph src={iconSrc} size={size} color={iconColor} />;
     return renderPresentationLeafShell({
-      className: nodeSel,
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
       onClick: selectBlock(id),
       wrapperStyle: b.wrapperStyle,
@@ -1517,15 +1439,10 @@ function EmailPreviewImpl({
     dragInsert?.enabled && dragInsert.isDragging
       ? `drag:${dragInsert.activeOverSlotId ?? ""}`
       : "idle";
-  const canvasSelection = useMemo(
-    (): CanvasSelectionContext => ({
-      previewModel,
-      selectedBlockRef,
-      refIndex,
-      rootSelectionOnViewport,
-      dragSyncKey,
-    }),
-    [previewModel, selectedBlockRef, refIndex, rootSelectionOnViewport, dragSyncKey]
+  const previewScopeRef = useRef<HTMLDivElement>(null);
+  const canvasBlockView = useMemo(
+    (): CanvasBlockViewContext => ({ dragSyncKey }),
+    [dragSyncKey]
   );
   const dimensionPreviewValue = useMemo(
     () => ({ previewViewportPx, rootConfiguredWidthPx }),
@@ -1545,27 +1462,27 @@ function EmailPreviewImpl({
       }}
     >
       <div
-        className={[
-          "email-preview-viewport",
-          isPreviewRootBlockSelected(canvasSelection, rootBlockId) && rootSelectionOnViewport
-            ? "email-preview-selected"
-            : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
+        className="email-preview-viewport"
         style={resolvePreviewViewportClipCss(previewViewportPx)}
       >
         <CanvasDimensionPreviewProvider value={dimensionPreviewValue}>
-          <div className="email-preview-scope">
+          <div ref={previewScopeRef} className="email-preview-scope">
             <BlockView
               id={rootBlockId}
               template={template}
-              canvasSelection={canvasSelection}
+              canvasBlockView={canvasBlockView}
               onSelectBlock={handleSelectBlock}
             />
           </div>
         </CanvasDimensionPreviewProvider>
       </div>
+      <CanvasSelectionOverlay
+        scopeRef={previewScopeRef}
+        selectedBlockRef={selectedBlockRef}
+        refIndex={refIndex}
+        rootBlockId={rootBlockId}
+        rootSelectionOnViewport={rootSelectionOnViewport}
+      />
     </div>
   );
 }

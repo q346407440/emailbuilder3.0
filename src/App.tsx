@@ -2,14 +2,11 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   startTransition,
-  type CSSProperties,
 } from "react";
-import { createPortal } from "react-dom";
 import type { PublishStatus } from "./publish-status-contract";
 import type { EmailListItem, EmailMeta, EmailPayload, EmailTemplate } from "./types/email";
 import type { LayoutManifest } from "./layout-variant-contract/types";
@@ -17,11 +14,8 @@ import type { TokenPresets } from "./types/tokenPreset";
 import * as api from "./api/client";
 import {
   buildRepeatPreviewModel,
-  findPreviewNodeByRef,
   previewModelToFlatTemplate,
   applyThemeToPreviewModel,
-  refToStableKey,
-  resolvePhysicalBlockId,
 } from "./repeat-runtime";
 import { resolveBlockTheme } from "./lib/resolveThemeInTemplate";
 import { applyVisibilityRules, templateHasVisibilityRules } from "./lib/visibility";
@@ -52,7 +46,7 @@ import {
   toastWarning,
 } from "./lib/appToast";
 import type { ClassifiedValidationIssue } from "./lib/validationIssueRouting";
-import { useValidationIssuesForContext } from "./hooks/useValidationIssuesForContext";
+import { useValidationIssuesForEditor } from "./hooks/useValidationIssuesForEditor";
 import type { InspectorMainTab } from "./components/AdminInspectorTabs";
 import { validateTokenPresets } from "./lib/validateTokenPresets";
 import { createDefaultTokenPresets } from "./lib/defaultTokenPresets";
@@ -71,13 +65,13 @@ import { isThemeRef } from "./types/themeRef";
 import { getLastSelectedEmailKey, setLastSelectedEmailKey } from "./lib/lastSelectedEmail";
 import { normalizeEmailRootBlock } from "./lib/normalizeEmailRoot";
 import { CanvasDragInsertRoot } from "./components/canvas/CanvasDragInsertRoot";
-import { CanvasDragPaletteItem } from "./components/canvas/CanvasDragPaletteItem";
 import { TemplateValidationDock } from "./components/TemplateValidationDock";
 import { resolveCanvasPreviewViewportWidth } from "./editor-canvas-contract";
 import { stableStringify } from "./lib/stableStringify";
 import { EditorEmailPreviewHost } from "./components/EditorEmailPreviewHost";
 import { EditorLeftPanelHost } from "./components/EditorLeftPanelHost";
 import { EditorInspectorColumnHost } from "./components/EditorInspectorColumnHost";
+import { EditorCanvasBlockActionsHost } from "./components/EditorCanvasBlockActionsHost";
 import {
   resetEditorUiState,
   getEditorUiState,
@@ -106,23 +100,17 @@ import {
   shouldShowEmailDataSyncToast,
 } from "./lib/emailDataSyncToast";
 import { TopbarHomeBackButton } from "./components/ui/TopbarHomeBackButton";
-import {
-  computeCanvasBlockActionLayout,
-  countCanvasLeftActionButtons,
-  escapePreviewBlockIdForSelector,
-  pickCanvasBlockActionHorizontalAnchorRect,
-  type CanvasBlockActionLayout,
-} from "./lib/canvasBlockActionLayout";
 import { isCanvasNonBlockClickTarget } from "./lib/canvasEmptySelection";
-import { resolveInspectorPanelTarget } from "./lib/inspectorPanelTarget";
+import {
+  getSelectedBlockRefAtInvoke,
+  getSelectedPhysicalBlockIdAtInvoke,
+} from "./lib/editorSelectionAtInvoke";
 import { parseCssPx } from "./lib/canvasDimensionResolve";
 import { EMAIL_ROOT_FIXED_WIDTH } from "./render-defaults-contract/values";
 import { deleteBlockFromTemplate } from "./lib/deleteTemplateBlock";
 import { applyObjectBindMappingsToTemplate } from "./lib/objectBindRegion";
-import { isRepeatListBindingChildBlock } from "./lib/repeatRegion";
 import {
   duplicateBlockBelow,
-  getBlockSiblingMoveState,
   moveBlockAmongSiblings,
 } from "./lib/templateBlockSiblingOps";
 import {
@@ -132,7 +120,6 @@ import {
 } from "./lib/templateBlockInsert";
 import type { BlockCatalogEntry } from "./lib/blockDefaults";
 import type { BlockMaster, SectionMaster } from "./types/master";
-import { canSaveAsSection } from "./section-master-contract";
 import {
   mergedBlockFromPreviewModel,
   previewFlatTemplateFromModel,
@@ -324,7 +311,6 @@ export default function App() {
   const [tokenPresets, setTokenPresets] = useState<TokenPresets | null>(null);
   const [globalTokenPresets, setGlobalTokenPresets] = useState<Record<string, TokenPresets>>({});
   const workbenchView = useEditorUiSelector((s) => s.workbenchView);
-  const selectedBlockRef = useEditorUiSelector((s) => s.selectedBlockRef);
   const canvasPreviewViewport = useEditorUiSelector((s) => s.canvasPreviewViewport);
   const { selectBlock } = useEditorUiActions();
   const [selectedPayloadSlotId, setSelectedPayloadSlotId] = useState<string | null>(null);
@@ -461,8 +447,6 @@ export default function App() {
   const lastPersistErrorRef = useRef("");
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
   const canvasStageRef = useRef<HTMLDivElement | null>(null);
-  const [canvasBlockActionLayout, setCanvasBlockActionLayout] =
-    useState<CanvasBlockActionLayout | null>(null);
 
   const loadList = useCallback(async (opts?: { silent?: boolean }) => {
     const silent = opts?.silent ?? false;
@@ -832,167 +816,7 @@ export default function App() {
     () => toSectionCatalogItems(Object.values(sectionMastersById)),
     [sectionMastersById]
   );
-  const selectedCanvasBlockKey = selectedBlockRef ? refToStableKey(selectedBlockRef) : null;
-  const inspectorPanelTarget = useMemo(
-    () => (template ? resolveInspectorPanelTarget(template, selectedBlockRef) : null),
-    [template, selectedBlockRef]
-  );
-  const selectedPhysicalBlockId = selectedBlockRef
-    ? resolvePhysicalBlockId(selectedBlockRef)
-    : null;
-  const selectedPreviewNode =
-    previewModel && selectedBlockRef
-      ? findPreviewNodeByRef(previewModel, selectedBlockRef)
-      : null;
-  const selectedCanvasBlock = selectedPreviewNode?.block ?? null;
-  const selectedSupportsChildInsert =
-    selectedCanvasBlock?.type === "emailRoot" ||
-    selectedCanvasBlock?.type === "layout" ||
-    selectedCanvasBlock?.type === "grid" ||
-    selectedCanvasBlock?.type === "image";
-  const selectedSupportsBelowInsert = Boolean(
-    selectedCanvasBlock && selectedCanvasBlock.type !== "emailRoot" && selectedCanvasBlock.parentId
-  );
-  const selectedTemplateBlock = useMemo(() => {
-    if (!template || !selectedPhysicalBlockId) return null;
-    return template.blocks[selectedPhysicalBlockId] ?? null;
-  }, [template, selectedPhysicalBlockId]);
-  const selectedCanSaveAsSection = Boolean(
-    selectedTemplateBlock && canSaveAsSection(selectedTemplateBlock)
-  );
-  const showCanvasInsertActions =
-    selectedSupportsChildInsert || selectedSupportsBelowInsert || selectedCanSaveAsSection;
-  const selectedCanDelete = Boolean(
-    selectedCanvasBlock && selectedCanvasBlock.type !== "emailRoot"
-  );
-  const isRepeatListBindingChild = useMemo(() => {
-    if (!template || !selectedPhysicalBlockId) return false;
-    return isRepeatListBindingChildBlock(template, selectedPhysicalBlockId);
-  }, [template, selectedPhysicalBlockId]);
-  const siblingMoveState = useMemo(() => {
-    if (!template || !selectedPhysicalBlockId) return null;
-    return getBlockSiblingMoveState(template, selectedPhysicalBlockId);
-  }, [template, selectedPhysicalBlockId]);
-  const selectedCanDuplicate = Boolean(
-    selectedTemplateBlock &&
-      selectedTemplateBlock.type !== "emailRoot" &&
-      selectedTemplateBlock.parentId
-  );
-  const selectedCanDragMove = Boolean(
-    selectedTemplateBlock &&
-      selectedTemplateBlock.type !== "emailRoot" &&
-      selectedTemplateBlock.parentId &&
-      !isRepeatListBindingChild
-  );
-  const selectedCanvasBlockLabel =
-    selectedPhysicalBlockId && template
-      ? template.blockMeta?.[selectedPhysicalBlockId]?.name?.trim() || selectedPhysicalBlockId
-      : "";
-  const showCanvasLeftActions =
-    !isRepeatListBindingChild &&
-    (selectedCanDragMove ||
-      Boolean(siblingMoveState) ||
-      selectedCanDuplicate ||
-      showCanvasInsertActions);
-  const showCanvasBlockActions =
-    !isRepeatListBindingChild &&
-    (showCanvasLeftActions || selectedCanDelete);
   const canvasActionsBusy = insertingBlock || deletingBlock || reorderingBlock;
-
-  const canvasLeftActionButtonCount = showCanvasLeftActions
-    ? countCanvasLeftActionButtons({
-        canDragMove: selectedCanDragMove,
-        siblingMoveEnabled: Boolean(siblingMoveState),
-        canDuplicate: selectedCanDuplicate,
-        supportsChildInsert: selectedSupportsChildInsert,
-        supportsBelowInsert: selectedSupportsBelowInsert,
-        canSaveAsSection: selectedCanSaveAsSection,
-      })
-    : 0;
-  const canvasDeleteActionButtonCount = selectedCanDelete ? 1 : 0;
-
-  useLayoutEffect(() => {
-    if (!previewModel || !selectedCanvasBlockKey || !showCanvasBlockActions) {
-      setCanvasBlockActionLayout(null);
-      return;
-    }
-
-    const previewRootId = previewModel.root.block.id;
-
-    const updateLayout = () => {
-      const stage = canvasStageRef.current;
-      const scroll = canvasScrollRef.current;
-      if (!stage || !scroll) {
-        setCanvasBlockActionLayout(null);
-        return;
-      }
-      const rootEl = scroll.querySelector<HTMLElement>(
-        `[data-email-preview-block="${escapePreviewBlockIdForSelector(previewRootId)}"]`
-      );
-      const selectedEl = scroll.querySelector<HTMLElement>(
-        `[data-email-preview-block="${escapePreviewBlockIdForSelector(selectedCanvasBlockKey)}"]`
-      );
-      if (!rootEl || !selectedEl) {
-        setCanvasBlockActionLayout(null);
-        return;
-      }
-      const viewportEl = scroll.querySelector<HTMLElement>(".email-preview-viewport");
-      const horizontalAnchorRect = pickCanvasBlockActionHorizontalAnchorRect({
-        previewViewportPx: canvasPreviewViewportPx,
-        rootConfiguredWidthPx: canvasRootConfiguredWidthPx,
-        previewRootRect: rootEl.getBoundingClientRect(),
-        previewViewportRect: viewportEl?.getBoundingClientRect() ?? null,
-      });
-      const layout = computeCanvasBlockActionLayout({
-        stageRect: stage.getBoundingClientRect(),
-        horizontalAnchorRect,
-        selectedBlockRect: selectedEl.getBoundingClientRect(),
-        insertButtonCount: canvasLeftActionButtonCount,
-        deleteButtonCount: canvasDeleteActionButtonCount,
-      });
-      setCanvasBlockActionLayout((prev) => {
-        if (
-          prev &&
-          prev.insert.top === layout.insert.top &&
-          prev.insert.verticalAlign === layout.insert.verticalAlign &&
-          prev.delete.top === layout.delete.top &&
-          prev.delete.verticalAlign === layout.delete.verticalAlign &&
-          prev.insertLeft === layout.insertLeft &&
-          prev.deleteLeft === layout.deleteLeft
-        ) {
-          return prev;
-        }
-        return layout;
-      });
-    };
-
-    updateLayout();
-    // scroll 高频触发：用 rAF 合并，每帧最多测量一次，避免同步 getBoundingClientRect 风暴。
-    let rafId = 0;
-    const scheduleUpdateLayout = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        updateLayout();
-      });
-    };
-    const scroll = canvasScrollRef.current;
-    scroll?.addEventListener("scroll", scheduleUpdateLayout, { passive: true });
-    window.addEventListener("resize", scheduleUpdateLayout);
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      scroll?.removeEventListener("scroll", scheduleUpdateLayout);
-      window.removeEventListener("resize", scheduleUpdateLayout);
-    };
-  }, [
-    previewModel,
-    selectedCanvasBlockKey,
-    showCanvasBlockActions,
-    canvasLeftActionButtonCount,
-    canvasDeleteActionButtonCount,
-    canvasPreviewViewportPx,
-    canvasRootConfiguredWidthPx,
-  ]);
 
   const templatesForPayloadValidation = useMemo(() => {
     if (!template || !layoutVariantId) return [];
@@ -1077,11 +901,9 @@ export default function App() {
     [validationIssues, revealDeferredValidation]
   );
 
-  const validationContext = useValidationIssuesForContext({
+  const validationContext = useValidationIssuesForEditor({
     issues: validationIssuesForDisplay,
     template,
-    selectedBlockRef,
-    inspectorPanelBlockId: inspectorPanelTarget?.blockId ?? null,
     workbenchView,
   });
 
@@ -1451,7 +1273,7 @@ export default function App() {
       try {
         const result = insertCatalogBlockIntoTemplate({
           template,
-          selectedBlockId: selectedPhysicalBlockId,
+          selectedBlockId: getSelectedPhysicalBlockIdAtInvoke(),
           mode: insertModalMode,
           entry,
           tokenPresets,
@@ -1472,7 +1294,7 @@ export default function App() {
         setInsertingBlock(false);
       }
     },
-    [template, selectedPhysicalBlockId, insertModalMode, selectBlock, tokenPresets, blockMastersById]
+    [template, insertModalMode, selectBlock, tokenPresets, blockMastersById, reportOperationalError]
   );
 
   const handlePickInsertSection = useCallback(
@@ -1487,7 +1309,7 @@ export default function App() {
       try {
         const result = insertSectionIntoTemplate({
           template,
-          selectedBlockId: selectedPhysicalBlockId,
+          selectedBlockId: getSelectedPhysicalBlockIdAtInvoke(),
           mode: insertModalMode,
           section,
           tokenPresets,
@@ -1509,16 +1331,18 @@ export default function App() {
     },
     [
       template,
-      selectedPhysicalBlockId,
       insertModalMode,
       selectBlock,
       tokenPresets,
       sectionMastersById,
+      reportOperationalError,
     ]
   );
 
   const handleSaveSection = useCallback(
     async (name: string) => {
+      const selectedPhysicalBlockId = getSelectedPhysicalBlockIdAtInvoke();
+      const selectedBlockRef = getSelectedBlockRefAtInvoke();
       if (!template || !selectedPhysicalBlockId) return;
       setSavingSection(true);
       try {
@@ -1551,8 +1375,6 @@ export default function App() {
       payload,
       previewPayload,
       previewModel,
-      selectedPhysicalBlockId,
-      selectedBlockRef,
       sectionMastersById,
       tokenPresets,
     ]
@@ -1602,6 +1424,7 @@ export default function App() {
   );
 
   const handleDeleteSelectedCanvasBlock = useCallback(async () => {
+    const selectedPhysicalBlockId = getSelectedPhysicalBlockIdAtInvoke();
     if (!template || !selectedPhysicalBlockId || deletingBlock) return;
     const block = template.blocks[selectedPhysicalBlockId];
     if (!block || block.type === "emailRoot") return;
@@ -1629,10 +1452,11 @@ export default function App() {
     } finally {
       setDeletingBlock(false);
     }
-  }, [confirm, template, selectedPhysicalBlockId, deletingBlock, selectBlock]);
+  }, [confirm, template, deletingBlock, selectBlock, reportOperationalError]);
 
   const handleMoveSelectedCanvasBlock = useCallback(
     (direction: "up" | "down") => {
+      const selectedPhysicalBlockId = getSelectedPhysicalBlockIdAtInvoke();
       if (!template || !selectedPhysicalBlockId || canvasActionsBusy) return;
       setReorderingBlock(true);
       try {
@@ -1645,10 +1469,11 @@ export default function App() {
         setReorderingBlock(false);
       }
     },
-    [template, selectedPhysicalBlockId, canvasActionsBusy]
+    [template, canvasActionsBusy, reportOperationalError]
   );
 
   const handleDuplicateSelectedCanvasBlock = useCallback(() => {
+    const selectedPhysicalBlockId = getSelectedPhysicalBlockIdAtInvoke();
     if (!template || !selectedPhysicalBlockId || canvasActionsBusy) return;
     setReorderingBlock(true);
     try {
@@ -1665,7 +1490,7 @@ export default function App() {
     } finally {
       setReorderingBlock(false);
     }
-  }, [template, selectedPhysicalBlockId, canvasActionsBusy, selectBlock]);
+  }, [template, canvasActionsBusy, selectBlock, reportOperationalError]);
 
   const save = useCallback(async () => {
     if (!emailKey || !template || !payload) return;
@@ -2434,6 +2259,20 @@ export default function App() {
             }}
             onSave={handleSaveSection}
           />
+          <EditorCanvasBlockActionsHost
+            template={template}
+            previewModel={previewModel}
+            canvasScrollRef={canvasScrollRef}
+            canvasStageRef={canvasStageRef}
+            canvasPreviewViewportPx={canvasPreviewViewportPx}
+            canvasRootConfiguredWidthPx={canvasRootConfiguredWidthPx}
+            canvasActionsBusy={canvasActionsBusy}
+            onOpenInsertModal={openInsertModal}
+            onOpenSaveSectionModal={() => setSaveSectionModalOpen(true)}
+            onDeleteSelectedBlock={handleDeleteSelectedCanvasBlock}
+            onMoveSelectedBlock={handleMoveSelectedCanvasBlock}
+            onDuplicateSelectedBlock={handleDuplicateSelectedCanvasBlock}
+          />
         </section>
         <EditorInspectorColumnHost
           layoutPrewarmed={layoutPrewarmed}
@@ -2474,122 +2313,6 @@ export default function App() {
           getSlotWarning={validationContext.getSlotWarning}
         />
       </main>
-      {previewModel && showCanvasBlockActions && canvasBlockActionLayout
-        ? createPortal(
-            <div className="canvas-block-actions" aria-label="画布区块操作">
-              {showCanvasLeftActions ? (
-                <div
-                  className="canvas-block-actions__insert"
-                  style={
-                    {
-                      top: `${canvasBlockActionLayout.insert.top}px`,
-                      left: `${canvasBlockActionLayout.insertLeft}px`,
-                    } as CSSProperties
-                  }
-                >
-                  {selectedCanDragMove && selectedPhysicalBlockId ? (
-                    <CanvasDragPaletteItem
-                      payload={{
-                        kind: "move",
-                        blockId: selectedPhysicalBlockId,
-                        label: selectedCanvasBlockLabel,
-                      }}
-                      activatorOnly
-                    >
-                      <ShopSecondaryButton
-                        className="canvas-insert-actions__btn"
-                        disabled={canvasActionsBusy}
-                        title="拖到目标插入位置后松开以移动（含跨父级）"
-                      >
-                        拖拽移动
-                      </ShopSecondaryButton>
-                    </CanvasDragPaletteItem>
-                  ) : null}
-                  {siblingMoveState ? (
-                    <>
-                      <ShopSecondaryButton
-                        className="canvas-insert-actions__btn"
-                        disabled={canvasActionsBusy || !siblingMoveState.canMoveUp}
-                        title="在父级 children 中上移一位"
-                        onClick={() => handleMoveSelectedCanvasBlock("up")}
-                      >
-                        上移
-                      </ShopSecondaryButton>
-                      <ShopSecondaryButton
-                        className="canvas-insert-actions__btn"
-                        disabled={canvasActionsBusy || !siblingMoveState.canMoveDown}
-                        title="在父级 children 中下移一位"
-                        onClick={() => handleMoveSelectedCanvasBlock("down")}
-                      >
-                        下移
-                      </ShopSecondaryButton>
-                    </>
-                  ) : null}
-                  {selectedCanDuplicate ? (
-                    <ShopSecondaryButton
-                      className="canvas-insert-actions__btn"
-                      disabled={canvasActionsBusy}
-                      title="在当前区块下方复制整块子树（含样式与变量绑定）"
-                      onClick={handleDuplicateSelectedCanvasBlock}
-                    >
-                      复制
-                    </ShopSecondaryButton>
-                  ) : null}
-                  {selectedSupportsChildInsert ? (
-                    <ShopSecondaryButton
-                      className="canvas-insert-actions__btn"
-                      disabled={canvasActionsBusy}
-                      onClick={() => openInsertModal("child")}
-                    >
-                      插入子级
-                    </ShopSecondaryButton>
-                  ) : null}
-                  {selectedSupportsBelowInsert ? (
-                    <ShopSecondaryButton
-                      className="canvas-insert-actions__btn"
-                      disabled={canvasActionsBusy}
-                      title="在当前区块后插入同级区块"
-                      onClick={() => openInsertModal("below")}
-                    >
-                      下方插入
-                    </ShopSecondaryButton>
-                  ) : null}
-                  {selectedCanSaveAsSection ? (
-                    <ShopSecondaryButton
-                      className="canvas-insert-actions__btn"
-                      disabled={canvasActionsBusy}
-                      title="将当前容器及其子级保存为可复用模块"
-                      onClick={() => setSaveSectionModalOpen(true)}
-                    >
-                      存为模块
-                    </ShopSecondaryButton>
-                  ) : null}
-                </div>
-              ) : null}
-              {selectedCanDelete ? (
-                <div
-                  className="canvas-block-actions__delete"
-                  style={
-                    {
-                      top: `${canvasBlockActionLayout.delete.top}px`,
-                      left: `${canvasBlockActionLayout.deleteLeft}px`,
-                    } as CSSProperties
-                  }
-                >
-                  <ShopSecondaryButton
-                    className="canvas-delete-actions__btn"
-                    disabled={canvasActionsBusy}
-                    title="删除当前区块（含子级）"
-                    onClick={handleDeleteSelectedCanvasBlock}
-                  >
-                    删除
-                  </ShopSecondaryButton>
-                </div>
-              ) : null}
-            </div>,
-            document.body
-          )
-        : null}
       </CanvasDragInsertRoot>
       {validationIssuesForDisplay.length > 0 ? (
         <TemplateValidationDock

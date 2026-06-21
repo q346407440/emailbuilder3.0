@@ -7,12 +7,21 @@ export type InspectorMainTab = "content" | "style" | "layout" | "list" | "visibi
 type Props = {
   active: InspectorMainTab;
   onChange: (tab: InspectorMainTab) => void;
+  /** 为 false 时暂不挂载 Tab 面板（首次切换后再挂载并保留） */
+  shouldRenderPane?: (tab: InspectorMainTab) => boolean;
   contentPane: ReactNode;
   stylePane: ReactNode;
   layoutPane: ReactNode;
   listPane?: ReactNode;
   visibilityPane?: ReactNode;
 };
+
+function renderTabPanel(tab: InspectorMainTab, pane: ReactNode, shouldRenderPane?: (tab: InspectorMainTab) => boolean) {
+  if (shouldRenderPane && !shouldRenderPane(tab)) {
+    return null;
+  }
+  return <div className="inspector-tab-panel">{pane}</div>;
+}
 
 /**
  * 属性面板专用 Tabs：封装 Ant Design Tabs，统一样式类名便于与工作台对齐。
@@ -21,6 +30,7 @@ type Props = {
 export function AdminInspectorTabs({
   active,
   onChange,
+  shouldRenderPane,
   contentPane,
   stylePane,
   layoutPane,
@@ -31,28 +41,28 @@ export function AdminInspectorTabs({
     {
       key: "content",
       label: "内容",
-      forceRender: true,
-      children: <div className="inspector-tab-panel">{contentPane}</div>,
+      forceRender: shouldRenderPane ? shouldRenderPane("content") : false,
+      children: renderTabPanel("content", contentPane, shouldRenderPane),
     },
     {
       key: "style",
       label: "样式",
-      forceRender: true,
-      children: <div className="inspector-tab-panel">{stylePane}</div>,
+      forceRender: shouldRenderPane ? shouldRenderPane("style") : false,
+      children: renderTabPanel("style", stylePane, shouldRenderPane),
     },
     {
       key: "layout",
       label: "布局",
-      forceRender: true,
-      children: <div className="inspector-tab-panel">{layoutPane}</div>,
+      forceRender: shouldRenderPane ? shouldRenderPane("layout") : false,
+      children: renderTabPanel("layout", layoutPane, shouldRenderPane),
     },
     ...(listPane
       ? [
           {
             key: "list",
             label: "数据组",
-            forceRender: true,
-            children: <div className="inspector-tab-panel">{listPane}</div>,
+            forceRender: shouldRenderPane ? shouldRenderPane("list") : false,
+            children: renderTabPanel("list", listPane, shouldRenderPane),
           },
         ]
       : []),
@@ -61,8 +71,8 @@ export function AdminInspectorTabs({
           {
             key: "visibility",
             label: "显隐",
-            forceRender: true,
-            children: <div className="inspector-tab-panel">{visibilityPane}</div>,
+            forceRender: shouldRenderPane ? shouldRenderPane("visibility") : false,
+            children: renderTabPanel("visibility", visibilityPane, shouldRenderPane),
           },
         ]
       : []),
