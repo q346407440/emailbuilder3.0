@@ -10,9 +10,9 @@ export type LayoutVariantEntry = {
   /** 版式层发布状态：活动 V2 仅可选用 published */
   publishStatus: PublishStatus;
   description?: string;
-  /** 创建时间（ISO）；用于同更新时间下的稳定排序 */
+  /** 创建时间（ISO）；顶栏 / 模板页版式列表按此倒序展示 */
   createdAt?: string;
-  /** 最近编辑时间（ISO）；用于模板页 / 顶栏版式列表按编辑倒序展示 */
+  /** 最近编辑时间（ISO）；重命名 / 发布状态变更时更新 */
   updatedAt?: string;
   /** 逻辑删除时间（ISO）；删除该字段即可恢复在编辑器中的展示 */
   deletedAt?: string;

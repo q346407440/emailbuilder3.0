@@ -1,5 +1,9 @@
 import { createDefaultAssetResolver } from "../lib/ai-pipeline/assetResolve";
-import { resolveStoreBadgeUrl } from "../lib/ai-pipeline/storeBadgeResolve";
+import { IMAGE_PLACEHOLDER_PUBLIC_PATH } from "../lib/imagePlaceholder";
+import {
+  resolveStoreBadgeAssetId,
+  resolveStoreBadgeUrl,
+} from "../lib/ai-pipeline/storeBadgeResolve";
 import type { AssetResolver } from "../lib/ai-pipeline/ports/AssetResolver";
 import type { EmailTemplate } from "../types/email";
 import type { AssetRequest } from "./buildCtx";
@@ -9,10 +13,11 @@ export type ResolvedAssetEntry = {
   kind: "image" | "icon";
   query: string;
   pack?: import("./types").IconPack;
-  required: boolean;
   ok: boolean;
   url?: string;
   alt?: string;
+  /** 摄影图搜图失败但已回落本地占位图时为 true（badge / icon 不适用）。 */
+  placeholderFallback?: boolean;
   reason?: string;
   detail?: string;
 };
@@ -23,24 +28,35 @@ export type ResolvedAssetsManifest = {
   items: ResolvedAssetEntry[];
 };
 
+function isStoreBadgeImageQuery(query: string): boolean {
+  return resolveStoreBadgeAssetId(query) !== null;
+}
+
 async function resolveOne(
   request: AssetRequest,
   resolver: AssetResolver
 ): Promise<ResolvedAssetEntry> {
-  const base = {
-    blockId: request.blockId,
-    kind: request.kind,
-    query: request.query,
-    required: request.required,
-    ...(request.kind === "icon" ? { pack: request.pack } : {}),
-  };
-
   if (request.kind === "image") {
-    const badge = resolveStoreBadgeUrl(request.query, {
-      assetBase: process.env.STORE_BADGE_ASSET_BASE?.trim() || process.env.PUBLIC_ASSET_BASE?.trim(),
-    });
-    if (badge) {
-      return { ...base, ok: true, url: badge.publicPath, alt: badge.alt };
+    const base = {
+      blockId: request.blockId,
+      kind: request.kind as const,
+      query: request.query,
+    };
+
+    if (isStoreBadgeImageQuery(request.query)) {
+      const badge = resolveStoreBadgeUrl(request.query, {
+        assetBase:
+          process.env.STORE_BADGE_ASSET_BASE?.trim() || process.env.PUBLIC_ASSET_BASE?.trim(),
+      });
+      if (badge) {
+        return { ...base, ok: true, url: badge.publicPath, alt: badge.alt };
+      }
+      return {
+        ...base,
+        ok: false,
+        reason: "STORE_BADGE_NOT_FOUND",
+        detail: `固定 badge 标识未解析到本地资产：${request.query}`,
+      };
     }
 
     const result = await resolver.resolve({
@@ -51,8 +67,23 @@ async function resolveOne(
     if (result.ok) {
       return { ...base, ok: true, url: result.url, alt: result.alt };
     }
-    return { ...base, ok: false, reason: result.reason, detail: result.detail };
+    return {
+      ...base,
+      ok: true,
+      url: IMAGE_PLACEHOLDER_PUBLIC_PATH,
+      alt: request.query,
+      placeholderFallback: true,
+      reason: result.reason,
+      detail: result.detail,
+    };
   }
+
+  const base = {
+    blockId: request.blockId,
+    kind: request.kind as const,
+    query: request.query,
+    pack: request.pack,
+  };
 
   const result = await resolver.resolve({
     kind: "icon-cdn",
@@ -125,14 +156,34 @@ export function remapResolvedManifestToRequests(
         : assetMatchKey("image", req.query);
     const hit = byKey.get(key);
     if (hit) {
-      return { ...hit, blockId: req.blockId, required: req.required };
+      return { ...hit, blockId: req.blockId };
+    }
+    if (req.kind === "image") {
+      if (isStoreBadgeImageQuery(req.query)) {
+        return {
+          blockId: req.blockId,
+          kind: "image",
+          query: req.query,
+          ok: false,
+          reason: "MANIFEST_QUERY_MISS",
+        };
+      }
+      return {
+        blockId: req.blockId,
+        kind: "image",
+        query: req.query,
+        ok: true,
+        url: IMAGE_PLACEHOLDER_PUBLIC_PATH,
+        alt: req.query,
+        placeholderFallback: true,
+        reason: "MANIFEST_QUERY_MISS",
+      };
     }
     return {
       blockId: req.blockId,
-      kind: req.kind,
+      kind: "icon",
       query: req.query,
-      required: req.required,
-      ...(req.kind === "icon" ? { pack: req.pack } : {}),
+      pack: req.pack,
       ok: false,
       reason: "MANIFEST_QUERY_MISS",
     };
@@ -148,7 +199,6 @@ export function backfillTemplateFromManifest(
 ): {
   template: EmailTemplate;
   resolvedCount: number;
-  unresolvedRequired: AssetRequest[];
   unresolvedOptional: AssetRequest[];
 } {
   const next = structuredClone(template) as EmailTemplate;
@@ -164,16 +214,14 @@ export function backfillTemplateFromManifest(
     manifest.items.filter((i) => i.ok && i.url).map((i) => i.blockId)
   );
 
-  const unresolvedRequired: AssetRequest[] = [];
   const unresolvedOptional: AssetRequest[] = [];
 
   for (const req of requests) {
     if (resolvedIds.has(req.blockId)) continue;
-    if (req.required) unresolvedRequired.push(req);
-    else unresolvedOptional.push(req);
+    unresolvedOptional.push(req);
   }
 
-  return { template: next, resolvedCount, unresolvedRequired, unresolvedOptional };
+  return { template: next, resolvedCount, unresolvedOptional };
 }
 
 /** 搜索 + 验活 + 回填（第 3 步完整入口）。 */
@@ -185,7 +233,6 @@ export async function resolveAndBackfillAssets(
   template: EmailTemplate;
   manifest: ResolvedAssetsManifest;
   resolvedCount: number;
-  unresolvedRequired: AssetRequest[];
   unresolvedOptional: AssetRequest[];
 }> {
   const manifest = await resolveAstAssetRequests(requests, resolver);

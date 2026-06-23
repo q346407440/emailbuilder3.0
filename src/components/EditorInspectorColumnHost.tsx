@@ -17,6 +17,7 @@ type Props = {
   payload: EmailPayload;
   previewPayload: EmailPayload;
   previewModel: RepeatPreviewModel | null;
+  previewFlatTemplate?: EmailTemplate | null;
   onUpdate: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onTemplateChange: (
     next: EmailTemplate,
@@ -81,6 +82,7 @@ export const EditorInspectorColumnHost = memo(function EditorInspectorColumnHost
           selectedBlockRef={selectedBlockRef}
           panelTarget={inspectorPanelTarget}
           previewModel={props.previewModel}
+          previewFlatTemplate={props.previewFlatTemplate}
           onUpdate={props.onUpdate}
           onTemplateChange={props.onTemplateChange}
           onDiscardPayloadSlotDraft={props.onDiscardPayloadSlotDraft}

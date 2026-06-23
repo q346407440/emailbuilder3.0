@@ -2,7 +2,7 @@ import type { InspectorMainTab } from "../components/AdminInspectorTabs";
 import type { EmailBlock } from "../types/email";
 import { isRepeatHostBlock } from "./repeatHostBlock";
 
-export const INSPECTOR_TAB_FALLBACK: InspectorMainTab = "style";
+export const INSPECTOR_TAB_FALLBACK: InspectorMainTab = "component";
 
 export type InspectorTabAvailability = Record<InspectorMainTab, boolean>;
 
@@ -21,9 +21,8 @@ export function buildInspectorTabAvailability(
   showRepeatRegionPanel: boolean
 ): InspectorTabAvailability {
   return {
-    content: true,
-    style: true,
-    layout: true,
+    component: true,
+    wrapper: true,
     list: showRepeatRegionPanel,
     visibility: !emailRootPanel && blockType !== "emailRoot",
   };

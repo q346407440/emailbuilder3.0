@@ -34,7 +34,7 @@ import { createRestoreAstRunLog } from "./restoreAstRunLog";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const LOG_TAG = "[restore-ast]";
-const RESTORE_AST_GENERATE_TIMEOUT_MS = 180_000;
+const RESTORE_AST_GENERATE_TIMEOUT_MS = 240_000;
 
 export type RunRestoreAstFromDesignImageInput = {
   emailKey: string;
@@ -201,18 +201,6 @@ export async function runRestoreAstFromDesignImage(
         "utf8"
       );
 
-      const requiredFailed = manifest.items.filter((item) => item.required && !item.ok);
-      if (requiredFailed.length > 0) {
-        const detail = requiredFailed
-          .slice(0, 3)
-          .map((item) => `${item.query}: ${item.reason ?? "失败"}`)
-          .join("；");
-        throw new AiPipelineError(
-          "VALIDATION_FAILED",
-          `必需图片/图标搜索失败（${requiredFailed.length} 个）${detail ? `：${detail}` : ""}`
-        );
-      }
-
       resolveStep.succeed();
       resolveDone = true;
       runLog.record("搜索远程素材", tResolve, {
@@ -230,10 +218,6 @@ export async function runRestoreAstFromDesignImage(
         mapped,
         assembledDraft.assets
       );
-
-      if (backfilled.unresolvedRequired.length > 0) {
-        throw new AiPipelineError("VALIDATION_FAILED", "必需资产未能回填到模板");
-      }
 
       const templateDisk = serializeTemplateToDisk(backfilled.template);
       await fs.writeFile(

@@ -25,7 +25,7 @@
 | `GEMINI_PIPELINE_MODEL` | Gemini 模型 id（如 `gemini-3.5-flash`） |
 | `LLM_PIPELINE_TEMPERATURE` | 厂商无关采样温度（默认 `1`） |
 | `LLM_PIPELINE_TOP_P` | 厂商无关 top-p（默认 `0.95`） |
-| `LLM_PIPELINE_MAX_OUTPUT_TOKENS` | 厂商无关最大输出 token（默认 `8192`） |
+| `LLM_PIPELINE_MAX_OUTPUT_TOKENS` | 厂商无关最大输出 token（默认 `32768`） |
 | `PEXELS_API_KEY` | Pexels 搜图 |
 
 详见 `.env.example`。

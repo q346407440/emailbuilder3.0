@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { EmailBlock } from "../types/email";
 import {
+  getButtonBodyFillValidationReason,
   getFillOptionTitle,
   getFillValidationReason,
   getWrapperModeHint,
+  isButtonBodyFillBlockedByWrapperHug,
   isChildFillBlockedByParentHug,
   normalizeBlockWrapperDimensionModes,
+  normalizeButtonBodyDimensionModes,
 } from "./wrapperFillConstraint";
 
 function createLayoutParent(opts: {
@@ -196,6 +199,57 @@ describe("normalizeBlockWrapperDimensionModes", () => {
     assert.equal(changed, true);
     assert.equal(wrapperStyle?.widthMode, "hug");
     assert.equal(changes[0]?.axis, "width");
+  });
+});
+
+describe("isButtonBodyFillBlockedByWrapperHug", () => {
+  function createButton(wrapperStyle: { widthMode?: string; heightMode?: string }, buttonStyle: Record<string, unknown>) {
+    return {
+      id: "btn",
+      type: "button" as const,
+      parentId: "parent",
+      children: [],
+      wrapperStyle,
+      props: { text: "Go", link: "#", buttonStyle },
+      bindings: {},
+    };
+  }
+
+  it("外层 width hug 时阻止胶囊 width fill", () => {
+    const block = createButton({ widthMode: "hug", heightMode: "fill" }, { widthMode: "fill", heightMode: "hug" });
+    assert.equal(isButtonBodyFillBlockedByWrapperHug(block, "width"), true);
+    assert.equal(isButtonBodyFillBlockedByWrapperHug(block, "height"), false);
+  });
+
+  it("外层 height hug 时阻止胶囊 height fill", () => {
+    const block = createButton({ widthMode: "fill", heightMode: "hug" }, { widthMode: "hug", heightMode: "fill" });
+    assert.equal(isButtonBodyFillBlockedByWrapperHug(block, "width"), false);
+    assert.equal(isButtonBodyFillBlockedByWrapperHug(block, "height"), true);
+  });
+});
+
+describe("normalizeButtonBodyDimensionModes", () => {
+  it("外层 hug 同轴下胶囊 fill 回落 hug", () => {
+    const button = {
+      id: "btn",
+      type: "button" as const,
+      parentId: "parent",
+      children: [],
+      wrapperStyle: { widthMode: "hug" as const, heightMode: "hug" as const },
+      props: {
+        text: "Go",
+        link: "#",
+        buttonStyle: { widthMode: "fill", heightMode: "fill" },
+      },
+      bindings: {},
+    };
+    const template = { blocks: { btn: button } } as unknown as import("../types/email").EmailTemplate;
+    const { props, changed, changes } = normalizeButtonBodyDimensionModes(template, "btn");
+    assert.equal(changed, true);
+    const bs = (props as { buttonStyle?: Record<string, unknown> }).buttonStyle;
+    assert.equal(bs?.widthMode, "hug");
+    assert.equal(bs?.heightMode, "hug");
+    assert.equal(changes.length, 2);
   });
 });
 

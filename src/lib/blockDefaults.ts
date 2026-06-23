@@ -298,6 +298,7 @@ export const BLOCK_CATALOG_ENTRIES: BlockCatalogEntry[] = [
         link: "https://example.com",
         buttonStyle: {
           widthMode: "hug",
+          heightMode: "hug",
           backgroundColor: T.colorSurface,
           textColor: T.colorPrimary,
           fontSize: T.typoBody,

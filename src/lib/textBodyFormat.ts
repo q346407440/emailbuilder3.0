@@ -52,7 +52,8 @@ export function renderTextRunHtml(run: TextRun, defaults: TextBodyDefaults): str
 
 function mergeRunHtml(text: string, run: TextRun, defaults: TextBodyDefaults): string {
   if (!text) return "";
-  let inner = escapeHtml(text);
+  // run 内换行符视为显式断行，渲染为 <br/>（兼容旧数据中未拆 paragraph 的 \n）。
+  let inner = escapeHtml(text).replace(/\r\n?|\n/g, "<br/>");
   const effBold = run.bold !== undefined ? run.bold : defaults.bold;
   const effItalic = run.italic !== undefined ? run.italic : defaults.italic;
   const effDeco = run.decoration !== undefined ? run.decoration : defaults.decoration;

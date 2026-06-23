@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { resolveButtonWrapperContentAlign, resolveTextContentAlign } from "./textContentAlign";
 
-test("非 stack 子 text 保持默认居中", () => {
+test("row align start → 直接子 text 左对齐", () => {
+  assert.deepEqual(
+    resolveTextContentAlign({ inDirectRow: true, rowAlign: "start" }),
+    { horizontal: "left", vertical: "top" }
+  );
+});
+
+test("非 stack/row 子 text 保持默认居中", () => {
   assert.deepEqual(resolveTextContentAlign({}), {
     horizontal: "center",
     vertical: "top",

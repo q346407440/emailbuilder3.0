@@ -316,6 +316,7 @@ function mapCompactNode(
         link: props.link ?? "",
         buttonStyle: {
           widthMode: "hug",
+          heightMode: "hug",
           backgroundColor: bg,
           textColor:
             explicitBtnText ??

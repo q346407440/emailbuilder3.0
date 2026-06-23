@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json && vite build",
-    "test:unit": "node --test --import tsx src/lib/*.test.ts src/lib/ai-pipeline/**/*.test.ts src/layout-variant-ai-contract/*.test.ts server/*.test.ts src/meta-contract/*.test.ts src/payload-contract/*.test.ts src/block-contract/*.test.ts src/canvas-dimension-contract/*.test.ts src/editor-canvas-contract/*.test.ts src/render-defaults-contract/*.test.ts src/repeat-binding-contract/*.test.ts src/schema-registry/*.test.ts src/repeat-runtime/*.test.ts",
+    "test:unit": "node --test --import tsx src/lib/*.test.ts src/lib/ai-pipeline/**/*.test.ts src/layout-variant-ai-contract/*.test.ts server/*.test.ts src/meta-contract/*.test.ts src/payload-contract/*.test.ts src/block-contract/*.test.ts src/canvas-dimension-contract/*.test.ts src/editor-canvas-contract/*.test.ts src/render-defaults-contract/*.test.ts src/repeat-binding-contract/*.test.ts src/schema-registry/*.test.ts src/repeat-runtime/*.test.ts src/restore-ast-contract/resolveBoxBorder.test.ts",
     "validate:schema-registry": "node --test --import tsx src/schema-registry/registry.test.ts",
     "restore:check": "npm run test:unit && npm run template-yaml:golden",
     "preview": "vite preview",
@@ -35,6 +35,8 @@
     "migrate:remove-collection-image-alt:write": "tsx scripts/migrate-remove-collection-image-alt-field.mjs --write",
     "migrate:remove-payload-alt-slots": "tsx scripts/migrate-remove-payload-alt-variable-slots.mjs",
     "migrate:remove-payload-alt-slots:write": "tsx scripts/migrate-remove-payload-alt-variable-slots.mjs --write",
+    "migrate:button-style-height-mode": "tsx scripts/migrate-button-style-height-mode.mjs",
+    "migrate:button-style-height-mode:write": "tsx scripts/migrate-button-style-height-mode.mjs --write",
     "validate:all": "tsx scripts/run-validate-all.mjs",
     "validate:email": "tsx scripts/run-validate-all.mjs --skip-unit --skip-yaml --skip-public-presets",
     "sync:masters": "tsx scripts/sync-masters-catalog.ts",

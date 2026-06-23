@@ -4,6 +4,8 @@ import {
   isStrictFixedAxis,
   normalizeWrapperDimensionMode,
   parseCssPx,
+  resolveComponentBodyHeightCss,
+  resolveComponentBodySizeCss,
   resolveComponentBodyWidthCss,
   resolveEffectiveLayoutWidth,
   resolveEmailRootShellCss,
@@ -79,6 +81,40 @@ test("resolveComponentBodyWidthCss：fixed 内核宽强制", () => {
   assert.deepEqual(
     resolveComponentBodyWidthCss({ mode: "hug", defaultMode: "hug" }),
     { display: "inline-block", maxWidth: "100%" }
+  );
+});
+
+test("resolveComponentBodyHeightCss：fixed / fill / hug", () => {
+  assert.deepEqual(
+    resolveComponentBodyHeightCss({
+      mode: "fixed",
+      fixedHeight: "48px",
+      defaultMode: "hug",
+    }),
+    { height: "48px" }
+  );
+  assert.deepEqual(resolveComponentBodyHeightCss({ mode: "fill", defaultMode: "hug" }), {
+    height: "100%",
+  });
+  assert.deepEqual(resolveComponentBodyHeightCss({ mode: "hug", defaultMode: "hug" }), {});
+});
+
+test("resolveComponentBodySizeCss：固定高度时 flex 垂直居中", () => {
+  assert.deepEqual(
+    resolveComponentBodySizeCss({
+      widthMode: "hug",
+      heightMode: "fixed",
+      fixedHeight: "48px",
+      widthDefaultMode: "hug",
+      heightDefaultMode: "hug",
+    }),
+    {
+      maxWidth: "100%",
+      height: "48px",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }
   );
 });
 

@@ -30,8 +30,11 @@ import {
 } from "./ui/ShopFormControls";
 import { layoutHasBackgroundImage } from "../lib/wrapperBackgroundImage";
 import {
+  getButtonBodyFillOptionTitle,
+  getButtonBodyModeHint,
   getFillOptionTitle,
   getWrapperModeHint,
+  isButtonBodyFillBlockedByWrapperHug,
   isChildFillBlockedByParentHug,
 } from "../lib/wrapperFillConstraint";
 import { reconcileLayoutStructuralSubtreeInPlace } from "../lib/wrapperLayoutReconcile";
@@ -47,6 +50,8 @@ import { RepeatUnbindChoiceModal } from "./RepeatUnbindChoiceModal";
 import { ListBindInspectorEmpty } from "./ListBindInspectorEmpty";
 import { RepeatRegionInspectorSummary } from "./RepeatRegionInspectorSummary";
 import { InspectorPanelSection } from "./ui/InspectorPanelSection";
+import { InspectorCollapsibleSection } from "./ui/InspectorCollapsibleSection";
+import { hasInspectorComponentSection } from "../lib/inspectorComponentSections";
 import {
   BuiltinCollectionRulesFields,
   readBuiltinSortPolicyFromPayloadSlot,
@@ -178,6 +183,8 @@ type Props = {
   /** 右侧面板编辑对象（空选中时仍为邮件根，与 selectedBlockRef 解耦） */
   panelTarget: InspectorPanelTarget;
   previewModel: RepeatPreviewModel | null;
+  /** 与画布 snapshot 同源展平模板，避免重复 `previewModelToFlatTemplate` */
+  previewFlatTemplate?: EmailTemplate | null;
   onUpdate: (next: { template: EmailTemplate; payload: EmailPayload }) => void;
   onTemplateChange: (nextTemplate: EmailTemplate, options?: TemplateChangeOptions) => void;
   /** 当前场景目录名，用于复制调试定位文案 */
@@ -483,8 +490,11 @@ function normalizeBorderStyle(value: unknown): BorderStyleOption {
   return "solid";
 }
 
-function InspectorEmptyTabHint() {
-  return <p className="inspector__muted">当前分类下暂无可编辑项。</p>;
+function showComponentSection(
+  blockType: string,
+  section: "content" | "layout" | "style"
+): boolean {
+  return hasInspectorComponentSection(blockType, section);
 }
 
 function InspectorImpl({
@@ -493,6 +503,7 @@ function InspectorImpl({
   selectedBlockRef,
   panelTarget,
   previewModel,
+  previewFlatTemplate: previewFlatTemplateProp,
   onUpdate,
   onTemplateChange,
   emailKey = null,
@@ -515,9 +526,9 @@ function InspectorImpl({
   const panelBlockId = panelTarget.blockId;
   const panelBlock = template.blocks[panelBlockId];
   const showRootInspectorUi = emailRootPanel || panelBlock?.type === "emailRoot";
-  /** 切换区块时尽量保持上次选中的 Tab；当前区块无该 Tab 时回退「样式」 */
-  const [inspectorTab, setInspectorTab] = useState<InspectorMainTab>("style");
-  const preferredInspectorTabRef = useRef<InspectorMainTab>("style");
+  /** 切换区块时尽量保持上次选中的 Tab；当前区块无该 Tab 时回退「组件配置」 */
+  const [inspectorTab, setInspectorTab] = useState<InspectorMainTab>("component");
+  const preferredInspectorTabRef = useRef<InspectorMainTab>("component");
   const inspectorBlockKeyRef = useRef<string | null>(null);
   const [repeatModalOpen, setRepeatModalOpen] = useState(false);
   const [repeatModalViewOnly, setRepeatModalViewOnly] = useState(false);
@@ -583,9 +594,10 @@ function InspectorImpl({
 
   /** 与画布一致的 merge 预览（用于 Inspector 展示字面量） */
   const previewFlatTemplate = useMemo(() => {
+    if (previewFlatTemplateProp) return previewFlatTemplateProp;
     if (!previewModel) return null;
     return previewModelToFlatTemplate(previewModel, template);
-  }, [previewModel, template]);
+  }, [previewFlatTemplateProp, previewModel, template]);
   const visibilitySlotCandidates = useMemo(
     () => buildVisibilitySlotCandidatesFromTemplate(template, payload),
     [payload, template]
@@ -1595,6 +1607,52 @@ function InspectorImpl({
     );
   };
 
+  const renderButtonBodyDimensionModeRow = (opts: {
+    label: string;
+    value: WrapperDimensionMode;
+    baseHint: string;
+    axis: "width" | "height";
+    disableFill: boolean;
+    disabled?: boolean;
+    headerExtra?: ReactNode;
+    onChange: (next: WrapperDimensionMode) => void;
+  }) => {
+    const fillLabel = opts.axis === "width" ? "铺满容器" : "铺满容器";
+    const modeOptions: Array<{ value: WrapperDimensionMode; label: string; title: string }> = [
+      { value: "hug", label: "跟随内容", title: "跟随内容（hug）" },
+      { value: "fill", label: fillLabel, title: "铺满容器（fill）" },
+      { value: "fixed", label: "自定义", title: "自定义（fixed）" },
+    ];
+    return (
+      <Field
+        label={opts.label}
+        hint={getButtonBodyModeHint(opts.axis, opts.disableFill, opts.baseHint)}
+        headerExtra={opts.headerExtra}
+      >
+        <ShopSegmented<WrapperDimensionMode>
+          value={opts.value}
+          disabled={opts.disabled}
+          options={modeOptions.map((option) => ({
+            value: option.value,
+            disabled: option.value === "fill" ? opts.disableFill : false,
+            label: (
+              <span
+                title={
+                  option.value === "fill" && opts.disableFill
+                    ? getButtonBodyFillOptionTitle(opts.axis)
+                    : option.title
+                }
+              >
+                {option.label}
+              </span>
+            ),
+          }))}
+          onChange={opts.onChange}
+        />
+      </Field>
+    );
+  };
+
   const visibilityPanel =
     block.type === "emailRoot" ? null : (
       <>
@@ -1730,10 +1788,9 @@ function InspectorImpl({
   const wrapBoxModelSection = (title: string | undefined, body: ReactNode) => {
     if (!title) return body;
     return (
-      <div className="inspector__box-model-group">
-        <h3 className="inspector__subtitle inspector__subtitle--nested">{title}</h3>
+      <InspectorCollapsibleSection title={title} variant="nested" className="inspector__box-model-group">
         <div className="inspector__box-model-fields">{body}</div>
-      </div>
+      </InspectorCollapsibleSection>
     );
   };
 
@@ -2007,6 +2064,8 @@ function InspectorImpl({
       bold: rd(textBlock, "props.bold") === true,
       italic: rd(textBlock, "props.italic") === true,
       decoration,
+      color: readDisplayString(textBlock, "props.color") || undefined,
+      fontSize: readDisplayString(textBlock, "props.fontSize") || undefined,
     };
   };
 
@@ -2131,6 +2190,7 @@ function InspectorImpl({
   type ButtonColorBindPath = "props.buttonStyle.backgroundColor" | "props.buttonStyle.textColor";
   type ButtonBoolBindPath = "props.buttonStyle.bold" | "props.buttonStyle.italic";
   type ButtonBodyWidthBindPath = "props.buttonStyle.widthMode" | "props.buttonStyle.width";
+  type ButtonBodyHeightBindPath = "props.buttonStyle.heightMode" | "props.buttonStyle.height";
   type DividerBindPath = "props.color" | "props.lineWidthMode" | "props.lineWidth" | "props.height";
   type ProgressBodyWidthBindPath = "props.barWidthMode" | "props.barWidth";
   type GridBindPath = "props.gap" | "props.cellWidth" | "props.cellHeight";
@@ -2335,27 +2395,32 @@ function InspectorImpl({
       headerExtra: fieldBindHeader(buttonBlock, "props.buttonStyle.fontSize"),
     });
 
-  const buttonBodyWidthRows = (buttonBlock: Extract<EmailBlock, { type: "button" }>) => {
-    const modePath: Extract<ButtonBodyWidthBindPath, "props.buttonStyle.widthMode"> =
+  const buttonBodyLayoutRows = (buttonBlock: Extract<EmailBlock, { type: "button" }>) => {
+    const widthModePath: Extract<ButtonBodyWidthBindPath, "props.buttonStyle.widthMode"> =
       "props.buttonStyle.widthMode";
     const widthPath: Extract<ButtonBodyWidthBindPath, "props.buttonStyle.width"> =
       "props.buttonStyle.width";
-    const mode = rd(buttonBlock, modePath);
-    const widthMode = mode === "fill" || mode === "fixed" ? mode : "hug";
+    const heightModePath: Extract<ButtonBodyHeightBindPath, "props.buttonStyle.heightMode"> =
+      "props.buttonStyle.heightMode";
+    const heightPath: Extract<ButtonBodyHeightBindPath, "props.buttonStyle.height"> =
+      "props.buttonStyle.height";
+    const widthModeRaw = rd(buttonBlock, widthModePath);
+    const widthMode = widthModeRaw === "fill" || widthModeRaw === "fixed" ? widthModeRaw : "hug";
+    const heightModeRaw = rd(buttonBlock, heightModePath);
+    const heightMode = heightModeRaw === "fill" || heightModeRaw === "fixed" ? heightModeRaw : "hug";
+    const disableBodyWidthFill = isButtonBodyFillBlockedByWrapperHug(buttonBlock, "width");
+    const disableBodyHeightFill = isButtonBodyFillBlockedByWrapperHug(buttonBlock, "height");
     return (
       <>
-        {renderSegmentedInputRow({
+        {renderButtonBodyDimensionModeRow({
           label: "按钮宽度模式",
           value: widthMode,
-          hint: "只控制按钮胶囊本体宽度；外层容器宽度仍在「布局」页签的「外层容器 · 布局」中配置。",
-          onChange: (next) => pushBlock(buttonBlock.id, modePath, next),
-          disabled: isInspectFollowLocked(template, buttonBlock, payload, modePath),
-          headerExtra: fieldBindHeader(buttonBlock, modePath),
-          options: [
-            { value: "hug", label: "跟随文字", title: "跟随文字（hug）" },
-            { value: "fill", label: "铺满容器", title: "铺满容器（fill）" },
-            { value: "fixed", label: "自定义", title: "自定义（fixed）" },
-          ],
+          axis: "width",
+          baseHint: "只控制按钮胶囊本体宽度；外层容器宽度仍在「容器配置 · 布局」中配置。",
+          disableFill: disableBodyWidthFill,
+          onChange: (next) => pushBlock(buttonBlock.id, widthModePath, next),
+          disabled: isInspectFollowLocked(template, buttonBlock, payload, widthModePath),
+          headerExtra: fieldBindHeader(buttonBlock, widthModePath),
         })}
         {widthMode === "fixed"
           ? renderUnitInputRow({
@@ -2366,6 +2431,27 @@ function InspectorImpl({
               onChange: (next) => pushBlock(buttonBlock.id, widthPath, next),
               disabled: isInspectFollowLocked(template, buttonBlock, payload, widthPath),
               headerExtra: fieldBindHeader(buttonBlock, widthPath),
+            })
+          : null}
+        {renderButtonBodyDimensionModeRow({
+          label: "按钮高度模式",
+          value: heightMode,
+          axis: "height",
+          baseHint: "只控制按钮胶囊本体高度；外层容器高度仍在「容器配置 · 布局」中配置。固定高度时文字在胶囊内垂直居中。",
+          disableFill: disableBodyHeightFill,
+          onChange: (next) => pushBlock(buttonBlock.id, heightModePath, next),
+          disabled: isInspectFollowLocked(template, buttonBlock, payload, heightModePath),
+          headerExtra: fieldBindHeader(buttonBlock, heightModePath),
+        })}
+        {heightMode === "fixed"
+          ? renderUnitInputRow({
+              label: "按钮高度",
+              value: readDisplayString(buttonBlock, heightPath),
+              unit: "px",
+              hint: readDisplayHint(buttonBlock, heightPath),
+              onChange: (next) => pushBlock(buttonBlock.id, heightPath, next),
+              disabled: isInspectFollowLocked(template, buttonBlock, payload, heightPath),
+              headerExtra: fieldBindHeader(buttonBlock, heightPath),
             })
           : null}
       </>
@@ -2618,7 +2704,20 @@ function InspectorImpl({
     );
   };
 
-  const renderWrapperBackgroundContentSection = () => {
+  const renderComponentBackgroundImageContent = () => {
+    if (block.type === "image") {
+      return (
+        <>
+          {layoutContainerBgTextRow(block, "图片地址", "wrapperStyle.backgroundImage.src")}
+          {layoutContainerBgTextRow(block, "链接地址", "wrapperStyle.backgroundImage.link")}
+          {renderWrapperBackgroundImageStyleFields(block, {
+            fitLabel: "填充策略",
+            positionLabel: "画面位置",
+          })}
+        </>
+      );
+    }
+
     if (block.type !== "layout" && block.type !== "grid") return null;
 
     if (layoutHasBackgroundImage(block)) {
@@ -2626,6 +2725,7 @@ function InspectorImpl({
         <>
           {layoutContainerBgTextRow(block, "背景图地址", "wrapperStyle.backgroundImage.src")}
           {layoutContainerBgTextRow(block, "背景链接地址", "wrapperStyle.backgroundImage.link")}
+          {renderWrapperBackgroundImageStyleFields(block)}
           <div className="inspector-transform-actions">
             <ShopSecondaryButton
               className="inspector-transform-actions__btn"
@@ -2647,7 +2747,6 @@ function InspectorImpl({
               关闭背景图
             </ShopSecondaryButton>
           </div>
-          {renderWrapperBackgroundImageStyleFields(block)}
         </>
       );
     }
@@ -2774,88 +2873,57 @@ function InspectorImpl({
           inspectorBlockKey={inspectorBlockKey}
           active={inspectorTab}
           onChange={setInspectorTabPersist}
-          contentPane={
+          componentPane={
             <>
-              <h3 className="inspector__subtitle">组件 · 内容</h3>
-              <section className="inspector__section">
-              {root.wrapperStyle?.backgroundImage ? (
-                <>
-                  <Field label="背景图地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.src")}>
-                    <UrlAssetUploadInput
-                      uploadKind="image"
-                      value={String(rd(root, "wrapperStyle.backgroundImage.src") ?? "")}
-                      disabled={isInspectFollowLocked(template, root, payload, "wrapperStyle.backgroundImage.src")}
-                      onChange={(next) => pushRoot("wrapperStyle.backgroundImage.src", next)}
-                    />
-                  </Field>
-                  <Field label="背景链接地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.link")}>
-                    <ShopInput
-                      type="text"
-                      value={String(rd(root, "wrapperStyle.backgroundImage.link") ?? "")}
-                      disabled={isInspectFollowLocked(template, root, payload, "wrapperStyle.backgroundImage.link")}
-                      onChange={(e) => pushRoot("wrapperStyle.backgroundImage.link", e.target.value)}
-                    />
-                  </Field>
-                  <div className="inspector-transform-actions">
-                    <ShopSecondaryButton
-                      className="inspector-transform-actions__btn"
-                      onClick={() => pushRoot("wrapperStyle.backgroundImage", null)}>
-                      关闭背景图
-                    </ShopSecondaryButton>
-                  </div>
-                  {renderWrapperBackgroundImageStyleFields(root)}
-                </>
-              ) : (
-                <div className="inspector-transform-actions">
-                  <ShopPrimaryButton
-                    className="inspector-transform-actions__btn"
-                    onClick={() =>
-                      pushRoot("wrapperStyle.backgroundImage", {
-                        src: "",
-                        link: "",
-                        fit: "cover",
-                        position: "center",
-                      })
-                    }
-                  >
-                    启用背景图
-                  </ShopPrimaryButton>
-                </div>
-              )}
-              </section>
-            </>
-          }
-          stylePane={
-            <>
-              <h3 className="inspector__subtitle">外层容器 · 样式</h3>
-              <section className="inspector__section">
-                <ColorField
-                  label="内容区背景色"
-                  value={readDisplayColorString(root, "props.backgroundColor")}
-                  onChange={(v) => pushRoot("props.backgroundColor", v)}
-                  disabled={isInspectFollowLocked(template, root, payload, "props.backgroundColor")}
-                  headerExtra={fieldBindHeader(root, "props.backgroundColor")}
-                  error={getFieldError?.("props.backgroundColor")}
-                  warning={getFieldWarning?.("props.backgroundColor")}
-                />
-                <fieldset className="inspector-bound-fieldset">
-                  {renderBorderEditor({
-                    labelPrefix: "容器",
-                    sectionTitle: "外层容器 · 描边",
-                    basePath: "props.border",
-                    value: rd(root, "props.border"),
-                    onChange: pushRoot,
-                    bindTargetBlock: root,
-                    bindBasePath: "props.border",
-                    controlsDisabled: isInspectFollowLocked(template, root, payload, "props.border"),
-                  })}
-                </fieldset>
-              </section>
-            </>
-          }
-          layoutPane={
-            <>
-              <h3 className="inspector__subtitle">组件 · 布局</h3>
+              <InspectorCollapsibleSection title="组件 · 内容">
+                <section className="inspector__section">
+                  {root.wrapperStyle?.backgroundImage ? (
+                    <>
+                      <Field label="背景图地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.src")}>
+                        <UrlAssetUploadInput
+                          uploadKind="image"
+                          value={String(rd(root, "wrapperStyle.backgroundImage.src") ?? "")}
+                          disabled={isInspectFollowLocked(template, root, payload, "wrapperStyle.backgroundImage.src")}
+                          onChange={(next) => pushRoot("wrapperStyle.backgroundImage.src", next)}
+                        />
+                      </Field>
+                      <Field label="背景链接地址" headerExtra={fieldBindHeader(root, "wrapperStyle.backgroundImage.link")}>
+                        <ShopInput
+                          type="text"
+                          value={String(rd(root, "wrapperStyle.backgroundImage.link") ?? "")}
+                          disabled={isInspectFollowLocked(template, root, payload, "wrapperStyle.backgroundImage.link")}
+                          onChange={(e) => pushRoot("wrapperStyle.backgroundImage.link", e.target.value)}
+                        />
+                      </Field>
+                      {renderWrapperBackgroundImageStyleFields(root)}
+                      <div className="inspector-transform-actions">
+                        <ShopSecondaryButton
+                          className="inspector-transform-actions__btn"
+                          onClick={() => pushRoot("wrapperStyle.backgroundImage", null)}>
+                          关闭背景图
+                        </ShopSecondaryButton>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="inspector-transform-actions">
+                      <ShopPrimaryButton
+                        className="inspector-transform-actions__btn"
+                        onClick={() =>
+                          pushRoot("wrapperStyle.backgroundImage", {
+                            src: "",
+                            link: "",
+                            fit: "cover",
+                            position: "center",
+                          })
+                        }
+                      >
+                        启用背景图
+                      </ShopPrimaryButton>
+                    </div>
+                  )}
+                </section>
+              </InspectorCollapsibleSection>
+              <InspectorCollapsibleSection title="组件 · 布局">
               <section className="inspector__section">
                 {overlayStackGapModeRow(root)}
                 {rd(root, "props.gapMode") !== "auto"
@@ -2870,39 +2938,70 @@ function InspectorImpl({
                     })
                   : null}
               </section>
-              <h3 className="inspector__subtitle">外层容器 · 布局</h3>
-              <section className="inspector__section">
-                {(() => {
-                  const w = root.props.width;
-                  const widthStr = typeof w === "string" ? w.trim() : "";
-                  const widthOk = widthStr === EMAIL_ROOT_FIXED_WIDTH;
-                  const widthErr =
-                    getFieldError?.("props.width") ??
-                    (!widthOk ? emailRootWidthMismatchReason(w) : undefined);
-                  return (
-                    <Field label="画布宽度（固定）" error={widthErr}>
-                      <ShopUnitInput
-                        value={widthStr || EMAIL_ROOT_FIXED_WIDTH}
-                        unit="px"
-                        onChange={() => undefined}
-                        disabled
-                      />
-                    </Field>
-                  );
-                })()}
-                <fieldset className="inspector-bound-fieldset">
-                  {renderSpacingEditor({
-                    labelPrefix: "页面",
-                    sectionTitle: "外层容器 · 边距",
-                    basePath: "props.padding",
-                    value: rd(root, "props.padding"),
-                    onChange: pushRoot,
-                    bindTargetBlock: root,
-                    bindBasePath: "props.padding",
-                    controlsDisabled: isInspectFollowLocked(template, root, payload, "props.padding"),
-                  })}
-                </fieldset>
-              </section>
+            </InspectorCollapsibleSection>
+            </>
+          }
+          wrapperPane={
+            <>
+              <InspectorCollapsibleSection title="外层容器 · 布局">
+                <section className="inspector__section">
+                  {(() => {
+                    const w = root.props.width;
+                    const widthStr = typeof w === "string" ? w.trim() : "";
+                    const widthOk = widthStr === EMAIL_ROOT_FIXED_WIDTH;
+                    const widthErr =
+                      getFieldError?.("props.width") ??
+                      (!widthOk ? emailRootWidthMismatchReason(w) : undefined);
+                    return (
+                      <Field label="画布宽度（固定）" error={widthErr}>
+                        <ShopUnitInput
+                          value={widthStr || EMAIL_ROOT_FIXED_WIDTH}
+                          unit="px"
+                          onChange={() => undefined}
+                          disabled
+                        />
+                      </Field>
+                    );
+                  })()}
+                  <fieldset className="inspector-bound-fieldset">
+                    {renderSpacingEditor({
+                      labelPrefix: "页面",
+                      sectionTitle: "外层容器 · 边距",
+                      basePath: "props.padding",
+                      value: rd(root, "props.padding"),
+                      onChange: pushRoot,
+                      bindTargetBlock: root,
+                      bindBasePath: "props.padding",
+                      controlsDisabled: isInspectFollowLocked(template, root, payload, "props.padding"),
+                    })}
+                  </fieldset>
+                </section>
+              </InspectorCollapsibleSection>
+              <InspectorCollapsibleSection title="外层容器 · 样式">
+                <section className="inspector__section">
+                  <ColorField
+                    label="内容区背景色"
+                    value={readDisplayColorString(root, "props.backgroundColor")}
+                    onChange={(v) => pushRoot("props.backgroundColor", v)}
+                    disabled={isInspectFollowLocked(template, root, payload, "props.backgroundColor")}
+                    headerExtra={fieldBindHeader(root, "props.backgroundColor")}
+                    error={getFieldError?.("props.backgroundColor")}
+                    warning={getFieldWarning?.("props.backgroundColor")}
+                  />
+                  <fieldset className="inspector-bound-fieldset">
+                    {renderBorderEditor({
+                      labelPrefix: "容器",
+                      sectionTitle: "外层容器 · 描边",
+                      basePath: "props.border",
+                      value: rd(root, "props.border"),
+                      onChange: pushRoot,
+                      bindTargetBlock: root,
+                      bindBasePath: "props.border",
+                      controlsDisabled: isInspectFollowLocked(template, root, payload, "props.border"),
+                    })}
+                  </fieldset>
+                </section>
+              </InspectorCollapsibleSection>
             </>
           }
         />
@@ -2953,325 +3052,10 @@ function InspectorImpl({
         inspectorBlockKey={inspectorBlockKey}
         active={inspectorTab}
         onChange={setInspectorTabPersist}
-        layoutPane={
+        componentPane={
           <>
-          {block.type === "layout" || block.type === "image" ? (
-            <>
-              <h3 className="inspector__subtitle">
-                {block.type === "image" ? "组件 · 叠放布局" : "组件 · 布局"}
-              </h3>
-              <section className="inspector__section">
-                {overlayStackDirectionRow(block)}
-                {overlayStackGapModeRow(block)}
-                {rd(block, "props.gapMode") !== "auto"
-                  ? overlayStackTextRow(block, "间距", "props.gap")
-                  : null}
-              </section>
-            </>
-          ) : null}
-
-          {block.type === "grid" ? (
-            <>
-              <h3 className="inspector__subtitle">组件 · 布局</h3>
-              <section className="inspector__section">
-                <Field label="每行列数">
-                  <ShopInput
-                    type="number"
-                    min={1}
-                    value={Number(block.props.columns ?? 2)}
-                    onChange={(e) =>
-                      pushBlock(id, "props.columns", Number(e.target.value) || 1)
-                    }
-                  />
-                </Field>
-                {gridTextRow(block, "间距", "props.gap")}
-                {renderSegmentedInputRow({
-                  label: "单元格宽度模式",
-                  value: rd(block, "props.cellWidthMode") === "fixed" ? "fixed" : "auto",
-                  hint: "只控制每个格子的宽度；grid 自己的外层宽度仍由下方「外层容器 · 布局」控制。",
-                  onChange: (next) => {
-                    let nextState = applyBlockField(template, payload, block.id, "props.cellWidthMode", next);
-                    if (next === "fixed" && !readDisplayString(block, "props.cellWidth").trim()) {
-                      nextState = applyBlockField(
-                        nextState.template,
-                        nextState.payload,
-                        block.id,
-                        "props.cellWidth",
-                        GRID_FIXED_CELL_WIDTH_DEFAULT
-                      );
-                    }
-                    onUpdate(nextState);
-                  },
-                  disabled: isInspectFollowLocked(template, block, payload, "props.cellWidthMode"),
-                  headerExtra: fieldBindHeader(block, "props.cellWidthMode"),
-                  options: [
-                    { value: "auto", label: "自动均分", title: "自动均分（auto）" },
-                    { value: "fixed", label: "固定宽度", title: "固定宽度（fixed）" },
-                  ],
-                })}
-                {rd(block, "props.cellWidthMode") === "fixed"
-                  ? gridTextRow(block, "单元格宽度", "props.cellWidth")
-                  : null}
-                {renderSegmentedInputRow({
-                  label: "单元格高度模式",
-                  value: rd(block, "props.cellHeightMode") === "fixed" ? "fixed" : "content-max",
-                  hint: "content-max 会按行取该行内最高内容统一格高；fixed 使用单元格高度。",
-                  onChange: (next) => {
-                    let nextState = applyBlockField(template, payload, block.id, "props.cellHeightMode", next);
-                    if (next === "fixed" && !readDisplayString(block, "props.cellHeight").trim()) {
-                      nextState = applyBlockField(
-                        nextState.template,
-                        nextState.payload,
-                        block.id,
-                        "props.cellHeight",
-                        GRID_FIXED_CELL_HEIGHT_DEFAULT
-                      );
-                    }
-                    onUpdate(nextState);
-                  },
-                  disabled: isInspectFollowLocked(template, block, payload, "props.cellHeightMode"),
-                  headerExtra: fieldBindHeader(block, "props.cellHeightMode"),
-                  options: [
-                    {
-                      value: "content-max",
-                      label: "按行最高",
-                      title: "按行内容最大高度（content-max）",
-                    },
-                    { value: "fixed", label: "固定高度", title: "固定高度（fixed）" },
-                  ],
-                })}
-                {rd(block, "props.cellHeightMode") === "fixed"
-                  ? gridTextRow(block, "单元格高度", "props.cellHeight")
-                  : null}
-              </section>
-            </>
-          ) : null}
-
-          <h3 className="inspector__subtitle">外层容器 · 布局</h3>
-          <section className="inspector__section">
-            {contentAlignAxisRows(
-              block,
-              "容器内内容摆放",
-              "wrapperStyle.contentAlign.horizontal",
-              "wrapperStyle.contentAlign.vertical"
-            )}
-            {renderWrapperDimensionModeRow({
-              label: "宽度模式",
-              value: wrapperWidthModeUi as WrapperDimensionMode,
-              hint: widthModeHint,
-              axis: "width",
-              disableFill: disableWidthFillByParentRule,
-              onChange: (next) => applyWrapperDimensionMode("wrapperStyle.widthMode", next),
-            })}
-            {renderWrapperDimensionModeRow({
-              label: "高度模式",
-              value: wrapperHeightModeUi as WrapperDimensionMode,
-              hint: heightModeHint,
-              axis: "height",
-              disableFill: disableHeightFillByParentRule,
-              onChange: onWrapperHeightModeChange,
-            })}
-            {wrapperWidthModeUi === "fixed"
-              ? renderUnitInputRow({
-                  label: "固定宽度",
-                  value: readDisplayString(block, "wrapperStyle.width"),
-                  unit: "px",
-                  hint: readDisplayHint(block, "wrapperStyle.width"),
-                  onChange: (next) => pushBlock(id, "wrapperStyle.width", next),
-                })
-              : null}
-            {wrapperHeightModeUi === "fixed"
-              ? renderUnitInputRow({
-                  label: "固定高度",
-                  value: readDisplayString(block, "wrapperStyle.height"),
-                  unit: "px",
-                  hint: readDisplayHint(block, "wrapperStyle.height"),
-                  onChange: onWrapperFixedHeightChange,
-                })
-              : null}
-            <fieldset className="inspector-bound-fieldset">
-              {renderWrapperPaddingEditor(block)}
-            </fieldset>
-          </section>
-          </>
-        }
-        listPane={showRepeatRegionPanel ? repeatRegionPanel : undefined}
-        visibilityPane={visibilityPanel}
-        stylePane={
-          <>
-          {block.type === "text" ? (
-            <>
-              <h3 className="inspector__subtitle">组件 · 样式</h3>
-              <section className="inspector__section">
-                {textTextRow(block, "字号", "props.fontSize")}
-                {textColorRow(block, "文字颜色", "props.color")}
-              </section>
-            </>
-          ) : null}
-
-          {block.type === "button" ? (
-            <>
-              <h3 className="inspector__subtitle">组件 · 样式</h3>
-              <section className="inspector__section">
-                {buttonBodyWidthRows(block)}
-                {buttonColorRow(block, "按钮背景色", "props.buttonStyle.backgroundColor")}
-                {buttonColorRow(block, "按钮文字颜色", "props.buttonStyle.textColor")}
-                {buttonFontSizeRow(block)}
-                {buttonTextStyleToggleRow(block)}
-                <fieldset className="inspector-bound-fieldset">
-                  {renderBorderRadiusEditor({
-                    labelPrefix: "按钮",
-                    sectionTitle: "组件 · 圆角",
-                    basePath: "props.buttonStyle.borderRadius",
-                    value: rd(block, "props.buttonStyle.borderRadius"),
-                    getHint: (path) => readDisplayHint(block, path),
-                    onChange: (path, value) => pushBlock(block.id, path, value),
-                    bindTargetBlock: block,
-                    bindBasePath: "props.buttonStyle.borderRadius",
-                    controlsDisabled: isInspectFollowLocked(
-                      template,
-                      block,
-                      payload,
-                      "props.buttonStyle.borderRadius"
-                    ),
-                  })}
-                </fieldset>
-                <fieldset className="inspector-bound-fieldset">
-                  {renderBorderEditor({
-                    labelPrefix: "按钮",
-                    sectionTitle: "组件 · 描边",
-                    basePath: "props.buttonStyle.border",
-                    value: rd(block, "props.buttonStyle.border"),
-                    getHint: (path) => readDisplayHint(block, path),
-                    onChange: (path, value) => pushBlock(block.id, path, value),
-                    bindTargetBlock: block,
-                    bindBasePath: "props.buttonStyle.border",
-                    controlsDisabled: isInspectFollowLocked(template, block, payload, "props.buttonStyle.border"),
-                  })}
-                </fieldset>
-              </section>
-            </>
-          ) : null}
-
-          {block.type === "divider" ? (
-            <>
-              <h3 className="inspector__subtitle">组件 · 样式</h3>
-              <section className="inspector__section">
-                {dividerColorRow(block, "分割线颜色", "props.color")}
-                {fillFixedWidthRows(block, {
-                  modePath: "props.lineWidthMode",
-                  widthPath: "props.lineWidth",
-                  modeLabel: "线条宽度模式",
-                  widthLabel: "线条宽度",
-                  hint: "只控制分割线本体长度；外层容器宽度仍在「布局」页签的「外层容器 · 布局」中配置。",
-                })}
-                {dividerTextRow(block, "线条粗细", "props.height")}
-              </section>
-            </>
-          ) : null}
-
-          {block.type === "progress" ? (
-            <>
-              <h3 className="inspector__subtitle">进度条 · 样式</h3>
-              <section className="inspector__section">
-                {renderColorInputRow({
-                  label: "进度槽底色",
-                  value: readDisplayColorString(block, "props.trackColor") || "#E8DCC8",
-                  onChange: (next) => pushBlock(block.id, "props.trackColor", next),
-                  disabled: isInspectFollowLocked(template, block, payload, "props.trackColor"),
-                  headerExtra: fieldBindHeader(block, "props.trackColor"),
-                })}
-                {renderColorInputRow({
-                  label: "进度填充色",
-                  value: readDisplayColorString(block, "props.fillColor") || "#C9A227",
-                  onChange: (next) => pushBlock(block.id, "props.fillColor", next),
-                  disabled: isInspectFollowLocked(template, block, payload, "props.fillColor"),
-                  headerExtra: fieldBindHeader(block, "props.fillColor"),
-                })}
-                {fillFixedWidthRows(block, {
-                  modePath: "props.barWidthMode",
-                  widthPath: "props.barWidth",
-                  modeLabel: "条带宽度模式",
-                  widthLabel: "条带宽度",
-                  hint: "只控制进度条条带本体宽度；外层容器宽度仍在「布局」页签的「外层容器 · 布局」中配置。",
-                })}
-                {progressBarHeightRow(block)}
-                <fieldset className="inspector-bound-fieldset">
-                  {renderBorderRadiusEditor({
-                    labelPrefix: "条带",
-                    sectionTitle: "组件 · 圆角",
-                    basePath: "props.barBorderRadius",
-                    value: rd(block, "props.barBorderRadius"),
-                    getHint: (path) => readDisplayHint(block, path),
-                    onChange: (path, value) => pushBlock(block.id, path, value),
-                    bindTargetBlock: block,
-                    bindBasePath: "props.barBorderRadius",
-                    controlsDisabled: isInspectFollowLocked(
-                      template,
-                      block,
-                      payload,
-                      "props.barBorderRadius"
-                    ),
-                  })}
-                </fieldset>
-              </section>
-            </>
-          ) : null}
-
-          {block.type === "icon" ? (
-            <>
-              <h3 className="inspector__subtitle">组件 · 样式</h3>
-              <section className="inspector__section">
-                {iconColorRow(block, "图标颜色", "props.color")}
-                {iconUnitRow(block, "尺寸", "props.size")}
-              </section>
-            </>
-          ) : null}
-
-          <h3 className="inspector__subtitle">外层容器 · 样式</h3>
-          <section className="inspector__section">
-            <ColorField
-              label="容器背景色"
-              value={wrapperBg}
-              onChange={(v) => pushBlock(id, "wrapperStyle.backgroundColor", v)}
-              hint={wrapperBindMeta.fromPayload ? "来自变量赋值" : undefined}
-              disabled={isInspectFollowLocked(template, block, payload, "wrapperStyle.backgroundColor")}
-              headerExtra={fieldBindHeader(block, "wrapperStyle.backgroundColor")}
-              error={getFieldError?.("wrapperStyle.backgroundColor")}
-              warning={getFieldWarning?.("wrapperStyle.backgroundColor")}
-            />
-            <fieldset className="inspector-bound-fieldset">
-              {renderBorderRadiusEditor({
-                labelPrefix: "容器",
-                sectionTitle: "外层容器 · 圆角",
-                basePath: "wrapperStyle.borderRadius",
-                value: rd(block, "wrapperStyle.borderRadius"),
-                getHint: (path) => readDisplayHint(block, path),
-                onChange: (path, value) => pushBlock(id, path, value),
-                bindTargetBlock: block,
-                bindBasePath: "wrapperStyle.borderRadius",
-                controlsDisabled: isInspectFollowLocked(template, block, payload, "wrapperStyle.borderRadius"),
-              })}
-            </fieldset>
-            <fieldset className="inspector-bound-fieldset">
-              {renderBorderEditor({
-                labelPrefix: "容器",
-                sectionTitle: "外层容器 · 描边",
-                basePath: "wrapperStyle.border",
-                value: rd(block, "wrapperStyle.border"),
-                getHint: (path) => readDisplayHint(block, path),
-                onChange: (path, value) => pushBlock(id, path, value),
-                bindTargetBlock: block,
-                bindBasePath: "wrapperStyle.border",
-                controlsDisabled: isInspectFollowLocked(template, block, payload, "wrapperStyle.border"),
-              })}
-            </fieldset>
-          </section>
-          </>
-        }
-        contentPane={
-          <>
-            <h3 className="inspector__subtitle">组件 · 内容</h3>
+            {showComponentSection(block.type, "content") ? (
+            <InspectorCollapsibleSection title="组件 · 内容" keepMounted={block.type === "text"}>
             <div
               aria-disabled={resolvedRepeatContext ? true : undefined}
               style={resolvedRepeatContext ? { opacity: 0.55, pointerEvents: "none" } : undefined}
@@ -3288,7 +3072,7 @@ function InspectorImpl({
                         ? "整段正文跟随 payload 变量，此处只读预览合并结果；请在「变量赋值」中修改。"
                         : textBodyContentMode === "inlineVariable"
                           ? "正文可编辑；紫色边框胶囊内为 payload 变量回显（有链接时为蓝色下划线）。点击胶囊可改绑，变量值在「变量赋值」中修改。"
-                          : "在正文中选中范围即可设置粗斜体、装饰、段内字号、字色与链接；「样式」里的字号、文字颜色为整块默认，与工具条段内样式配合使用。"
+                          : "在正文中选中范围即可设置粗斜体、装饰、段内字号、字色与链接；「组件配置 · 样式」里的字号、文字颜色为整块默认，与工具条段内样式配合使用。"
                   }
                   headerExtra={
                     textBodyForEditor ? (
@@ -3480,19 +3264,6 @@ function InspectorImpl({
               </>
             ) : null}
 
-            {block.type === "image" ? (
-              <>
-                {layoutContainerBgTextRow(block, "图片地址", "wrapperStyle.backgroundImage.src")}
-                {layoutContainerBgTextRow(block, "链接地址", "wrapperStyle.backgroundImage.link")}
-                {renderWrapperBackgroundImageStyleFields(block, {
-                  fitLabel: "填充策略",
-                  positionLabel: "画面位置",
-                })}
-              </>
-            ) : null}
-
-            {renderWrapperBackgroundContentSection()}
-
             {block.type === "button" ? (
               <>
                 {buttonTextRow(block, "按钮文字", "props.text")}
@@ -3560,6 +3331,8 @@ function InspectorImpl({
               </>
             ) : null}
 
+            {renderComponentBackgroundImageContent()}
+
             {![
               "layout",
               "text",
@@ -3572,16 +3345,328 @@ function InspectorImpl({
             ].includes(block.type) ? (
               <p className="inspector__muted">该类型暂无专用表单，可在后续迭代中扩展属性面板。</p>
             ) : null}
-            {block.type === "divider" ? (
-              <InspectorEmptyTabHint />
-            ) : null}
-            {block.type === "grid" && !layoutHasBackgroundImage(block) ? (
-              <InspectorEmptyTabHint />
-            ) : null}
-              </section>
+            </section>
             </div>
+            </InspectorCollapsibleSection>
+            ) : null}
+            {showComponentSection(block.type, "layout") ? (
+            <InspectorCollapsibleSection title="组件 · 布局">
+          {block.type === "layout" || block.type === "image" ? (
+            <>
+              <section className="inspector__section">
+                {overlayStackDirectionRow(block)}
+                {overlayStackGapModeRow(block)}
+                {rd(block, "props.gapMode") !== "auto"
+                  ? overlayStackTextRow(block, "间距", "props.gap")
+                  : null}
+              </section>
+            </>
+          ) : null}
+
+          {block.type === "grid" ? (
+            <>
+              <section className="inspector__section">
+                <Field label="每行列数">
+                  <ShopInput
+                    type="number"
+                    min={1}
+                    value={Number(block.props.columns ?? 2)}
+                    onChange={(e) =>
+                      pushBlock(id, "props.columns", Number(e.target.value) || 1)
+                    }
+                  />
+                </Field>
+                {gridTextRow(block, "间距", "props.gap")}
+                {renderSegmentedInputRow({
+                  label: "单元格宽度模式",
+                  value: rd(block, "props.cellWidthMode") === "fixed" ? "fixed" : "auto",
+                  hint: "只控制每个格子的宽度；grid 自己的外层宽度仍在「容器配置 · 布局」中配置。",
+                  onChange: (next) => {
+                    let nextState = applyBlockField(template, payload, block.id, "props.cellWidthMode", next);
+                    if (next === "fixed" && !readDisplayString(block, "props.cellWidth").trim()) {
+                      nextState = applyBlockField(
+                        nextState.template,
+                        nextState.payload,
+                        block.id,
+                        "props.cellWidth",
+                        GRID_FIXED_CELL_WIDTH_DEFAULT
+                      );
+                    }
+                    onUpdate(nextState);
+                  },
+                  disabled: isInspectFollowLocked(template, block, payload, "props.cellWidthMode"),
+                  headerExtra: fieldBindHeader(block, "props.cellWidthMode"),
+                  options: [
+                    { value: "auto", label: "自动均分", title: "自动均分（auto）" },
+                    { value: "fixed", label: "固定宽度", title: "固定宽度（fixed）" },
+                  ],
+                })}
+                {rd(block, "props.cellWidthMode") === "fixed"
+                  ? gridTextRow(block, "单元格宽度", "props.cellWidth")
+                  : null}
+                {renderSegmentedInputRow({
+                  label: "单元格高度模式",
+                  value: rd(block, "props.cellHeightMode") === "fixed" ? "fixed" : "content-max",
+                  hint: "content-max 会按行取该行内最高内容统一格高；fixed 使用单元格高度。",
+                  onChange: (next) => {
+                    let nextState = applyBlockField(template, payload, block.id, "props.cellHeightMode", next);
+                    if (next === "fixed" && !readDisplayString(block, "props.cellHeight").trim()) {
+                      nextState = applyBlockField(
+                        nextState.template,
+                        nextState.payload,
+                        block.id,
+                        "props.cellHeight",
+                        GRID_FIXED_CELL_HEIGHT_DEFAULT
+                      );
+                    }
+                    onUpdate(nextState);
+                  },
+                  disabled: isInspectFollowLocked(template, block, payload, "props.cellHeightMode"),
+                  headerExtra: fieldBindHeader(block, "props.cellHeightMode"),
+                  options: [
+                    {
+                      value: "content-max",
+                      label: "按行最高",
+                      title: "按行内容最大高度（content-max）",
+                    },
+                    { value: "fixed", label: "固定高度", title: "固定高度（fixed）" },
+                  ],
+                })}
+                {rd(block, "props.cellHeightMode") === "fixed"
+                  ? gridTextRow(block, "单元格高度", "props.cellHeight")
+                  : null}
+              </section>
+            </>
+          ) : null}
+
+          {block.type === "button" ? (
+            <section className="inspector__section">
+              {buttonBodyLayoutRows(block)}
+            </section>
+          ) : null}
+            </InspectorCollapsibleSection>
+            ) : null}
+            {showComponentSection(block.type, "style") ? (
+            <InspectorCollapsibleSection title="组件 · 样式">
+          {block.type === "text" ? (
+            <>
+              <section className="inspector__section">
+                {textTextRow(block, "字号", "props.fontSize")}
+                {textColorRow(block, "文字颜色", "props.color")}
+              </section>
+            </>
+          ) : null}
+
+          {block.type === "button" ? (
+            <>
+              <section className="inspector__section">
+                {buttonColorRow(block, "按钮背景色", "props.buttonStyle.backgroundColor")}
+                {buttonColorRow(block, "按钮文字颜色", "props.buttonStyle.textColor")}
+                {buttonFontSizeRow(block)}
+                {buttonTextStyleToggleRow(block)}
+                <fieldset className="inspector-bound-fieldset">
+                  {renderBorderRadiusEditor({
+                    labelPrefix: "按钮",
+                    sectionTitle: "组件 · 圆角",
+                    basePath: "props.buttonStyle.borderRadius",
+                    value: rd(block, "props.buttonStyle.borderRadius"),
+                    getHint: (path) => readDisplayHint(block, path),
+                    onChange: (path, value) => pushBlock(block.id, path, value),
+                    bindTargetBlock: block,
+                    bindBasePath: "props.buttonStyle.borderRadius",
+                    controlsDisabled: isInspectFollowLocked(
+                      template,
+                      block,
+                      payload,
+                      "props.buttonStyle.borderRadius"
+                    ),
+                  })}
+                </fieldset>
+                <fieldset className="inspector-bound-fieldset">
+                  {renderBorderEditor({
+                    labelPrefix: "按钮",
+                    sectionTitle: "组件 · 描边",
+                    basePath: "props.buttonStyle.border",
+                    value: rd(block, "props.buttonStyle.border"),
+                    getHint: (path) => readDisplayHint(block, path),
+                    onChange: (path, value) => pushBlock(block.id, path, value),
+                    bindTargetBlock: block,
+                    bindBasePath: "props.buttonStyle.border",
+                    controlsDisabled: isInspectFollowLocked(template, block, payload, "props.buttonStyle.border"),
+                  })}
+                </fieldset>
+              </section>
+            </>
+          ) : null}
+
+          {block.type === "divider" ? (
+            <>
+              <section className="inspector__section">
+                {dividerColorRow(block, "分割线颜色", "props.color")}
+                {fillFixedWidthRows(block, {
+                  modePath: "props.lineWidthMode",
+                  widthPath: "props.lineWidth",
+                  modeLabel: "线条宽度模式",
+                  widthLabel: "线条宽度",
+                  hint: "只控制分割线本体长度；外层容器宽度仍在「容器配置 · 布局」中配置。",
+                })}
+                {dividerTextRow(block, "线条粗细", "props.height")}
+              </section>
+            </>
+          ) : null}
+
+          {block.type === "progress" ? (
+            <>
+              <section className="inspector__section">
+                {renderColorInputRow({
+                  label: "进度槽底色",
+                  value: readDisplayColorString(block, "props.trackColor") || "#E8DCC8",
+                  onChange: (next) => pushBlock(block.id, "props.trackColor", next),
+                  disabled: isInspectFollowLocked(template, block, payload, "props.trackColor"),
+                  headerExtra: fieldBindHeader(block, "props.trackColor"),
+                })}
+                {renderColorInputRow({
+                  label: "进度填充色",
+                  value: readDisplayColorString(block, "props.fillColor") || "#C9A227",
+                  onChange: (next) => pushBlock(block.id, "props.fillColor", next),
+                  disabled: isInspectFollowLocked(template, block, payload, "props.fillColor"),
+                  headerExtra: fieldBindHeader(block, "props.fillColor"),
+                })}
+                {fillFixedWidthRows(block, {
+                  modePath: "props.barWidthMode",
+                  widthPath: "props.barWidth",
+                  modeLabel: "条带宽度模式",
+                  widthLabel: "条带宽度",
+                  hint: "只控制进度条条带本体宽度；外层容器宽度仍在「容器配置 · 布局」中配置。",
+                })}
+                {progressBarHeightRow(block)}
+                <fieldset className="inspector-bound-fieldset">
+                  {renderBorderRadiusEditor({
+                    labelPrefix: "条带",
+                    sectionTitle: "组件 · 圆角",
+                    basePath: "props.barBorderRadius",
+                    value: rd(block, "props.barBorderRadius"),
+                    getHint: (path) => readDisplayHint(block, path),
+                    onChange: (path, value) => pushBlock(block.id, path, value),
+                    bindTargetBlock: block,
+                    bindBasePath: "props.barBorderRadius",
+                    controlsDisabled: isInspectFollowLocked(
+                      template,
+                      block,
+                      payload,
+                      "props.barBorderRadius"
+                    ),
+                  })}
+                </fieldset>
+              </section>
+            </>
+          ) : null}
+
+          {block.type === "icon" ? (
+            <>
+              <section className="inspector__section">
+                {iconColorRow(block, "图标颜色", "props.color")}
+                {iconUnitRow(block, "尺寸", "props.size")}
+              </section>
+            </>
+          ) : null}
+            </InspectorCollapsibleSection>
+            ) : null}
           </>
         }
+        wrapperPane={
+          <>
+            <InspectorCollapsibleSection title="外层容器 · 布局">
+              <section className="inspector__section">
+                {contentAlignAxisRows(
+              block,
+              "容器内内容摆放",
+              "wrapperStyle.contentAlign.horizontal",
+              "wrapperStyle.contentAlign.vertical"
+            )}
+            {renderWrapperDimensionModeRow({
+              label: "宽度模式",
+              value: wrapperWidthModeUi as WrapperDimensionMode,
+              hint: widthModeHint,
+              axis: "width",
+              disableFill: disableWidthFillByParentRule,
+              onChange: (next) => applyWrapperDimensionMode("wrapperStyle.widthMode", next),
+            })}
+            {renderWrapperDimensionModeRow({
+              label: "高度模式",
+              value: wrapperHeightModeUi as WrapperDimensionMode,
+              hint: heightModeHint,
+              axis: "height",
+              disableFill: disableHeightFillByParentRule,
+              onChange: onWrapperHeightModeChange,
+            })}
+            {wrapperWidthModeUi === "fixed"
+              ? renderUnitInputRow({
+                  label: "固定宽度",
+                  value: readDisplayString(block, "wrapperStyle.width"),
+                  unit: "px",
+                  hint: readDisplayHint(block, "wrapperStyle.width"),
+                  onChange: (next) => pushBlock(id, "wrapperStyle.width", next),
+                })
+              : null}
+            {wrapperHeightModeUi === "fixed"
+              ? renderUnitInputRow({
+                  label: "固定高度",
+                  value: readDisplayString(block, "wrapperStyle.height"),
+                  unit: "px",
+                  hint: readDisplayHint(block, "wrapperStyle.height"),
+                  onChange: onWrapperFixedHeightChange,
+                })
+              : null}
+            <fieldset className="inspector-bound-fieldset">
+              {renderWrapperPaddingEditor(block)}
+            </fieldset>
+              </section>
+            </InspectorCollapsibleSection>
+            <InspectorCollapsibleSection title="外层容器 · 样式">
+              <section className="inspector__section">
+                <ColorField
+              label="容器背景色"
+              value={wrapperBg}
+              onChange={(v) => pushBlock(id, "wrapperStyle.backgroundColor", v)}
+              hint={wrapperBindMeta.fromPayload ? "来自变量赋值" : undefined}
+              disabled={isInspectFollowLocked(template, block, payload, "wrapperStyle.backgroundColor")}
+              headerExtra={fieldBindHeader(block, "wrapperStyle.backgroundColor")}
+              error={getFieldError?.("wrapperStyle.backgroundColor")}
+              warning={getFieldWarning?.("wrapperStyle.backgroundColor")}
+            />
+            <fieldset className="inspector-bound-fieldset">
+              {renderBorderRadiusEditor({
+                labelPrefix: "容器",
+                sectionTitle: "外层容器 · 圆角",
+                basePath: "wrapperStyle.borderRadius",
+                value: rd(block, "wrapperStyle.borderRadius"),
+                getHint: (path) => readDisplayHint(block, path),
+                onChange: (path, value) => pushBlock(id, path, value),
+                bindTargetBlock: block,
+                bindBasePath: "wrapperStyle.borderRadius",
+                controlsDisabled: isInspectFollowLocked(template, block, payload, "wrapperStyle.borderRadius"),
+              })}
+            </fieldset>
+            <fieldset className="inspector-bound-fieldset">
+              {renderBorderEditor({
+                labelPrefix: "容器",
+                sectionTitle: "外层容器 · 描边",
+                basePath: "wrapperStyle.border",
+                value: rd(block, "wrapperStyle.border"),
+                getHint: (path) => readDisplayHint(block, path),
+                onChange: (path, value) => pushBlock(id, path, value),
+                bindTargetBlock: block,
+                bindBasePath: "wrapperStyle.border",
+                controlsDisabled: isInspectFollowLocked(template, block, payload, "wrapperStyle.border"),
+              })}
+            </fieldset>
+              </section>
+            </InspectorCollapsibleSection>
+          </>
+        }
+        listPane={showRepeatRegionPanel ? repeatRegionPanel : undefined}
+        visibilityPane={visibilityPanel}
       />
       {repeatModal}
     </div>

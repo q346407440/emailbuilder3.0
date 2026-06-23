@@ -1,5 +1,6 @@
 import { TOKEN_PRESET_SCALE_ORDER } from "../token-preset-contract";
 import type { HexValue, IconPack, PxValue } from "./types";
+import { BUTTON_HEIGHT_TOKENS } from "./buttonHeight";
 
 /**
  * AST 令牌的**运行时值数组**——从 token-preset-contract 派生（单一真源，禁止双写）。
@@ -54,4 +55,8 @@ export function isRadiusToken(value: string): boolean {
 }
 export function isIconPack(value: string): value is IconPack {
   return (ICON_PACKS as readonly string[]).includes(value);
+}
+
+export function isButtonHeightToken(value: string): value is (typeof BUTTON_HEIGHT_TOKENS)[number] {
+  return (BUTTON_HEIGHT_TOKENS as readonly string[]).includes(value);
 }

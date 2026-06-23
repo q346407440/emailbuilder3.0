@@ -75,7 +75,7 @@ async function main() {
 
   const ok = manifest.items.filter((i) => i.ok);
   const failed = manifest.items.filter((i) => !i.ok);
-  const requiredFailed = failed.filter((i) => i.required);
+  const placeholder = manifest.items.filter((i) => i.placeholderFallback);
 
   await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
@@ -83,21 +83,14 @@ async function main() {
 
   console.log(`[resolve-ast-assets] 已写入: ${outPath}`);
   console.log(`[resolve-ast-assets] 资产槽清单: ${assetsListPath}`);
-  console.log(`[resolve-ast-assets] 成功 ${ok.length} / 失败 ${failed.length}`);
+  console.log(`[resolve-ast-assets] 成功 ${ok.length} / 失败 ${failed.length} / 占位回落 ${placeholder.length}`);
 
   for (const item of ok) {
-    console.log(`  ✓ ${item.blockId} (${item.kind}) → ${item.url}`);
+    const tag = item.placeholderFallback ? "（占位图）" : "";
+    console.log(`  ✓ ${item.blockId} (${item.kind}) → ${item.url}${tag}`);
   }
   for (const item of failed) {
     console.log(`  ✗ ${item.blockId} (${item.kind}) ${item.reason}${item.detail ? `: ${item.detail}` : ""}`);
-  }
-
-  if (requiredFailed.length > 0) {
-    console.error("\n❌ 必需资产未命中：");
-    for (const item of requiredFailed) {
-      console.error(`  - ${item.blockId}: ${item.query}`);
-    }
-    process.exit(1);
   }
 }
 

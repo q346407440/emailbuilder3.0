@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   appendLayoutVariant,
   deriveLayoutVariantIdFromLabel,
+  sortLayoutVariantsByCreatedDesc,
   sortLayoutVariantsByUpdatedDesc,
   updateLayoutVariantLabel,
 } from "./layoutVariantOps";
@@ -44,7 +45,36 @@ describe("layout manifest helpers", () => {
     assert.equal(next.variants[0]?.updatedAt, "2026-06-10T00:00:00.000Z");
   });
 
-  it("按 updatedAt 倒序排列版式", () => {
+  it("按 createdAt 倒序排列版式（列表展示）", () => {
+    const sorted = sortLayoutVariantsByCreatedDesc([
+      {
+        id: "old-created-new-edit",
+        label: "旧创建新编辑",
+        publishStatus: "draft",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-06-09T00:00:00.000Z",
+      },
+      {
+        id: "new-created-old-edit",
+        label: "新创建旧编辑",
+        publishStatus: "draft",
+        createdAt: "2026-03-01T00:00:00.000Z",
+        updatedAt: "2026-06-01T00:00:00.000Z",
+      },
+    ]);
+    assert.deepEqual(sorted.map((v) => v.id), ["new-created-old-edit", "old-created-new-edit"]);
+  });
+
+  it("创建时间相同时按 id 稳定倒序排列版式", () => {
+    const sorted = sortLayoutVariantsByCreatedDesc([
+      { id: "old", label: "旧", publishStatus: "draft", createdAt: "2026-01-01T00:00:00.000Z" },
+      { id: "new", label: "新", publishStatus: "draft", createdAt: "2026-03-01T00:00:00.000Z" },
+      { id: "mid", label: "中", publishStatus: "draft", createdAt: "2026-02-01T00:00:00.000Z" },
+    ]);
+    assert.deepEqual(sorted.map((v) => v.id), ["new", "mid", "old"]);
+  });
+
+  it("按 updatedAt 倒序排列版式（非列表场景）", () => {
     const sorted = sortLayoutVariantsByUpdatedDesc([
       {
         id: "old-created-new-edit",
@@ -62,14 +92,5 @@ describe("layout manifest helpers", () => {
       },
     ]);
     assert.deepEqual(sorted.map((v) => v.id), ["old-created-new-edit", "new-created-old-edit"]);
-  });
-
-  it("更新时间相同时按 createdAt 倒序排列版式", () => {
-    const sorted = sortLayoutVariantsByUpdatedDesc([
-      { id: "old", label: "旧", publishStatus: "draft", createdAt: "2026-01-01T00:00:00.000Z" },
-      { id: "new", label: "新", publishStatus: "draft", createdAt: "2026-03-01T00:00:00.000Z" },
-      { id: "mid", label: "中", publishStatus: "draft", createdAt: "2026-02-01T00:00:00.000Z" },
-    ]);
-    assert.deepEqual(sorted.map((v) => v.id), ["new", "mid", "old"]);
   });
 });

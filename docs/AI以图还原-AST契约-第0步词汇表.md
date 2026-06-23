@@ -90,7 +90,7 @@ RestoreAstDocument = { theme, tree }
 | `text` | `content` `role` | `tone` `bold` `italic` `align` | content.text |
 | `image` | `query` | `height`(px) `aspect` `{w,h}` `align` `crossAlign` `required` `box` `children`(叠字) | content.image（**商品/场景摄影，非 Logo**） |
 | `icon` | `query` `pack` | `tone` `size` `required` | content.icon（**Logo、社媒、页脚小标**） |
-| `button` | `label` | `href` `tone` `radius` `width` | action.button（无 variant，默认 pill） |
+| `button` | `label` | `href` `tone` `radius` `width` `height` | action.button（无 variant，默认 pill） |
 | `divider` | — | `tone` `thickness` | separator.divider |
 | `progress` | `value` | — | indicator.progress |
 
@@ -131,6 +131,7 @@ RestoreAstDocument = { theme, tree }
 - `image.aspect`：可选 `{ w, h }`（**宽:高** 比例，均为正整数；如竖长缩略图 `{ "w": 3, "h": 4 }`）。**不写宽 px**——宽由组装器推导（见下节）
 - `button`：无 variant；默认 pill 按钮（bg 绑 CTA、圆角绑 `radius.cta`），`tone`/`radius` 可覆盖
 - `button.width`（**可选**）：`fill` \| `hug` — 胶囊本体宽（→ `buttonStyle.widthMode`）；未写 = `hug` 小胶囊；通栏大条写 `fill`
+- `button.height`（**可选**）：`hug` \| `relaxed` — 胶囊高度档；未写 = `hug` 常规小胶囊；设计图明显偏高写 `relaxed`（→ 组装器 `heightMode:fixed` + 固定 48px）
 
 ### `image` 高度与比例（AI 写语义，组装器写宽）
 
@@ -142,7 +143,7 @@ RestoreAstDocument = { theme, tree }
 
 **为何不让 AI 写宽 px**：版心 600、padding、row 内兄弟块会改变可用宽；AI 写绝对宽易超出或与右侧文案抢空间。**高 + 比例**表达视觉意图即可，像素宽交给组装器。
 
-**禁止**：`widthMode` / 任意 block 的 `width` **px 字段** / `"3:4"` 字符串比例——**例外**：`button.width` 仅允许档名 `fill`|`hug`（见下节）；image 比例统一 `{ w, h }` 对象。
+**禁止**：`widthMode` / 任意 block 的 `width` **px 字段** / `"3:4"` 字符串比例——**例外**：`button.width` 仅允许档名 `fill`|`hug`；`button.height` 仅允许 `hug`|`relaxed`（见下节）；image 比例统一 `{ w, h }` 对象。
 
 ### 按钮宽度（`width`，**可选**）
 
@@ -152,6 +153,15 @@ RestoreAstDocument = { theme, tree }
 | `fill` | 同上 wrapper + `buttonStyle.widthMode: fill` | 促销条通栏「Check Out …」大白条 |
 
 > AI **只写** `width` 字符串档，**不写** template 形态的 `widthMode`；外层容器宽由组装器固定 `fill`。
+
+### 按钮高度（`height`，**可选**，二选一）
+
+| AST `height` | 组装器 | 典型场景 |
+|---|---|---|
+| 未写 / `hug` | `buttonStyle.heightMode: hug` | 商品旁「Shop now」、行内标准小胶囊 |
+| `relaxed` | `heightMode: fixed` + `height: "48px"` | 设计图明显偏高的 CTA（约 1.5× 常规胶囊）：通栏主按钮、首屏大 CTA |
+
+> AI **只判断**常规 vs 偏高，**不写 px**；定高像素由组装器写入。非法值归一化后按 `hug` 处理。
 
 ### `row` 双轴对齐（`align` + 可选 `crossAlign`）
 

@@ -4002,6 +4002,18 @@ body {
   flex-direction: column;
 }
 
+.canvas-col__snapshot-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+}
+
+.canvas-col--loading .canvas-scroll {
+  pointer-events: none;
+}
+
 /**
  * 画布块操作浮层：左右距预览水平锚点左右外缘 20px（桌面=emailRoot，移动=.email-preview-viewport）；
  * top/left 为视口 fixed 坐标，经 portal 绘制于 body，避免被工作台左右侧栏遮挡或裁切。
@@ -5866,6 +5878,96 @@ body {
   color: #1f2937;
 }
 
+.inspector-collapsible-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.inspector-collapsible-section + .inspector-collapsible-section {
+  margin-top: 4px;
+}
+
+.inspector-tab-panel > .inspector-collapsible-section:first-child .inspector-collapsible-section__header {
+  margin-top: 0;
+}
+
+.inspector-collapsible-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 14px 0 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: #1f2937;
+}
+
+.inspector-collapsible-section__header:hover .inspector-collapsible-section__title {
+  color: var(--accent, #3d8bd9);
+}
+
+.inspector-collapsible-section__title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.inspector-collapsible-section__chevron {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted, #6b7280);
+}
+
+.inspector-collapsible-section--nested .inspector-collapsible-section__chevron {
+  width: 18px;
+  height: 18px;
+  font-size: 13px;
+}
+
+.inspector-collapsible-section__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.inspector-collapsible-section__body[hidden] {
+  display: none;
+}
+
+.inspector-collapsible-section--nested .inspector-collapsible-section__header {
+  margin: 0;
+}
+
+.inspector-collapsible-section--nested.inspector__box-model-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.inspector-collapsible-section--nested .inspector-collapsible-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.inspector-collapsible-section--nested .inspector-collapsible-section__body[hidden] {
+  display: none;
+}
+
 /* 区块内分组标题：与 section 外大标题一致，标题到首行配置 8px */
 .inspector__box-model-group {
   display: flex;
@@ -6149,7 +6251,25 @@ body {
 
 .inspector-rich-toolbar__btn--active {
   border-color: var(--accent);
-  background: #fff !important;
+  background: rgba(61, 139, 217, 0.12) !important;
+  color: var(--accent, #3d8bd9);
+}
+
+.inspector-rich-toolbar__font-size--indeterminate .ant-input::placeholder {
+  color: var(--muted);
+}
+
+.inspector-rich-toolbar__color-swatch--indeterminate {
+  background: linear-gradient(
+    135deg,
+    #bdbdbd 25%,
+    #f5f5f5 25%,
+    #f5f5f5 50%,
+    #bdbdbd 50%,
+    #bdbdbd 75%,
+    #f5f5f5 75%
+  );
+  background-size: 8px 8px;
 }
 
 .inspector-rich-toolbar__btn--color {
@@ -6177,6 +6297,14 @@ body {
   font-size: 13px;
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+.app .inspector .inspector-rich-toolbar__font-size .shop-input-compact__suffix {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 13px;
+  border-radius: 0 5px 5px 0;
 }
 
 .inspector-rich-toolbar__font-size .ant-input::-webkit-outer-spin-button,

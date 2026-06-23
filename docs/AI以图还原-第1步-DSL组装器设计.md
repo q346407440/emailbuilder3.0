@@ -74,7 +74,7 @@ type BuildCtx = {
 | `text` | `text` / `content.text` | `textBody.paragraphs`（**正文唯一真源**，非 `props.content`）、`fontSize`/`color`/`bold`/`italic` | contentAlign（**`align` 优先**，否则继承父 stack horizontal） | blockMeta；role→fontSize、tone→color | `fontSize`→`tokens.typography.*`、`color`→`colors.*` |
 | `image` | `image` / `content.image` | 资源在 `wrapperStyle.backgroundImage.src`（**占位，待第 3 步回填**）；叠字用 `direction`/`gap` | **通栏/非 row**：`widthMode:'fill'`、`heightMode:'fixed'`、`height`；**横排 row 内** + 有 `aspect` → `fixed` 宽（`widthPx = heightPx × w/h`，下限 72px）+ 右侧兄弟 `fill`；row 内无 `aspect` → 兜底 3:4 再算；**有 overlay children** → `contentAlign` 由 `align` + `crossAlign` 经 `mapImageOverlayAlign`（双轴缺省 center/center） | **`height`(px) 必填语义**；**row 内可选 `aspect:{w,h}`**；**叠放可选 `align` + `crossAlign`**（九宫格双轴）；**禁止 AI 写宽 px**；query 入 `ctx.assets`；overlay children | `backgroundImage.src` 为 content（非主题） |
 | `icon` | `icon` / `content.icon` | `src`（占位待回填）、`color`、`size`、`link` | contentAlign | query 入 `ctx.assets`；tone→color、size 档→px | `color`→`colors.*`、`size`→可绑 |
-| `button` | `button` / `action.button` | `text`、`link`、`buttonStyle.{backgroundColor,textColor,fontSize,border,borderRadius,widthMode,...}` | contentAlign；外层 **`widthMode:'fill'`**/`heightMode:'hug'` | **无 variant**：默认 pill；`width`→`buttonStyle.widthMode`（缺省 hug）；`tone`/`radius` 覆盖；**禁 buttonStyle.padding** | `buttonStyle.backgroundColor`→`colors.primary`(CTA)、`buttonStyle.borderRadius`→`radius.cta` |
+| `button` | `button` / `action.button` | `text`、`link`、`buttonStyle.{backgroundColor,textColor,fontSize,border,borderRadius,widthMode,heightMode,height,...}` | contentAlign；外层 **`widthMode:'fill'`**/`heightMode:'hug'` | **无 variant**：默认 pill；`width`→`buttonStyle.widthMode`（缺省 hug）；`height`→`buttonStyle.heightMode`（缺省 hug；`relaxed`→`fixed`+48px）；`tone`/`radius` 覆盖；**禁 buttonStyle.padding** | `buttonStyle.backgroundColor`→`colors.primary`(CTA)、`buttonStyle.borderRadius`→`radius.cta` |
 | `divider` | `divider` / `separator.divider` | `color`、`lineWidthMode`、`lineWidth`、`height` | 占位/留白 | tone→color | `color`→`colors.*` |
 | `progress` | `progress` / `indicator.progress` | `value`、`max`、`trackColor`、`fillColor`、`barWidth*`/`barHeight`/`barBorderRadius` | contentAlign | value 夹 0..100；max 默认 100 | `fillColor`/`trackColor`→`colors.*`、`barBorderRadius`→`radius.*` |
 
@@ -93,8 +93,9 @@ type BuildCtx = {
 | `border` | 无 | `borderNone()` 字面量 |
 | `bold` / `italic` | `false` | 字面量 |
 | `widthMode` | `hug` | 字面量；`width:fill` → `fill` |
+| `heightMode` | `hug` | 字面量；`height:relaxed` → `fixed` + `48px` |
 
-外层 `wrapperStyle`：`widthMode:'fill'`、`heightMode:'hug'`、`contentAlign` 的 horizontal **继承直接父 stack 的 `align`**（缺省 center）、vertical 恒 `center`；`buttonStyle.widthMode` 由 AST `width` 控制。
+外层 `wrapperStyle`：`widthMode:'fill'`、`heightMode:'hug'`、`contentAlign` 的 horizontal **继承直接父 stack 的 `align`**（缺省 center）、vertical 恒 `center`；`buttonStyle.widthMode` / `buttonStyle.heightMode` 由 AST `width` / `height` 控制。
 
 **② `icon.size` 档 → px**：`sm`=`16px`、`md`=`24px`、`lg`=`32px`（`md` 源自 `iconBlock` 默认 24px）。
 

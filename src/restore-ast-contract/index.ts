@@ -15,6 +15,7 @@ export type {
   IconSize,
   DividerThickness,
   ButtonWidth,
+  ButtonHeight,
   Box,
   EmailNode,
   StackNode,
@@ -52,6 +53,10 @@ export {
   isRadiusToken,
   isIconPack,
 } from "./tokens";
+export {
+  BUTTON_HEIGHT_TOKENS,
+  RESTORE_AST_BUTTON_RELAXED_HEIGHT_PX,
+} from "./buttonHeight";
 export { astToTemplate } from "./astToTemplate";
 export type { AstToTemplateOptions, AstToTemplateResult } from "./astToTemplate";
 export { collapseRootSiblingPaddingSeams } from "./collapseRootSiblingPaddingSeams";

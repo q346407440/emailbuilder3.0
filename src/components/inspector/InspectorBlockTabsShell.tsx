@@ -5,9 +5,8 @@ type Props = {
   inspectorBlockKey: string;
   active: InspectorMainTab;
   onChange: (tab: InspectorMainTab) => void;
-  contentPane: ReactNode;
-  stylePane: ReactNode;
-  layoutPane: ReactNode;
+  componentPane: ReactNode;
+  wrapperPane: ReactNode;
   listPane?: ReactNode;
   visibilityPane?: ReactNode;
 };
@@ -19,9 +18,8 @@ export const InspectorBlockTabsShell = memo(function InspectorBlockTabsShell({
   inspectorBlockKey,
   active,
   onChange,
-  contentPane,
-  stylePane,
-  layoutPane,
+  componentPane,
+  wrapperPane,
   listPane,
   visibilityPane,
 }: Props) {
@@ -48,9 +46,8 @@ export const InspectorBlockTabsShell = memo(function InspectorBlockTabsShell({
       active={active}
       onChange={onChange}
       shouldRenderPane={shouldRenderPane}
-      contentPane={contentPane}
-      stylePane={stylePane}
-      layoutPane={layoutPane}
+      componentPane={componentPane}
+      wrapperPane={wrapperPane}
       listPane={listPane}
       visibilityPane={visibilityPane}
     />

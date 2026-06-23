@@ -105,7 +105,6 @@ const restoreNodeSchema: RestoreAstNodeSchema = z.lazy(() =>
       query: z.string().min(1),
       height: pxValueSchema.optional(),
       aspect: aspectSchema.optional(),
-      required: z.boolean().optional(),
       box: boxSchema.optional(),
       align: alignCrossSchema.optional(),
       crossAlign: alignCrossSchema.optional(),
@@ -117,7 +116,6 @@ const restoreNodeSchema: RestoreAstNodeSchema = z.lazy(() =>
       pack: z.enum(ICON_PACKS),
       tone: toneValueSchema.optional(),
       size: z.union([z.enum(["sm", "md", "lg"]), pxValueSchema]).optional(),
-      required: z.boolean().optional(),
     }),
     z.object({
       t: z.literal("button"),
@@ -126,6 +124,7 @@ const restoreNodeSchema: RestoreAstNodeSchema = z.lazy(() =>
       tone: toneValueSchema.optional(),
       radius: radiusValueSchema.optional(),
       width: z.enum(["fill", "hug"]).optional(),
+      height: z.enum(["hug", "relaxed"]).optional(),
     }),
     z.object({
       t: z.literal("divider"),

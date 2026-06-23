@@ -88,6 +88,7 @@ import {
 } from "../lib/emailPresentationPrimitives";
 import {
   resolveComponentBodyWidthCss,
+  resolveComponentBodySizeCss,
   resolveEmailRootShellCss,
   resolvePreviewViewportClipCss,
   parseCssPx,
@@ -108,11 +109,15 @@ import {
 type Props = {
   previewModel: RepeatPreviewModel;
   sourceTemplate: EmailTemplate;
+  /** 由 snapshot 层预展平时传入，跳过组件内 `previewModelToFlatTemplate` */
+  flatTemplate?: EmailTemplate;
   /** 与左侧树一致：`null` 表示画布（emailRoot）选中 */
   selectedBlockRef: VirtualBlockRef | null;
   onSelectBlock: (ref: VirtualBlockRef | null) => void;
   /** 预览视窗宽（桌面/移动切换；不写 template.json） */
   previewViewportPx?: number;
+  /** 供版式加载后 canvas prewarm 定位 `.email-preview-scope` */
+  previewScopeRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 
@@ -1046,10 +1051,13 @@ function BlockViewImpl({ id, template, canvasBlockView, onSelectBlock }: BlockVi
     const fontStyle = bs?.italic === true ? "italic" : "normal";
     const buttonFontFamily = EMAIL_CANVAS_TEXT_FONT_FAMILY;
     const buttonFontSize = normalizeCssSize(bs?.fontSize) ?? "15px";
-    const buttonBodyWidthCss = resolveComponentBodyWidthCss({
-      mode: bs?.widthMode,
+    const buttonBodySizeCss = resolveComponentBodySizeCss({
+      widthMode: bs?.widthMode,
       fixedWidth: bs?.width,
-      defaultMode: "hug",
+      widthDefaultMode: "hug",
+      heightMode: bs?.heightMode,
+      fixedHeight: bs?.height,
+      heightDefaultMode: "hug",
     });
     return renderPresentationLeafShell({
       dataProps: canvasPreviewBlockDataProps(id, b.wrapperStyle),
@@ -1061,7 +1069,7 @@ function BlockViewImpl({ id, template, canvasBlockView, onSelectBlock }: BlockVi
         <a
           href={link}
           style={{
-            ...buttonBodyWidthCss,
+            ...buttonBodySizeCss,
             boxSizing: "border-box",
             backgroundColor: bg,
             color: tc,
@@ -1194,6 +1202,7 @@ function BlockViewImpl({ id, template, canvasBlockView, onSelectBlock }: BlockVi
     const gridTable = (
       <table
         ref={gridRef}
+        data-email-preview-grid-host=""
         {...emailTablePresentationProps}
         style={{
           ...emailPresentationTableStyle,
@@ -1386,15 +1395,19 @@ const BlockView = memo(BlockViewImpl, blockViewPropsAreEqual);
 function EmailPreviewImpl({
   previewModel,
   sourceTemplate,
+  flatTemplate: flatTemplateProp,
   selectedBlockRef,
   onSelectBlock,
   previewViewportPx = EMAIL_CANVAS_VIEWPORT_DESKTOP_PX,
+  previewScopeRef: externalScopeRef,
 }: Props) {
   // 展平 + 逐节点深拷贝代价高，仅在 previewModel / sourceTemplate 变化时重算；
   // 选中、画布工具条重定位等不改这两者的重渲染将命中缓存，避免每次都全树克隆。
   const template = useMemo(
-    () => previewModelToFlatTemplate(previewModel, sourceTemplate),
-    [previewModel, sourceTemplate]
+    () =>
+      flatTemplateProp ??
+      previewModelToFlatTemplate(previewModel, sourceTemplate),
+    [flatTemplateProp, previewModel, sourceTemplate]
   );
   const rootBlockId = template.rootBlockId;
   const root = template.blocks[rootBlockId];
@@ -1439,7 +1452,16 @@ function EmailPreviewImpl({
     dragInsert?.enabled && dragInsert.isDragging
       ? `drag:${dragInsert.activeOverSlotId ?? ""}`
       : "idle";
-  const previewScopeRef = useRef<HTMLDivElement>(null);
+  const previewScopeRef = useRef<HTMLDivElement | null>(null);
+  const setPreviewScopeEl = useCallback(
+    (el: HTMLDivElement | null) => {
+      previewScopeRef.current = el;
+      if (externalScopeRef) {
+        (externalScopeRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      }
+    },
+    [externalScopeRef]
+  );
   const canvasBlockView = useMemo(
     (): CanvasBlockViewContext => ({ dragSyncKey }),
     [dragSyncKey]
@@ -1466,7 +1488,7 @@ function EmailPreviewImpl({
         style={resolvePreviewViewportClipCss(previewViewportPx)}
       >
         <CanvasDimensionPreviewProvider value={dimensionPreviewValue}>
-          <div ref={previewScopeRef} className="email-preview-scope">
+          <div ref={setPreviewScopeEl} className="email-preview-scope">
             <BlockView
               id={rootBlockId}
               template={template}

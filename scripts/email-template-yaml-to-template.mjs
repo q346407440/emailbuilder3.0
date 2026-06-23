@@ -121,6 +121,8 @@ const GENERATED_PROPS_KEYS_BY_TYPE = {
 const BUTTON_STYLE_KEYS = new Set([
   "widthMode",
   "width",
+  "heightMode",
+  "height",
   "backgroundColor",
   "textColor",
   "borderRadius",
@@ -347,6 +349,7 @@ function defaultButtonProps() {
     link: "https://example.com",
     buttonStyle: {
       widthMode: "hug",
+      heightMode: "hug",
       backgroundColor: "#111111",
       textColor: "#ffffff",
       borderRadius: defaultBorderRadius(),

@@ -1,6 +1,6 @@
 import type { LayoutManifest, LayoutVariantEntry } from "../layout-variant-contract/types";
 import { isLogicallyDeleted, logicalDeleteTimestamp } from "./logicalDelete";
-import { sortLayoutVariantsByUpdatedDesc } from "./layoutVariantOps";
+import { sortLayoutVariantsByCreatedDesc } from "./layoutVariantOps";
 
 export function listVisibleLayoutVariants(variants: LayoutVariantEntry[]): LayoutVariantEntry[] {
   return variants.filter((v) => !isLogicallyDeleted(v));
@@ -9,7 +9,7 @@ export function listVisibleLayoutVariants(variants: LayoutVariantEntry[]): Layou
 export function sortVisibleLayoutVariantsByCreatedDesc(
   variants: LayoutVariantEntry[]
 ): LayoutVariantEntry[] {
-  return sortLayoutVariantsByUpdatedDesc(listVisibleLayoutVariants(variants));
+  return sortLayoutVariantsByCreatedDesc(listVisibleLayoutVariants(variants));
 }
 
 /** 解析当前应使用的版式 id（跳过已逻辑删除的项；active 指向已删除时回落到首个可见版式）。 */
@@ -36,7 +36,7 @@ export function resolveEffectiveLayoutVariantId(
   if (active && !isLogicallyDeleted(active)) {
     return { layoutVariantId: manifest.activeLayoutVariantId, error: null };
   }
-  const fallback = sortLayoutVariantsByUpdatedDesc(visible)[0]!;
+  const fallback = sortLayoutVariantsByCreatedDesc(visible)[0]!;
   return { layoutVariantId: fallback.id, error: null };
 }
 
@@ -63,7 +63,7 @@ export function softDeleteLayoutVariant(
 
   let activeLayoutVariantId = manifest.activeLayoutVariantId;
   if (activeLayoutVariantId === layoutVariantId) {
-    const nextVisible = sortLayoutVariantsByUpdatedDesc(
+    const nextVisible = sortLayoutVariantsByCreatedDesc(
       listVisibleLayoutVariants(variants)
     )[0];
     if (!nextVisible) {

@@ -38,10 +38,19 @@ export function createDefaultAssetResolver(): AssetResolver {
         input.iconQuery,
         ASSET_CANDIDATE_LIMIT
       );
-      if (candidates.length === 0) {
-        return { ok: false, reason: "ICON_NOT_FOUND" };
+      // 索引 fallback（如 simple-icons→google）视为未命中，留空 src，预览显示 ◇ 占位。
+      const pipelineCandidates = candidates.filter((icon) => !icon.usedFallback);
+      if (pipelineCandidates.length === 0) {
+        return {
+          ok: false,
+          reason: candidates.length === 0 ? "ICON_NOT_FOUND" : "ICON_SLUG_NOT_FOUND",
+          detail:
+            candidates.length === 0
+              ? undefined
+              : `索引内无匹配 slug：${input.iconQuery}`,
+        };
       }
-      for (const icon of candidates) {
+      for (const icon of pipelineCandidates) {
         if (await verifyUrlReachable(icon.src)) {
           return { ok: true, url: icon.src, tintable: icon.tintable };
         }
@@ -49,7 +58,7 @@ export function createDefaultAssetResolver(): AssetResolver {
       return {
         ok: false,
         reason: "ICON_ALL_CANDIDATES_UNREACHABLE",
-        detail: `${candidates.length} 个候选均不可访问`,
+        detail: `${pipelineCandidates.length} 个候选均不可访问`,
       };
     },
   };

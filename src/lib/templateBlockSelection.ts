@@ -1,10 +1,15 @@
 import type { VirtualBlockRef } from "../repeat-binding-contract";
+import type { PreviewInvalidationKind } from "../preview-invalidation-contract";
 import type { EmailTemplate } from "../types/email";
 import { resolvePhysicalBlockId } from "../repeat-runtime";
 
 export type TemplateChangeOptions = {
   /** 模板变更后显式选中的虚拟 ref */
   selectBlockRef?: VirtualBlockRef | null;
+  /** P2：单块字段编辑时的脏 block id */
+  changedBlockId?: string;
+  /** P2：预览失效类型（默认由变更入口推断） */
+  invalidation?: PreviewInvalidationKind;
 };
 
 /**

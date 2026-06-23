@@ -5,7 +5,7 @@ import {
   uniformNestedBorderRadiusWithBindings,
   uniformSpacingWithBindings,
 } from "../lib/boxModelFlat";
-import type { BindingSpec } from "../types/email";
+import type { BindingSpec, BorderStyle, BorderValueFlat } from "../types/email";
 import type { ThemeRef } from "../types/themeRef";
 import {
   DEFAULT_TEXT_COLOR,
@@ -20,7 +20,10 @@ import {
   isSpaceToken,
   isToneToken,
 } from "./tokens";
-import type { Radius, Role, Space, Tone } from "./types";
+import { RESTORE_AST_BUTTON_RELAXED_HEIGHT_PX } from "./buttonHeight";
+import type { BorderStyleToken, Radius, Role, Space, Tone, ToneToken } from "./types";
+
+const DEFAULT_BOX_BORDER_TONE: ToneToken = "secondary";
 
 function themeBinding(fieldPath: string, family: TokenPresetFamily, scale: string): BindingSpec {
   const tokenPath = themeRefPathForStorage(family, scale);
@@ -101,12 +104,71 @@ export function resolveRadius(fieldPath: string, radius: Radius | undefined): Th
   return { value: "0" };
 }
 
+/** box.border 语义档 → wrapperStyle.border 四边平铺对象。 */
+export function resolveBoxBorder(
+  fieldPrefix: string,
+  border: BorderStyleToken,
+  borderTone?: Tone
+): {
+  border: BorderValueFlat;
+  bindings?: Record<string, BindingSpec>;
+} {
+  const widthPx = border === "thin" ? "2px" : "1px";
+  const style: BorderStyle = border === "dashed-hairline" ? "dashed" : "solid";
+  const color = resolveTone(`${fieldPrefix}.color`, borderTone ?? DEFAULT_BOX_BORDER_TONE);
+
+  return {
+    border: {
+      style,
+      color: color.value,
+      top: widthPx,
+      right: widthPx,
+      bottom: widthPx,
+      left: widthPx,
+    },
+    bindings: color.bindings,
+  };
+}
+
 export function resolveIconSizePx(size: import("./types").IconSize | undefined): string {
   if (size === undefined) return "24px";
   if (isPxValue(size)) return `${size.px}px`;
   if (size === "sm") return "16px";
   if (size === "lg") return "32px";
   return "24px";
+}
+
+/** image 外层壳背景：底图由 backgroundImage 承载，容器背景固定透明（不继承 box.tone）。 */
+export const IMAGE_WRAPPER_BACKGROUND_COLOR = "transparent";
+
+function stripWrapperBackgroundColorBindings(
+  bindings: Record<string, BindingSpec> | undefined
+): Record<string, BindingSpec> | undefined {
+  if (!bindings) return undefined;
+  const next: Record<string, BindingSpec> = {};
+  for (const [key, spec] of Object.entries(bindings)) {
+    if (key === "wrapperStyle.backgroundColor" || key.startsWith("wrapperStyle.backgroundColor.")) {
+      continue;
+    }
+    next[key] = spec;
+  }
+  return Object.keys(next).length > 0 ? next : undefined;
+}
+
+/** image 专用 box：保留 pad/radius/border，忽略 tone（背景色由 {@link IMAGE_WRAPPER_BACKGROUND_COLOR} 固定）。 */
+export function applyImageBoxWrapper(
+  fieldPrefix: string,
+  box: import("./types").Box | undefined
+): {
+  wrapperExtras: Record<string, unknown>;
+  bindings?: Record<string, BindingSpec>;
+} {
+  const boxApplied = applyBoxWrapper(fieldPrefix, box);
+  const { backgroundColor: _ignored, ...wrapperExtras } = boxApplied.wrapperExtras;
+  return {
+    wrapperExtras,
+    bindings: stripWrapperBackgroundColorBindings(boxApplied.bindings),
+  };
 }
 
 export function applyBoxWrapper(
@@ -151,6 +213,12 @@ export function applyBoxWrapper(
     bindingParts.push(applied.bindings);
   }
 
+  if (box.border !== undefined) {
+    const borderApplied = resolveBoxBorder(`${fieldPrefix}.border`, box.border, box.borderTone);
+    wrapperExtras.border = borderApplied.border;
+    bindingParts.push(borderApplied.bindings);
+  }
+
   return { wrapperExtras, bindings: mergeBindings(...bindingParts) };
 }
 
@@ -169,6 +237,16 @@ export function applyUniformNestedBorderRadius(
     resolved.value,
     resolved.bindings ? Object.values(resolved.bindings)[0] : undefined
   );
+}
+
+/** row 主轴 align → stack/text 可用的 cross align（between 视为 start）。 */
+export function rowMainAlignToCross(
+  align: import("./types").AlignMain | undefined
+): import("./types").AlignCross | undefined {
+  if (align === undefined) return undefined;
+  if (align === "end") return "end";
+  if (align === "center") return "center";
+  return "start";
 }
 
 export function mapStackAlign(align: import("./types").AlignCross | undefined): {
@@ -204,6 +282,22 @@ export function resolveButtonStyleWidthMode(
   width: import("./types").ButtonWidth | undefined
 ): "fill" | "hug" {
   return width === "fill" ? "fill" : "hug";
+}
+
+export type ResolvedButtonStyleHeight = {
+  heightMode: "hug" | "fixed";
+  heightPx?: string;
+};
+
+/** 按钮胶囊高度：AST `height` → `buttonStyle.heightMode`（relaxed 时 + 固定 px）。非法值兜底 hug。 */
+export function resolveButtonStyleHeight(height: unknown): ResolvedButtonStyleHeight {
+  if (height === "relaxed") {
+    return {
+      heightMode: "fixed",
+      heightPx: `${RESTORE_AST_BUTTON_RELAXED_HEIGHT_PX}px`,
+    };
+  }
+  return { heightMode: "hug" };
 }
 
 /** row 主轴间距：`between` → gapMode auto（space-between）；其余 fixed。 */

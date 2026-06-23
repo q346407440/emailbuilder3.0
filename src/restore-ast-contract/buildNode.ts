@@ -11,11 +11,15 @@ import {
 import type { BuildCtx } from "./buildCtx";
 import {
   applyBoxWrapper,
+  applyImageBoxWrapper,
+  IMAGE_WRAPPER_BACKGROUND_COLOR,
   applyUniformNestedBorderRadius,
   mapImageOverlayAlign,
   mapRowAlign,
   mapStackAlign,
   resolveRowGapMode,
+  rowMainAlignToCross,
+  resolveButtonStyleHeight,
   resolveButtonStyleWidthMode,
   resolveIconSizePx,
   resolveRadius,
@@ -24,8 +28,13 @@ import {
   resolveTone,
 } from "./resolveValue";
 import { deriveBlockDisplayName, type DisplayNameHints } from "./deriveBlockDisplayName";
-import { deriveRowInlineImageBox } from "./rowInlineImageBox";
+import {
+  deriveRowInlineImageBox,
+  shouldDeriveFixedImageBoxFromAspect,
+} from "./rowInlineImageBox";
 import { resolveButtonTextColor } from "./resolveButtonTextColor";
+import { splitTextContentToParagraphs } from "./splitTextContentToParagraphs";
+import { resolveDirectRowChildWrapperWidthMode } from "./resolveRowChildWidthMode";
 import { resolveButtonWrapperContentAlign, resolveTextContentAlign } from "./textContentAlign";
 import {
   GRID_MAX_COLUMNS,
@@ -33,6 +42,7 @@ import {
   PROGRESS_MAX,
   PROGRESS_MIN,
   type AlignCross,
+  type AlignMain,
   type RestoreNode,
 } from "./types";
 
@@ -67,6 +77,7 @@ function containerShell(
     gapMode?: "fixed" | "auto";
     contentAlign: { horizontal: string; vertical: string };
     box?: import("./types").Box;
+    widthMode?: "fill" | "hug";
     extraBindings?: Record<string, BindingSpec>;
   }
 ): Pick<DraftBlock, "wrapperStyle" | "bindings" | "props"> {
@@ -81,7 +92,7 @@ function containerShell(
       gap: gap.value,
     },
     wrapperStyle: {
-      widthMode: "fill",
+      widthMode: opts.widthMode ?? "fill",
       heightMode: "hug",
       contentAlign: opts.contentAlign,
       border: borderNone(),
@@ -97,11 +108,15 @@ type BuildChildrenOptions = {
   inHorizontalRow?: boolean;
   inDirectStack?: boolean;
   stackAlign?: AlignCross;
+  inDirectRow?: boolean;
+  rowAlign?: AlignMain;
   inDirectImageOverlay?: boolean;
   imageOverlayAlign?: AlignCross;
   imageOverlayCrossAlign?: AlignCross;
   /** 当前 grid 作用域内的统一商品图高度；undefined = 未声明，各 image 自管 height。 */
   gridCellImageHeight?: number;
+  /** 直接父 layout 为 hug 宽（纵排徽章列等）。 */
+  parentWidthHug?: boolean;
 };
 
 function buildChildren(
@@ -119,10 +134,13 @@ function buildChildren(
       inHorizontalRow: options?.inHorizontalRow,
       inDirectStack: options?.inDirectStack,
       stackAlign: options?.stackAlign,
+      inDirectRow: options?.inDirectRow,
+      rowAlign: options?.rowAlign,
       inDirectImageOverlay: options?.inDirectImageOverlay,
       imageOverlayAlign: options?.imageOverlayAlign,
       imageOverlayCrossAlign: options?.imageOverlayCrossAlign,
       gridCellImageHeight: options?.gridCellImageHeight,
+      parentWidthHug: options?.parentWidthHug,
     });
   });
 }
@@ -137,18 +155,49 @@ function resolveImageHeightPx(
   return node.height?.px ?? 240;
 }
 
+/** 子 stack 未写 align 时，继承直接父 stack 或父 row 的主轴对齐。 */
+function inheritStackAlign(
+  align: AlignCross | undefined,
+  parent: BuildNodeParentContext
+): AlignCross | undefined {
+  if (align !== undefined) return align;
+  if (parent.inDirectStack && parent.stackAlign !== undefined) return parent.stackAlign;
+  if (parent.inDirectRow && parent.rowAlign !== undefined) {
+    return rowMainAlignToCross(parent.rowAlign);
+  }
+  return undefined;
+}
+
+/** 子 row 未写 align 时，继承直接父 stack 或父 row 的主轴对齐。 */
+function inheritRowAlign(
+  align: AlignMain | undefined,
+  parent: BuildNodeParentContext
+): AlignMain | undefined {
+  if (align !== undefined) return align;
+  if (parent.inDirectStack && parent.stackAlign !== undefined) {
+    return parent.stackAlign as AlignMain;
+  }
+  if (parent.inDirectRow && parent.rowAlign !== undefined) return parent.rowAlign;
+  return undefined;
+}
+
 export type BuildNodeParentContext = {
   /** 当前节点位于横排 layout.container 内（影响 text 等叶子宽度）。 */
   inHorizontalRow?: boolean;
   /** 直接父节点为 stack（text 继承其 horizontal align）。 */
   inDirectStack?: boolean;
   stackAlign?: AlignCross;
+  /** 直接父节点为 row（text / 子 stack 继承其主轴 align）。 */
+  inDirectRow?: boolean;
+  rowAlign?: AlignMain;
   /** 直接父节点为带叠放 children 的 image（text 继承 overlay align）。 */
   inDirectImageOverlay?: boolean;
   imageOverlayAlign?: AlignCross;
   imageOverlayCrossAlign?: AlignCross;
   /** 祖先 grid 声明了 cellImageHeight 时，格内 image 统一用此 px（忽略 image.height）。 */
   gridCellImageHeight?: number;
+  /** 直接父 layout 宽度为 hug 时，定高 image 须写出 fixed 宽避免协调层 fill→hug 塌宽。 */
+  parentWidthHug?: boolean;
 };
 
 export function buildNode(
@@ -229,10 +278,16 @@ function buildStack(
   const id = ctx.nextId("stack");
   ctx.recordAstPath(id, astPath);
   const gap = node.gap ? resolveSpace("props.gap", node.gap) : resolveSpace("props.gap", undefined, "gap");
+  const effectiveAlign = inheritStackAlign(node.align, parent);
+  const stackAlign = mapStackAlign(effectiveAlign);
+  const stackWidthMode = parent.inHorizontalRow ? ("hug" as const) : ("fill" as const);
   const shell = containerShell(id, "vertical", {
     gap,
-    contentAlign: mapStackAlign(node.align),
+    contentAlign: parent.inHorizontalRow
+      ? { horizontal: stackAlign.horizontal, vertical: "center" }
+      : stackAlign,
     box: node.box,
+    widthMode: stackWidthMode,
   });
 
   return {
@@ -242,8 +297,9 @@ function buildStack(
     ...shell,
     children: buildChildren(node.children, ctx, astPath, {
       inDirectStack: true,
-      stackAlign: node.align,
+      stackAlign: effectiveAlign,
       gridCellImageHeight: parent.gridCellImageHeight,
+      parentWidthHug: stackWidthMode === "hug",
     }),
   };
 }
@@ -258,10 +314,11 @@ function buildRow(
   const id = ctx.nextId("row");
   ctx.recordAstPath(id, astPath);
   const gap = node.gap ? resolveSpace("props.gap", node.gap) : resolveSpace("props.gap", undefined, "gap");
+  const effectiveAlign = inheritRowAlign(node.align, parent);
   const shell = containerShell(id, "horizontal", {
     gap,
-    gapMode: resolveRowGapMode(node.align),
-    contentAlign: mapRowAlign(node.align, node.crossAlign),
+    gapMode: resolveRowGapMode(effectiveAlign),
+    contentAlign: mapRowAlign(effectiveAlign, node.crossAlign),
     box: node.box,
   });
 
@@ -272,6 +329,8 @@ function buildRow(
     ...shell,
     children: buildChildren(node.children, ctx, astPath, {
       inHorizontalRow: true,
+      inDirectRow: true,
+      rowAlign: effectiveAlign,
       gridCellImageHeight: parent.gridCellImageHeight,
     }),
   };
@@ -329,7 +388,7 @@ function buildText(
   ctx.recordAstPath(id, astPath);
   const fontSize = resolveRole("props.fontSize", node.role);
   const color = resolveTone("props.color", node.tone);
-  const widthMode = parent.inHorizontalRow ? ("hug" as const) : ("fill" as const);
+  const runBold = node.bold ?? false;
 
   return {
     id,
@@ -337,17 +396,19 @@ function buildText(
     blockMeta: blockMetaFor("text", displayName(node, ctx, hints)),
     props: {
       textBody: {
-        paragraphs: [{ runs: [{ text: node.content, ...(node.bold ? { bold: true } : {}) }] }],
+        paragraphs: splitTextContentToParagraphs(node.content, {
+          bold: runBold ? true : undefined,
+        }),
       },
       fontSize: fontSize.value,
       color: color.value,
-      bold: node.bold ?? false,
+      bold: runBold,
       italic: node.italic ?? false,
       decoration: "none",
     },
     wrapperStyle: {
       contentAlign: resolveTextContentAlign(parent, node.align),
-      widthMode,
+      widthMode: resolveDirectRowChildWrapperWidthMode(parent),
       heightMode: "hug",
       border: borderNone(),
       borderRadius: borderRadiusZero(),
@@ -366,15 +427,16 @@ function buildImage(
   const id = ctx.nextId("image");
   ctx.recordAstPath(id, astPath);
   const heightPx = resolveImageHeightPx(node, parent);
-  const boxApplied = applyBoxWrapper("wrapperStyle", node.box);
-  const rowInline = parent.inHorizontalRow ? deriveRowInlineImageBox(heightPx, node.aspect) : null;
+  const boxApplied = applyImageBoxWrapper("wrapperStyle", node.box);
+  const aspectFixedBox = shouldDeriveFixedImageBoxFromAspect(parent, node)
+    ? deriveRowInlineImageBox(heightPx, node.aspect)
+    : null;
 
   ctx.assets.push({
     blockId: id,
     kind: "image",
     query: node.query,
-    targetWidth: rowInline?.widthPx ?? 600,
-    required: node.required ?? false,
+    targetWidth: aspectFixedBox?.widthPx ?? 600,
   });
 
   const hasOverlay = node.children != null && node.children.length > 0;
@@ -401,10 +463,10 @@ function buildImage(
       : { props: {} }),
     wrapperStyle: {
       contentAlign: overlayContentAlign,
-      widthMode: rowInline ? "fixed" : "fill",
-      ...(rowInline ? { width: `${rowInline.widthPx}px` } : {}),
+      widthMode: aspectFixedBox ? "fixed" : "fill",
+      ...(aspectFixedBox ? { width: `${aspectFixedBox.widthPx}px` } : {}),
       heightMode: "fixed",
-      height: `${rowInline?.heightPx ?? heightPx}px`,
+      height: `${aspectFixedBox?.heightPx ?? heightPx}px`,
       border: borderNone(),
       borderRadius: borderRadiusZero(),
       backgroundImage: {
@@ -412,6 +474,7 @@ function buildImage(
         fit: "cover",
         position: "center",
       },
+      backgroundColor: IMAGE_WRAPPER_BACKGROUND_COLOR,
       ...boxApplied.wrapperExtras,
     },
     bindings: boxApplied.bindings,
@@ -434,7 +497,6 @@ function buildIcon(
     kind: "icon",
     query: node.query,
     pack: node.pack,
-    required: node.required ?? false,
   });
 
   return {
@@ -482,6 +544,7 @@ function buildButton(
     ? applyUniformNestedBorderRadius("props.buttonStyle.borderRadius", node.radius)
     : applyUniformNestedBorderRadius("props.buttonStyle.borderRadius", undefined, "cta");
   const buttonStyleWidthMode = resolveButtonStyleWidthMode(node.width);
+  const buttonStyleHeight = resolveButtonStyleHeight(node.height);
 
   return {
     id,
@@ -499,11 +562,15 @@ function buildButton(
         bold: false,
         italic: false,
         widthMode: buttonStyleWidthMode,
+        heightMode: buttonStyleHeight.heightMode,
+        ...(buttonStyleHeight.heightPx ? { height: buttonStyleHeight.heightPx } : {}),
       },
     },
     wrapperStyle: {
       contentAlign: resolveButtonWrapperContentAlign(parent),
-      widthMode: "fill",
+      widthMode: resolveDirectRowChildWrapperWidthMode(parent, {
+        forceFill: node.width === "fill",
+      }),
       heightMode: "hug",
       border: borderNone(),
       borderRadius: borderRadiusZero(),

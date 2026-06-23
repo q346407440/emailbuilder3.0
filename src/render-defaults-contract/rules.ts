@@ -309,13 +309,13 @@ export const RENDER_DEFAULT_RULES: readonly RenderDefaultRule[] = [
   {
     id: "semantic.componentBodyWidth",
     kind: "specialSemantic",
-    title: "组件本体宽度 vs 外层容器宽度",
+    title: "组件本体宽高 vs 外层容器宽高",
     summary:
-      "button/divider/progress 的 wrapperStyle.widthMode/width 只控制外层容器；可见本体宽度分别由 props.buttonStyle.widthMode/width、props.lineWidthMode/lineWidth、props.barWidthMode/barWidth 控制。",
+      "button/divider/progress 的 wrapperStyle.widthMode/width/heightMode/height 只控制外层容器；可见本体尺寸分别由 props.buttonStyle.widthMode/width/heightMode/height、props.lineWidthMode/lineWidth、props.barWidthMode/barWidth 等控制。按钮胶囊 fill 须外层同轴非 hug。",
     blockTypes: ["button", "divider", "progress"],
     jsonPath:
-      "props.buttonStyle.widthMode | props.buttonStyle.width | props.lineWidthMode | props.lineWidth | props.barWidthMode | props.barWidth",
-    implementation: "src/lib/canvasDimensionResolve.ts · resolveComponentBodyWidthCss",
+      "props.buttonStyle.widthMode | props.buttonStyle.width | props.buttonStyle.heightMode | props.buttonStyle.height | props.lineWidthMode | props.lineWidth | props.barWidthMode | props.barWidth",
+    implementation: "src/lib/canvasDimensionResolve.ts · resolveComponentBodySizeCss",
   },
   {
     id: "semantic.layoutContentAlignHorizontal",

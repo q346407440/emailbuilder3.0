@@ -1,17 +1,16 @@
 import type { ReactNode } from "react";
 import { Tabs } from "antd";
 
-/** 与属性面板「内容 / 样式 / 布局 / 列表 / 显隐」栏对应的受控 key */
-export type InspectorMainTab = "content" | "style" | "layout" | "list" | "visibility";
+/** 与属性面板「组件配置 / 容器配置 / 数据组 / 显隐」栏对应的受控 key */
+export type InspectorMainTab = "component" | "wrapper" | "list" | "visibility";
 
 type Props = {
   active: InspectorMainTab;
   onChange: (tab: InspectorMainTab) => void;
   /** 为 false 时暂不挂载 Tab 面板（首次切换后再挂载并保留） */
   shouldRenderPane?: (tab: InspectorMainTab) => boolean;
-  contentPane: ReactNode;
-  stylePane: ReactNode;
-  layoutPane: ReactNode;
+  componentPane: ReactNode;
+  wrapperPane: ReactNode;
   listPane?: ReactNode;
   visibilityPane?: ReactNode;
 };
@@ -31,30 +30,23 @@ export function AdminInspectorTabs({
   active,
   onChange,
   shouldRenderPane,
-  contentPane,
-  stylePane,
-  layoutPane,
+  componentPane,
+  wrapperPane,
   listPane,
   visibilityPane,
 }: Props) {
   const items = [
     {
-      key: "content",
-      label: "内容",
-      forceRender: shouldRenderPane ? shouldRenderPane("content") : false,
-      children: renderTabPanel("content", contentPane, shouldRenderPane),
+      key: "component",
+      label: "组件配置",
+      forceRender: shouldRenderPane ? shouldRenderPane("component") : false,
+      children: renderTabPanel("component", componentPane, shouldRenderPane),
     },
     {
-      key: "style",
-      label: "样式",
-      forceRender: shouldRenderPane ? shouldRenderPane("style") : false,
-      children: renderTabPanel("style", stylePane, shouldRenderPane),
-    },
-    {
-      key: "layout",
-      label: "布局",
-      forceRender: shouldRenderPane ? shouldRenderPane("layout") : false,
-      children: renderTabPanel("layout", layoutPane, shouldRenderPane),
+      key: "wrapper",
+      label: "容器配置",
+      forceRender: shouldRenderPane ? shouldRenderPane("wrapper") : false,
+      children: renderTabPanel("wrapper", wrapperPane, shouldRenderPane),
     },
     ...(listPane
       ? [

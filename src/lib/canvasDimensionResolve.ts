@@ -106,6 +106,77 @@ export function resolveComponentBodyWidthCss(
   return { display: "inline-block", maxWidth: "100%" };
 }
 
+/** 叶子块内核高（button 等 props 上的 heightMode）；hug 不输出 height。 */
+export function resolveComponentBodyHeightCss(
+  params: ResolveWrapperHeightCssParams & { defaultMode: "hug" | "fill" }
+): Pick<CSSProperties, "height"> {
+  const mode = normalizeWrapperDimensionMode(params.mode, params.defaultMode);
+  if (mode === "fill") {
+    return { height: "100%" };
+  }
+  if (mode === "fixed") {
+    const height = typeof params.fixedHeight === "string" ? params.fixedHeight.trim() : "";
+    return height ? { height } : {};
+  }
+  return {};
+}
+
+export type ResolveComponentBodySizeCssParams = {
+  widthMode: unknown;
+  fixedWidth?: unknown;
+  widthDefaultMode: "hug" | "fill";
+  heightMode: unknown;
+  fixedHeight?: unknown;
+  heightDefaultMode: "hug" | "fill";
+};
+
+/**
+ * 按钮胶囊等叶子块：合并本体宽/高模式为 inline style。
+ * fixed/fill 高度时用 flex 在固定高度内垂直居中文字（padding 仍由渲染默认注入）。
+ */
+export function resolveComponentBodySizeCss(
+  params: ResolveComponentBodySizeCssParams
+): Pick<
+  CSSProperties,
+  "display" | "width" | "maxWidth" | "height" | "alignItems" | "justifyContent"
+> {
+  const widthMode = normalizeWrapperDimensionMode(params.widthMode, params.widthDefaultMode);
+  const heightMode = normalizeWrapperDimensionMode(params.heightMode, params.heightDefaultMode);
+  const css: Pick<
+    CSSProperties,
+    "display" | "width" | "maxWidth" | "height" | "alignItems" | "justifyContent"
+  > = {};
+
+  if (widthMode === "fill") {
+    css.width = "100%";
+  } else if (widthMode === "fixed") {
+    const width = typeof params.fixedWidth === "string" ? params.fixedWidth.trim() : "";
+    if (width) css.width = width;
+  } else {
+    css.maxWidth = "100%";
+  }
+
+  if (heightMode === "fill") {
+    css.height = "100%";
+  } else if (heightMode === "fixed") {
+    const height = typeof params.fixedHeight === "string" ? params.fixedHeight.trim() : "";
+    if (height) css.height = height;
+  }
+
+  const needsFlexCenter = heightMode === "fill" || heightMode === "fixed";
+  if (needsFlexCenter) {
+    css.display = widthMode === "hug" ? "inline-flex" : "flex";
+    css.alignItems = "center";
+    css.justifyContent = "center";
+  } else if (widthMode === "fill" || widthMode === "fixed") {
+    css.display = "block";
+  } else {
+    css.display = "inline-block";
+  }
+
+  return css;
+}
+
 /** emailRoot 内容区外壳：配置宽 strict fixed + 块级裁切 */
 export function resolveEmailRootShellCss(params: {
   configuredWidth: string;

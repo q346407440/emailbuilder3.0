@@ -26,9 +26,8 @@ describe("shouldShowInspectorRepeatRegionPanel", () => {
 describe("buildInspectorTabAvailability", () => {
   it("普通区块含列表与显隐", () => {
     assert.deepEqual(buildInspectorTabAvailability(false, "layout", true), {
-      content: true,
-      style: true,
-      layout: true,
+      component: true,
+      wrapper: true,
       list: true,
       visibility: true,
     });
@@ -36,9 +35,8 @@ describe("buildInspectorTabAvailability", () => {
 
   it("画布根无列表与显隐", () => {
     assert.deepEqual(buildInspectorTabAvailability(true, "emailRoot", false), {
-      content: true,
-      style: true,
-      layout: true,
+      component: true,
+      wrapper: true,
       list: false,
       visibility: false,
     });
@@ -52,8 +50,8 @@ describe("resolveInspectorTabForContext", () => {
     assert.equal(resolveInspectorTabForContext("list", availability), "list");
   });
 
-  it("偏好 Tab 不可用时回退样式", () => {
+  it("偏好 Tab 不可用时回退组件配置", () => {
     const rootPanelAvailability = buildInspectorTabAvailability(true, "emailRoot", false);
-    assert.equal(resolveInspectorTabForContext("list", rootPanelAvailability), "style");
+    assert.equal(resolveInspectorTabForContext("list", rootPanelAvailability), "component");
   });
 });

@@ -53,6 +53,12 @@ export type IconSize = "sm" | "md" | "lg" | PxValue;
 export type DividerThickness = "hairline" | "thin";
 /** 按钮胶囊宽度（映射 `buttonStyle.widthMode`；外层 wrapper 恒 fill）。 */
 export type ButtonWidth = "fill" | "hug";
+/**
+ * 按钮胶囊高度档（映射 `buttonStyle.heightMode` + 可选定高 px）。
+ * - `hug`（未写同义）：常规小胶囊，由字号与渲染默认撑开。
+ * - `relaxed`：设计图明显偏高的 CTA（约 1.5× 常规），组装器写 fixed + 固定 px。
+ */
+export type ButtonHeight = "hug" | "relaxed";
 
 // ── 共享外壳（box）：对应 wrapperStyle 的语义旋钮，仅暴露极少数档位 ────────────
 
@@ -128,9 +134,10 @@ export type GridNode = {
   cellImageHeight?: PxValue;
 };
 
-/** 文本（→ content.text）。 */
+/** 文本（→ content.text）。禁止写 box；需容器外壳时用 stack 包裹。 */
 export type TextNode = {
   t: "text";
+  /** 正文；JSON 字符串内可用 `\n` 表示刻意断行（组装为 textBody 多段落）。禁止 HTML。 */
   content: string;
   role: Role;
   tone?: Tone;
@@ -150,12 +157,11 @@ export type AspectRatio = { w: number; h: number };
 export type ImageNode = {
   t: "image";
   query: string;
-  /** 视觉高度（px）；通栏/栅格内宽由组装器 fill；row 内配合 aspect 算 fixed 宽。 */
+  /** 视觉高度（px）；通栏/栅格内宽由组装器 fill；row 内或 hug 父级纵排内配合 aspect 算 fixed 宽。 */
   height?: PxValue;
   /** 宽:高 比例；横排 row 内缩略图建议填写（如竖图 `{ w: 3, h: 4 }`）。 */
   aspect?: AspectRatio;
-  /** 标记必需资产（如品牌图），搜不到则报错。 */
-  required?: boolean;
+  /** 仅 pad/radius/border 生效；`tone` 背景色由组装器忽略（image 壳固定透明）。 */
   box?: Box;
   /**
    * 叠放层在底图盒内的水平对齐（仅 `children` 非空时生效）。
@@ -178,7 +184,6 @@ export type IconNode = {
   pack: IconPack;
   tone?: Tone;
   size?: IconSize;
-  required?: boolean;
 };
 
 /**
@@ -198,6 +203,11 @@ export type ButtonNode = {
    * 未写或 `hug`：小胶囊；`fill`：占满父内容区宽（通栏 CTA 条）。
    */
   width?: ButtonWidth;
+  /**
+   * 胶囊本体高度（→ `props.buttonStyle.heightMode` + 可选 `height`）。
+   * 未写或 `hug`：常规胶囊；`relaxed`：明显偏高的 CTA（组装器写定高 px）。
+   */
+  height?: ButtonHeight;
 };
 
 /** 分割线（→ separator.divider）。 */

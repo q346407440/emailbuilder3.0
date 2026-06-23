@@ -37,6 +37,14 @@ describe("validationIssueRouting", () => {
       reason: '字段值含 $themeRef 但 block.bindings.props.backgroundColor 未登记 mode:"theme"',
     });
     assert.equal(c.tier, "inlineField");
-    assert.equal(c.inspectorTab, "style");
+    assert.equal(c.inspectorTab, "component");
+  });
+
+  it("wrapperStyle 绑定 issue 跳转到容器配置", () => {
+    const c = classifyValidationIssue({
+      path: "blocks.img-1.wrapperStyle.widthMode",
+      reason: "widthMode 非法",
+    });
+    assert.equal(c.inspectorTab, "wrapper");
   });
 });

@@ -11,11 +11,14 @@ import {
 } from "./contentAlignConfigurability";
 import {
   normalizeBlockWrapperDimensionModes,
+  normalizeButtonBodyDimensionModes,
+  type ButtonBodyDimensionModeChange,
   type WrapperDimensionModeChange,
 } from "./wrapperFillConstraint";
 
 export type WrapperReconcileReasonCode =
   | "fill_blocked_by_parent_hug"
+  | "button_body_fill_blocked_by_wrapper_hug"
   | "content_align_axis_not_configurable";
 
 export type WrapperReconcileChange = {
@@ -33,6 +36,19 @@ function mapDimensionChanges(changes: WrapperDimensionModeChange[]): WrapperReco
     from: c.from,
     to: c.to,
     reasonCode: "fill_blocked_by_parent_hug" as const,
+  }));
+}
+
+function mapButtonBodyChanges(changes: ButtonBodyDimensionModeChange[]): WrapperReconcileChange[] {
+  return changes.map((c) => ({
+    blockId: c.blockId,
+    field:
+      c.axis === "width"
+        ? "props.buttonStyle.widthMode"
+        : "props.buttonStyle.heightMode",
+    from: c.from,
+    to: c.to,
+    reasonCode: "button_body_fill_blocked_by_wrapper_hug" as const,
   }));
 }
 
@@ -90,16 +106,18 @@ export function reconcileBlockWrapperStyle(
   workingBlock?: EmailBlock
 ): {
   wrapperStyle: WrapperStyle | undefined;
+  props: EmailBlock["props"] | undefined;
   changed: boolean;
   changes: WrapperReconcileChange[];
 } {
   const block = workingBlock ?? template.blocks[blockId];
   if (!block || block.type === "emailRoot") {
-    return { wrapperStyle: block?.wrapperStyle, changed: false, changes: [] };
+    return { wrapperStyle: block?.wrapperStyle, props: block?.props, changed: false, changes: [] };
   }
 
   const allChanges: WrapperReconcileChange[] = [];
   let ws = block.wrapperStyle;
+  let props = block.props;
   let touched = false;
 
   const fillResult = normalizeBlockWrapperDimensionModes(template, blockId, { ...block, wrapperStyle: ws });
@@ -109,7 +127,20 @@ export function reconcileBlockWrapperStyle(
     allChanges.push(...mapDimensionChanges(fillResult.changes));
   }
 
-  const blockForAlign: EmailBlock = { ...block, wrapperStyle: ws };
+  if (block.type === "button") {
+    const bodyResult = normalizeButtonBodyDimensionModes(template, blockId, {
+      ...block,
+      wrapperStyle: ws,
+      props,
+    });
+    if (bodyResult.changed) {
+      props = bodyResult.props;
+      touched = true;
+      allChanges.push(...mapButtonBodyChanges(bodyResult.changes));
+    }
+  }
+
+  const blockForAlign: EmailBlock = { ...block, wrapperStyle: ws, props };
   const alignResult = normalizeBlockWrapperContentAlign(template, blockId, blockForAlign);
   if (alignResult.changed) {
     ws = alignResult.wrapperStyle;
@@ -117,7 +148,7 @@ export function reconcileBlockWrapperStyle(
     allChanges.push(...mapContentAlignChanges(alignResult.changes));
   }
 
-  return { wrapperStyle: ws, changed: touched, changes: allChanges };
+  return { wrapperStyle: ws, props, changed: touched, changes: allChanges };
 }
 
 /** 结构性布局编辑后：协调以 `rootBlockId` 为根的子树（含根节点）。原地修改 `template.blocks`。 */
@@ -132,6 +163,9 @@ export function reconcileLayoutStructuralSubtreeInPlace(
     const result = reconcileBlockWrapperStyle(template, blockId, block);
     if (result.changed) {
       block.wrapperStyle = result.wrapperStyle;
+      if (result.props !== undefined) {
+        block.props = result.props;
+      }
       allChanges.push(...result.changes);
     }
   }
@@ -151,6 +185,9 @@ export function reconcileTemplateWrapperStyles(template: EmailTemplate): {
     const result = reconcileBlockWrapperStyle(next, blockId, block);
     if (result.changed) {
       block.wrapperStyle = result.wrapperStyle;
+      if (result.props !== undefined) {
+        block.props = result.props;
+      }
       allChanges.push(...result.changes);
     }
   }

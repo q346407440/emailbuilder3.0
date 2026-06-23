@@ -12,13 +12,7 @@ import type { EmailListItem, EmailMeta, EmailPayload, EmailTemplate } from "./ty
 import type { LayoutManifest } from "./layout-variant-contract/types";
 import type { TokenPresets } from "./types/tokenPreset";
 import * as api from "./api/client";
-import {
-  buildRepeatPreviewModel,
-  previewModelToFlatTemplate,
-  applyThemeToPreviewModel,
-} from "./repeat-runtime";
-import { resolveBlockTheme } from "./lib/resolveThemeInTemplate";
-import { applyVisibilityRules, templateHasVisibilityRules } from "./lib/visibility";
+import { templateHasVisibilityRules } from "./lib/visibility";
 import { collectExternalVariableSlots, getSlotPrimaryBlockId } from "./lib/payloadSlots";
 import {
   buildPreviewPayload,
@@ -61,7 +55,6 @@ import {
 } from "./lib/layoutVariantLogicalDelete";
 import { resolveDesignTokens } from "./lib/resolveTokenPreset";
 import { reconcileSelectedBlockRefAfterTemplateChange, type TemplateChangeOptions } from "./lib/templateBlockSelection";
-import { isThemeRef } from "./types/themeRef";
 import { getLastSelectedEmailKey, setLastSelectedEmailKey } from "./lib/lastSelectedEmail";
 import { normalizeEmailRootBlock } from "./lib/normalizeEmailRoot";
 import { CanvasDragInsertRoot } from "./components/canvas/CanvasDragInsertRoot";
@@ -108,7 +101,7 @@ import {
 import { parseCssPx } from "./lib/canvasDimensionResolve";
 import { EMAIL_ROOT_FIXED_WIDTH } from "./render-defaults-contract/values";
 import { deleteBlockFromTemplate } from "./lib/deleteTemplateBlock";
-import { applyObjectBindMappingsToTemplate } from "./lib/objectBindRegion";
+import { useCanvasPreviewSnapshot } from "./hooks/useCanvasPreviewSnapshot";
 import {
   duplicateBlockBelow,
   moveBlockAmongSiblings,
@@ -253,15 +246,6 @@ function isEmailItemsEqual(a: EmailListItem[], b: EmailListItem[]): boolean {
   return true;
 }
 
-function containsThemeRef(value: unknown): boolean {
-  if (isThemeRef(value)) return true;
-  if (Array.isArray(value)) return value.some((item) => containsThemeRef(item));
-  if (value && typeof value === "object") {
-    return Object.values(value as Record<string, unknown>).some((item) => containsThemeRef(item));
-  }
-  return false;
-}
-
 function tokenPresetsWithoutAppliedGlobal(tp: TokenPresets): TokenPresets {
   const next = structuredClone(tp) as TokenPresets;
   delete next.appliedGlobalPresetId;
@@ -387,6 +371,11 @@ export default function App() {
     [selectBlock, template]
   );
   const [emailLoadBusy, setEmailLoadBusy] = useState(false);
+  /** 与 loadEmail 的 requestId 对齐，用于 snapshot generation 守卫 */
+  const [loadGeneration, setLoadGeneration] = useState(0);
+  /** Lane A 完成后递增，触发画布 prewarm */
+  const [prewarmNonce, setPrewarmNonce] = useState(0);
+  const canvasPreviewScopeRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [requestedInspectorTab, setRequestedInspectorTab] = useState<InspectorMainTab | null>(
     null
@@ -634,6 +623,8 @@ export default function App() {
       setDiskTemplatePayload({ template: structuredClone(t), payload: structuredClone(p) });
       setDiskTokenPresets(structuredClone(tpNorm));
       setRevealDeferredValidation(false);
+      setLoadGeneration(requestId);
+      setPrewarmNonce((n) => n + 1);
     } catch (e) {
       if (requestId !== loadEmailRequestIdRef.current) return;
       reportOperationalError(e instanceof Error ? e.message : String(e));
@@ -764,45 +755,27 @@ export default function App() {
     });
   }, []);
 
-  const resolvedPreview = useMemo((): {
-    previewModel: ReturnType<typeof buildRepeatPreviewModel> | null;
-    issues: Array<{ path: string; reason: string }>;
-  } => {
-    if (!template || !previewPayload) return { previewModel: null, issues: [] };
-    const afterVisibility: EmailTemplate = (() => {
-      if (!hasVisibilityBlocks) {
-        return applyVisibilityRules(template, previewPayload);
-      }
-      if (canvasSimulateAllHidden) {
-        return applyVisibilityRules(template, previewPayload, { simulateAllHidden: true });
-      }
-      return template;
-    })();
-    let previewModel = buildRepeatPreviewModel(
-      applyObjectBindMappingsToTemplate(afterVisibility),
-      previewPayload
-    );
-    const flat = previewModelToFlatTemplate(previewModel, afterVisibility);
-    if (!containsThemeRef(flat)) {
-      return { previewModel, issues: [] };
-    }
-    if (!effectiveDesignTokens) {
-      return {
-        previewModel: null,
-        issues: [{ path: "tokenPresets", reason: "模板包含 $themeRef，但当前缺少可用的样式预设" }],
-      };
-    }
-    const issues: Array<{ path: string; reason: string }> = [];
-    previewModel = applyThemeToPreviewModel(previewModel, (block) =>
-      resolveBlockTheme(block, { theme: effectiveDesignTokens, issues })
-    );
-    if (issues.length > 0) {
-      return { previewModel: null, issues };
-    }
-    return { previewModel, issues: [] };
-  }, [template, previewPayload, effectiveDesignTokens, hasVisibilityBlocks, canvasSimulateAllHidden]);
+  const loadFrozen = emailLoadBusy || layoutVariantBusy;
 
-  const previewModel = resolvedPreview?.previewModel ?? null;
+  const {
+    committedSnapshot,
+    livePreviewModel,
+    flatTemplate,
+    previewIssues,
+    snapshotPhase,
+  } = useCanvasPreviewSnapshot({
+    template,
+    previewPayload,
+    effectiveDesignTokens,
+    hasVisibilityBlocks,
+    canvasSimulateAllHidden,
+    loadGeneration,
+    loadFrozen,
+    prewarmNonce,
+    canvasScopeRef: canvasPreviewScopeRef,
+  });
+
+  const previewModel = livePreviewModel;
 
   const canvasRootConfiguredWidthPx = useMemo(() => {
     if (!previewModel) return resolveCanvasPreviewViewportWidth("desktop");
@@ -831,17 +804,11 @@ export default function App() {
   const deferredTemplate = useDeferredValue(template);
   const deferredPayload = useDeferredValue(payload);
   const deferredTokenPresets = useDeferredValue(tokenPresets);
-  const deferredResolvedPreview = useDeferredValue(resolvedPreview);
+  const deferredPreviewIssues = useDeferredValue(previewIssues);
   const deferredTemplatesForPayloadValidation = useDeferredValue(templatesForPayloadValidation);
 
-  /** 编辑态画布用 deferred 预览；加载邮件/版式时用同步预览（Lane A） */
-  const canvasPreviewModel =
-    emailLoadBusy || layoutVariantBusy
-      ? previewModel
-      : (deferredResolvedPreview?.previewModel ?? null);
-
   const editorLayoutPrewarmReady = Boolean(
-    template && previewModel && !emailLoadBusy && !layoutVariantBusy
+    template && previewModel && !loadFrozen
   );
   const layoutPrewarmed = useEditorLayoutPrewarm(editorLayoutPrewarmReady);
 
@@ -883,13 +850,13 @@ export default function App() {
       ...validateTemplate(deferredTemplate),
       ...payloadIssues,
       ...validateTokenPresets(deferredTokenPresets),
-      ...(deferredResolvedPreview?.issues ?? []),
+      ...deferredPreviewIssues,
     ];
   }, [
     deferredTemplate,
     deferredPayload,
     deferredTokenPresets,
-    deferredResolvedPreview,
+    deferredPreviewIssues,
     deferredTemplatesForPayloadValidation,
   ]);
 
@@ -961,10 +928,8 @@ export default function App() {
 
   const onUpdate = useCallback(
     (next: { template: EmailTemplate; payload: EmailPayload }) => {
-      startTransition(() => {
-        setTemplate(next.template);
-        setPayload(next.payload);
-      });
+      setTemplate(next.template);
+      setPayload(next.payload);
     },
     []
   );
@@ -980,9 +945,7 @@ export default function App() {
           : currentRef
       );
     }
-    startTransition(() => {
-      setTemplate(nextTemplate);
-    });
+    setTemplate(nextTemplate);
   }, [template]);
 
   // 稳定引用：让 Inspector 的 React.memo 在滚动等无关重渲染时能跳过。
@@ -2167,7 +2130,14 @@ export default function App() {
           blockErrorIds={validationContext.blockErrorIds}
           blockWarnIds={validationContext.blockWarnIds}
         />
-        <section className="canvas-col">
+        <section
+          className={[
+            "canvas-col",
+            snapshotPhase === "loading" ? "canvas-col--loading" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className="canvas-col__head">
             <div className="canvas-col__title">画布预览</div>
             <div
@@ -2227,16 +2197,24 @@ export default function App() {
               }}
             >
               <div className="canvas-frame">
-                {canvasPreviewModel ?? previewModel ? (
+                {livePreviewModel && committedSnapshot ? (
                   <EditorEmailPreviewHost
-                    previewModel={(canvasPreviewModel ?? previewModel)!}
-                    sourceTemplate={template}
+                    previewModel={livePreviewModel}
+                    sourceTemplate={committedSnapshot.sourceTemplate}
+                    flatTemplate={flatTemplate ?? undefined}
+                    previewScopeRef={canvasPreviewScopeRef}
                   />
                 ) : (
                   <p className="inspector__muted">预览暂不可用（请检查样式预设或校验问题）</p>
                 )}
               </div>
             </div>
+            {snapshotPhase === "loading" ? (
+              <div
+                className="canvas-col__snapshot-overlay"
+                aria-hidden="true"
+              />
+            ) : null}
           </div>
           <CanvasInsertBlockModal
             visible={insertModalOpen}
@@ -2280,6 +2258,7 @@ export default function App() {
           payload={payload}
           previewPayload={previewPayload!}
           previewModel={previewModel}
+          previewFlatTemplate={flatTemplate}
           onUpdate={onUpdate}
           onTemplateChange={onTemplateChange}
           onDiscardPayloadSlotDraft={handleDiscardPayloadSlotDraft}

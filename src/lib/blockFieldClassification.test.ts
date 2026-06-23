@@ -113,6 +113,8 @@ describe("blockFieldClassification —— button（含灰色字段定调）", ()
   it("buttonStyle.* → style", () => {
     assert.equal(classifyField("button", "props.buttonStyle.widthMode"), "structural");
     assert.equal(classifyField("button", "props.buttonStyle.width"), "style");
+    assert.equal(classifyField("button", "props.buttonStyle.heightMode"), "structural");
+    assert.equal(classifyField("button", "props.buttonStyle.height"), "style");
     assert.equal(classifyField("button", "props.buttonStyle.backgroundColor"), "style");
     assert.equal(classifyField("button", "props.buttonStyle.textColor"), "style");
     assert.equal(classifyField("button", "props.buttonStyle.fontSize"), "style");

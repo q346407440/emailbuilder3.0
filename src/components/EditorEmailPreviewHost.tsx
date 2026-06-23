@@ -8,6 +8,8 @@ import { useEditorUiActions, useEditorUiSelector } from "../editor-ui/react";
 type Props = {
   previewModel: RepeatPreviewModel;
   sourceTemplate: EmailTemplate;
+  flatTemplate?: EmailTemplate;
+  previewScopeRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 /**
@@ -16,6 +18,8 @@ type Props = {
 export const EditorEmailPreviewHost = memo(function EditorEmailPreviewHost({
   previewModel,
   sourceTemplate,
+  flatTemplate,
+  previewScopeRef,
 }: Props) {
   const selectedBlockRef = useEditorUiSelector((s) => s.selectedBlockRef);
   const previewViewportPx = useEditorUiSelector((s) =>
@@ -27,9 +31,11 @@ export const EditorEmailPreviewHost = memo(function EditorEmailPreviewHost({
     <EmailPreview
       previewModel={previewModel}
       sourceTemplate={sourceTemplate}
+      flatTemplate={flatTemplate}
       selectedBlockRef={selectedBlockRef}
       onSelectBlock={selectBlock}
       previewViewportPx={previewViewportPx}
+      previewScopeRef={previewScopeRef}
     />
   );
 });

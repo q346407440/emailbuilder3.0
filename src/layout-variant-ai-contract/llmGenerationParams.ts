@@ -13,7 +13,7 @@ export type LlmGenerationParams = {
 export const DEFAULT_LLM_GENERATION_PARAMS: LlmGenerationParams = {
   temperature: 1,
   topP: 0.95,
-  maxOutputTokens: 8192,
+  maxOutputTokens: 32768,
 };
 
 function parseEnvFloat(name: string): number | undefined {

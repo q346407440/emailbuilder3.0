@@ -52,6 +52,10 @@ export function normalizeTemplateBlockDefaults(template: EmailTemplate): boolean
         buttonStyle.widthMode = "hug";
         changed = true;
       }
+      if (buttonStyle && buttonStyle.heightMode === undefined) {
+        buttonStyle.heightMode = "hug";
+        changed = true;
+      }
     }
     if (block.type === "divider") {
       const props = block.props as Record<string, unknown>;

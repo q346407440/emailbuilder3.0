@@ -2,8 +2,8 @@ import type { RestoreTheme } from "./types";
 
 /** 第 3 步资产回填请求（第 1 步组装器收集）。 */
 export type AssetRequest =
-  | { blockId: string; kind: "image"; query: string; targetWidth: number; required: boolean }
-  | { blockId: string; kind: "icon"; query: string; pack: import("./types").IconPack; required: boolean };
+  | { blockId: string; kind: "image"; query: string; targetWidth: number }
+  | { blockId: string; kind: "icon"; query: string; pack: import("./types").IconPack };
 
 export type BuildCtx = {
   idPrefix: string;

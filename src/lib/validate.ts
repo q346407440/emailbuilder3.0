@@ -40,7 +40,7 @@ import { validateForbiddenLegacyProps } from "../render-defaults-contract/forbid
 import { validateRenderDefaultsForbiddenFields } from "../render-defaults-contract/validate";
 import { EMAIL_ROOT_FIXED_WIDTH, emailRootWidthMismatchReason } from "../render-defaults-contract/values";
 import { layoutBackgroundImageRenderable } from "./wrapperBackgroundImage";
-import { getFillValidationReason, isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
+import { getFillValidationReason, getButtonBodyFillValidationReason, isButtonBodyFillBlockedByWrapperHug, isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
 import { extractInterpolationSlotIds } from "./interpolateText";
 import { getAtPath } from "./paths";
 import { isRepeatHostBlock } from "./repeatHostBlock";
@@ -260,6 +260,30 @@ function validateOptionalWrapperBackgroundImage(
   }
 }
 
+function validateBodyDimensionMode(
+  path: string,
+  mode: unknown,
+  size: unknown,
+  issues: ValidationIssue[],
+  options: { allowHug?: boolean; label: string; axis: "宽度" | "高度" }
+) {
+  const allowedModes = options.allowHug ? ["hug", "fill", "fixed"] : ["fill", "fixed"];
+  if (mode !== undefined && !allowedModes.includes(String(mode))) {
+    issues.push({
+      path: `${path}Mode`,
+      reason: `${options.label}${options.axis}模式仅允许 ${allowedModes.join(" / ")}`,
+    });
+  }
+  if (mode === "fixed") {
+    validateRequiredString(path, size, issues);
+  } else if (size !== undefined && !isThemeRef(size) && (typeof size !== "string" || size.trim() === "")) {
+    issues.push({
+      path,
+      reason: `${options.label}${options.axis}必须为非空字符串或主题引用`,
+    });
+  }
+}
+
 function validateBodyWidthMode(
   path: string,
   mode: unknown,
@@ -267,21 +291,17 @@ function validateBodyWidthMode(
   issues: ValidationIssue[],
   options: { allowHug?: boolean; label: string }
 ) {
-  const allowedModes = options.allowHug ? ["hug", "fill", "fixed"] : ["fill", "fixed"];
-  if (mode !== undefined && !allowedModes.includes(String(mode))) {
-    issues.push({
-      path: `${path}Mode`,
-      reason: `${options.label}宽度模式仅允许 ${allowedModes.join(" / ")}`,
-    });
-  }
-  if (mode === "fixed") {
-    validateRequiredString(path, width, issues);
-  } else if (width !== undefined && !isThemeRef(width) && (typeof width !== "string" || width.trim() === "")) {
-    issues.push({
-      path,
-      reason: `${options.label}宽度必须为非空字符串或主题引用`,
-    });
-  }
+  validateBodyDimensionMode(path, mode, width, issues, { ...options, axis: "宽度" });
+}
+
+function validateBodyHeightMode(
+  path: string,
+  mode: unknown,
+  height: unknown,
+  issues: ValidationIssue[],
+  options: { allowHug?: boolean; label: string }
+) {
+  validateBodyDimensionMode(path, mode, height, issues, { ...options, axis: "高度" });
 }
 
 function validateBorderStyleField(path: string, raw: unknown, issues: ValidationIssue[]): void {
@@ -830,6 +850,25 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
         issues,
         { allowHug: true, label: "button 按钮本体" }
       );
+      validateBodyHeightMode(
+        `blocks.${id}.props.buttonStyle.height`,
+        buttonStyle?.heightMode,
+        buttonStyle?.height,
+        issues,
+        { allowHug: true, label: "button 按钮本体" }
+      );
+      if (isButtonBodyFillBlockedByWrapperHug(block, "width") && buttonStyle?.widthMode === "fill") {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.widthMode`,
+          reason: getButtonBodyFillValidationReason("width"),
+        });
+      }
+      if (isButtonBodyFillBlockedByWrapperHug(block, "height") && buttonStyle?.heightMode === "fill") {
+        issues.push({
+          path: `blocks.${id}.props.buttonStyle.heightMode`,
+          reason: getButtonBodyFillValidationReason("height"),
+        });
+      }
       if (buttonStyle?.bold !== undefined && typeof buttonStyle.bold !== "boolean") {
         issues.push({
           path: `blocks.${id}.props.buttonStyle.bold`,

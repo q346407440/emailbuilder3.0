@@ -1,8 +1,8 @@
 import { join } from "node:path";
+import { IMAGE_PLACEHOLDER_PUBLIC_PATH } from "../imagePlaceholder";
 
-/** B4 无结果时的占位图（Pexels，与 fixture 一致）。 */
-export const AI_PIPELINE_PLACEHOLDER_IMAGE_URL =
-  "https://images.pexels.com/photos/325185/pexels-photo-325185.jpeg?auto=compress&cs=tinysrgb&w=600";
+/** B4 / RestoreAst 无结果时的占位图（本地静态 PNG）。 */
+export const AI_PIPELINE_PLACEHOLDER_IMAGE_URL = IMAGE_PLACEHOLDER_PUBLIC_PATH;
 
 /**
  * 本地测试：每次 LLM HTTP 交换的完整 request/response JSON（JSON Lines）。

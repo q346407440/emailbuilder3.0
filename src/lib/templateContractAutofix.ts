@@ -145,6 +145,24 @@ const fixChildFillUnderHugParent: IssueFixer = (issueLine, ctx) => {
   return true;
 };
 
+/** 按钮外层 hug 同轴下胶囊 fill → 回落 hug（与 wrapperFillConstraint 协调层一致）。 */
+const fixButtonBodyFillUnderWrapperHug: IssueFixer = (issueLine, ctx) => {
+  const m =
+    /^blocks\.([^.]+)\.props\.buttonStyle\.(widthMode|heightMode): 按钮外层容器.*不允许使用 (?:width|height) fill/.exec(
+      issueLine
+    );
+  if (!m) return false;
+  const block = findBlockByIdInTemplateTree(ctx.template, m[1]!);
+  if (!block || !isRecord(block.props)) return false;
+  const buttonStyle = (block.props as AnyRecord).buttonStyle;
+  if (!isRecord(buttonStyle)) return false;
+  const modeKey = m[2]!;
+  if ((buttonStyle as AnyRecord)[modeKey] !== "fill") return false;
+  (buttonStyle as AnyRecord)[modeKey] = "hug";
+  ctx.fixes.push(`blocks.${m[1]} props.buttonStyle.${modeKey} fill→hug（外层 hug 循环依赖）`);
+  return true;
+};
+
 /** 自上而下单遍级联：父改 hug 只向下传播，一遍 DFS 即达固定点。 */
 function cascadeFillUnderHug(subtreeRoot: AnyRecord, ctx: FixContext): void {
   const stack: AnyRecord[] = [subtreeRoot];
@@ -465,6 +483,7 @@ const ISSUE_FIXERS: readonly IssueFixer[] = [
   fixMissingBlockMeta,
   fixMissingWrapperBorderRadius,
   fixChildFillUnderHugParent,
+  fixButtonBodyFillUnderWrapperHug,
   fixImageBackgroundImageString,
   fixSpacingExceedsMax,
   fixTextBooleanProp,

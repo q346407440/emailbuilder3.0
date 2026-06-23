@@ -41,4 +41,15 @@ describe("parseHtmlToTextBody — 清除格式与区块默认", () => {
     const clearedRuns = cleared.paragraphs[0]?.runs ?? [];
     assert.equal(clearedRuns[0]?.color, undefined);
   });
+
+  it("run 文本内含换行符时应渲染为 <br/>", () => {
+    const defaults = { bold: false, italic: false, decoration: "none" as const };
+    const rendered = renderTextBodyToHtml(
+      {
+        paragraphs: [{ runs: [{ text: "上行\n下行" }] }],
+      },
+      defaults
+    );
+    assert.match(rendered, /上行<br\/>下行/);
+  });
 });

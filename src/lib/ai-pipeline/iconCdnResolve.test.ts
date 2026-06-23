@@ -56,10 +56,19 @@ describe("resolveIconCdnUrl", () => {
     assert.match(r.src, /\/googleplay\.svg$/);
   });
 
-  it("simple-icons 臆造 slug 走 fallback", () => {
+  it("simple-icons twitter / tw 别名 → x.svg（CDN 已无 twitter.svg）", () => {
+    for (const query of ["twitter", "tw"]) {
+      const r = resolveIconCdnUrl("simple-icons", query);
+      assert.ok(r, query);
+      assert.match(r!.src, /\/x\.svg$/);
+      assert.equal(r!.usedFallback, false);
+    }
+  });
+
+  it("simple-icons 臆造 slug 走索引首项 fallback（管线侧会丢弃）", () => {
     const r = resolveIconCdnUrl("simple-icons", "not-a-real-brand-ever");
     assert.ok(r);
-    assert.match(r.src, /\/google\.svg$/);
+    assert.match(r.src, /\/instagram\.svg$/);
     assert.equal(r.usedFallback, true);
   });
 });

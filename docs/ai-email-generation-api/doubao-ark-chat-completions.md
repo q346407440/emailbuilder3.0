@@ -24,7 +24,7 @@
 | `LLM_PIPELINE_VENDOR` | 否 | 默认 `doubao` |
 | `LLM_PIPELINE_TEMPERATURE` | 否 | 采样温度，默认 `1`（见 `llmGenerationParams.ts`） |
 | `LLM_PIPELINE_TOP_P` | 否 | top-p，默认 `0.95` |
-| `LLM_PIPELINE_MAX_OUTPUT_TOKENS` | 否 | 最大输出 token，默认 `8192`；请求体字段为 `max_tokens` |
+| `LLM_PIPELINE_MAX_OUTPUT_TOKENS` | 否 | 最大输出 token，默认 `32768`；请求体字段为 `max_tokens` |
 
 ## 共用采样参数
 
@@ -67,7 +67,7 @@
       ]
     }
   ],
-  "max_tokens": 8192
+  "max_tokens": 32768
 }
 ```
 

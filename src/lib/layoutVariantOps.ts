@@ -4,7 +4,20 @@ import type { PublishStatus } from "../publish-status-contract/types";
 import { compareByCreatedAtDesc } from "./sortByCreatedAt";
 import { assertLayoutVariantIdSafe } from "./emailLayoutVariant";
 
-/** 顶栏 / 模板页版式列表：更新时间倒序 → 创建时间倒序 → id 稳定倒序。 */
+function layoutVariantIdDescTieBreak(a: LayoutVariantEntry, b: LayoutVariantEntry): number {
+  return b.id.localeCompare(a.id, "zh-CN", { numeric: true, sensitivity: "base" });
+}
+
+/** 顶栏 / 模板页版式列表：创建时间倒序 → id 稳定倒序。 */
+export function sortLayoutVariantsByCreatedDesc(
+  variants: LayoutVariantEntry[]
+): LayoutVariantEntry[] {
+  return [...variants].sort((a, b) =>
+    compareByCreatedAtDesc(a.createdAt, b.createdAt, () => layoutVariantIdDescTieBreak(a, b))
+  );
+}
+
+/** 最近编辑时间倒序 → 创建时间倒序 → id 稳定倒序（非版式列表展示）。 */
 export function sortLayoutVariantsByUpdatedDesc(
   variants: LayoutVariantEntry[]
 ): LayoutVariantEntry[] {
@@ -12,13 +25,10 @@ export function sortLayoutVariantsByUpdatedDesc(
     const byUpdated = compareByCreatedAtDesc(a.updatedAt, b.updatedAt);
     if (byUpdated !== 0) return byUpdated;
     return compareByCreatedAtDesc(a.createdAt, b.createdAt, () =>
-      b.id.localeCompare(a.id, "zh-CN", { numeric: true, sensitivity: "base" })
+      layoutVariantIdDescTieBreak(a, b)
     );
   });
 }
-
-/** @deprecated 使用 sortLayoutVariantsByUpdatedDesc。 */
-export const sortLayoutVariantsByCreatedDesc = sortLayoutVariantsByUpdatedDesc;
 
 /** 由展示名称推导唯一版式 id（无法 slug 时用 layout-<base36>）。 */
 export function deriveLayoutVariantIdFromLabel(

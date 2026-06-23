@@ -1,8 +1,10 @@
 import { ClearOutlined } from "@ant-design/icons";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEventHandler,
   type MouseEventHandler,
 } from "react";
@@ -134,17 +136,30 @@ const RUN_FONT_SIZE_FALLBACK = "14px";
 
 function normalizeRunFontSizePx(raw: string): string | null {
   const t = raw.trim();
-  if (/^\d+(\.\d+)?px$/.test(t)) return t;
-  const numeric = t.endsWith("px") ? t.slice(0, -2).trim() : t;
+  if (/^\d+(\.\d+)?px$/i.test(t)) {
+    const n = Math.round(Number(t.slice(0, -2)));
+    if (!Number.isFinite(n) || n < 0) return null;
+    return `${n}px`;
+  }
+  const numeric = t.toLowerCase().endsWith("px") ? t.slice(0, -2).trim() : t;
   if (!/^\d+(\.\d+)?$/.test(numeric)) return null;
-  const n = Number(numeric);
+  const n = Math.round(Number(numeric));
   if (!Number.isFinite(n) || n < 0) return null;
   return `${n}px`;
 }
 
-function resolveSingleFontSizeInRange(range: Range, root: HTMLElement): string | null {
-  if (range.collapsed) return null;
-  const sizes = new Set<string>();
+function styleHostFromNode(node: Node, root: HTMLElement): HTMLElement | null {
+  const el = (node.nodeType === Node.TEXT_NODE ? node.parentElement : node) as HTMLElement | null;
+  if (!el || !root.contains(el)) return null;
+  return el;
+}
+
+function collectStyledTextHostsInRange(range: Range, root: HTMLElement): HTMLElement[] {
+  if (range.collapsed) {
+    const host = styleHostFromNode(range.startContainer, root);
+    return host ? [host] : [];
+  }
+  const hosts: HTMLElement[] = [];
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
@@ -156,13 +171,62 @@ function resolveSingleFontSizeInRange(range: Range, root: HTMLElement): string |
     if (endOffset <= startOffset) continue;
     const slice = fullText.slice(startOffset, endOffset);
     if (!slice.trim()) continue;
-    const host = node.parentElement ?? root;
+    hosts.push(node.parentElement ?? root);
+  }
+  return hosts;
+}
+
+function isBoldHost(el: HTMLElement): boolean {
+  const weight = window.getComputedStyle(el).fontWeight;
+  const n = Number(weight);
+  return weight === "bold" || weight === "bolder" || (Number.isFinite(n) && n >= 700);
+}
+
+function isItalicHost(el: HTMLElement): boolean {
+  const style = window.getComputedStyle(el).fontStyle;
+  return style === "italic" || style === "oblique";
+}
+
+function hasTextDecorationLine(el: HTMLElement, line: "underline" | "line-through"): boolean {
+  return window.getComputedStyle(el).textDecorationLine.includes(line);
+}
+
+function readFormatEchoInRange(range: Range, root: HTMLElement): {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strikeThrough: boolean;
+} {
+  const hosts = collectStyledTextHostsInRange(range, root);
+  if (!hosts.length) {
+    return { bold: false, italic: false, underline: false, strikeThrough: false };
+  }
+  const isUniformActive = (values: Set<boolean>) => values.size === 1 && [...values][0] === true;
+  return {
+    bold: isUniformActive(new Set(hosts.map(isBoldHost))),
+    italic: isUniformActive(new Set(hosts.map(isItalicHost))),
+    underline: isUniformActive(new Set(hosts.map((h) => hasTextDecorationLine(h, "underline")))),
+    strikeThrough: isUniformActive(new Set(hosts.map((h) => hasTextDecorationLine(h, "line-through")))),
+  };
+}
+
+function resolveFontSizeEchoInRange(range: Range, root: HTMLElement): string | null {
+  const hosts = collectStyledTextHostsInRange(range, root);
+  if (!hosts.length) return null;
+  const sizes = new Set<string>();
+  for (const host of hosts) {
     const computedSize = window.getComputedStyle(host).fontSize?.trim();
-    if (!computedSize) continue;
-    sizes.add(computedSize);
+    const normalized = computedSize ? normalizeRunFontSizePx(computedSize) : null;
+    if (!normalized) continue;
+    sizes.add(normalized);
     if (sizes.size > 1) return null;
   }
-  return sizes.size === 1 ? normalizeRunFontSizePx([...sizes][0]!) : null;
+  return sizes.size === 1 ? [...sizes][0]! : null;
+}
+
+function resolveSingleFontSizeInRange(range: Range, root: HTMLElement): string | null {
+  if (range.collapsed) return null;
+  return resolveFontSizeEchoInRange(range, root);
 }
 
 function applyFontSizeToRange(range: Range, fontSize: string): void {
@@ -245,23 +309,12 @@ function anchorTextPreview(anchor: HTMLAnchorElement | null): string {
   return t.length <= maxLen ? t : `${t.slice(0, maxLen - 1)}…`;
 }
 
-function resolveSingleTextColorInRange(range: Range, root: HTMLElement): string | null {
-  if (range.collapsed) return null;
+function resolveTextColorEchoInRange(range: Range, root: HTMLElement): string | null {
+  const hosts = collectStyledTextHostsInRange(range, root);
+  if (!hosts.length) return null;
   const colors = new Set<string>();
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  while (walker.nextNode()) {
-    const node = walker.currentNode as Text;
-    if (!range.intersectsNode(node)) continue;
-    const fullText = node.textContent ?? "";
-    if (!fullText) continue;
-    const startOffset = node === range.startContainer ? range.startOffset : 0;
-    const endOffset = node === range.endContainer ? range.endOffset : fullText.length;
-    if (endOffset <= startOffset) continue;
-    const slice = fullText.slice(startOffset, endOffset);
-    if (!slice.trim()) continue;
-    const host = node.parentElement ?? root;
-    const computedColor = window.getComputedStyle(host).color;
-    const rgba = parseCssColorToRgba(computedColor);
+  for (const host of hosts) {
+    const rgba = parseCssColorToRgba(window.getComputedStyle(host).color);
     if (!rgba) continue;
     colors.add(rgbaToCss(rgba));
     if (colors.size > 1) return null;
@@ -329,7 +382,15 @@ export function TextRichEditor({
   const [variableModalOpen, setVariableModalOpen] = useState(false);
   const [variableSelectionPreview, setVariableSelectionPreview] = useState("");
   const [runColorDraft, setRunColorDraft] = useState("#ff1f1f");
+  const [runColorIndeterminate, setRunColorIndeterminate] = useState(false);
   const [runFontSizeDraft, setRunFontSizeDraft] = useState(RUN_FONT_SIZE_FALLBACK);
+  const [runFontSizeIndeterminate, setRunFontSizeIndeterminate] = useState(false);
+  const [formatEcho, setFormatEcho] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strikeThrough: false,
+  });
   const { open: colorPickerOpen, overlayEdge, overlayClassName, onVisibleChange } = useAdaptiveOverlayEdge({
     triggerRef: colorTriggerWrapRef,
     preferredEdge: "topLeft",
@@ -340,10 +401,28 @@ export function TextRichEditor({
 
   const pickerColorValue = rgbaToCss(rgbaForPicker(runColorDraft));
 
+  const editorAreaStyle = useMemo((): CSSProperties => {
+    const style: CSSProperties = {};
+    const fontSize = defaults.fontSize?.trim();
+    if (fontSize) {
+      style.fontSize = normalizeRunFontSizePx(fontSize) ?? fontSize;
+    }
+    const color = defaults.color?.trim();
+    if (color) style.color = color;
+    return style;
+  }, [defaults.color, defaults.fontSize]);
+
   useEffect(() => {
     dirtyRef.current = false;
     composingRef.current = false;
-  }, [editorKey]);
+    setFormatEcho({ bold: false, italic: false, underline: false, strikeThrough: false });
+    setRunFontSizeIndeterminate(false);
+    setRunColorIndeterminate(false);
+    setRunFontSizeDraft(
+      normalizeRunFontSizePx(defaults.fontSize?.trim() ?? "") ?? RUN_FONT_SIZE_FALLBACK
+    );
+    setRunColorDraft(TEXT_COLOR_FALLBACK);
+  }, [editorKey, defaults.fontSize]);
 
   useEffect(() => {
     const el = ref.current;
@@ -374,11 +453,46 @@ export function TextRichEditor({
 
   useEffect(() => {
     const onSelectionChange = () => {
-      requestAnimationFrame(() => syncVariablePillSelectionHighlight(ref.current));
+      requestAnimationFrame(() => {
+        syncVariablePillSelectionHighlight(ref.current);
+        syncToolbarFromSelection();
+      });
     };
     document.addEventListener("selectionchange", onSelectionChange);
     return () => document.removeEventListener("selectionchange", onSelectionChange);
-  }, [variableRunsKey]);
+  }, [variableRunsKey, defaults.fontSize, defaults.color, defaults.bold, defaults.italic]);
+
+  const blockFontSizeFallback = () =>
+    normalizeRunFontSizePx(defaults.fontSize?.trim() ?? "") ?? RUN_FONT_SIZE_FALLBACK;
+
+  const syncToolbarFromSelection = () => {
+    const root = ref.current;
+    if (!root) return;
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return;
+    let range: Range;
+    try {
+      range = sel.getRangeAt(0);
+    } catch {
+      return;
+    }
+    if (!rangeInsideEditor(range, root)) return;
+    selRange.current = range.cloneRange();
+
+    const blockFallback = blockFontSizeFallback();
+    const fontSizeEcho = resolveFontSizeEchoInRange(range, root);
+    const fontSizeIndeterminate = !range.collapsed && fontSizeEcho === null;
+    const colorEcho = resolveTextColorEchoInRange(range, root);
+    const colorIndeterminate = !range.collapsed && colorEcho === null;
+
+    setFormatEcho(readFormatEchoInRange(range, root));
+    setRunFontSizeIndeterminate(fontSizeIndeterminate);
+    setRunFontSizeDraft(fontSizeIndeterminate ? "" : fontSizeEcho ?? blockFallback);
+    setRunColorIndeterminate(colorIndeterminate);
+    if (!colorIndeterminate) {
+      setRunColorDraft(colorEcho ?? TEXT_COLOR_FALLBACK);
+    }
+  };
 
   const captureSelection = () => {
     const sel = window.getSelection();
@@ -434,42 +548,7 @@ export function TextRichEditor({
   };
 
   const syncRunColorDraftFromSelection = () => {
-    const root = ref.current;
-    if (!root) {
-      setRunColorDraft(TEXT_COLOR_FALLBACK);
-      return;
-    }
-    restoreSelection();
-    const sel = window.getSelection();
-    if (sel?.rangeCount && root.contains(sel.anchorNode)) {
-      selRange.current = sel.getRangeAt(0).cloneRange();
-    }
-    const range = selRange.current;
-    if (!range || !rangeInsideEditor(range, root)) {
-      setRunColorDraft(TEXT_COLOR_FALLBACK);
-      return;
-    }
-    setRunColorDraft(resolveSingleTextColorInRange(range, root) ?? TEXT_COLOR_FALLBACK);
-  };
-
-  const syncRunFontSizeDraftFromSelection = () => {
-    const root = ref.current;
-    const blockFallback = normalizeRunFontSizePx(defaults.fontSize?.trim() ?? "") ?? RUN_FONT_SIZE_FALLBACK;
-    if (!root) {
-      setRunFontSizeDraft(blockFallback);
-      return;
-    }
-    restoreSelection();
-    const sel = window.getSelection();
-    if (sel?.rangeCount && root.contains(sel.anchorNode)) {
-      selRange.current = sel.getRangeAt(0).cloneRange();
-    }
-    const range = selRange.current;
-    if (!range || !rangeInsideEditor(range, root)) {
-      setRunFontSizeDraft(blockFallback);
-      return;
-    }
-    setRunFontSizeDraft(resolveSingleFontSizeInRange(range, root) ?? blockFallback);
+    syncToolbarFromSelection();
   };
 
   const applyRunFontSize = (raw: string) => {
@@ -489,6 +568,7 @@ export function TextRichEditor({
     selRange.current = null;
     dirtyRef.current = true;
     flush();
+    syncToolbarFromSelection();
   };
 
   const exec = (command: string, value?: string) => {
@@ -497,6 +577,7 @@ export function TextRichEditor({
     selRange.current = null;
     dirtyRef.current = true;
     flush();
+    syncToolbarFromSelection();
   };
 
   const triggerLinkInputShake = () => {
@@ -760,15 +841,23 @@ export function TextRichEditor({
           aria-label="正文样式"
         >
           <div
-            className="inspector-rich-toolbar__font-size"
+            className={
+              runFontSizeIndeterminate
+                ? "inspector-rich-toolbar__font-size inspector-rich-toolbar__font-size--indeterminate"
+                : "inspector-rich-toolbar__font-size"
+            }
             title="段内字号（选中文字后修改）"
             onMouseDown={captureSelection}
           >
             <ShopUnitInput
-              value={runFontSizeDraft}
+              value={runFontSizeIndeterminate ? "" : runFontSizeDraft}
               unit="px"
               aria-label="段内字号"
-              onChange={setRunFontSizeDraft}
+              placeholder={runFontSizeIndeterminate ? "—" : undefined}
+              onChange={(next) => {
+                setRunFontSizeIndeterminate(false);
+                setRunFontSizeDraft(next);
+              }}
               onBlur={() => applyRunFontSize(runFontSizeDraft)}
               onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
@@ -779,36 +868,56 @@ export function TextRichEditor({
             />
           </div>
           <ShopSecondaryButton
-            className="inspector-rich-toolbar__btn"
+            className={
+              formatEcho.bold
+                ? "inspector-rich-toolbar__btn inspector-rich-toolbar__btn--active"
+                : "inspector-rich-toolbar__btn"
+            }
             title="加粗"
             aria-label="加粗"
+            aria-pressed={formatEcho.bold}
             onMouseDown={captureSelection}
             onClick={() => exec("bold")}
           >
             <span className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--bold">B</span>
           </ShopSecondaryButton>
           <ShopSecondaryButton
-            className="inspector-rich-toolbar__btn"
+            className={
+              formatEcho.italic
+                ? "inspector-rich-toolbar__btn inspector-rich-toolbar__btn--active"
+                : "inspector-rich-toolbar__btn"
+            }
             title="斜体"
             aria-label="斜体"
+            aria-pressed={formatEcho.italic}
             onMouseDown={captureSelection}
             onClick={() => exec("italic")}
           >
             <span className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--italic">I</span>
           </ShopSecondaryButton>
           <ShopSecondaryButton
-            className="inspector-rich-toolbar__btn"
+            className={
+              formatEcho.underline
+                ? "inspector-rich-toolbar__btn inspector-rich-toolbar__btn--active"
+                : "inspector-rich-toolbar__btn"
+            }
             title="下划线"
             aria-label="下划线"
+            aria-pressed={formatEcho.underline}
             onMouseDown={captureSelection}
             onClick={() => exec("underline")}
           >
             <span className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--underline">U</span>
           </ShopSecondaryButton>
           <ShopSecondaryButton
-            className="inspector-rich-toolbar__btn"
+            className={
+              formatEcho.strikeThrough
+                ? "inspector-rich-toolbar__btn inspector-rich-toolbar__btn--active"
+                : "inspector-rich-toolbar__btn"
+            }
             title="删除线"
             aria-label="删除线"
+            aria-pressed={formatEcho.strikeThrough}
             onMouseDown={captureSelection}
             onClick={() => exec("strikeThrough")}
           >
@@ -832,6 +941,7 @@ export function TextRichEditor({
               selRange.current = null;
               dirtyRef.current = true;
               flush();
+              syncToolbarFromSelection();
             }}
           >
             <span className="inspector-rich-toolbar__icon inspector-rich-toolbar__icon--overline">O</span>
@@ -879,8 +989,12 @@ export function TextRichEditor({
                 aria-expanded={colorPickerOpen}
               >
                 <span
-                  className="inspector-rich-toolbar__color-swatch"
-                  style={{ backgroundColor: runColorDraft }}
+                  className={
+                    runColorIndeterminate
+                      ? "inspector-rich-toolbar__color-swatch inspector-rich-toolbar__color-swatch--indeterminate"
+                      : "inspector-rich-toolbar__color-swatch"
+                  }
+                  style={runColorIndeterminate ? undefined : { backgroundColor: runColorDraft }}
                 />
               </div>
             </ColorPicker>
@@ -914,6 +1028,7 @@ export function TextRichEditor({
         key={editorKey}
         ref={ref}
         className="text-rich-editor__area"
+        style={editorAreaStyle}
         contentEditable
         suppressContentEditableWarning
         role="textbox"
@@ -932,10 +1047,17 @@ export function TextRichEditor({
         onKeyDown={onEditorKeyDown}
         onMouseUp={() => {
           captureSelection();
-          syncRunFontSizeDraftFromSelection();
+          syncToolbarFromSelection();
           syncVariablePillSelectionHighlight(ref.current);
         }}
-        onKeyUp={() => syncVariablePillSelectionHighlight(ref.current)}
+        onSelect={() => {
+          captureSelection();
+          syncToolbarFromSelection();
+        }}
+        onKeyUp={() => {
+          syncToolbarFromSelection();
+          syncVariablePillSelectionHighlight(ref.current);
+        }}
       />
 
       <ShopSectionModal

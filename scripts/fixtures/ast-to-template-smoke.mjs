@@ -235,11 +235,11 @@ async function main() {
     const backfilled = backfillTemplateFromManifest(template, mapped, result.assets);
     template = backfilled.template;
     console.log(
-      `[ast-to-template] 资产回填: ${backfilled.resolvedCount}/${result.assets.length}（必需未命中 ${backfilled.unresolvedRequired.length}）`
+      `[ast-to-template] 资产回填: ${backfilled.resolvedCount}/${result.assets.length}（未命中 ${backfilled.unresolvedOptional.length}）`
     );
-    if (backfilled.unresolvedRequired.length > 0) {
-      console.warn("⚠️  必需资产未回填：");
-      for (const req of backfilled.unresolvedRequired) {
+    if (backfilled.unresolvedOptional.length > 0) {
+      console.warn("⚠️  资产未回填（多为 icon 未命中）：");
+      for (const req of backfilled.unresolvedOptional) {
         console.warn(`  - ${req.blockId}: ${req.query}`);
       }
     }

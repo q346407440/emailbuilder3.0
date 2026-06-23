@@ -81,6 +81,8 @@ const RULES_BY_TYPE: Record<string, ClassificationRule[]> = {
     { prefix: "props.link", kind: "content" },
     { prefix: "props.buttonStyle.widthMode", kind: "structural" },
     { prefix: "props.buttonStyle.width", kind: "style" },
+    { prefix: "props.buttonStyle.heightMode", kind: "structural" },
+    { prefix: "props.buttonStyle.height", kind: "style" },
     { prefix: "props.buttonStyle.backgroundColor", kind: "style" },
     { prefix: "props.buttonStyle.textColor", kind: "style" },
     { prefix: "props.buttonStyle.fontSize", kind: "style" },

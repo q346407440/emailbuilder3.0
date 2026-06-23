@@ -99,27 +99,8 @@ export function parseValidationIssuePath(path: string): ParsedValidationPath {
 function inferInspectorTab(parsed: ParsedValidationPath, reason: string): InspectorMainTab | undefined {
   if (parsed.bindPath?.startsWith("repeat") || reason.includes("列表")) return "list";
   if (parsed.bindPath?.startsWith("visibility") || reason.includes("显隐")) return "visibility";
-  if (
-    parsed.bindPath?.includes("textBody") ||
-    parsed.bindPath?.includes("imageUrl") ||
-    parsed.bindPath?.includes("link") ||
-    parsed.bindPath?.includes("src") ||
-    reason.includes("slotId") ||
-    reason.includes("变量")
-  ) {
-    return "content";
-  }
-  if (
-    parsed.bindPath?.includes("backgroundColor") ||
-    parsed.bindPath?.includes("buttonStyle") ||
-    parsed.bindPath?.includes("wrapperStyle") ||
-    parsed.bindPath?.includes("props.") ||
-    reason.includes("$themeRef") ||
-    reason.includes("mode:\"theme\"")
-  ) {
-    return "style";
-  }
-  return "layout";
+  if (parsed.bindPath?.startsWith("wrapperStyle.")) return "wrapper";
+  return "component";
 }
 
 function inferWorkbenchView(parsed: ParsedValidationPath): WorkbenchView | undefined {
