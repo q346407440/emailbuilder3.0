@@ -95,6 +95,7 @@ export function resolveWrapperBackgroundImageCanvasLayout(
     maxWidth: "100%",
     backgroundColor: wrapperBackgroundColor,
     overflow: "hidden",
+    ...(fillStretchHeight ? { display: "block", minHeight: "100%" } : {}),
     ...outerStyle,
   };
 

@@ -17,6 +17,29 @@ test("parseRestoreAstDocument 接受最小合法 JSON", () => {
   assert.equal(doc.tree.t, "email");
 });
 
+test("parseRestoreAstDocument 接受 email.canvas hex", () => {
+  const doc = parseRestoreAstDocument(
+    JSON.stringify({
+      ...minimalDoc,
+      tree: { t: "email", canvas: { hex: "#000000" }, children: [] },
+    })
+  );
+  assert.deepEqual(doc.tree.canvas, { hex: "#000000" });
+});
+
+test("parseRestoreAstDocument 拒绝非法 email.canvas", () => {
+  assert.throws(
+    () =>
+      parseRestoreAstDocument(
+        JSON.stringify({
+          ...minimalDoc,
+          tree: { t: "email", canvas: "#000000", children: [] },
+        })
+      ),
+    /tree\.canvas/
+  );
+});
+
 test("parseRestoreAstDocument 归一 icon 简写为 t:icon + query", () => {
   const doc = parseRestoreAstDocument(
     JSON.stringify({

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AiStepUiState } from "../../layout-variant-ai-contract/progress";
+import type { AiLlmStreamUiState, AiStepUiState } from "../../layout-variant-ai-contract/progress";
 import type { LayoutManifest } from "../../layout-variant-contract/types";
 import { isPublishedPublishStatus, type PublishStatus } from "../../publish-status-contract";
 import { normalizePublishStatus } from "../../lib/emailPublishStatus";
@@ -25,6 +25,7 @@ type TopbarLayoutVariantSelectProps = {
   disabled?: boolean;
   busy?: boolean;
   aiPipelineSteps?: AiStepUiState[] | null;
+  aiLlmStream?: AiLlmStreamUiState | null;
   onSelect: (layoutVariantId: string) => void;
   onCreate: (
     label: string,
@@ -49,6 +50,7 @@ export function TopbarLayoutVariantSelect({
   disabled,
   busy,
   aiPipelineSteps,
+  aiLlmStream,
   onSelect,
   onCreate,
   onCreateModalClosed,
@@ -310,6 +312,7 @@ export function TopbarLayoutVariantSelect({
         copySourceLabel={createModalMode === "copy" ? copySourceLabel : undefined}
         busy={busy}
         aiPipelineSteps={aiPipelineSteps}
+        aiLlmStream={aiLlmStream}
         onCancel={closeCreateModal}
         onSubmit={submitCreateModal}
       />

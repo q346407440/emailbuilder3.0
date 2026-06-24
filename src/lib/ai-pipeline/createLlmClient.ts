@@ -27,6 +27,8 @@ export type CreateLlmClientOptions = {
   profile?: LlmProfileSelection;
   /** @deprecated 使用 generationParams.maxOutputTokens */
   maxTokens?: number;
+  streamIdleTimeoutMs?: number;
+  streamAbsoluteTimeoutMs?: number;
 };
 
 function resolveGenerationParams(options: CreateLlmClientOptions): LlmGenerationParams {
@@ -62,13 +64,15 @@ function createLlmClientForProfile(
         timeoutMs,
         runtime: doubaoRuntimeFromProfile(profile),
         generationParams,
+        streamIdleTimeoutMs: options.streamIdleTimeoutMs,
+        streamAbsoluteTimeoutMs: options.streamAbsoluteTimeoutMs,
       });
     case "gemini": {
       const runtime = geminiRuntimeFromProfile(profile);
       if (options.outputMode === "raw") {
         return createGeminiRawClient({ timeoutMs, runtime, generationParams });
       }
-      return createGeminiClient({ timeoutMs, runtime, generationParams });
+      return createGeminiClient({ timeoutMs, runtime, generationParams, streamIdleTimeoutMs: options.streamIdleTimeoutMs, streamAbsoluteTimeoutMs: options.streamAbsoluteTimeoutMs });
     }
     default: {
       const _exhaustive: never = profile.vendor;
@@ -122,12 +126,15 @@ export function createLlmClientFromProfile(
 /** 按 LLM_PIPELINE_VENDOR 创建默认 LLM 客户端。 */
 export function createDefaultLlmClient(
   timeoutMs?: number,
-  profile?: LlmProfileSelection
+  profile?: LlmProfileSelection,
+  options?: Pick<CreateLlmClientOptions, "streamIdleTimeoutMs" | "streamAbsoluteTimeoutMs">
 ): LlmClient {
   return createLlmClientForVendor(readLlmPipelineVendor(), {
     timeoutMs,
     outputMode: "json",
     profile,
+    streamIdleTimeoutMs: options?.streamIdleTimeoutMs,
+    streamAbsoluteTimeoutMs: options?.streamAbsoluteTimeoutMs,
   });
 }
 

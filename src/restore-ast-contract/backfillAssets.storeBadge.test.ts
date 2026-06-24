@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { IMAGE_PLACEHOLDER_PUBLIC_PATH } from "../lib/imagePlaceholder";
+import { IMAGE_PLACEHOLDER_PUBLIC_PATH, ICON_PLACEHOLDER_PUBLIC_PATH } from "../lib/imagePlaceholder";
 import { resolveAstAssetRequests } from "./backfillAssets";
 
 test("resolveAstAssetRequests：store badge query 不走 Pexels", async () => {
@@ -52,18 +52,27 @@ test("resolveAstAssetRequests：image 搜图失败回落本地占位图", async 
   assert.equal(item.reason, "PEXELS_NOT_FOUND");
 });
 
-test("resolveAstAssetRequests：icon 未命中 ok:false 且无 url", async () => {
-  const manifest = await resolveAstAssetRequests([
+test("resolveAstAssetRequests：icon 未命中回落本地占位 SVG", async () => {
+  const manifest = await resolveAstAssetRequests(
+    [
+      {
+        blockId: "icon-1",
+        kind: "icon",
+        query: "__restore_ast_test_no_such_icon__",
+        pack: "simple-icons",
+      },
+    ],
     {
-      blockId: "icon-1",
-      kind: "icon",
-      query: "made-in",
-      pack: "simple-icons",
-    },
-  ]);
+      async resolve() {
+        return { ok: false, reason: "ICON_NOT_FOUND", detail: "test stub" };
+      },
+    }
+  );
 
   assert.equal(manifest.items.length, 1);
   const item = manifest.items[0]!;
-  assert.equal(item.ok, false);
-  assert.equal(item.url, undefined);
+  assert.equal(item.ok, true);
+  assert.equal(item.url, ICON_PLACEHOLDER_PUBLIC_PATH);
+  assert.equal(item.placeholderFallback, true);
+  assert.equal(item.reason, "ICON_NOT_FOUND");
 });

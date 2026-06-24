@@ -41,17 +41,18 @@ function resolveSpacingLiteral(value: string | ThemeRef | undefined, theme: Rest
   return null;
 }
 
-/** 未写 backgroundColor 时视为 theme.colors.surface（与显式 surface 同色）。 */
+/** 未写 backgroundColor 时视为画布默认色（与 emailRoot 一致）。 */
 function resolveBackgroundLiteral(
   value: string | ThemeRef | undefined,
-  theme: RestoreTheme
+  theme: RestoreTheme,
+  canvasDefaultLiteral: string
 ): string {
-  if (value === undefined) return theme.colors.surface;
+  if (value === undefined) return canvasDefaultLiteral;
   if (typeof value === "string") return value;
   if (isThemeRef(value)) {
-    return resolveThemeRefToLiteral(parseThemeRefPath(value), theme) ?? theme.colors.surface;
+    return resolveThemeRefToLiteral(parseThemeRefPath(value), theme) ?? canvasDefaultLiteral;
   }
-  return theme.colors.surface;
+  return canvasDefaultLiteral;
 }
 
 function parsePx(literal: string): number | null {
@@ -147,10 +148,11 @@ function setPaddingSide(
 function shouldCollapseSeam(
   prev: EmailBlock,
   next: EmailBlock,
-  theme: RestoreTheme
+  theme: RestoreTheme,
+  canvasDefaultLiteral: string
 ): boolean {
-  const prevBg = resolveBackgroundLiteral(prev.wrapperStyle?.backgroundColor, theme);
-  const nextBg = resolveBackgroundLiteral(next.wrapperStyle?.backgroundColor, theme);
+  const prevBg = resolveBackgroundLiteral(prev.wrapperStyle?.backgroundColor, theme, canvasDefaultLiteral);
+  const nextBg = resolveBackgroundLiteral(next.wrapperStyle?.backgroundColor, theme, canvasDefaultLiteral);
   if (prevBg !== nextBg) return false;
 
   const prevBottom = getSpacingSide(prev.wrapperStyle?.padding, "bottom");
@@ -169,12 +171,18 @@ function halveSeamBetween(prev: EmailBlock, next: EmailBlock, theme: RestoreThem
 
 /**
  * email 根下首层 layout/grid 壳：相邻且同色、接缝 padding 一致时，上块 bottom / 下块 top 各折半。
- * 未写 backgroundColor 的壳与 theme.colors.surface 视为同色。
+ * 未写 backgroundColor 的壳与画布默认色（email.canvas 或 `#FFFFFF`）视为同色。
  */
+export type CollapseRootSiblingPaddingSeamsOptions = {
+  canvasDefaultLiteral?: string;
+};
+
 export function collapseRootSiblingPaddingSeams(
   template: EmailTemplate,
-  theme: RestoreTheme
+  theme: RestoreTheme,
+  options?: CollapseRootSiblingPaddingSeamsOptions
 ): EmailTemplate {
+  const canvasDefaultLiteral = options?.canvasDefaultLiteral ?? theme.colors.surface;
   const root = template.blocks[template.rootBlockId];
   if (!root?.children?.length) return template;
 
@@ -193,7 +201,7 @@ export function collapseRootSiblingPaddingSeams(
     const prev = { ...blocks[prevId]! };
     const next = { ...blocks[nextId]! };
 
-    if (!shouldCollapseSeam(prev, next, theme)) continue;
+    if (!shouldCollapseSeam(prev, next, theme, canvasDefaultLiteral)) continue;
 
     halveSeamBetween(prev, next, theme);
     blocks[prevId] = prev;

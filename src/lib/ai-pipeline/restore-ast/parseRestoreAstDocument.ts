@@ -1,5 +1,6 @@
 import { AiPipelineError } from "../../../layout-variant-ai-contract/errors";
 import type { RestoreAstDocument } from "../../../restore-ast-contract/types";
+import { isValidEmailCanvas } from "../../../restore-ast-contract/resolveEmailCanvas";
 import { parseLlmJson } from "../parseLlmJson";
 import { normalizeRestoreAstFromLlm } from "./normalizeRestoreAstFromLlm";
 
@@ -56,6 +57,12 @@ export function parseRestoreAstDocument(raw: string): RestoreAstDocument {
   }
   if (!Array.isArray(parsed.tree.children)) {
     throw new AiPipelineError("VALIDATION_FAILED", "tree.children 须为数组");
+  }
+  if (!isValidEmailCanvas(parsed.tree.canvas)) {
+    throw new AiPipelineError(
+      "VALIDATION_FAILED",
+      'tree.canvas 须为颜色档位（primary/accent/secondary/surface）或 { "hex": "#RRGGBB" }'
+    );
   }
 
   return normalizeRestoreAstFromLlm(parsed as RestoreAstDocument);

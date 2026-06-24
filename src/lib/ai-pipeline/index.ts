@@ -1,9 +1,3 @@
-export { runImageToLayoutVariantPipeline } from "./runImageToLayoutVariantPipeline";
-export {
-  bindThemeRefsAfterAiLowering,
-  isAiPipelineThemeBindEnabled,
-} from "./bindThemeRefsAfterAiLowering";
-export { mapPipelineResultToEasyEmail } from "./mapPipelineResultToEasyEmail";
-export { mergeSections } from "./mergeSections";
-export { normalizeStyleTokens } from "./normalizeStyleTokens";
-export type { PipelineRunInput, PipelineRunResult, MergedEmailDraft } from "./types";
+/** RestoreAst 与共享 LLM/资产模块；入口见 `restore-ast/runRestoreAstFromDesignImage`。 */
+export { createDefaultAssetResolver } from "./assetResolve";
+export { createDefaultLlmClient } from "./createLlmClient";

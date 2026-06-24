@@ -89,7 +89,15 @@ export type BorderStyleToken = "hairline" | "dashed-hairline" | "thin";
 // ── 节点（9 基元 + email 根）；判别字段 `t` ─────────────────────────────────────
 
 /** 邮件根。 */
-export type EmailNode = { t: "email"; children: RestoreNode[] };
+export type EmailNode = {
+  t: "email";
+  /**
+   * 画布底色（可选）：仅组装器写入 emailRoot.props.backgroundColor；
+   * 不进入 theme 13 键 / tokenPresets。省略时默认 `#FFFFFF` 字面量。
+   */
+  canvas?: Tone;
+  children: RestoreNode[];
+};
 
 /** 纵向容器（→ layout.container 竖排）。 */
 export type StackNode = {
@@ -187,14 +195,15 @@ export type IconNode = {
 };
 
 /**
- * 按钮（→ action.button）。无 variant 体系：默认即项目标准 pill 按钮——
- * 背景绑 `colors.primary`（CTA 色）、圆角绑 `radius.cta`；需要时用 tone / radius 覆盖。
+ * 按钮（→ action.button）。无 variant 字段：
+ * - 省略 border → 实心底（默认 primary 填充 + surface 字）
+ * - 写 border → 线框按钮（surface/透明底 + 描边 + 文字色，对齐 action.button 母版）
  */
 export type ButtonNode = {
   t: "button";
   label: string;
   href?: string;
-  /** 覆盖默认 CTA 背景色。 */
+  /** 实心底：覆盖填充色（→ buttonStyle.backgroundColor）。线框：勿用 tone 当填充；描边/文字色请写 borderTone。 */
   tone?: Tone;
   /** 覆盖默认 radius.cta 圆角。 */
   radius?: Radius;
@@ -208,6 +217,10 @@ export type ButtonNode = {
    * 未写或 `hug`：常规胶囊；`relaxed`：明显偏高的 CTA（组装器写定高 px）。
    */
   height?: ButtonHeight;
+  /** 写了即线框按钮；省略为实心底。 */
+  border?: BorderStyleToken;
+  /** 线框专用：描边与文字色（→ buttonStyle.border + textColor）。实心底请省略。 */
+  borderTone?: ToneToken;
 };
 
 /** 分割线（→ separator.divider）。 */

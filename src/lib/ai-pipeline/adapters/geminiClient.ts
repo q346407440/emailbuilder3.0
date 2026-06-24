@@ -2,9 +2,15 @@ import type { LlmMessage, LlmResponseFormat } from "../ports/LlmClient";
 import { parseLlmJson } from "../parseLlmJson";
 import type { GeminiThinkingLevel } from "../../../layout-variant-ai-contract/llmProfileCatalog";
 import type { LlmGenerationParams } from "../../../layout-variant-ai-contract/llmGenerationParams";
-import { geminiGenerateContentUrl, readGeminiEnvConfig } from "../llmVendorConfig";
+import { geminiGenerateContentUrl, geminiStreamGenerateContentUrl, readGeminiEnvConfig } from "../llmVendorConfig";
 import { toGeminiGenerationFields } from "../llmGenerationParamsApply";
 import { appendLlmExchangeLog } from "../llmExchangeFileLog";
+import {
+  RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
+  RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+} from "../../../layout-variant-ai-contract/constants";
+import type { LlmStreamHandlers } from "../ports/LlmClient";
+import { postGeminiStreamGenerateContent } from "./geminiStream";
 
 const GEMINI_VENDOR_LABEL = "Gemini";
 
@@ -106,6 +112,8 @@ function buildGenerationConfig(
     ...toGeminiGenerationFields(generationParams),
     thinkingConfig: {
       thinkingLevel: runtime.thinkingLevel,
+      /** 流式 UI 需要 thought summary；未开启时思考阶段无 text parts，窗口会一直显示「等待」。 */
+      includeThoughts: true,
     },
   };
   if (responseFormat) {
@@ -201,6 +209,8 @@ export type CreateGeminiClientOptions = {
   generationParams: LlmGenerationParams;
   /** JSON 预检（RestoreAst 等） */
   validateJson?: boolean;
+  streamIdleTimeoutMs?: number;
+  streamAbsoluteTimeoutMs?: number;
 };
 
 export function createGeminiClient(options: CreateGeminiClientOptions) {
@@ -214,6 +224,32 @@ export function createGeminiClient(options: CreateGeminiClientOptions) {
         timeoutMs,
         responseFormat
       );
+      if (validateJson) {
+        parseLlmJson(content);
+      }
+      return content;
+    },
+    async completeStream(
+      messages: LlmMessage[],
+      responseFormat: LlmResponseFormat | undefined,
+      handlers: LlmStreamHandlers
+    ): Promise<string> {
+      const { apiKey } = readGeminiEnvConfig(runtime.model);
+      const url = geminiStreamGenerateContentUrl(runtime.model);
+      const { systemInstruction, contents } = convertLlmMessagesToGeminiRequest(messages);
+      const body: Record<string, unknown> = {
+        contents,
+        generationConfig: buildGenerationConfig(runtime, generationParams, responseFormat),
+      };
+      if (systemInstruction) {
+        body.systemInstruction = systemInstruction;
+      }
+      const content = await postGeminiStreamGenerateContent(url, apiKey, body, {
+        vendorLabel: GEMINI_VENDOR_LABEL,
+        idleTimeoutMs: options.streamIdleTimeoutMs ?? RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+        absoluteTimeoutMs: options.streamAbsoluteTimeoutMs ?? RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
+        onDelta: handlers.onDelta,
+      });
       if (validateJson) {
         parseLlmJson(content);
       }

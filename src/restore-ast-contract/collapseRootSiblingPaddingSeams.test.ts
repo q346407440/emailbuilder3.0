@@ -125,7 +125,7 @@ test("底色不同 → 不折叠", () => {
   assert.equal(out.blocks.b!.wrapperStyle!.padding!.top, "24px");
 });
 
-test("未写底色、相邻同 padding → 视为 surface 同色并折半", () => {
+test("未写底色、相邻同 padding → 视为画布默认色同色并折半", () => {
   const tpl = minimalTemplate([
     shellBlock("a", "root", undefined, { $themeRef: "tokens.spacing.section" }),
     shellBlock("b", "root", undefined, { $themeRef: "tokens.spacing.section" }),

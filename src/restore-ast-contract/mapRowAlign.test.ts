@@ -13,6 +13,10 @@ test("mapRowAlign start + crossAlign center → 左 + 竖中", () => {
   });
 });
 
+test("mapRowAlign between 无 crossAlign → 水平居中 + 顶（gap auto 时两端拉开；改 fixed 后整组居中）", () => {
+  assert.deepEqual(mapRowAlign("between"), { horizontal: "center", vertical: "top" });
+});
+
 test("mapRowAlign center 无 crossAlign → 双轴居中（兼容旧语义）", () => {
   assert.deepEqual(mapRowAlign("center"), { horizontal: "center", vertical: "center" });
 });

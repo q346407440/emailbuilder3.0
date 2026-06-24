@@ -1,5 +1,5 @@
 import { searchPexelsCandidates, type PexelsOrientation } from "../pexelsClient";
-import { PEXELS_SEARCH_TARGET_WIDTH } from "./compactTypes";
+import { PEXELS_SEARCH_TARGET_WIDTH } from "./constants";
 import { resolveIconCdnCandidates } from "./iconCdnResolve";
 import { verifyUrlReachable } from "./verifyUrlReachable";
 import type { AssetResolver, AssetResolveInput, AssetResolveResult } from "./ports/AssetResolver";

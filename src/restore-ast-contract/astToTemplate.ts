@@ -2,6 +2,7 @@ import { reconcileTemplateWrapperStyles } from "../lib/wrapperLayoutReconcile";
 import type { EmailTemplate } from "../types/email";
 import type { TokenPresets } from "../types/tokenPreset";
 import { collapseRootSiblingPaddingSeams } from "./collapseRootSiblingPaddingSeams";
+import { resolveEmailCanvasLiteral } from "./resolveEmailCanvas";
 import { createBuildCtx, type AssetRequest } from "./buildCtx";
 import { buildNode } from "./buildNode";
 import { draftTreeToEmailTemplate } from "./draftToGraph";
@@ -41,7 +42,9 @@ export function astToTemplate(
   });
 
   const reconciled = reconcileTemplateWrapperStyles(template);
-  template = collapseRootSiblingPaddingSeams(reconciled.template, doc.theme);
+  template = collapseRootSiblingPaddingSeams(reconciled.template, doc.theme, {
+    canvasDefaultLiteral: resolveEmailCanvasLiteral(doc.tree, doc.theme),
+  });
 
   const tokenPresets = themeToTokenPresets(doc.theme, opts.tokenPresetLabel);
 

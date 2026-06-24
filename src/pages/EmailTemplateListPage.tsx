@@ -23,7 +23,9 @@ import { toUserFacingErrorMessage } from "../lib/userFacingError";
 import { isPublishedPublishStatus, type PublishStatus } from "../publish-status-contract";
 import {
   reduceAiPipelineProgress,
+  reduceAiLlmStream,
   buildPendingRestoreAstSteps,
+  type AiLlmStreamUiState,
   type AiStepUiState,
 } from "../layout-variant-ai-contract/progress";
 
@@ -64,6 +66,7 @@ export function EmailTemplateListPage() {
   const [designCreateOpen, setDesignCreateOpen] = useState(false);
   const [designCreating, setDesignCreating] = useState(false);
   const [aiPipelineSteps, setAiPipelineSteps] = useState<AiStepUiState[] | null>(null);
+  const [aiLlmStream, setAiLlmStream] = useState<AiLlmStreamUiState | null>(null);
   const [mailInfoOpen, setMailInfoOpen] = useState(false);
   const [renamingDesign, setRenamingDesign] = useState<api.EmailTemplateCatalogDesign | null>(null);
   const [renameDesignName, setRenameDesignName] = useState("");
@@ -302,6 +305,7 @@ export function EmailTemplateListPage() {
     if (!selectedItem) return;
     setDesignCreating(true);
     setAiPipelineSteps(payload.kind === "ai" ? buildPendingRestoreAstSteps() : null);
+    setAiLlmStream(null);
     try {
       const created =
         payload.kind === "ai"
@@ -313,13 +317,18 @@ export function EmailTemplateListPage() {
                 pipeline: payload.pipeline,
                 llmProfile: payload.llmProfile,
                 onProgress: (progress) => {
-                  setAiPipelineSteps((prev) => reduceAiPipelineProgress(prev, progress));
+                  if (progress.type === "llm_stream" || progress.type === "llm_stream_reset") {
+                    setAiLlmStream((prev) => reduceAiLlmStream(prev, progress));
+                  } else {
+                    setAiPipelineSteps((prev) => reduceAiPipelineProgress(prev, progress));
+                  }
                 },
               }
             )
           : await api.createLayoutVariant(selectedItem.emailKey, { label: payload.label });
       setDesignCreateOpen(false);
       setAiPipelineSteps(null);
+      setAiLlmStream(null);
       toastInfo(payload.kind === "ai" ? "版式已生成" : "版式已创建");
       goToEmailEditorWithContext(selectedItem.emailKey, created.layoutVariantId);
     } finally {
@@ -641,10 +650,12 @@ export function EmailTemplateListPage() {
         mode="create"
         busy={designCreating}
         aiPipelineSteps={aiPipelineSteps}
+        aiLlmStream={aiLlmStream}
         onCancel={() => {
           if (designCreating) return;
           setDesignCreateOpen(false);
           setAiPipelineSteps(null);
+          setAiLlmStream(null);
         }}
         onSubmit={createDesign}
       />

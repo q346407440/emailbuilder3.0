@@ -80,7 +80,7 @@ RestoreAstDocument = { theme, tree }
 
 | `t` | 必填 | 可选 | 映射 block |
 |---|---|---|---|
-| `email` | `children` | — | emailRoot |
+| `email` | `children` | `canvas`（画布底色，可选） | emailRoot |
 | `stack` | `children` | `title` `gap` `align` `box` | layout.container（竖排） |
 | `row` | `children` | `title` `gap` `align` `crossAlign` `box` | layout.container（横排） |
 | `grid` | `columns` `children` | `title` `gap` `box` | layout.grid |
@@ -90,7 +90,7 @@ RestoreAstDocument = { theme, tree }
 | `text` | `content` `role` | `tone` `bold` `italic` `align` | content.text |
 | `image` | `query` | `height`(px) `aspect` `{w,h}` `align` `crossAlign` `required` `box` `children`(叠字) | content.image（**商品/场景摄影，非 Logo**） |
 | `icon` | `query` `pack` | `tone` `size` `required` | content.icon（**Logo、社媒、页脚小标**） |
-| `button` | `label` | `href` `tone` `radius` `width` `height` | action.button（无 variant，默认 pill） |
+| `button` | `label` | `href` `tone` `radius` `width` `height` `border` `borderTone` | action.button（实心/线框由 `border` 判别） |
 | `divider` | — | `tone` `thickness` | separator.divider |
 | `progress` | `value` | — | indicator.progress |
 
@@ -102,8 +102,8 @@ RestoreAstDocument = { theme, tree }
 | 颜色 | `tone` | `primary` `accent` `secondary` `surface` |
 | 间距 | `gap` / `box.pad` | `section` `gap` `pageInline` |
 | 圆角 | `box.radius` | `panel` `cta` |
-| 描边 | `box.border` | `hairline` `dashed-hairline` `thin`（**可选**；见下节） |
-| 描边色 | `box.borderTone` | `primary` `accent` `secondary` `surface`（可选；缺省 `secondary`） |
+| 描边 | `box.border` / `button.border` | `hairline` `dashed-hairline` `thin`（**可选**；见下节） |
+| 描边色 | `box.borderTone` / `button.borderTone` | `primary` `accent` `secondary` `surface`（可选；缺省 `secondary`） |
 
 ### 四个颜色档的语义
 
@@ -112,7 +112,9 @@ RestoreAstDocument = { theme, tree }
 | `primary` | CTA 色 | 行动 / 转化色 | 按钮背景、与 CTA 同色的强调块 |
 | `accent` | 品牌强调色 | 品牌识别与点缀 | Logo、主标题链接、价格 / 徽章、有色强调条 |
 | `secondary` | 弱化色 | 降权信息色 | 页脚、辅助说明、分隔线 |
-| `surface` | 背景色 | 承载内容的底 | 页面 / 卡片背景 |
+| `surface` | 卡片/面板背景色 | 承载内容的底（卡片、面板） | 内层 `box.tone`、线框 button 底 |
+
+> **画布底色**不进 `theme.colors.surface`：整封外层底色写 `tree.email.canvas`（可选），组装器映射 `emailRoot.props.backgroundColor`，不进入 tokenPresets 13 键。
 
 > **正文文字色不占 token 槽**：用固定默认墨色（不随主题切换）。营销邮件换肤一般只换 CTA / 品牌 / 背景，正文恒为深色；需要变色时用原始值 `{hex}` 覆盖。
 
@@ -129,7 +131,10 @@ RestoreAstDocument = { theme, tree }
 - `progress.value`：`0`..`100`
 - `image.height`：px 逃生口 `{px}`（**必填语义**：块在版面上的视觉高度）
 - `image.aspect`：可选 `{ w, h }`（**宽:高** 比例，均为正整数；如竖长缩略图 `{ "w": 3, "h": 4 }`）。**不写宽 px**——宽由组装器推导（见下节）
-- `button`：无 variant；默认 pill 按钮（bg 绑 CTA、圆角绑 `radius.cta`），`tone`/`radius` 可覆盖
+- `button`：**无 variant**；**省略 `border` = 实心底**（bg→`colors.primary`，`tone` 可覆盖填充色）；**写 `border` = 线框**（bg→`colors.surface` + `buttonStyle.border`，`borderTone` 管描边与文字色）
+- `button.tone`：**仅实心底**表示填充色；线框勿用 `tone` 当填充，用 `borderTone`
+- `button.border`（**可选**）：`hairline` `thin` `dashed-hairline` — 写了即线框按钮
+- `button.borderTone`（**可选**）：线框描边与文字色；省略时默认 `primary`
 - `button.width`（**可选**）：`fill` \| `hug` — 胶囊本体宽（→ `buttonStyle.widthMode`）；未写 = `hug` 小胶囊；通栏大条写 `fill`
 - `button.height`（**可选**）：`hug` \| `relaxed` — 胶囊高度档；未写 = `hug` 常规小胶囊；设计图明显偏高写 `relaxed`（→ 组装器 `heightMode:fixed` + 固定 48px）
 
@@ -163,6 +168,15 @@ RestoreAstDocument = { theme, tree }
 
 > AI **只判断**常规 vs 偏高，**不写 px**；定高像素由组装器写入。非法值归一化后按 `hug` 处理。
 
+### 按钮实心 vs 线框（`border` 判别）
+
+| AST | 组装器 | 典型场景 |
+|---|---|---|
+| 省略 `border` | `backgroundColor`→`colors.primary`；`textColor` 反白；`border` 无 | 「Shop Now」「Back to cart」实心 CTA |
+| 写 `border` + `borderTone` | `backgroundColor`→`colors.surface`；`buttonStyle.border` 四边；文字色同 `borderTone` | Postable「Cards」通栏线框链接；对齐 `action.button` 母版线框样 |
+
+> **可点击胶囊**（实心或线框）用 `button`；**装饰性序号圆标**（非链接）用 `stack` + `box.border` + 子 `text`。
+
 ### `row` 双轴对齐（`align` + 可选 `crossAlign`）
 
 横排 `row` 的 `contentAlign` 分两轴：**`align` 管水平（主轴）**，**`crossAlign` 管竖直（交叉轴）**。
@@ -171,7 +185,7 @@ RestoreAstDocument = { theme, tree }
 |---|---|---|
 | `align: start`（默认竖直贴顶） | `horizontal: left`, `vertical: top` | 顶栏左右分布、左图右文且右侧贴顶 |
 | `align: start` + `crossAlign: center` | `horizontal: left`, `vertical: center` | **商品行**：左图 + 右侧标题/按钮竖直居中 |
-| `align: between` | `horizontal: left` + **`props.gapMode: "auto"`**（缝隙均分，子块 hug 顶两端） | 标题左、链接右 |
+| `align: between` | `horizontal: center` + **`props.gapMode: "auto"`**（缝隙均分，子块 hug 顶两端；改 fixed 后整组居中） | 标题左、链接右 |
 | `align: center`（未写 crossAlign） | 水平 + 竖直均居中 | 图标横排居中 |
 | `crossAlign: end` | `vertical: bottom` | 行内子块贴底（少见） |
 
@@ -258,7 +272,8 @@ RestoreAstDocument = { theme, tree }
 | 组件字段 | 默认绑定 | 说明 |
 |---|---|---|
 | `button` 圆角 | `radius.cta` | `cta` 档为按钮（call-to-action）而设 |
-| `button` 背景 | `colors.primary`（CTA 色） | 按钮默认即 CTA 样式，`tone` 可覆盖 |
+| `button` 实心背景 | `colors.primary`（CTA 色） | 省略 `border` 时；`tone` 可覆盖填充色 |
+| `button` 线框背景 | `colors.surface` | 写 `border` 时；`borderTone` 管描边与文字色 |
 | Logo / 价格 / 徽章 / 强调条 | `colors.accent`（品牌强调色） | 品牌识别元素默认绑 accent |
 | 容器 / 卡片圆角 | `radius.panel` | `panel` 档为容器而设 |
 

@@ -315,7 +315,8 @@ export function mapRowAlign(
   vertical: "top" | "center" | "bottom";
 } {
   let horizontal: "left" | "center" | "right" = "center";
-  if (align === "start" || align === "between") horizontal = "left";
+  if (align === "start") horizontal = "left";
+  else if (align === "between") horizontal = "center";
   else if (align === "end") horizontal = "right";
   else if (align === "center") horizontal = "center";
 

@@ -1,5 +1,5 @@
 import { AI_PIPELINE_LLM_MAX_CONCURRENCY } from "../../layout-variant-ai-contract/constants";
-import type { LlmClient, LlmMessage, LlmResponseFormat } from "./ports/LlmClient";
+import type { LlmClient, LlmMessage, LlmResponseFormat, LlmStreamHandlers } from "./ports/LlmClient";
 import { getLlmExchangeContext, llmExchangeContextStore } from "./llmCallContext";
 
 type QueueJob<T> = {
@@ -78,6 +78,21 @@ export function wrapLlmClientWithQueue(
       const isRetry = (ctx.attempt ?? 1) > 1;
       return queue.enqueue(
         () => llmExchangeContextStore.run(ctx, () => client.complete(messages, responseFormat)),
+        isRetry ? 1 : 0
+      );
+    },
+    async completeStream(
+      messages: LlmMessage[],
+      responseFormat: LlmResponseFormat | undefined,
+      handlers: LlmStreamHandlers
+    ): Promise<string> {
+      if (!client.completeStream) {
+        return client.complete(messages, responseFormat);
+      }
+      const ctx = { ...getLlmExchangeContext() };
+      const isRetry = (ctx.attempt ?? 1) > 1;
+      return queue.enqueue(
+        () => llmExchangeContextStore.run(ctx, () => client.completeStream!(messages, responseFormat, handlers)),
         isRetry ? 1 : 0
       );
     },

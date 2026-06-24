@@ -1,4 +1,9 @@
 import type { CSSProperties } from "react";
+import {
+  ICON_EMPTY_GLYPH,
+  ICON_EMPTY_GLYPH_COLOR,
+  isIconPlaceholderSrc,
+} from "../lib/imagePlaceholder";
 
 type IconGlyphProps = {
   src: string;
@@ -19,30 +24,36 @@ function iconPreviewBoxStyle(size: string): CSSProperties {
   };
 }
 
+/** 留空或占位 URL：空心菱形字元 ◇（与历史预览一致）。 */
+function IconEmptyGlyph({ size, color }: { size: string; color?: string }) {
+  const glyphColor = color?.trim() || ICON_EMPTY_GLYPH_COLOR;
+  return (
+    <span
+      aria-hidden
+      style={{
+        ...iconPreviewBoxStyle(size),
+        overflow: "hidden",
+        lineHeight: size,
+        textAlign: "center",
+        fontSize: size,
+        color: glyphColor,
+      }}
+    >
+      {ICON_EMPTY_GLYPH}
+    </span>
+  );
+}
+
 /**
  * icon 区块预览：有 color 时对单色 SVG 用 mask 着色；否则回退为 <img>。
- * src 为空时仍占 props.size 方盒并显示占位符（与有图时选中框一致）。
+ * 留空或占位 URL 时显示 ◇（props.size 方盒，可选 props.color 着色）。
  */
 export function IconGlyph({ src, size, color, alt = "" }: IconGlyphProps) {
   const box = iconPreviewBoxStyle(size);
   const normalizedSrc = src.trim();
 
-  if (!normalizedSrc) {
-    return (
-      <span
-        aria-hidden
-        style={{
-          ...box,
-          overflow: "hidden",
-          lineHeight: size,
-          textAlign: "center",
-          fontSize: size,
-          color: "#94a3b8",
-        }}
-      >
-        ◇
-      </span>
-    );
+  if (isIconPlaceholderSrc(normalizedSrc)) {
+    return <IconEmptyGlyph size={size} color={color} />;
   }
 
   if (color) {

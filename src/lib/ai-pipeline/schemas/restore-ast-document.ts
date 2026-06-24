@@ -6,7 +6,8 @@ import {
   SPACE_TOKENS,
   TONE_TOKENS,
 } from "../../../restore-ast-contract/tokens";
-import { HEX_COLOR_RE } from "./shared";
+
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
 
 function asNonEmptyEnum(values: readonly string[]): [string, ...string[]] {
   if (values.length === 0) throw new Error("enum 不能为空");

@@ -86,7 +86,7 @@ function buildG3FillWrapScenario(direction: "vertical" | "horizontal"): EmailTem
 describe("wrapperLayoutReconcile", () => {
   it("纵排 wrap + 子 width fill：切横排后协调子块 fill", () => {
     const template = buildG3FillWrapScenario("vertical");
-    assert.equal(isChildFillBlockedByParentHug(template.blocks.wrap, "width"), true);
+    assert.equal(isChildFillBlockedByParentHug(template, "chip", "width"), true);
     const { wrapperStyle: fixedChipWs } = normalizeBlockWrapperDimensionModes(template, "chip");
     template.blocks.chip.wrapperStyle = fixedChipWs;
     assert.equal(template.blocks.chip.wrapperStyle?.widthMode, "hug");

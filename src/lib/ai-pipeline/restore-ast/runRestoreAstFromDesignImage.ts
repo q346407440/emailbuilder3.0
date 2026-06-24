@@ -3,7 +3,11 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { performance } from "node:perf_hooks";
-import { AI_PIPELINE_LLM_MAX_TRANSIENT_RETRIES } from "../../../layout-variant-ai-contract/constants";
+import {
+  AI_PIPELINE_LLM_MAX_TRANSIENT_RETRIES,
+  RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
+  RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+} from "../../../layout-variant-ai-contract/constants";
 import { RESTORE_AST_UI_STEPS_INITIAL } from "../../../layout-variant-ai-contract/progress";
 import { AiPipelineError } from "../../../layout-variant-ai-contract/errors";
 import type { EmailTemplate } from "../../../types/email";
@@ -34,7 +38,7 @@ import { createRestoreAstRunLog } from "./restoreAstRunLog";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const LOG_TAG = "[restore-ast]";
-const RESTORE_AST_GENERATE_TIMEOUT_MS = 240_000;
+const RESTORE_AST_GENERATE_STEP_ID = "RA:GenerateAst";
 
 export type RunRestoreAstFromDesignImageInput = {
   emailKey: string;
@@ -107,9 +111,13 @@ export async function runRestoreAstFromDesignImage(
   const imageDataUrl = bufferToDataUrl(input.imageBuffer, input.mimeType);
   const baseLlm = options.llmProfile
     ? createLlmClientFromProfile(options.llmProfile, {
-        timeoutMs: RESTORE_AST_GENERATE_TIMEOUT_MS,
+        streamIdleTimeoutMs: RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+        streamAbsoluteTimeoutMs: RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
       })
-    : createDefaultLlmClient(RESTORE_AST_GENERATE_TIMEOUT_MS);
+    : createDefaultLlmClient(undefined, undefined, {
+        streamIdleTimeoutMs: RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+        streamAbsoluteTimeoutMs: RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
+      });
   const llm = wrapLlmClientWithQueue(baseLlm);
 
   try {
@@ -132,10 +140,17 @@ export async function runRestoreAstFromDesignImage(
         stepProgress: generateStep,
         maxRetries: 0,
         maxTransientRetries: AI_PIPELINE_LLM_MAX_TRANSIENT_RETRIES,
-        timeoutMs: RESTORE_AST_GENERATE_TIMEOUT_MS,
+        timeoutMs: RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
       },
       async () => {
-        const raw = await llm.complete(
+        progress.emitLlmStreamReset(RESTORE_AST_GENERATE_STEP_ID);
+
+        const streamComplete = llm.completeStream?.bind(llm);
+        if (!streamComplete) {
+          throw new AiPipelineError("LLM_PARSE_FAILED", "当前 LLM 客户端不支持流式生成");
+        }
+
+        const raw = await streamComplete(
           [
             { role: "system", content: RESTORE_AST_SYSTEM_PROMPT },
             {
@@ -149,7 +164,12 @@ export async function runRestoreAstFromDesignImage(
               ],
             },
           ],
-          restoreAstResponseFormat
+          restoreAstResponseFormat,
+          {
+            onDelta: (delta) => {
+              progress.emitLlmStream(RESTORE_AST_GENERATE_STEP_ID, delta.channel, delta.text);
+            },
+          }
         );
         await fs.writeFile(runLog.logPath("01-llm-raw.txt"), raw, "utf8");
         try {

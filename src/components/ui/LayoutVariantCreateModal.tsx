@@ -3,7 +3,7 @@ import { Alert, Radio, Segmented, Spin, Tag, Upload } from "antd";
 import type { UploadProps } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import * as api from "../../api/client";
-import type { AiStepUiState } from "../../layout-variant-ai-contract/progress";
+import type { AiLlmStreamUiState, AiStepUiState } from "../../layout-variant-ai-contract/progress";
 import type { LayoutVariantAiFromImagePipeline } from "../../layout-variant-ai-contract/aiFromImagePipeline";
 import type {
   LlmProfileOptionsPayload,
@@ -15,6 +15,7 @@ import {
   LAYOUT_VARIANT_AI_IMAGE_MIME_TYPES,
 } from "../../layout-variant-ai-contract/constants";
 import { LayoutVariantAiStepList } from "./LayoutVariantAiStepList";
+import { LayoutVariantAiLlmStreamPanels } from "./LayoutVariantAiLlmStreamPanels";
 import {
   LayoutVariantCreateLockedSummary,
   pipelineTitleFor,
@@ -57,6 +58,8 @@ type LayoutVariantCreateModalProps = {
   busy?: boolean;
   /** 以图 AI 创建时的分步进度 */
   aiPipelineSteps?: AiStepUiState[] | null;
+  /** RestoreAst 流式输出（think / content） */
+  aiLlmStream?: AiLlmStreamUiState | null;
   onCancel: () => void;
   onSubmit: (payload: LayoutVariantCreateSubmit) => Promise<void>;
 };
@@ -101,6 +104,7 @@ export function LayoutVariantCreateModal({
   copySourceLabel,
   busy,
   aiPipelineSteps,
+  aiLlmStream,
   onCancel,
   onSubmit,
 }: LayoutVariantCreateModalProps) {
@@ -433,7 +437,13 @@ export function LayoutVariantCreateModal({
                 <section className="layout-variant-create-modal__progress" aria-live="polite">
                   <h3 className="layout-variant-create-modal__progress-title">生成进度</h3>
                   {hasProgressSteps ? (
-                    <LayoutVariantAiStepList steps={aiPipelineSteps!} />
+                    <>
+                      <LayoutVariantAiStepList steps={aiPipelineSteps!} />
+                      <LayoutVariantAiLlmStreamPanels
+                        steps={aiPipelineSteps!}
+                        stream={aiLlmStream ?? null}
+                      />
+                    </>
                   ) : (
                     <div className="layout-variant-create-modal__progress-wait">
                       <Spin size="small" />

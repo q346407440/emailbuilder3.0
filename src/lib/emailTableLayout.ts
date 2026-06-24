@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
-import type { WrapperContentAlign } from "../types/email";
+import type { EmailTemplate, WrapperContentAlign } from "../types/email";
+import { blockProvidesDimensionAnchor } from "./wrapperHugConstraint";
 import { normalizeWrapperContentAlign } from "./wrapperContentAlign";
 import {
   normalizeWrapperDimensionMode,
@@ -128,7 +129,8 @@ export function layoutPreviewInnerShellStretchesHeight(params: {
 
 export function layoutRowInnerShouldFillParentHeight(
   wrapperStyle: { heightMode?: unknown; height?: unknown } | undefined,
-  childCount: number
+  childCount: number,
+  context?: { template: EmailTemplate; childIds: string[] }
 ): boolean {
   if (childCount < 1 || !wrapperStyle) return false;
   const hm = wrapperStyle.heightMode;
@@ -136,6 +138,20 @@ export function layoutRowInnerShouldFillParentHeight(
   if (hm === "fixed") {
     const h = typeof wrapperStyle.height === "string" ? wrapperStyle.height.trim() : "";
     return Boolean(h && h !== "auto");
+  }
+  if (hm === "hug" && context && context.childIds.length > 1) {
+    const { template, childIds } = context;
+    const hasFillHeightChild = childIds.some(
+      (id) => template.blocks[id]?.wrapperStyle?.heightMode === "fill"
+    );
+    if (!hasFillHeightChild) return false;
+    return childIds.some((id) => {
+      if (template.blocks[id]?.wrapperStyle?.heightMode !== "fill") return false;
+      return childIds.some(
+        (sibId) =>
+          sibId !== id && blockProvidesDimensionAnchor(template, sibId, "height")
+      );
+    });
   }
   return false;
 }
@@ -302,6 +318,7 @@ export function layoutRowAutoGapSpacerTdStyle(gapSlotCount: number): CSSProperti
 
 /**
  * 横排内层 `<td>` 列宽：满宽行内 hug 列用 `nowrap` + 调用方补 HTML `width="1"`；fill 列 100% 吃剩余宽。
+ * 纵排 layout（卡片壳）包在 hug 列内时勿 nowrap，否则壳内长文案无法换行。
  * gap auto 的缝隙由 `layoutRowAutoGapSpacerTdStyle` 单独列承担，不在此均分子级。
  */
 export function layoutRowChildTdWidthStyle(
@@ -314,6 +331,8 @@ export function layoutRowChildTdWidthStyle(
     childCount: number;
     rowHasFillWidthChild?: boolean;
     rowHasHugWidthChild?: boolean;
+    /** 子块为纵排 layout.container（如卡片 stack 落盘）。 */
+    childIsVerticalLayout?: boolean;
   }
 ): CSSProperties {
   void params.gapModeAuto;
@@ -321,12 +340,14 @@ export function layoutRowChildTdWidthStyle(
   void params.rowHasFillWidthChild;
   void params.rowHasHugWidthChild;
   const wm = normalizeLayoutWidthMode(childWidthMode);
+  const hugOmitsNowrap = wm === "hug" && params.childIsVerticalLayout === true;
   if (!params.innerTableFullWidth) {
     /** 内层表已 inline-table 收缩时，列宽随内容；勿用 1%（会在被撑满的表宽上均分列） */
-    if (wm === "hug") return { whiteSpace: "nowrap" };
+    if (wm === "hug" && !hugOmitsNowrap) return { whiteSpace: "nowrap" };
     return {};
   }
   if (wm === "hug") {
+    if (hugOmitsNowrap) return {};
     /** 勿用 CSS `width:1%`（会按表宽算成几像素）；列宽由 `emailPresentationHugTdWidthAttr` → `<td width="1">` */
     return { whiteSpace: "nowrap" };
   }

@@ -9,6 +9,7 @@ import {
   paddingZero,
 } from "./buildPrimitives";
 import type { BuildCtx } from "./buildCtx";
+import { resolveEmailCanvasBackground } from "./resolveEmailCanvas";
 import {
   applyBoxWrapper,
   applyImageBoxWrapper,
@@ -19,6 +20,7 @@ import {
   mapStackAlign,
   resolveRowGapMode,
   rowMainAlignToCross,
+  resolveBoxBorder,
   resolveButtonStyleHeight,
   resolveButtonStyleWidthMode,
   resolveIconSizePx,
@@ -34,7 +36,13 @@ import {
 } from "./rowInlineImageBox";
 import { resolveButtonTextColor } from "./resolveButtonTextColor";
 import { splitTextContentToParagraphs } from "./splitTextContentToParagraphs";
-import { resolveDirectRowChildWrapperWidthMode } from "./resolveRowChildWidthMode";
+import {
+  isContentPanelStack,
+  resolveDirectRowChildWrapperWidthMode,
+  resolveLeafWrapperWidthMode,
+  resolveStackWrapperWidthMode,
+  resolveVerticalStackChildLayoutWidthMode,
+} from "./resolveRowChildWidthMode";
 import { resolveButtonWrapperContentAlign, resolveTextContentAlign } from "./textContentAlign";
 import {
   GRID_MAX_COLUMNS,
@@ -117,6 +125,8 @@ type BuildChildrenOptions = {
   gridCellImageHeight?: number;
   /** 直接父 layout 为 hug 宽（纵排徽章列等）。 */
   parentWidthHug?: boolean;
+  /** 祖先为内容面板 stack（卡片壳）。 */
+  inContentPanelStack?: boolean;
 };
 
 function buildChildren(
@@ -141,6 +151,9 @@ function buildChildren(
       imageOverlayCrossAlign: options?.imageOverlayCrossAlign,
       gridCellImageHeight: options?.gridCellImageHeight,
       parentWidthHug: options?.parentWidthHug,
+      inContentPanelStack: options?.inContentPanelStack,
+      rowSiblings: options?.inDirectRow ? nodes : undefined,
+      rowSiblingIndex: options?.inDirectRow ? index : undefined,
     });
   });
 }
@@ -198,6 +211,11 @@ export type BuildNodeParentContext = {
   gridCellImageHeight?: number;
   /** 直接父 layout 宽度为 hug 时，定高 image 须写出 fixed 宽避免协调层 fill→hug 塌宽。 */
   parentWidthHug?: boolean;
+  /** 祖先为内容面板 stack（卡片壳）；内文须在栏宽内 fill 换行。 */
+  inContentPanelStack?: boolean;
+  /** 横排兄弟节点（仅 inDirectRow 时传入）。 */
+  rowSiblings?: readonly RestoreNode[];
+  rowSiblingIndex?: number;
 };
 
 export function buildNode(
@@ -244,7 +262,7 @@ function buildEmail(
   const id = ctx.nextId("root");
   ctx.recordAstPath(id, astPath);
 
-  const bg = resolveTone("props.backgroundColor", "surface");
+  const bg = resolveEmailCanvasBackground(node);
   const children = buildChildren(node.children, ctx, astPath, { fromEmail: true });
 
   return {
@@ -280,10 +298,11 @@ function buildStack(
   const gap = node.gap ? resolveSpace("props.gap", node.gap) : resolveSpace("props.gap", undefined, "gap");
   const effectiveAlign = inheritStackAlign(node.align, parent);
   const stackAlign = mapStackAlign(effectiveAlign);
-  const stackWidthMode = parent.inHorizontalRow ? ("hug" as const) : ("fill" as const);
+  const stackWidthMode = resolveStackWrapperWidthMode(node, parent);
+  const inContentPanel = parent.inContentPanelStack || isContentPanelStack(node);
   const shell = containerShell(id, "vertical", {
     gap,
-    contentAlign: parent.inHorizontalRow
+    contentAlign: parent.inDirectRow
       ? { horizontal: stackAlign.horizontal, vertical: "center" }
       : stackAlign,
     box: node.box,
@@ -300,6 +319,7 @@ function buildStack(
       stackAlign: effectiveAlign,
       gridCellImageHeight: parent.gridCellImageHeight,
       parentWidthHug: stackWidthMode === "hug",
+      inContentPanelStack: inContentPanel,
     }),
   };
 }
@@ -320,6 +340,7 @@ function buildRow(
     gapMode: resolveRowGapMode(effectiveAlign),
     contentAlign: mapRowAlign(effectiveAlign, node.crossAlign),
     box: node.box,
+    widthMode: resolveVerticalStackChildLayoutWidthMode(parent),
   });
 
   return {
@@ -332,6 +353,7 @@ function buildRow(
       inDirectRow: true,
       rowAlign: effectiveAlign,
       gridCellImageHeight: parent.gridCellImageHeight,
+      inContentPanelStack: parent.inContentPanelStack,
     }),
   };
 }
@@ -408,7 +430,7 @@ function buildText(
     },
     wrapperStyle: {
       contentAlign: resolveTextContentAlign(parent, node.align),
-      widthMode: resolveDirectRowChildWrapperWidthMode(parent),
+      widthMode: resolveLeafWrapperWidthMode(parent),
       heightMode: "hug",
       border: borderNone(),
       borderRadius: borderRadiusZero(),
@@ -529,22 +551,38 @@ function buildButton(
   const id = ctx.nextId("btn");
   ctx.recordAstPath(id, astPath);
 
-  const bg = node.tone
-    ? resolveTone("props.buttonStyle.backgroundColor", node.tone)
-    : resolveTone("props.buttonStyle.backgroundColor", "primary");
-  const preferredText = resolveTone("props.buttonStyle.textColor", "surface");
-  const textColor = resolveButtonTextColor(
-    "props.buttonStyle.textColor",
-    bg,
-    preferredText,
-    ctx.theme
-  );
   const fontSize = resolveRole("props.buttonStyle.fontSize", "body");
   const borderRadiusApplied = node.radius
     ? applyUniformNestedBorderRadius("props.buttonStyle.borderRadius", node.radius)
     : applyUniformNestedBorderRadius("props.buttonStyle.borderRadius", undefined, "cta");
   const buttonStyleWidthMode = resolveButtonStyleWidthMode(node.width);
   const buttonStyleHeight = resolveButtonStyleHeight(node.height);
+
+  const isOutline = node.border !== undefined;
+  const bg = isOutline
+    ? resolveTone("props.buttonStyle.backgroundColor", "surface")
+    : node.tone
+      ? resolveTone("props.buttonStyle.backgroundColor", node.tone)
+      : resolveTone("props.buttonStyle.backgroundColor", "primary");
+  const preferredText = isOutline
+    ? resolveTone(
+        "props.buttonStyle.textColor",
+        node.borderTone ?? node.tone ?? "primary"
+      )
+    : resolveTone("props.buttonStyle.textColor", "surface");
+  const textColor = resolveButtonTextColor(
+    "props.buttonStyle.textColor",
+    bg,
+    preferredText,
+    ctx.theme
+  );
+  const borderApplied = isOutline
+    ? resolveBoxBorder(
+        "props.buttonStyle.border",
+        node.border!,
+        node.borderTone ?? node.tone
+      )
+    : { border: borderNone(), bindings: undefined };
 
   return {
     id,
@@ -558,7 +596,7 @@ function buildButton(
         textColor: textColor.value,
         fontSize: fontSize.value,
         borderRadius: borderRadiusApplied.borderRadius,
-        border: borderNone(),
+        border: borderApplied.border,
         bold: false,
         italic: false,
         widthMode: buttonStyleWidthMode,
@@ -579,7 +617,8 @@ function buildButton(
       bg.bindings,
       textColor.bindings,
       fontSize.bindings,
-      borderRadiusApplied.bindings
+      borderRadiusApplied.bindings,
+      borderApplied.bindings
     ),
   };
 }

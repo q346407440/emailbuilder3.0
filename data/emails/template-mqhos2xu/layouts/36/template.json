@@ -1,0 +1,2221 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "template-mqhos2xu",
+  "templateId": "template-mqhos2xu",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "template-mqhos2xu-36-root-1",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "邮件根"
+    },
+    "props": {
+      "backgroundColor": "#EAEAEA",
+      "width": "600px",
+      "padding": {
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      },
+      "gapMode": "fixed",
+      "gap": "0",
+      "border": {
+        "style": "solid",
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      }
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "template-mqhos2xu-36-stack-1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "顶部品牌与首图模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-36-row-1",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "品牌导航栏"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "auto",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "center"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundColor": {
+                "$themeRef": "colors.primary"
+              },
+              "padding": {
+                "top": {
+                  "$themeRef": "tokens.spacing.gap"
+                },
+                "right": {
+                  "$themeRef": "tokens.spacing.gap"
+                },
+                "bottom": {
+                  "$themeRef": "tokens.spacing.gap"
+                },
+                "left": {
+                  "$themeRef": "tokens.spacing.gap"
+                }
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.backgroundColor": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.top": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.right": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.bottom": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.left": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-36-text-1",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "HotelTonight"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "HotelTonight",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-text-2",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Perks Level 2"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Perks Level 2"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "template-mqhos2xu-36-image-1",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "traveler carrying suitca…"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "420px",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/18628693/pexels-photo-18628693.jpeg",
+                "fit": "cover",
+                "position": "center"
+              },
+              "backgroundColor": "transparent"
+            }
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-36-stack-2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "入住感谢模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-36-text-3",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Thank you for staying at"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Thank you for staying at"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-36-text-4",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Kimpton Alton\nHotel"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Kimpton Alton",
+                        "bold": true
+                      }
+                    ]
+                  },
+                  {
+                    "runs": [
+                      {
+                        "text": "Hotel",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.h1"
+              },
+              "color": {
+                "$themeRef": "colors.primary"
+              },
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.h1",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.h1",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-36-text-5",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Congrats on your first stay …"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Congrats on your first stay with HotelTonight!"
+                      }
+                    ]
+                  },
+                  {
+                    "runs": [
+                      {
+                        "text": "Where to next?"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-36-stack-3",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "评价入住模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-36-stack-4",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "评价紫色面板"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundColor": {
+                "$themeRef": "colors.accent"
+              },
+              "padding": {
+                "top": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "right": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "bottom": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "left": {
+                  "$themeRef": "tokens.spacing.section"
+                }
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.backgroundColor": {
+                "slotId": "colors.accent",
+                "mode": "theme",
+                "tokenPath": "colors.accent",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.top": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.right": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.bottom": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.left": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-36-icon-1",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "thumb-up"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/thumb-up.svg",
+                  "size": "32px",
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-text-6",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "RATE YOUR STAY"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "RATE YOUR STAY",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-text-7",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "We hope you had the best tim…"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "We hope you had the best time!"
+                          }
+                        ]
+                      },
+                      {
+                        "runs": [
+                          {
+                            "text": "We’re always looking for ways to improve the HotelTonight experience."
+                          }
+                        ]
+                      },
+                      {
+                        "runs": [
+                          {
+                            "text": "Open the app to let us know your thoughts."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-row-2",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "评价选择按钮"
+                },
+                "props": {
+                  "direction": "horizontal",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.section"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.section",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.section",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-36-stack-5",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "好评按钮"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "999px",
+                        "topRight": "999px",
+                        "bottomRight": "999px",
+                        "bottomLeft": "999px"
+                      },
+                      "backgroundColor": "#43A047",
+                      "padding": {
+                        "top": "24px",
+                        "right": "24px",
+                        "bottom": "24px",
+                        "left": "24px"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-36-icon-2",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "thumb-up"
+                        },
+                        "props": {
+                          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/thumb-up.svg",
+                          "size": "32px",
+                          "color": {
+                            "$themeRef": "colors.surface"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.color": {
+                            "slotId": "colors.surface",
+                            "mode": "theme",
+                            "tokenPath": "colors.surface",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-36-stack-6",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "差评按钮"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "999px",
+                        "topRight": "999px",
+                        "bottomRight": "999px",
+                        "bottomLeft": "999px"
+                      },
+                      "backgroundColor": "#C62828",
+                      "padding": {
+                        "top": "24px",
+                        "right": "24px",
+                        "bottom": "24px",
+                        "left": "24px"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-36-icon-3",
+                        "type": "icon",
+                        "blockMeta": {
+                          "blockType": "content.icon",
+                          "name": "thumb-down"
+                        },
+                        "props": {
+                          "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/thumb-down.svg",
+                          "size": "32px",
+                          "color": {
+                            "$themeRef": "colors.surface"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "hug",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.color": {
+                            "slotId": "colors.surface",
+                            "mode": "theme",
+                            "tokenPath": "colors.surface",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-36-btn-1",
+                "type": "button",
+                "blockMeta": {
+                  "blockType": "action.button",
+                  "name": "RATE YOUR STAY"
+                },
+                "props": {
+                  "text": "RATE YOUR STAY",
+                  "link": {
+                    "href": "#",
+                    "type": "external"
+                  },
+                  "buttonStyle": {
+                    "backgroundColor": {
+                      "$themeRef": "colors.accent"
+                    },
+                    "textColor": {
+                      "$themeRef": "colors.surface"
+                    },
+                    "fontSize": {
+                      "$themeRef": "tokens.typography.body"
+                    },
+                    "borderRadius": {
+                      "topLeft": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "topRight": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "bottomRight": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "bottomLeft": {
+                        "$themeRef": "tokens.radius.cta"
+                      }
+                    },
+                    "border": {
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)",
+                      "top": "0",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "0"
+                    },
+                    "bold": false,
+                    "italic": false,
+                    "widthMode": "hug",
+                    "heightMode": "hug"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.buttonStyle.backgroundColor": {
+                    "slotId": "colors.accent",
+                    "mode": "theme",
+                    "tokenPath": "colors.accent",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.textColor": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.topLeft": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.topRight": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.bottomRight": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.bottomLeft": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-36-stack-7",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "COVID响应模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-36-stack-8",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "COVID深紫面板"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundColor": {
+                "$themeRef": "colors.primary"
+              },
+              "padding": {
+                "top": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "right": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "bottom": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "left": {
+                  "$themeRef": "tokens.spacing.section"
+                }
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.backgroundColor": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.top": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.right": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.bottom": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.left": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-36-icon-4",
+                "type": "icon",
+                "blockMeta": {
+                  "blockType": "content.icon",
+                  "name": "heart-plus"
+                },
+                "props": {
+                  "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/heart-plus.svg",
+                  "size": "32px",
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-text-8",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "OUR RESPONSE TO COVID-19"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "OUR RESPONSE TO COVID-19",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-text-9",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "We understand there is a lar…"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "We understand there is a large amount of uncertainty regarding travel because of the evolving coronavirus (COVID-19) situation. We know you may have questions about what this means for HotelTonight bookings."
+                          }
+                        ]
+                      },
+                      {
+                        "runs": [
+                          {
+                            "text": "Please review the latest updates on our website for information."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": {
+                    "$themeRef": "colors.surface"
+                  },
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  },
+                  "props.color": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-36-btn-2",
+                "type": "button",
+                "blockMeta": {
+                  "blockType": "action.button",
+                  "name": "LEARN MORE"
+                },
+                "props": {
+                  "text": "LEARN MORE",
+                  "link": {
+                    "href": "#",
+                    "type": "external"
+                  },
+                  "buttonStyle": {
+                    "backgroundColor": {
+                      "$themeRef": "colors.primary"
+                    },
+                    "textColor": {
+                      "$themeRef": "colors.surface"
+                    },
+                    "fontSize": {
+                      "$themeRef": "tokens.typography.body"
+                    },
+                    "borderRadius": {
+                      "topLeft": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "topRight": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "bottomRight": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "bottomLeft": {
+                        "$themeRef": "tokens.radius.cta"
+                      }
+                    },
+                    "border": {
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)",
+                      "top": "0",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "0"
+                    },
+                    "bold": false,
+                    "italic": false,
+                    "widthMode": "hug",
+                    "heightMode": "hug"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.buttonStyle.backgroundColor": {
+                    "slotId": "colors.primary",
+                    "mode": "theme",
+                    "tokenPath": "colors.primary",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.textColor": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.topLeft": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.topRight": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.bottomRight": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.bottomLeft": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-36-stack-9",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "页脚模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-36-text-10",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Hotel inventory shown may be…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Hotel inventory shown may be limited to app users. Download the HotelTonight app for access to all current deals."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-36-text-11",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Terms of Service"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Terms of Service"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-36-text-12",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "This email was sent by: Hote…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "This email was sent by: HotelTonight"
+                      }
+                    ]
+                  },
+                  {
+                    "runs": [
+                      {
+                        "text": "888 Brannan St"
+                      }
+                    ]
+                  },
+                  {
+                    "runs": [
+                      {
+                        "text": "San Francisco, CA 94103"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-36-text-13",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "If you would like to change …"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "If you would like to change your email preferences, please go to Manage My Preferences."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": {
+                "$themeRef": "colors.secondary"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.secondary",
+                "mode": "theme",
+                "tokenPath": "colors.secondary",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

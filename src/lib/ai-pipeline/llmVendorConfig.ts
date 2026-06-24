@@ -61,3 +61,7 @@ export function readGeminiEnvConfigOrNull(): GeminiEnvConfig | null {
 export function geminiGenerateContentUrl(model: string): string {
   return `${DEFAULT_GEMINI_BASE_URL}/models/${encodeURIComponent(model)}:generateContent`;
 }
+
+export function geminiStreamGenerateContentUrl(model: string): string {
+  return `${DEFAULT_GEMINI_BASE_URL}/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
+}

@@ -20,6 +20,8 @@ export type PipelineStepProgress = {
 export type PipelineProgressReporter = {
   emitPlan(steps: AiPipelineUiStep[], opts?: { display?: "pending" | "hidden" }): void;
   forStep(stepId: string): PipelineStepProgress;
+  emitLlmStream(stepId: string, channel: "think" | "content", delta: string): void;
+  emitLlmStreamReset(stepId: string): void;
 };
 
 function labelWithDetail(baseLabel: string, detail?: string): string | undefined {
@@ -40,6 +42,8 @@ export function createNoopPipelineProgressReporter(): PipelineProgressReporter {
   return {
     emitPlan: noop,
     forStep: () => step,
+    emitLlmStream: noop,
+    emitLlmStreamReset: noop,
   };
 }
 
@@ -102,6 +106,12 @@ export function createPipelineProgressReporter(
           emitStep(stepId, "failed", opts?.attempt, opts);
         },
       };
+    },
+    emitLlmStream(stepId, channel, delta) {
+      emit({ type: "llm_stream", stepId, channel, delta });
+    },
+    emitLlmStreamReset(stepId) {
+      emit({ type: "llm_stream_reset", stepId });
     },
   };
 }

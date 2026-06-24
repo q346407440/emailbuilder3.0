@@ -46,22 +46,19 @@ export function buildPendingRestoreAstSteps(): AiStepUiState[] {
   }));
 }
 
-/** 提交后立即展示的固定步骤（旧 A→E 管线；HTTP 以图创建已改用 MANUAL_RESTORE_MJS_UI_STEPS_INITIAL）。 */
-export const AI_PIPELINE_UI_STEPS_INITIAL: readonly AiPipelineUiStep[] = [
-  { id: "A", label: "识别布局分区" },
-  { id: "B1", label: "提取样式档位" },
-  { id: "B2", label: "识别图标" },
-  { id: "B3", label: "提取文案" },
-  { id: "B4", label: "匹配图片资产" },
-  { id: "C:_pending", label: "生成区域结构（识别分区后展开）" },
-  { id: "E", label: "合成与校验" },
-] as const;
-
 export type AiPipelineStepEventFields = {
   attempt?: number;
   /** 供 Reporter 拼入主行 label，不再单独渲染副行 */
   detail?: string;
   maxAttempts?: number;
+};
+
+export type AiPipelineLlmStreamChannel = "think" | "content";
+
+export type AiLlmStreamUiState = {
+  stepId: string;
+  think: string;
+  content: string;
 };
 
 export type AiPipelineProgressPayload =
@@ -72,7 +69,9 @@ export type AiPipelineProgressPayload =
       status: AiPipelineStepStatus;
       /** 覆盖整行文案（含 detail 时由 Reporter 拼好）；缺省保留行内已有文案 */
       label?: string;
-    } & AiPipelineStepEventFields);
+    } & AiPipelineStepEventFields)
+  | { type: "llm_stream"; stepId: string; channel: AiPipelineLlmStreamChannel; delta: string }
+  | { type: "llm_stream_reset"; stepId: string };
 
 export type AiStepUiState = AiPipelineUiStep & {
   status: AiPipelineStepStatus;
@@ -92,6 +91,9 @@ export function reduceAiPipelineProgress(
   prev: AiStepUiState[] | null,
   event: AiPipelineProgressPayload
 ): AiStepUiState[] {
+  if (event.type === "llm_stream" || event.type === "llm_stream_reset") {
+    return prev ?? [];
+  }
   if (event.type === "plan") {
     if (event.display === "hidden") {
       return prev ?? [];
@@ -138,16 +140,31 @@ export function reduceAiPipelineProgress(
   });
 }
 
-export function buildSectionPlanSteps(
-  sections: ReadonlyArray<{ sectionId: string; name: string }>
-): AiPipelineUiStep[] {
-  // 去掉占位 C 与尾部 E：C 按区域展开，E 在末尾只保留一次
-  const head = AI_PIPELINE_UI_STEPS_INITIAL.filter(
-    (s) => !s.id.startsWith("C:") && s.id !== "E"
-  );
-  const cSteps = sections.map((s) => ({
-    id: `C:${s.sectionId}`,
-    label: `生成区域：${s.name}`,
-  }));
-  return [...head, ...cSteps, { id: "E", label: "合成与校验" }];
+/** LLM 流式输出 UI 状态（think / content 分窗）。 */
+export function reduceAiLlmStream(
+  prev: AiLlmStreamUiState | null,
+  event: Extract<AiPipelineProgressPayload, { type: "llm_stream" | "llm_stream_reset" }>
+): AiLlmStreamUiState | null {
+  if (event.type === "llm_stream_reset") {
+    return { stepId: event.stepId, think: "", content: "" };
+  }
+  const base =
+    prev?.stepId === event.stepId
+      ? prev
+      : { stepId: event.stepId, think: "", content: "" };
+  if (event.channel === "think") {
+    return { ...base, think: base.think + event.delta };
+  }
+  return { ...base, content: base.content + event.delta };
+}
+
+/** 统一处理 SSE progress 事件（步骤行 + 流式窗）。 */
+export function applyAiPipelineProgressEvent(
+  prev: { steps: AiStepUiState[] | null; stream: AiLlmStreamUiState | null },
+  event: AiPipelineProgressPayload
+): { steps: AiStepUiState[] | null; stream: AiLlmStreamUiState | null } {
+  if (event.type === "llm_stream" || event.type === "llm_stream_reset") {
+    return { ...prev, stream: reduceAiLlmStream(prev.stream, event) };
+  }
+  return { ...prev, steps: reduceAiPipelineProgress(prev.steps, event) };
 }

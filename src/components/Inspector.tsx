@@ -33,10 +33,14 @@ import {
   getButtonBodyFillOptionTitle,
   getButtonBodyModeHint,
   getFillOptionTitle,
-  getWrapperModeHint,
   isButtonBodyFillBlockedByWrapperHug,
   isChildFillBlockedByParentHug,
 } from "../lib/wrapperFillConstraint";
+import {
+  getHugOptionTitle,
+  getWrapperDimensionModeHint,
+  isContainerHugBlockedByMissingChildAnchor,
+} from "../lib/wrapperHugConstraint";
 import { reconcileLayoutStructuralSubtreeInPlace } from "../lib/wrapperLayoutReconcile";
 import { RepeatRegionBindModal } from "./RepeatRegionBindModal";
 import { ObjectRegionBindModal } from "./ObjectRegionBindModal";
@@ -1575,6 +1579,7 @@ function InspectorImpl({
     hint?: string;
     axis: "width" | "height";
     disableFill: boolean;
+    disableHug?: boolean;
     onChange: (next: WrapperDimensionMode) => void;
   }) => {
     const modeOptions: Array<{ value: WrapperDimensionMode; label: string; title: string }> = [
@@ -1588,13 +1593,20 @@ function InspectorImpl({
           value={opts.value}
           options={modeOptions.map((option) => ({
             value: option.value,
-            disabled: option.value === "fill" ? opts.disableFill : false,
+            disabled:
+              option.value === "fill"
+                ? opts.disableFill
+                : option.value === "hug"
+                  ? Boolean(opts.disableHug)
+                  : false,
             label: (
               <span
                 title={
                   option.value === "fill" && opts.disableFill
                     ? getFillOptionTitle(opts.axis, opts.disableFill)
-                    : option.title
+                    : option.value === "hug" && opts.disableHug
+                      ? getHugOptionTitle(opts.axis)
+                      : option.title
                 }
               >
                 {option.label}
@@ -2831,15 +2843,35 @@ function InspectorImpl({
     rawWrapperWm === "hug" || rawWrapperWm === "fill" || rawWrapperWm === "fixed"
       ? String(rawWrapperWm)
       : "fill";
-  const disableWidthFillByParentRule = isChildFillBlockedByParentHug(parentBlock, "width");
-  const widthModeHint = getWrapperModeHint("width", disableWidthFillByParentRule);
+  const disableWidthFillByParentRule = isChildFillBlockedByParentHug(template, id, "width");
+  const disableWidthHugByChildrenRule = isContainerHugBlockedByMissingChildAnchor(
+    template,
+    id,
+    "width",
+    block,
+    { blockEmptyChildren: true }
+  );
+  const widthModeHint = getWrapperDimensionModeHint("width", {
+    fillBlocked: disableWidthFillByParentRule,
+    hugBlocked: disableWidthHugByChildrenRule,
+  });
   const rawWrapperHm = rd(block, "wrapperStyle.heightMode");
   const wrapperHeightModeUi =
     rawWrapperHm === "hug" || rawWrapperHm === "fill" || rawWrapperHm === "fixed"
       ? String(rawWrapperHm)
       : "hug";
-  const disableHeightFillByParentRule = isChildFillBlockedByParentHug(parentBlock, "height");
-  const heightModeHint = getWrapperModeHint("height", disableHeightFillByParentRule);
+  const disableHeightFillByParentRule = isChildFillBlockedByParentHug(template, id, "height");
+  const disableHeightHugByChildrenRule = isContainerHugBlockedByMissingChildAnchor(
+    template,
+    id,
+    "height",
+    block,
+    { blockEmptyChildren: true }
+  );
+  const heightModeHint = getWrapperDimensionModeHint("height", {
+    fillBlocked: disableHeightFillByParentRule,
+    hugBlocked: disableHeightHugByChildrenRule,
+  });
   const onWrapperHeightModeChange = (next: string) => {
     if (isBindPathLocked(id, "wrapperStyle.heightMode")) return;
     applyWrapperDimensionMode("wrapperStyle.heightMode", next);
@@ -3590,6 +3622,7 @@ function InspectorImpl({
               hint: widthModeHint,
               axis: "width",
               disableFill: disableWidthFillByParentRule,
+              disableHug: disableWidthHugByChildrenRule,
               onChange: (next) => applyWrapperDimensionMode("wrapperStyle.widthMode", next),
             })}
             {renderWrapperDimensionModeRow({
@@ -3598,6 +3631,7 @@ function InspectorImpl({
               hint: heightModeHint,
               axis: "height",
               disableFill: disableHeightFillByParentRule,
+              disableHug: disableHeightHugByChildrenRule,
               onChange: onWrapperHeightModeChange,
             })}
             {wrapperWidthModeUi === "fixed"

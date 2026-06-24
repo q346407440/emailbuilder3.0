@@ -91,6 +91,12 @@ export const RESTORE_AST_LLM_JSON_SCHEMA: Record<string, unknown> = {
         { type: "string" },
       ],
     },
+    RadiusValue: {
+      anyOf: [
+        { type: "string", enum: ["panel", "cta"] },
+        { $ref: "#/$defs/PxValue" },
+      ],
+    },
     Box: {
       type: "object",
       properties: {
@@ -112,6 +118,7 @@ export const RESTORE_AST_LLM_JSON_SCHEMA: Record<string, unknown> = {
       type: "object",
       properties: {
         t: { const: "email" },
+        canvas: { $ref: "#/$defs/ToneValue" },
         children: { type: "array", items: { $ref: "#/$defs/RestoreNode" } },
       },
       required: ["t", "children"],
@@ -224,9 +231,11 @@ export const RESTORE_AST_LLM_JSON_SCHEMA: Record<string, unknown> = {
         label: { type: "string" },
         href: { type: "string" },
         tone: { $ref: "#/$defs/ToneValue" },
-        radius: { $ref: "#/$defs/SpaceValue" },
+        radius: { $ref: "#/$defs/RadiusValue" },
         width: { type: "string", enum: ["fill", "hug"] },
         height: { type: "string", enum: ["hug", "relaxed"] },
+        border: { type: "string", enum: ["hairline", "dashed-hairline", "thin"] },
+        borderTone: { $ref: "#/$defs/ToneValue" },
       },
       required: ["t", "label"],
       additionalProperties: false,

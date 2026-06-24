@@ -1,0 +1,3346 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "template-mqhos2xu",
+  "templateId": "template-mqhos2xu",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "template-mqhos2xu-41-root-1",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "邮件根"
+    },
+    "props": {
+      "backgroundColor": "#FFFFFF",
+      "width": "600px",
+      "padding": {
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      },
+      "gapMode": "fixed",
+      "gap": "0",
+      "border": {
+        "style": "solid",
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      }
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "children": [
+      {
+        "id": "template-mqhos2xu-41-stack-1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "顶部品牌栏模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-41-row-1",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "品牌与导航"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "auto",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-41-text-1",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "AVENTON"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "AVENTON",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": "#1A1A1A",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-41-text-2",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Looking for free thrills?\nBo…"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Looking for free thrills?"
+                          }
+                        ]
+                      },
+                      {
+                        "runs": [
+                          {
+                            "text": "Book a test ride."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.body"
+                  },
+                  "color": "#1A1A1A",
+                  "bold": false,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "right",
+                    "vertical": "top"
+                  },
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-41-stack-2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "召回提醒头部模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-41-text-3",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Still thinking about it?"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Still thinking about it?",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.h1"
+              },
+              "color": "#1A1A1A",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.h1",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.h1",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-4",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "We made it easy to pick up w…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "We made it easy to pick up where you left off."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": "#1A1A1A",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-btn-1",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "SHOP NOW"
+            },
+            "props": {
+              "text": "SHOP NOW",
+              "link": {
+                "href": "#",
+                "type": "external"
+              },
+              "buttonStyle": {
+                "backgroundColor": {
+                  "$themeRef": "colors.primary"
+                },
+                "textColor": "#1A1A1A",
+                "fontSize": {
+                  "$themeRef": "tokens.typography.body"
+                },
+                "borderRadius": {
+                  "topLeft": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "topRight": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "bottomRight": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "bottomLeft": {
+                    "$themeRef": "tokens.radius.cta"
+                  }
+                },
+                "border": {
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)",
+                  "top": "0",
+                  "right": "0",
+                  "bottom": "0",
+                  "left": "0"
+                },
+                "bold": false,
+                "italic": false,
+                "widthMode": "hug",
+                "heightMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.buttonStyle.backgroundColor": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.bottomLeft": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-5",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "TAKE ANOTHER LOOK:"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "TAKE ANOTHER LOOK:",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.h1"
+              },
+              "color": "#1A1A1A",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.h1",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.h1",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-image-1",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "Aventure M Ebike"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "320px",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/9538575/pexels-photo-9538575.jpeg",
+                "fit": "cover",
+                "position": "center"
+              },
+              "backgroundColor": "transparent"
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-6",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Aventure M Ebike - Regular /…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Aventure M Ebike - Regular / Camouflage",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": "#1A1A1A",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-btn-2",
+            "type": "button",
+            "blockMeta": {
+              "blockType": "action.button",
+              "name": "DON'T MISS OUT"
+            },
+            "props": {
+              "text": "DON'T MISS OUT",
+              "link": {
+                "href": "#",
+                "type": "external"
+              },
+              "buttonStyle": {
+                "backgroundColor": {
+                  "$themeRef": "colors.primary"
+                },
+                "textColor": "#1A1A1A",
+                "fontSize": {
+                  "$themeRef": "tokens.typography.body"
+                },
+                "borderRadius": {
+                  "topLeft": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "topRight": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "bottomRight": {
+                    "$themeRef": "tokens.radius.cta"
+                  },
+                  "bottomLeft": {
+                    "$themeRef": "tokens.radius.cta"
+                  }
+                },
+                "border": {
+                  "style": "solid",
+                  "color": "rgba(0,0,0,0)",
+                  "top": "0",
+                  "right": "0",
+                  "bottom": "0",
+                  "left": "0"
+                },
+                "bold": false,
+                "italic": false,
+                "widthMode": "hug",
+                "heightMode": "hug"
+              }
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.buttonStyle.backgroundColor": {
+                "slotId": "colors.primary",
+                "mode": "theme",
+                "tokenPath": "colors.primary",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              },
+              "props.buttonStyle.borderRadius.bottomLeft": {
+                "slotId": "tokens.radius.cta",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.cta",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-41-stack-3",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "融资说明模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-41-text-7",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "FINANCING AVAILABLE"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "FINANCING AVAILABLE",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.h1"
+              },
+              "color": "#1A1A1A",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.h1",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.h1",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-8",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Easy financing available thr…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Easy financing available through Affirm:"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": "#1A1A1A",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-icon-1",
+            "type": "icon",
+            "blockMeta": {
+              "blockType": "content.icon",
+              "name": "plus"
+            },
+            "props": {
+              "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/plus.svg",
+              "size": "24px",
+              "color": "#000000"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "hug",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-image-2",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "affirm logo"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "40px",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/8709443/pexels-photo-8709443.jpeg",
+                "fit": "cover",
+                "position": "center"
+              },
+              "backgroundColor": "transparent"
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-9",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "FINANCING AVAILABLE"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "FINANCING AVAILABLE",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.h1"
+              },
+              "color": "#1A1A1A",
+              "bold": true,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.h1",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.h1",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-10",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Easy financing available thr…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Easy financing available through Affirm:"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": "#1A1A1A",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-row-2",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "融资优势项"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "auto",
+              "gap": {
+                "$themeRef": "tokens.spacing.section"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-41-stack-4",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "快速便捷项"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-2",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "currency-dollar-off"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/currency-dollar-off.svg",
+                      "size": "32px",
+                      "color": {
+                        "$themeRef": "colors.primary"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-11",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "QUICK & EASY"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "QUICK & EASY",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-12",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Enter a few pieces of inform…"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Enter a few pieces of information for real-time decision. Checking your eligibility won't affect your credit score."
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.caption"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-41-stack-5",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "无隐藏费用项"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-3",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "clock"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/clock.svg",
+                      "size": "32px",
+                      "color": {
+                        "$themeRef": "colors.primary"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-13",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "NO HIDDEN FEES"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "NO HIDDEN FEES",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-14",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Know up front exactly what y…"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Know up front exactly what you'll owe, with no hidden costs and no surprises."
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.caption"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-41-stack-6",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "社交媒体入口模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.pageInline"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.pageInline"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "tokens.spacing.pageInline",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.pageInline",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-41-grid-1",
+            "type": "grid",
+            "blockMeta": {
+              "blockType": "layout.grid",
+              "name": "社交媒体宫格"
+            },
+            "props": {
+              "columns": 4,
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              },
+              "cellWidthMode": "auto",
+              "cellHeightMode": "content-max"
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "padding": {
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-41-image-3",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "twitter social banner"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "fixed",
+                  "height": "120px",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "https://images.pexels.com/photos/30872961/pexels-photo-30872961.jpeg",
+                    "fit": "cover",
+                    "position": "center"
+                  },
+                  "backgroundColor": "transparent"
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-4",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "twitter"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/x.svg",
+                      "size": "32px",
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-15",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "TWITTER"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "TWITTER",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-41-image-4",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "instagram social banner"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "fixed",
+                  "height": "120px",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "https://images.pexels.com/photos/30872961/pexels-photo-30872961.jpeg",
+                    "fit": "cover",
+                    "position": "center"
+                  },
+                  "backgroundColor": "transparent"
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-5",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "instagram"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/instagram.svg",
+                      "size": "32px",
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-16",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "INSTAGRAM"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "INSTAGRAM",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-41-image-5",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "facebook social banner"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "fixed",
+                  "height": "120px",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "https://images.pexels.com/photos/37176172/pexels-photo-37176172.jpeg",
+                    "fit": "cover",
+                    "position": "center"
+                  },
+                  "backgroundColor": "transparent"
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-6",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "facebook"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/facebook.svg",
+                      "size": "32px",
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-17",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "FACEBOOK"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "FACEBOOK",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-41-image-6",
+                "type": "image",
+                "blockMeta": {
+                  "blockType": "content.image",
+                  "name": "tiktok social banner"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": "8px"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "fixed",
+                  "height": "120px",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  },
+                  "backgroundImage": {
+                    "src": "https://images.pexels.com/photos/30872961/pexels-photo-30872961.jpeg",
+                    "fit": "cover",
+                    "position": "center"
+                  },
+                  "backgroundColor": "transparent"
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-7",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "tiktok"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/tiktok.svg",
+                      "size": "32px",
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-18",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "TIKTOK"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "TIKTOK",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.body"
+                      },
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-41-stack-7",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "服务保障模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-41-row-3",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "保障项"
+            },
+            "props": {
+              "direction": "horizontal",
+              "gapMode": "auto",
+              "gap": {
+                "$themeRef": "tokens.spacing.section"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-41-stack-8",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "门店服务项"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-icon-8",
+                    "type": "icon",
+                    "blockMeta": {
+                      "blockType": "content.icon",
+                      "name": "bike"
+                    },
+                    "props": {
+                      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.31.0/icons/outline/bike.svg",
+                      "size": "32px",
+                      "color": "#000000"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-19",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "1,800+"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "1,800+",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.h1"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.h1",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.h1",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-20",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "1,800+ Shops For\nService & T…"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "1,800+ Shops For"
+                              }
+                            ]
+                          },
+                          {
+                            "runs": [
+                              {
+                                "text": "Service & Test Rides"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.caption"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-41-stack-9",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "安全认证项"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-image-7",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "ul tuv certification"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fixed",
+                      "width": "72px",
+                      "heightMode": "fixed",
+                      "height": "40px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/18787913/pexels-photo-18787913.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      },
+                      "backgroundColor": "transparent"
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-21",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Safety Certified by\nUL Solut…"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Safety Certified by"
+                              }
+                            ]
+                          },
+                          {
+                            "runs": [
+                              {
+                                "text": "UL Solutions or TÜV Rheinland"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.caption"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-41-stack-10",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "质保项"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "hug",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-41-image-8",
+                    "type": "image",
+                    "blockMeta": {
+                      "blockType": "content.image",
+                      "name": "2 year warranty"
+                    },
+                    "props": {},
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fixed",
+                      "width": "72px",
+                      "heightMode": "fixed",
+                      "height": "40px",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "backgroundImage": {
+                        "src": "https://images.pexels.com/photos/7267550/pexels-photo-7267550.jpeg",
+                        "fit": "cover",
+                        "position": "center"
+                      },
+                      "backgroundColor": "transparent"
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-41-text-22",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "2-Year Warranty\nOn All Ebike…"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "2-Year Warranty"
+                              }
+                            ]
+                          },
+                          {
+                            "runs": [
+                              {
+                                "text": "On All Ebike Purchases"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.caption"
+                      },
+                      "color": "#1A1A1A",
+                      "bold": false,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "widthMode": "hug",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.caption",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.caption",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-41-stack-11",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "页脚信息模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-41-text-23",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "*The federal minimum recomme…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "*The federal minimum recommended age to ride electric bicycles is 16. If questions arise, consult with your local regulations to determine the safe, legal minimum age to operate Class I, II, or III electric bicycles like Aventon."
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": "#1A1A1A",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-24",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "No longer want to receive th…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "No longer want to receive these emails? Unsubscribe"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": "#1A1A1A",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              }
+            }
+          },
+          {
+            "id": "template-mqhos2xu-41-text-25",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "Aventon Bikes 3040 Saturn St…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "Aventon Bikes 3040 Saturn St Suite 202 Brea, California 92821"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.caption"
+              },
+              "color": "#1A1A1A",
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.caption",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.caption",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

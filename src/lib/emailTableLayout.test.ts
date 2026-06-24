@@ -155,6 +155,52 @@ test("layoutRowInnerShouldFillParentHeight fixed 高且有多子项", () => {
   assert.equal(layoutRowInnerShouldFillParentHeight({ heightMode: "hug" }, 1), false);
 });
 
+test("layoutRowInnerShouldFillParentHeight：hug 高横排有兄弟锚点时拉伸 fill 子级", () => {
+  const template = {
+    blocks: {
+      row: {
+        id: "row",
+        type: "layout",
+        children: ["img", "stack"],
+        wrapperStyle: { heightMode: "hug" },
+      },
+      img: {
+        id: "img",
+        type: "image",
+        wrapperStyle: { widthMode: "fixed", width: "130px", heightMode: "fill" },
+      },
+      stack: {
+        id: "stack",
+        type: "layout",
+        children: ["txt"],
+        wrapperStyle: { heightMode: "hug" },
+      },
+      txt: {
+        id: "txt",
+        type: "text",
+        wrapperStyle: { heightMode: "hug" },
+        props: { text: "hi" },
+      },
+    },
+  } as unknown as import("../types/email").EmailTemplate;
+  assert.equal(
+    layoutRowInnerShouldFillParentHeight(
+      { heightMode: "hug" },
+      2,
+      { template, childIds: ["img", "stack"] }
+    ),
+    true
+  );
+  assert.equal(
+    layoutRowInnerShouldFillParentHeight(
+      { heightMode: "hug" },
+      1,
+      { template, childIds: ["img"] }
+    ),
+    false
+  );
+});
+
 test("layoutColumnInnerShouldFillParentHeight：单子块 hug 不撑满（父 contentAlign 可定位）", () => {
   assert.equal(
     layoutColumnInnerShouldFillParentHeight({
@@ -433,6 +479,29 @@ test("layoutRowChildTdWidthStyle：满宽行内 hug 仅 nowrap（列宽由 td wi
       innerTableFullWidth: false,
       gapModeAuto: false,
       childCount: 3,
+    }),
+    { whiteSpace: "nowrap" }
+  );
+});
+
+test("layoutRowChildTdWidthStyle：满宽行内 hug 纵排 layout 卡片不 nowrap", () => {
+  assert.deepEqual(
+    layoutRowChildTdWidthStyle("hug", undefined, {
+      innerTableFullWidth: true,
+      gapModeAuto: false,
+      childCount: 2,
+      rowHasFillWidthChild: true,
+      childIsVerticalLayout: true,
+    }),
+    {}
+  );
+  assert.deepEqual(
+    layoutRowChildTdWidthStyle("hug", undefined, {
+      innerTableFullWidth: true,
+      gapModeAuto: true,
+      childCount: 2,
+      rowHasFillWidthChild: false,
+      childIsVerticalLayout: false,
     }),
     { whiteSpace: "nowrap" }
   );

@@ -7,6 +7,12 @@ export const AI_PIPELINE_STEP_TIMEOUT_MS = 60_000;
  */
 export const LAYOUT_VARIANT_AI_FROM_IMAGE_STREAM_IDLE_TIMEOUT_MS = 1_800_000;
 
+/** RestoreAst GenerateAst：LLM 流式 idle 超时（连续无新 chunk）。 */
+export const RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS = 60_000;
+
+/** RestoreAst GenerateAst：整步绝对上限（防无限挂起）。 */
+export const RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS = 900_000;
+
 /** 设计图上传：允许的图片 MIME（与 server 校验保持一致）。 */
 export const LAYOUT_VARIANT_AI_IMAGE_MIME_TYPES = [
   "image/jpeg",

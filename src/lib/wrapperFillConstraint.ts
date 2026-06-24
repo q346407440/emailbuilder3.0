@@ -1,4 +1,5 @@
 import type { EmailBlock, EmailTemplate, WrapperStyle } from "../types/email";
+import { hasSiblingDimensionAnchor } from "./wrapperHugConstraint";
 
 export type WrapperFillAxis = "width" | "height";
 
@@ -10,21 +11,26 @@ export type WrapperDimensionModeChange = {
 };
 
 /**
- * 规则：父级 layout/image 在某一轴为 hug 时，子级同轴 fill 会形成循环依赖（PRD §4.1）。
- * - 宽度轴：父级 widthMode=hug → 子级禁止 width fill（纵排交叉轴 / 横排主轴均适用）
- * - 高度轴：父级 heightMode=hug 且排列方向为纵向 → 子级禁止 height fill
+ * 规则：父级 layout/image 在某一轴为 hug 时，子级同轴 fill 可能形成循环依赖（PRD §4.1）。
+ * 若同级兄弟中已有该轴尺寸锚点（fixed / hug 内容等），则当前子级 fill 可解析（如横排左图 fill 高、右栏撑高）。
  */
 export function isChildFillBlockedByParentHug(
-  parentBlock: EmailBlock | undefined,
+  template: EmailTemplate,
+  childBlockId: string,
   axis: WrapperFillAxis
 ): boolean {
-  if (!parentBlock) return false;
-  if (parentBlock.type !== "layout" && parentBlock.type !== "image") return false;
-  const direction = parentBlock.props.direction ?? "vertical";
-  if (axis === "width") {
-    return parentBlock.wrapperStyle?.widthMode === "hug";
-  }
-  return direction === "vertical" && parentBlock.wrapperStyle?.heightMode === "hug";
+  const child = template.blocks[childBlockId];
+  if (!child?.parentId) return false;
+  const parent = template.blocks[child.parentId];
+  if (!parent || (parent.type !== "layout" && parent.type !== "image")) return false;
+
+  const parentHugOnAxis =
+    axis === "width"
+      ? parent.wrapperStyle?.widthMode === "hug"
+      : parent.wrapperStyle?.heightMode === "hug";
+  if (!parentHugOnAxis) return false;
+
+  return !hasSiblingDimensionAnchor(template, childBlockId, axis);
 }
 
 export function getWrapperModeHint(axis: WrapperFillAxis, fillBlocked: boolean): string {
@@ -34,21 +40,21 @@ export function getWrapperModeHint(axis: WrapperFillAxis, fillBlocked: boolean):
       : "跟随内容（hug）；铺满父级（fill）；自定义（fixed）需填写固定高度";
   }
   return axis === "width"
-    ? "父级 layout/image 宽度模式为跟随内容（hug）时，当前区块宽度铺满（fill）会形成循环依赖，已禁用。"
-    : "父级为纵向 layout/image 且高度模式为跟随内容（hug）时，当前区块高度铺满（fill）会形成循环依赖，已禁用。";
+    ? "父级宽度为跟随内容（hug）且同级兄弟均无宽度锚点时，当前区块宽度铺满（fill）会形成循环依赖，已禁用。"
+    : "父级高度为跟随内容（hug）且同级兄弟均无高度锚点时，当前区块高度铺满（fill）会形成循环依赖，已禁用。";
 }
 
 export function getFillOptionTitle(axis: WrapperFillAxis, fillBlocked: boolean): string | undefined {
   if (!fillBlocked) return undefined;
   return axis === "width"
-    ? "父级宽度模式为跟随内容（hug）时不可用"
-    : "父级高度模式为跟随内容（hug）时不可用";
+    ? "父级 hug 且同级无宽度锚点时不可用"
+    : "父级 hug 且同级无高度锚点时不可用";
 }
 
 export function getFillValidationReason(axis: WrapperFillAxis): string {
   return axis === "width"
-    ? "父级 layout/image 宽度模式为 hug 时，子级不允许使用 width fill（父宽随子、子宽铺满父，循环依赖）；请改为 hug 或 fixed"
-    : "父级为纵向 layout/image 且高度模式为 hug 时，子级不允许使用 height fill（循环依赖）；请改为 hug 或 fixed";
+    ? "父级 layout/image 宽度模式为 hug 且同级兄弟均无宽度锚点时，子级不允许使用 width fill（循环依赖）；请改为 hug 或 fixed，或让兄弟提供宽度锚点"
+    : "父级 layout/image 高度模式为 hug 且同级兄弟均无高度锚点时，子级不允许使用 height fill（循环依赖）；请改为 hug 或 fixed，或让兄弟提供高度锚点";
 }
 
 /**
@@ -158,7 +164,6 @@ export function normalizeBlockWrapperDimensionModes(
   if (!target || target.type === "emailRoot") {
     return { wrapperStyle: target?.wrapperStyle, changed: false, changes: [] };
   }
-  const parent = target.parentId ? template.blocks[target.parentId] : undefined;
   const ws = target.wrapperStyle;
   if (!ws) {
     return { wrapperStyle: ws, changed: false, changes: [] };
@@ -167,11 +172,11 @@ export function normalizeBlockWrapperDimensionModes(
   const changes: WrapperDimensionModeChange[] = [];
   let nextWs = ws;
 
-  if (isChildFillBlockedByParentHug(parent, "width") && ws.widthMode === "fill") {
+  if (isChildFillBlockedByParentHug(template, blockId, "width") && ws.widthMode === "fill") {
     changes.push({ blockId, axis: "width", from: "fill", to: FALLBACK_MODE });
     nextWs = { ...nextWs, widthMode: FALLBACK_MODE };
   }
-  if (isChildFillBlockedByParentHug(parent, "height") && ws.heightMode === "fill") {
+  if (isChildFillBlockedByParentHug(template, blockId, "height") && ws.heightMode === "fill") {
     changes.push({ blockId, axis: "height", from: "fill", to: FALLBACK_MODE });
     nextWs = { ...nextWs, heightMode: FALLBACK_MODE };
   }

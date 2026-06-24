@@ -1,20 +1,21 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
-  AI_PIPELINE_UI_STEPS_INITIAL,
   MANUAL_RESTORE_MJS_UI_STEPS_INITIAL,
+  RESTORE_AST_UI_STEPS_INITIAL,
   buildPendingManualRestoreSteps,
-  buildSectionPlanSteps,
+  buildPendingRestoreAstSteps,
+  reduceAiLlmStream,
   reduceAiPipelineProgress,
 } from "./progress";
 
 describe("reduceAiPipelineProgress", () => {
-  it("plan 初始化 pending", () => {
+  it("RestoreAst plan 初始化 pending", () => {
     const steps = reduceAiPipelineProgress(null, {
       type: "plan",
-      steps: [...AI_PIPELINE_UI_STEPS_INITIAL],
+      steps: [...RESTORE_AST_UI_STEPS_INITIAL],
     });
-    assert.equal(steps.length, AI_PIPELINE_UI_STEPS_INITIAL.length);
+    assert.equal(steps.length, RESTORE_AST_UI_STEPS_INITIAL.length);
     assert.ok(steps.every((s) => s.status === "pending"));
   });
 
@@ -56,38 +57,6 @@ describe("reduceAiPipelineProgress", () => {
     assert.equal(steps.length, 1, "成功在重试行上打勾，不新增行");
     assert.equal(steps[0]?.status, "success");
     assert.equal(steps[0]?.label, "识别视觉规格 — 第 2 次重试");
-  });
-
-  it("plan 更新保留已完成步骤状态", () => {
-    let steps = reduceAiPipelineProgress(null, {
-      type: "plan",
-      steps: [{ id: "A", label: "A" }, { id: "C:_pending", label: "待展开" }],
-    });
-    steps = reduceAiPipelineProgress(steps, {
-      type: "step",
-      stepId: "A",
-      status: "success",
-    });
-    steps = reduceAiPipelineProgress(steps, {
-      type: "plan",
-      steps: buildSectionPlanSteps([
-        { sectionId: "s1", name: "主内容" },
-        { sectionId: "s2", name: "页脚" },
-      ]),
-    });
-    assert.equal(steps.find((s) => s.id === "A")?.status, "success");
-    assert.equal(steps.filter((s) => s.id.startsWith("C:")).length, 2);
-    assert.equal(steps.find((s) => s.id === "C:s1")?.label, "生成区域：主内容");
-  });
-
-  it("单区域也展开为 C:sectionId", () => {
-    const steps = reduceAiPipelineProgress(null, {
-      type: "plan",
-      steps: buildSectionPlanSteps([{ sectionId: "s1", name: "主内容" }]),
-    });
-    assert.equal(steps.filter((s) => s.id.startsWith("C:")).length, 1);
-    assert.equal(steps.find((s) => s.id === "C:s1")?.label, "生成区域：主内容");
-    assert.equal(steps.filter((s) => s.id === "E").length, 1);
   });
 
   it("hidden plan 不预展示 pending 行", () => {
@@ -196,6 +165,12 @@ describe("reduceAiPipelineProgress", () => {
     assert.ok(steps.every((s) => s.status === "pending"));
   });
 
+  it("buildPendingRestoreAstSteps 全 pending", () => {
+    const steps = buildPendingRestoreAstSteps();
+    assert.equal(steps.length, RESTORE_AST_UI_STEPS_INITIAL.length);
+    assert.ok(steps.every((s) => s.status === "pending"));
+  });
+
   it("失败时 detail 拼入主行 label", () => {
     let steps = reduceAiPipelineProgress(null, {
       type: "plan",
@@ -232,5 +207,34 @@ describe("reduceAiPipelineProgress", () => {
     });
     assert.equal(steps[0]?.status, "success");
     assert.equal(steps[0]?.label, "豆包生成还原脚本 — 程序 autofix → 豆包 patch（尝试 2/3）");
+  });
+});
+
+describe("reduceAiLlmStream", () => {
+  it("llm_stream 累加 think 与 content", () => {
+    let state = reduceAiLlmStream(null, {
+      type: "llm_stream",
+      stepId: "RA:GenerateAst",
+      channel: "think",
+      delta: "a",
+    });
+    state = reduceAiLlmStream(state, {
+      type: "llm_stream",
+      stepId: "RA:GenerateAst",
+      channel: "content",
+      delta: "{",
+    });
+    assert.equal(state?.stepId, "RA:GenerateAst");
+    assert.equal(state?.think, "a");
+    assert.equal(state?.content, "{");
+  });
+
+  it("llm_stream_reset 清空窗口", () => {
+    const state = reduceAiLlmStream(
+      { stepId: "RA:GenerateAst", think: "x", content: "y" },
+      { type: "llm_stream_reset", stepId: "RA:GenerateAst" }
+    );
+    assert.equal(state?.think, "");
+    assert.equal(state?.content, "");
   });
 });

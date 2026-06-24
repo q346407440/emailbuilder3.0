@@ -125,8 +125,10 @@ import {
 import { toSectionCatalogItems } from "./lib/sectionCatalog";
 import { sortEmailItemsByCreatedDesc } from "./lib/emailCatalogSort";
 import {
-  reduceAiPipelineProgress,
   buildPendingRestoreAstSteps,
+  reduceAiLlmStream,
+  reduceAiPipelineProgress,
+  type AiLlmStreamUiState,
   type AiStepUiState,
 } from "./layout-variant-ai-contract/progress";
 import type { LayoutVariantAiFromImagePipeline } from "./layout-variant-ai-contract/aiFromImagePipeline";
@@ -390,6 +392,7 @@ export default function App() {
   const [mailInfoOpen, setMailInfoOpen] = useState(false);
   /** 以图 AI 创建版式：弹窗内分步进度 */
   const [aiPipelineSteps, setAiPipelineSteps] = useState<AiStepUiState[] | null>(null);
+  const [aiLlmStream, setAiLlmStream] = useState<AiLlmStreamUiState | null>(null);
   const [metaSendTestNonce, setMetaSendTestNonce] = useState(0);
   const [metaCanSendTest, setMetaCanSendTest] = useState(false);
   const [metaDirty, setMetaDirty] = useState(false);
@@ -1089,6 +1092,7 @@ export default function App() {
       setLayoutVariantBusy(true);
       if (aiFromImage) {
         setAiPipelineSteps(buildPendingRestoreAstSteps());
+        setAiLlmStream(null);
       }
       setError(null);
       const loadingText = copyFrom
@@ -1103,7 +1107,11 @@ export default function App() {
               pipeline: aiPipeline,
               llmProfile: options?.llmProfile,
               onProgress: (payload) => {
-                setAiPipelineSteps((prev) => reduceAiPipelineProgress(prev, payload));
+                if (payload.type === "llm_stream" || payload.type === "llm_stream_reset") {
+                  setAiLlmStream((prev) => reduceAiLlmStream(prev, payload));
+                } else {
+                  setAiPipelineSteps((prev) => reduceAiPipelineProgress(prev, payload));
+                }
               },
             })
           : await api.createLayoutVariant(emailKey, {
@@ -1127,6 +1135,7 @@ export default function App() {
           );
         }
         setAiPipelineSteps(null);
+        setAiLlmStream(null);
       } catch (e) {
         reportOperationalError(e instanceof Error ? e.message : String(e));
         throw e;
@@ -1964,10 +1973,14 @@ export default function App() {
             value={layoutVariantId}
             busy={layoutVariantBusy}
             aiPipelineSteps={aiPipelineSteps}
+            aiLlmStream={aiLlmStream}
             disabled={lockLayoutResourceActions || emailLoadBusy || templateResourceBusy}
             onSelect={(nextLayoutId) => void switchLayoutVariant(nextLayoutId)}
             onCreate={createLayoutVariant}
-            onCreateModalClosed={() => setAiPipelineSteps(null)}
+            onCreateModalClosed={() => {
+              setAiPipelineSteps(null);
+              setAiLlmStream(null);
+            }}
             onRename={renameLayoutVariant}
             onDelete={deleteCurrentLayoutVariant}
             onSetPublishStatus={setLayoutVariantPublishStatus}

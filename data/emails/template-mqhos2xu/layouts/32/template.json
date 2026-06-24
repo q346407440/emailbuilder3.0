@@ -1,0 +1,4198 @@
+{
+  "schemaVersion": "4.0.0",
+  "emailId": "template-mqhos2xu",
+  "templateId": "template-mqhos2xu",
+  "templateVersion": 1,
+  "locale": "en-US",
+  "root": {
+    "id": "template-mqhos2xu-32-root-1",
+    "type": "emailRoot",
+    "blockMeta": {
+      "blockType": "layout.container",
+      "name": "邮件根"
+    },
+    "props": {
+      "backgroundColor": {
+        "$themeRef": "colors.surface"
+      },
+      "width": "600px",
+      "padding": {
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      },
+      "gapMode": "fixed",
+      "gap": "0",
+      "border": {
+        "style": "solid",
+        "color": "rgba(0,0,0,0)",
+        "top": "0",
+        "right": "0",
+        "bottom": "0",
+        "left": "0"
+      }
+    },
+    "wrapperStyle": {
+      "widthMode": "fill",
+      "heightMode": "hug"
+    },
+    "bindings": {
+      "props.backgroundColor": {
+        "slotId": "colors.surface",
+        "mode": "theme",
+        "tokenPath": "colors.surface",
+        "fieldKind": "style"
+      }
+    },
+    "children": [
+      {
+        "id": "template-mqhos2xu-32-stack-1",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "头部导航模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": "12px",
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.top": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-32-image-1",
+            "type": "image",
+            "blockMeta": {
+              "blockType": "content.image",
+              "name": "rawpixel brand logo"
+            },
+            "props": {},
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "fixed",
+              "height": "32px",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "backgroundImage": {
+                "src": "https://images.pexels.com/photos/7661590/pexels-photo-7661590.jpeg",
+                "fit": "cover",
+                "position": "center"
+              },
+              "backgroundColor": "transparent"
+            }
+          },
+          {
+            "id": "template-mqhos2xu-32-text-1",
+            "type": "text",
+            "blockMeta": {
+              "blockType": "content.text",
+              "name": "New Free and Premium designs…"
+            },
+            "props": {
+              "textBody": {
+                "paragraphs": [
+                  {
+                    "runs": [
+                      {
+                        "text": "New Free and Premium designs from rawpixel"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "fontSize": {
+                "$themeRef": "tokens.typography.body"
+              },
+              "color": {
+                "$themeRef": "colors.surface"
+              },
+              "bold": false,
+              "italic": false,
+              "decoration": "none"
+            },
+            "wrapperStyle": {
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              }
+            },
+            "bindings": {
+              "props.fontSize": {
+                "slotId": "tokens.typography.body",
+                "mode": "theme",
+                "tokenPath": "tokens.typography.body",
+                "fieldKind": "style"
+              },
+              "props.color": {
+                "slotId": "colors.surface",
+                "mode": "theme",
+                "tokenPath": "colors.surface",
+                "fieldKind": "style"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "template-mqhos2xu-32-stack-2",
+        "type": "layout",
+        "blockMeta": {
+          "blockType": "layout.container",
+          "name": "元素资源模块模块"
+        },
+        "props": {
+          "direction": "vertical",
+          "gapMode": "fixed",
+          "gap": {
+            "$themeRef": "tokens.spacing.gap"
+          }
+        },
+        "wrapperStyle": {
+          "widthMode": "fill",
+          "heightMode": "hug",
+          "contentAlign": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "border": {
+            "style": "solid",
+            "color": "rgba(0,0,0,0)",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0"
+          },
+          "borderRadius": {
+            "topLeft": "0",
+            "topRight": "0",
+            "bottomRight": "0",
+            "bottomLeft": "0"
+          },
+          "padding": {
+            "top": "12px",
+            "right": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "bottom": {
+              "$themeRef": "tokens.spacing.section"
+            },
+            "left": {
+              "$themeRef": "tokens.spacing.section"
+            }
+          }
+        },
+        "bindings": {
+          "props.gap": {
+            "slotId": "tokens.spacing.gap",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.gap",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.right": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.bottom": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          },
+          "wrapperStyle.padding.left": {
+            "slotId": "spacing.section",
+            "mode": "theme",
+            "tokenPath": "tokens.spacing.section",
+            "fieldKind": "style"
+          }
+        },
+        "children": [
+          {
+            "id": "template-mqhos2xu-32-stack-3",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "元素内容卡片"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "topRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomRight": {
+                  "$themeRef": "tokens.radius.panel"
+                },
+                "bottomLeft": {
+                  "$themeRef": "tokens.radius.panel"
+                }
+              },
+              "backgroundColor": {
+                "$themeRef": "colors.surface"
+              },
+              "padding": {
+                "top": {
+                  "$themeRef": "tokens.spacing.gap"
+                },
+                "right": {
+                  "$themeRef": "tokens.spacing.gap"
+                },
+                "bottom": {
+                  "$themeRef": "tokens.spacing.gap"
+                },
+                "left": {
+                  "$themeRef": "tokens.spacing.gap"
+                }
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.backgroundColor": {
+                "slotId": "colors.surface",
+                "mode": "theme",
+                "tokenPath": "colors.surface",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.top": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.right": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.bottom": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.left": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.topLeft": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.topRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomRight": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.borderRadius.bottomLeft": {
+                "slotId": "tokens.radius.panel",
+                "mode": "theme",
+                "tokenPath": "tokens.radius.panel",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-32-text-2",
+                "type": "text",
+                "blockMeta": {
+                  "blockType": "content.text",
+                  "name": "Elements"
+                },
+                "props": {
+                  "textBody": {
+                    "paragraphs": [
+                      {
+                        "runs": [
+                          {
+                            "text": "Elements",
+                            "bold": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "fontSize": {
+                    "$themeRef": "tokens.typography.h1"
+                  },
+                  "color": "#1A1A1A",
+                  "bold": true,
+                  "italic": false,
+                  "decoration": "none"
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.fontSize": {
+                    "slotId": "tokens.typography.h1",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.h1",
+                    "fieldKind": "style"
+                  }
+                }
+              },
+              {
+                "id": "template-mqhos2xu-32-grid-1",
+                "type": "grid",
+                "blockMeta": {
+                  "blockType": "layout.grid",
+                  "name": "元素资源宫格"
+                },
+                "props": {
+                  "columns": 2,
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  },
+                  "cellWidthMode": "auto",
+                  "cellHeightMode": "content-max"
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  },
+                  "padding": {
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-32-stack-4",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "左侧元素列"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-32-image-2",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "male side portrait"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "220px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/6723797/pexels-photo-6723797.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-image-3",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "floral decorated alphabe…"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "220px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/7400334/pexels-photo-7400334.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-image-4",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "grey cloudy sky"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "220px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/10986562/pexels-photo-10986562.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-32-stack-5",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "右侧元素列"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-32-image-5",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "indoor potted plants"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "220px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/9116727/pexels-photo-9116727.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-image-6",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "black and white"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "220px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/7523946/pexels-photo-7523946.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-32-btn-1",
+                "type": "button",
+                "blockMeta": {
+                  "blockType": "action.button",
+                  "name": "Explore Elements"
+                },
+                "props": {
+                  "text": "Explore Elements",
+                  "link": {
+                    "href": "#",
+                    "type": "external"
+                  },
+                  "buttonStyle": {
+                    "backgroundColor": {
+                      "$themeRef": "colors.primary"
+                    },
+                    "textColor": {
+                      "$themeRef": "colors.surface"
+                    },
+                    "fontSize": {
+                      "$themeRef": "tokens.typography.body"
+                    },
+                    "borderRadius": {
+                      "topLeft": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "topRight": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "bottomRight": {
+                        "$themeRef": "tokens.radius.cta"
+                      },
+                      "bottomLeft": {
+                        "$themeRef": "tokens.radius.cta"
+                      }
+                    },
+                    "border": {
+                      "style": "solid",
+                      "color": "rgba(0,0,0,0)",
+                      "top": "0",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "0"
+                    },
+                    "bold": false,
+                    "italic": false,
+                    "widthMode": "hug",
+                    "heightMode": "hug"
+                  }
+                },
+                "wrapperStyle": {
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "center"
+                  },
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  }
+                },
+                "bindings": {
+                  "props.buttonStyle.backgroundColor": {
+                    "slotId": "colors.primary",
+                    "mode": "theme",
+                    "tokenPath": "colors.primary",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.textColor": {
+                    "slotId": "colors.surface",
+                    "mode": "theme",
+                    "tokenPath": "colors.surface",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.fontSize": {
+                    "slotId": "tokens.typography.body",
+                    "mode": "theme",
+                    "tokenPath": "tokens.typography.body",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.topLeft": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.topRight": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.bottomRight": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  },
+                  "props.buttonStyle.borderRadius.bottomLeft": {
+                    "slotId": "tokens.radius.cta",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.cta",
+                    "fieldKind": "style"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "template-mqhos2xu-32-stack-6",
+            "type": "layout",
+            "blockMeta": {
+              "blockType": "layout.container",
+              "name": "专业模板模块"
+            },
+            "props": {
+              "direction": "vertical",
+              "gapMode": "fixed",
+              "gap": {
+                "$themeRef": "tokens.spacing.gap"
+              }
+            },
+            "wrapperStyle": {
+              "widthMode": "fill",
+              "heightMode": "hug",
+              "contentAlign": {
+                "horizontal": "center",
+                "vertical": "top"
+              },
+              "border": {
+                "style": "solid",
+                "color": "rgba(0,0,0,0)",
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0"
+              },
+              "borderRadius": {
+                "topLeft": "0",
+                "topRight": "0",
+                "bottomRight": "0",
+                "bottomLeft": "0"
+              },
+              "padding": {
+                "top": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "right": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "bottom": {
+                  "$themeRef": "tokens.spacing.section"
+                },
+                "left": {
+                  "$themeRef": "tokens.spacing.section"
+                }
+              }
+            },
+            "bindings": {
+              "props.gap": {
+                "slotId": "tokens.spacing.gap",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.gap",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.top": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.right": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.bottom": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              },
+              "wrapperStyle.padding.left": {
+                "slotId": "tokens.spacing.section",
+                "mode": "theme",
+                "tokenPath": "tokens.spacing.section",
+                "fieldKind": "style"
+              }
+            },
+            "children": [
+              {
+                "id": "template-mqhos2xu-32-stack-7",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "模板内容卡片"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": {
+                      "$themeRef": "tokens.radius.panel"
+                    },
+                    "topRight": {
+                      "$themeRef": "tokens.radius.panel"
+                    },
+                    "bottomRight": {
+                      "$themeRef": "tokens.radius.panel"
+                    },
+                    "bottomLeft": {
+                      "$themeRef": "tokens.radius.panel"
+                    }
+                  },
+                  "backgroundColor": "#8B5CF6",
+                  "padding": {
+                    "top": {
+                      "$themeRef": "tokens.spacing.gap"
+                    },
+                    "right": {
+                      "$themeRef": "tokens.spacing.gap"
+                    },
+                    "bottom": {
+                      "$themeRef": "tokens.spacing.gap"
+                    },
+                    "left": {
+                      "$themeRef": "tokens.spacing.gap"
+                    }
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.top": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.right": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.bottom": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.left": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.borderRadius.topLeft": {
+                    "slotId": "tokens.radius.panel",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.panel",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.borderRadius.topRight": {
+                    "slotId": "tokens.radius.panel",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.panel",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.borderRadius.bottomRight": {
+                    "slotId": "tokens.radius.panel",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.panel",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.borderRadius.bottomLeft": {
+                    "slotId": "tokens.radius.panel",
+                    "mode": "theme",
+                    "tokenPath": "tokens.radius.panel",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-32-text-3",
+                    "type": "text",
+                    "blockMeta": {
+                      "blockType": "content.text",
+                      "name": "Professional Templates"
+                    },
+                    "props": {
+                      "textBody": {
+                        "paragraphs": [
+                          {
+                            "runs": [
+                              {
+                                "text": "Professional Templates",
+                                "bold": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "fontSize": {
+                        "$themeRef": "tokens.typography.h1"
+                      },
+                      "color": {
+                        "$themeRef": "colors.surface"
+                      },
+                      "bold": true,
+                      "italic": false,
+                      "decoration": "none"
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.fontSize": {
+                        "slotId": "tokens.typography.h1",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.h1",
+                        "fieldKind": "style"
+                      },
+                      "props.color": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      }
+                    }
+                  },
+                  {
+                    "id": "template-mqhos2xu-32-grid-2",
+                    "type": "grid",
+                    "blockMeta": {
+                      "blockType": "layout.grid",
+                      "name": "模板资源宫格"
+                    },
+                    "props": {
+                      "columns": 2,
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      },
+                      "cellWidthMode": "auto",
+                      "cellHeightMode": "content-max"
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "padding": {
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-32-image-7",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "spring landscape oil"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "200px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/5739358/pexels-photo-5739358.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-image-8",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "wildlife conservation ca…"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "200px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/34484855/pexels-photo-34484855.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-image-9",
+                        "type": "image",
+                        "blockMeta": {
+                          "blockType": "content.image",
+                          "name": "retro travel agency"
+                        },
+                        "props": {},
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "fixed",
+                          "height": "200px",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "backgroundImage": {
+                            "src": "https://images.pexels.com/photos/31376933/pexels-photo-31376933.jpeg",
+                            "fit": "cover",
+                            "position": "center"
+                          },
+                          "backgroundColor": "transparent"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-32-btn-2",
+                    "type": "button",
+                    "blockMeta": {
+                      "blockType": "action.button",
+                      "name": "Explore Templates"
+                    },
+                    "props": {
+                      "text": "Explore Templates",
+                      "link": {
+                        "href": "#",
+                        "type": "external"
+                      },
+                      "buttonStyle": {
+                        "backgroundColor": {
+                          "$themeRef": "colors.primary"
+                        },
+                        "textColor": {
+                          "$themeRef": "colors.surface"
+                        },
+                        "fontSize": {
+                          "$themeRef": "tokens.typography.body"
+                        },
+                        "borderRadius": {
+                          "topLeft": {
+                            "$themeRef": "tokens.radius.cta"
+                          },
+                          "topRight": {
+                            "$themeRef": "tokens.radius.cta"
+                          },
+                          "bottomRight": {
+                            "$themeRef": "tokens.radius.cta"
+                          },
+                          "bottomLeft": {
+                            "$themeRef": "tokens.radius.cta"
+                          }
+                        },
+                        "border": {
+                          "style": "solid",
+                          "color": "rgba(0,0,0,0)",
+                          "top": "0",
+                          "right": "0",
+                          "bottom": "0",
+                          "left": "0"
+                        },
+                        "bold": false,
+                        "italic": false,
+                        "widthMode": "hug",
+                        "heightMode": "hug"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "center"
+                      },
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      }
+                    },
+                    "bindings": {
+                      "props.buttonStyle.backgroundColor": {
+                        "slotId": "colors.primary",
+                        "mode": "theme",
+                        "tokenPath": "colors.primary",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.textColor": {
+                        "slotId": "colors.surface",
+                        "mode": "theme",
+                        "tokenPath": "colors.surface",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.fontSize": {
+                        "slotId": "tokens.typography.body",
+                        "mode": "theme",
+                        "tokenPath": "tokens.typography.body",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.borderRadius.topLeft": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.borderRadius.topRight": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.borderRadius.bottomRight": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      },
+                      "props.buttonStyle.borderRadius.bottomLeft": {
+                        "slotId": "tokens.radius.cta",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.cta",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "template-mqhos2xu-32-stack-8",
+                "type": "layout",
+                "blockMeta": {
+                  "blockType": "layout.container",
+                  "name": "Remix素材模块"
+                },
+                "props": {
+                  "direction": "vertical",
+                  "gapMode": "fixed",
+                  "gap": {
+                    "$themeRef": "tokens.spacing.gap"
+                  }
+                },
+                "wrapperStyle": {
+                  "widthMode": "fill",
+                  "heightMode": "hug",
+                  "contentAlign": {
+                    "horizontal": "center",
+                    "vertical": "top"
+                  },
+                  "border": {
+                    "style": "solid",
+                    "color": "rgba(0,0,0,0)",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0"
+                  },
+                  "borderRadius": {
+                    "topLeft": "0",
+                    "topRight": "0",
+                    "bottomRight": "0",
+                    "bottomLeft": "0"
+                  },
+                  "padding": {
+                    "top": {
+                      "$themeRef": "tokens.spacing.section"
+                    },
+                    "right": {
+                      "$themeRef": "tokens.spacing.section"
+                    },
+                    "bottom": {
+                      "$themeRef": "tokens.spacing.section"
+                    },
+                    "left": {
+                      "$themeRef": "tokens.spacing.section"
+                    }
+                  }
+                },
+                "bindings": {
+                  "props.gap": {
+                    "slotId": "tokens.spacing.gap",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.gap",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.top": {
+                    "slotId": "tokens.spacing.section",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.section",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.right": {
+                    "slotId": "tokens.spacing.section",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.section",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.bottom": {
+                    "slotId": "tokens.spacing.section",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.section",
+                    "fieldKind": "style"
+                  },
+                  "wrapperStyle.padding.left": {
+                    "slotId": "tokens.spacing.section",
+                    "mode": "theme",
+                    "tokenPath": "tokens.spacing.section",
+                    "fieldKind": "style"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "template-mqhos2xu-32-stack-9",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "Remix内容卡片"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": {
+                          "$themeRef": "tokens.radius.panel"
+                        },
+                        "topRight": {
+                          "$themeRef": "tokens.radius.panel"
+                        },
+                        "bottomRight": {
+                          "$themeRef": "tokens.radius.panel"
+                        },
+                        "bottomLeft": {
+                          "$themeRef": "tokens.radius.panel"
+                        }
+                      },
+                      "backgroundColor": "#D9F99D",
+                      "padding": {
+                        "top": {
+                          "$themeRef": "tokens.spacing.gap"
+                        },
+                        "right": {
+                          "$themeRef": "tokens.spacing.gap"
+                        },
+                        "bottom": {
+                          "$themeRef": "tokens.spacing.gap"
+                        },
+                        "left": {
+                          "$themeRef": "tokens.spacing.gap"
+                        }
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.top": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.right": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.bottom": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.left": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.borderRadius.topLeft": {
+                        "slotId": "tokens.radius.panel",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.panel",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.borderRadius.topRight": {
+                        "slotId": "tokens.radius.panel",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.panel",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.borderRadius.bottomRight": {
+                        "slotId": "tokens.radius.panel",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.panel",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.borderRadius.bottomLeft": {
+                        "slotId": "tokens.radius.panel",
+                        "mode": "theme",
+                        "tokenPath": "tokens.radius.panel",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-32-text-4",
+                        "type": "text",
+                        "blockMeta": {
+                          "blockType": "content.text",
+                          "name": "Remix"
+                        },
+                        "props": {
+                          "textBody": {
+                            "paragraphs": [
+                              {
+                                "runs": [
+                                  {
+                                    "text": "Remix",
+                                    "bold": true
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "fontSize": {
+                            "$themeRef": "tokens.typography.h1"
+                          },
+                          "color": "#1A1A1A",
+                          "bold": true,
+                          "italic": false,
+                          "decoration": "none"
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.fontSize": {
+                            "slotId": "tokens.typography.h1",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.h1",
+                            "fieldKind": "style"
+                          }
+                        }
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-grid-3",
+                        "type": "grid",
+                        "blockMeta": {
+                          "blockType": "layout.grid",
+                          "name": "Remix素材宫格"
+                        },
+                        "props": {
+                          "columns": 2,
+                          "gap": {
+                            "$themeRef": "tokens.spacing.gap"
+                          },
+                          "cellWidthMode": "auto",
+                          "cellHeightMode": "content-max"
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "padding": {
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.gap": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "template-mqhos2xu-32-image-10",
+                            "type": "image",
+                            "blockMeta": {
+                              "blockType": "content.image",
+                              "name": "pink van on"
+                            },
+                            "props": {},
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "fixed",
+                              "height": "180px",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              },
+                              "backgroundImage": {
+                                "src": "https://images.pexels.com/photos/34742952/pexels-photo-34742952.jpeg",
+                                "fit": "cover",
+                                "position": "center"
+                              },
+                              "backgroundColor": "transparent"
+                            }
+                          },
+                          {
+                            "id": "template-mqhos2xu-32-image-11",
+                            "type": "image",
+                            "blockMeta": {
+                              "blockType": "content.image",
+                              "name": "green grass field"
+                            },
+                            "props": {},
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "fixed",
+                              "height": "180px",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              },
+                              "backgroundImage": {
+                                "src": "https://images.pexels.com/photos/6729124/pexels-photo-6729124.jpeg",
+                                "fit": "cover",
+                                "position": "center"
+                              },
+                              "backgroundColor": "transparent"
+                            }
+                          },
+                          {
+                            "id": "template-mqhos2xu-32-image-12",
+                            "type": "image",
+                            "blockMeta": {
+                              "blockType": "content.image",
+                              "name": "vintage japanese crane"
+                            },
+                            "props": {},
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "fixed",
+                              "height": "180px",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              },
+                              "backgroundImage": {
+                                "src": "https://images.pexels.com/photos/27861643/pexels-photo-27861643.jpeg",
+                                "fit": "cover",
+                                "position": "center"
+                              },
+                              "backgroundColor": "transparent"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-btn-3",
+                        "type": "button",
+                        "blockMeta": {
+                          "blockType": "action.button",
+                          "name": "Explore Remix"
+                        },
+                        "props": {
+                          "text": "Explore Remix",
+                          "link": {
+                            "href": "#",
+                            "type": "external"
+                          },
+                          "buttonStyle": {
+                            "backgroundColor": {
+                              "$themeRef": "colors.primary"
+                            },
+                            "textColor": {
+                              "$themeRef": "colors.surface"
+                            },
+                            "fontSize": {
+                              "$themeRef": "tokens.typography.body"
+                            },
+                            "borderRadius": {
+                              "topLeft": {
+                                "$themeRef": "tokens.radius.cta"
+                              },
+                              "topRight": {
+                                "$themeRef": "tokens.radius.cta"
+                              },
+                              "bottomRight": {
+                                "$themeRef": "tokens.radius.cta"
+                              },
+                              "bottomLeft": {
+                                "$themeRef": "tokens.radius.cta"
+                              }
+                            },
+                            "border": {
+                              "style": "solid",
+                              "color": "rgba(0,0,0,0)",
+                              "top": "0",
+                              "right": "0",
+                              "bottom": "0",
+                              "left": "0"
+                            },
+                            "bold": false,
+                            "italic": false,
+                            "widthMode": "hug",
+                            "heightMode": "hug"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "center"
+                          },
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          }
+                        },
+                        "bindings": {
+                          "props.buttonStyle.backgroundColor": {
+                            "slotId": "colors.primary",
+                            "mode": "theme",
+                            "tokenPath": "colors.primary",
+                            "fieldKind": "style"
+                          },
+                          "props.buttonStyle.textColor": {
+                            "slotId": "colors.surface",
+                            "mode": "theme",
+                            "tokenPath": "colors.surface",
+                            "fieldKind": "style"
+                          },
+                          "props.buttonStyle.fontSize": {
+                            "slotId": "tokens.typography.body",
+                            "mode": "theme",
+                            "tokenPath": "tokens.typography.body",
+                            "fieldKind": "style"
+                          },
+                          "props.buttonStyle.borderRadius.topLeft": {
+                            "slotId": "tokens.radius.cta",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.cta",
+                            "fieldKind": "style"
+                          },
+                          "props.buttonStyle.borderRadius.topRight": {
+                            "slotId": "tokens.radius.cta",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.cta",
+                            "fieldKind": "style"
+                          },
+                          "props.buttonStyle.borderRadius.bottomRight": {
+                            "slotId": "tokens.radius.cta",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.cta",
+                            "fieldKind": "style"
+                          },
+                          "props.buttonStyle.borderRadius.bottomLeft": {
+                            "slotId": "tokens.radius.cta",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.cta",
+                            "fieldKind": "style"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-32-stack-10",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "样机资源模块"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "padding": {
+                        "top": {
+                          "$themeRef": "tokens.spacing.section"
+                        },
+                        "right": {
+                          "$themeRef": "tokens.spacing.section"
+                        },
+                        "bottom": {
+                          "$themeRef": "tokens.spacing.section"
+                        },
+                        "left": {
+                          "$themeRef": "tokens.spacing.section"
+                        }
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.top": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.right": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.bottom": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.left": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "template-mqhos2xu-32-stack-11",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "样机内容卡片"
+                        },
+                        "props": {
+                          "direction": "vertical",
+                          "gapMode": "fixed",
+                          "gap": {
+                            "$themeRef": "tokens.spacing.gap"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": {
+                              "$themeRef": "tokens.radius.panel"
+                            },
+                            "topRight": {
+                              "$themeRef": "tokens.radius.panel"
+                            },
+                            "bottomRight": {
+                              "$themeRef": "tokens.radius.panel"
+                            },
+                            "bottomLeft": {
+                              "$themeRef": "tokens.radius.panel"
+                            }
+                          },
+                          "backgroundColor": "#D4A373",
+                          "padding": {
+                            "top": {
+                              "$themeRef": "tokens.spacing.gap"
+                            },
+                            "right": {
+                              "$themeRef": "tokens.spacing.gap"
+                            },
+                            "bottom": {
+                              "$themeRef": "tokens.spacing.gap"
+                            },
+                            "left": {
+                              "$themeRef": "tokens.spacing.gap"
+                            }
+                          }
+                        },
+                        "bindings": {
+                          "props.gap": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.top": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.right": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.bottom": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.left": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.borderRadius.topLeft": {
+                            "slotId": "tokens.radius.panel",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.panel",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.borderRadius.topRight": {
+                            "slotId": "tokens.radius.panel",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.panel",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.borderRadius.bottomRight": {
+                            "slotId": "tokens.radius.panel",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.panel",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.borderRadius.bottomLeft": {
+                            "slotId": "tokens.radius.panel",
+                            "mode": "theme",
+                            "tokenPath": "tokens.radius.panel",
+                            "fieldKind": "style"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "template-mqhos2xu-32-text-5",
+                            "type": "text",
+                            "blockMeta": {
+                              "blockType": "content.text",
+                              "name": "Mockups"
+                            },
+                            "props": {
+                              "textBody": {
+                                "paragraphs": [
+                                  {
+                                    "runs": [
+                                      {
+                                        "text": "Mockups",
+                                        "bold": true
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "fontSize": {
+                                "$themeRef": "tokens.typography.h1"
+                              },
+                              "color": "#1A1A1A",
+                              "bold": true,
+                              "italic": false,
+                              "decoration": "none"
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "left",
+                                "vertical": "top"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.fontSize": {
+                                "slotId": "tokens.typography.h1",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.h1",
+                                "fieldKind": "style"
+                              }
+                            }
+                          },
+                          {
+                            "id": "template-mqhos2xu-32-grid-4",
+                            "type": "grid",
+                            "blockMeta": {
+                              "blockType": "layout.grid",
+                              "name": "样机资源宫格"
+                            },
+                            "props": {
+                              "columns": 2,
+                              "gap": {
+                                "$themeRef": "tokens.spacing.gap"
+                              },
+                              "cellWidthMode": "auto",
+                              "cellHeightMode": "content-max"
+                            },
+                            "wrapperStyle": {
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              },
+                              "padding": {
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.gap": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "template-mqhos2xu-32-image-13",
+                                "type": "image",
+                                "blockMeta": {
+                                  "blockType": "content.image",
+                                  "name": "desktop workspace laptop"
+                                },
+                                "props": {},
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "fixed",
+                                  "height": "200px",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  },
+                                  "backgroundImage": {
+                                    "src": "https://images.pexels.com/photos/8534457/pexels-photo-8534457.jpeg",
+                                    "fit": "cover",
+                                    "position": "center"
+                                  },
+                                  "backgroundColor": "transparent"
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-stack-12",
+                                "type": "layout",
+                                "blockMeta": {
+                                  "blockType": "layout.container",
+                                  "name": "右侧样机列"
+                                },
+                                "props": {
+                                  "direction": "vertical",
+                                  "gapMode": "fixed",
+                                  "gap": {
+                                    "$themeRef": "tokens.spacing.gap"
+                                  }
+                                },
+                                "wrapperStyle": {
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "contentAlign": {
+                                    "horizontal": "left",
+                                    "vertical": "top"
+                                  },
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.gap": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "id": "template-mqhos2xu-32-image-14",
+                                    "type": "image",
+                                    "blockMeta": {
+                                      "blockType": "content.image",
+                                      "name": "mobile app ui"
+                                    },
+                                    "props": {},
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "fill",
+                                      "heightMode": "fixed",
+                                      "height": "200px",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      },
+                                      "backgroundImage": {
+                                        "src": "https://images.pexels.com/photos/35052818/pexels-photo-35052818.jpeg",
+                                        "fit": "cover",
+                                        "position": "center"
+                                      },
+                                      "backgroundColor": "transparent"
+                                    }
+                                  },
+                                  {
+                                    "id": "template-mqhos2xu-32-image-15",
+                                    "type": "image",
+                                    "blockMeta": {
+                                      "blockType": "content.image",
+                                      "name": "3d tablet phone"
+                                    },
+                                    "props": {},
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "fill",
+                                      "heightMode": "fixed",
+                                      "height": "200px",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      },
+                                      "backgroundImage": {
+                                        "src": "https://images.pexels.com/photos/8833424/pexels-photo-8833424.jpeg",
+                                        "fit": "cover",
+                                        "position": "center"
+                                      },
+                                      "backgroundColor": "transparent"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "template-mqhos2xu-32-btn-4",
+                            "type": "button",
+                            "blockMeta": {
+                              "blockType": "action.button",
+                              "name": "Explore Mockups"
+                            },
+                            "props": {
+                              "text": "Explore Mockups",
+                              "link": {
+                                "href": "#",
+                                "type": "external"
+                              },
+                              "buttonStyle": {
+                                "backgroundColor": {
+                                  "$themeRef": "colors.primary"
+                                },
+                                "textColor": {
+                                  "$themeRef": "colors.surface"
+                                },
+                                "fontSize": {
+                                  "$themeRef": "tokens.typography.body"
+                                },
+                                "borderRadius": {
+                                  "topLeft": {
+                                    "$themeRef": "tokens.radius.cta"
+                                  },
+                                  "topRight": {
+                                    "$themeRef": "tokens.radius.cta"
+                                  },
+                                  "bottomRight": {
+                                    "$themeRef": "tokens.radius.cta"
+                                  },
+                                  "bottomLeft": {
+                                    "$themeRef": "tokens.radius.cta"
+                                  }
+                                },
+                                "border": {
+                                  "style": "solid",
+                                  "color": "rgba(0,0,0,0)",
+                                  "top": "0",
+                                  "right": "0",
+                                  "bottom": "0",
+                                  "left": "0"
+                                },
+                                "bold": false,
+                                "italic": false,
+                                "widthMode": "hug",
+                                "heightMode": "hug"
+                              }
+                            },
+                            "wrapperStyle": {
+                              "contentAlign": {
+                                "horizontal": "left",
+                                "vertical": "center"
+                              },
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              }
+                            },
+                            "bindings": {
+                              "props.buttonStyle.backgroundColor": {
+                                "slotId": "colors.primary",
+                                "mode": "theme",
+                                "tokenPath": "colors.primary",
+                                "fieldKind": "style"
+                              },
+                              "props.buttonStyle.textColor": {
+                                "slotId": "colors.surface",
+                                "mode": "theme",
+                                "tokenPath": "colors.surface",
+                                "fieldKind": "style"
+                              },
+                              "props.buttonStyle.fontSize": {
+                                "slotId": "tokens.typography.body",
+                                "mode": "theme",
+                                "tokenPath": "tokens.typography.body",
+                                "fieldKind": "style"
+                              },
+                              "props.buttonStyle.borderRadius.topLeft": {
+                                "slotId": "tokens.radius.cta",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.cta",
+                                "fieldKind": "style"
+                              },
+                              "props.buttonStyle.borderRadius.topRight": {
+                                "slotId": "tokens.radius.cta",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.cta",
+                                "fieldKind": "style"
+                              },
+                              "props.buttonStyle.borderRadius.bottomRight": {
+                                "slotId": "tokens.radius.cta",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.cta",
+                                "fieldKind": "style"
+                              },
+                              "props.buttonStyle.borderRadius.bottomLeft": {
+                                "slotId": "tokens.radius.cta",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.cta",
+                                "fieldKind": "style"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "template-mqhos2xu-32-stack-13",
+                        "type": "layout",
+                        "blockMeta": {
+                          "blockType": "layout.container",
+                          "name": "公共领域藏品模块"
+                        },
+                        "props": {
+                          "direction": "vertical",
+                          "gapMode": "fixed",
+                          "gap": {
+                            "$themeRef": "tokens.spacing.gap"
+                          }
+                        },
+                        "wrapperStyle": {
+                          "widthMode": "fill",
+                          "heightMode": "hug",
+                          "contentAlign": {
+                            "horizontal": "center",
+                            "vertical": "top"
+                          },
+                          "border": {
+                            "style": "solid",
+                            "color": "rgba(0,0,0,0)",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0"
+                          },
+                          "borderRadius": {
+                            "topLeft": "0",
+                            "topRight": "0",
+                            "bottomRight": "0",
+                            "bottomLeft": "0"
+                          },
+                          "padding": {
+                            "top": {
+                              "$themeRef": "tokens.spacing.section"
+                            },
+                            "right": {
+                              "$themeRef": "tokens.spacing.section"
+                            },
+                            "bottom": {
+                              "$themeRef": "tokens.spacing.section"
+                            },
+                            "left": {
+                              "$themeRef": "tokens.spacing.section"
+                            }
+                          }
+                        },
+                        "bindings": {
+                          "props.gap": {
+                            "slotId": "tokens.spacing.gap",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.gap",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.top": {
+                            "slotId": "tokens.spacing.section",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.section",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.right": {
+                            "slotId": "tokens.spacing.section",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.section",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.bottom": {
+                            "slotId": "tokens.spacing.section",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.section",
+                            "fieldKind": "style"
+                          },
+                          "wrapperStyle.padding.left": {
+                            "slotId": "tokens.spacing.section",
+                            "mode": "theme",
+                            "tokenPath": "tokens.spacing.section",
+                            "fieldKind": "style"
+                          }
+                        },
+                        "children": [
+                          {
+                            "id": "template-mqhos2xu-32-stack-14",
+                            "type": "layout",
+                            "blockMeta": {
+                              "blockType": "layout.container",
+                              "name": "公共领域内容卡片"
+                            },
+                            "props": {
+                              "direction": "vertical",
+                              "gapMode": "fixed",
+                              "gap": {
+                                "$themeRef": "tokens.spacing.gap"
+                              }
+                            },
+                            "wrapperStyle": {
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "contentAlign": {
+                                "horizontal": "left",
+                                "vertical": "top"
+                              },
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": {
+                                  "$themeRef": "tokens.radius.panel"
+                                },
+                                "topRight": {
+                                  "$themeRef": "tokens.radius.panel"
+                                },
+                                "bottomRight": {
+                                  "$themeRef": "tokens.radius.panel"
+                                },
+                                "bottomLeft": {
+                                  "$themeRef": "tokens.radius.panel"
+                                }
+                              },
+                              "backgroundColor": "#B91C1C",
+                              "padding": {
+                                "top": {
+                                  "$themeRef": "tokens.spacing.gap"
+                                },
+                                "right": {
+                                  "$themeRef": "tokens.spacing.gap"
+                                },
+                                "bottom": {
+                                  "$themeRef": "tokens.spacing.gap"
+                                },
+                                "left": {
+                                  "$themeRef": "tokens.spacing.gap"
+                                }
+                              }
+                            },
+                            "bindings": {
+                              "props.gap": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.top": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.right": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.bottom": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.left": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.borderRadius.topLeft": {
+                                "slotId": "tokens.radius.panel",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.panel",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.borderRadius.topRight": {
+                                "slotId": "tokens.radius.panel",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.panel",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.borderRadius.bottomRight": {
+                                "slotId": "tokens.radius.panel",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.panel",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.borderRadius.bottomLeft": {
+                                "slotId": "tokens.radius.panel",
+                                "mode": "theme",
+                                "tokenPath": "tokens.radius.panel",
+                                "fieldKind": "style"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "template-mqhos2xu-32-text-6",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "Treasures from the Public Do…"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "Treasures from the Public Domain: Variations Quatre Vingt Six Motifs",
+                                            "bold": true
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.h1"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.surface"
+                                  },
+                                  "bold": true,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "left",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.h1",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.h1",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.surface",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.surface",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-text-7",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "Enjoy a collection of vibran…"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "Enjoy a collection of vibrant floral Art Deco patterns from Variations Quatre-Vingt-Six Motifs by the French chemist, composer and textile designer Edouard Benedictus (1878-1930)."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.body"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.surface"
+                                  },
+                                  "bold": false,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "left",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.body",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.body",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.surface",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.surface",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-image-16",
+                                "type": "image",
+                                "blockMeta": {
+                                  "blockType": "content.image",
+                                  "name": "edouard benedictus flora…"
+                                },
+                                "props": {},
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "fixed",
+                                  "height": "350px",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  },
+                                  "backgroundImage": {
+                                    "src": "https://images.pexels.com/photos/36913288/pexels-photo-36913288.jpeg",
+                                    "fit": "cover",
+                                    "position": "center"
+                                  },
+                                  "backgroundColor": "transparent"
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-btn-5",
+                                "type": "button",
+                                "blockMeta": {
+                                  "blockType": "action.button",
+                                  "name": "Explore Public Domain Collection…"
+                                },
+                                "props": {
+                                  "text": "Explore Public Domain Collections",
+                                  "link": {
+                                    "href": "#",
+                                    "type": "external"
+                                  },
+                                  "buttonStyle": {
+                                    "backgroundColor": {
+                                      "$themeRef": "colors.primary"
+                                    },
+                                    "textColor": {
+                                      "$themeRef": "colors.surface"
+                                    },
+                                    "fontSize": {
+                                      "$themeRef": "tokens.typography.body"
+                                    },
+                                    "borderRadius": {
+                                      "topLeft": {
+                                        "$themeRef": "tokens.radius.cta"
+                                      },
+                                      "topRight": {
+                                        "$themeRef": "tokens.radius.cta"
+                                      },
+                                      "bottomRight": {
+                                        "$themeRef": "tokens.radius.cta"
+                                      },
+                                      "bottomLeft": {
+                                        "$themeRef": "tokens.radius.cta"
+                                      }
+                                    },
+                                    "border": {
+                                      "style": "solid",
+                                      "color": "rgba(0,0,0,0)",
+                                      "top": "0",
+                                      "right": "0",
+                                      "bottom": "0",
+                                      "left": "0"
+                                    },
+                                    "bold": false,
+                                    "italic": false,
+                                    "widthMode": "hug",
+                                    "heightMode": "hug"
+                                  }
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "left",
+                                    "vertical": "center"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.buttonStyle.backgroundColor": {
+                                    "slotId": "colors.primary",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.primary",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.buttonStyle.textColor": {
+                                    "slotId": "colors.surface",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.surface",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.buttonStyle.fontSize": {
+                                    "slotId": "tokens.typography.body",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.body",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.buttonStyle.borderRadius.topLeft": {
+                                    "slotId": "tokens.radius.cta",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.cta",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.buttonStyle.borderRadius.topRight": {
+                                    "slotId": "tokens.radius.cta",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.cta",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.buttonStyle.borderRadius.bottomRight": {
+                                    "slotId": "tokens.radius.cta",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.cta",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.buttonStyle.borderRadius.bottomLeft": {
+                                    "slotId": "tokens.radius.cta",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.cta",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "template-mqhos2xu-32-stack-15",
+                            "type": "layout",
+                            "blockMeta": {
+                              "blockType": "layout.container",
+                              "name": "邀请好友模块"
+                            },
+                            "props": {
+                              "direction": "vertical",
+                              "gapMode": "fixed",
+                              "gap": {
+                                "$themeRef": "tokens.spacing.gap"
+                              }
+                            },
+                            "wrapperStyle": {
+                              "widthMode": "fill",
+                              "heightMode": "hug",
+                              "contentAlign": {
+                                "horizontal": "center",
+                                "vertical": "top"
+                              },
+                              "border": {
+                                "style": "solid",
+                                "color": "rgba(0,0,0,0)",
+                                "top": "0",
+                                "right": "0",
+                                "bottom": "0",
+                                "left": "0"
+                              },
+                              "borderRadius": {
+                                "topLeft": "0",
+                                "topRight": "0",
+                                "bottomRight": "0",
+                                "bottomLeft": "0"
+                              },
+                              "padding": {
+                                "top": {
+                                  "$themeRef": "tokens.spacing.section"
+                                },
+                                "right": {
+                                  "$themeRef": "tokens.spacing.section"
+                                },
+                                "bottom": {
+                                  "$themeRef": "tokens.spacing.section"
+                                },
+                                "left": {
+                                  "$themeRef": "tokens.spacing.section"
+                                }
+                              }
+                            },
+                            "bindings": {
+                              "props.gap": {
+                                "slotId": "tokens.spacing.gap",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.gap",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.top": {
+                                "slotId": "tokens.spacing.section",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.section",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.right": {
+                                "slotId": "tokens.spacing.section",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.section",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.bottom": {
+                                "slotId": "tokens.spacing.section",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.section",
+                                "fieldKind": "style"
+                              },
+                              "wrapperStyle.padding.left": {
+                                "slotId": "tokens.spacing.section",
+                                "mode": "theme",
+                                "tokenPath": "tokens.spacing.section",
+                                "fieldKind": "style"
+                              }
+                            },
+                            "children": [
+                              {
+                                "id": "template-mqhos2xu-32-stack-16",
+                                "type": "layout",
+                                "blockMeta": {
+                                  "blockType": "layout.container",
+                                  "name": "邀请好友内容卡片"
+                                },
+                                "props": {
+                                  "direction": "vertical",
+                                  "gapMode": "fixed",
+                                  "gap": {
+                                    "$themeRef": "tokens.spacing.gap"
+                                  }
+                                },
+                                "wrapperStyle": {
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "contentAlign": {
+                                    "horizontal": "left",
+                                    "vertical": "top"
+                                  },
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": {
+                                      "$themeRef": "tokens.radius.panel"
+                                    },
+                                    "topRight": {
+                                      "$themeRef": "tokens.radius.panel"
+                                    },
+                                    "bottomRight": {
+                                      "$themeRef": "tokens.radius.panel"
+                                    },
+                                    "bottomLeft": {
+                                      "$themeRef": "tokens.radius.panel"
+                                    }
+                                  },
+                                  "backgroundColor": "#8B5CF6",
+                                  "padding": {
+                                    "top": {
+                                      "$themeRef": "tokens.spacing.gap"
+                                    },
+                                    "right": {
+                                      "$themeRef": "tokens.spacing.gap"
+                                    },
+                                    "bottom": {
+                                      "$themeRef": "tokens.spacing.gap"
+                                    },
+                                    "left": {
+                                      "$themeRef": "tokens.spacing.gap"
+                                    }
+                                  }
+                                },
+                                "bindings": {
+                                  "props.gap": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.padding.top": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.padding.right": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.padding.bottom": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.padding.left": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.borderRadius.topLeft": {
+                                    "slotId": "tokens.radius.panel",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.panel",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.borderRadius.topRight": {
+                                    "slotId": "tokens.radius.panel",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.panel",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.borderRadius.bottomRight": {
+                                    "slotId": "tokens.radius.panel",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.panel",
+                                    "fieldKind": "style"
+                                  },
+                                  "wrapperStyle.borderRadius.bottomLeft": {
+                                    "slotId": "tokens.radius.panel",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.radius.panel",
+                                    "fieldKind": "style"
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "id": "template-mqhos2xu-32-text-8",
+                                    "type": "text",
+                                    "blockMeta": {
+                                      "blockType": "content.text",
+                                      "name": "Invite friends\nand get premi…"
+                                    },
+                                    "props": {
+                                      "textBody": {
+                                        "paragraphs": [
+                                          {
+                                            "runs": [
+                                              {
+                                                "text": "Invite friends",
+                                                "bold": true
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "runs": [
+                                              {
+                                                "text": "and get premium for free",
+                                                "bold": true
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "fontSize": {
+                                        "$themeRef": "tokens.typography.h1"
+                                      },
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      },
+                                      "bold": true,
+                                      "italic": false,
+                                      "decoration": "none"
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "left",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "fill",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.fontSize": {
+                                        "slotId": "tokens.typography.h1",
+                                        "mode": "theme",
+                                        "tokenPath": "tokens.typography.h1",
+                                        "fieldKind": "style"
+                                      },
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "template-mqhos2xu-32-text-9",
+                                    "type": "text",
+                                    "blockMeta": {
+                                      "blockType": "content.text",
+                                      "name": "Just invite 10 friends, fami…"
+                                    },
+                                    "props": {
+                                      "textBody": {
+                                        "paragraphs": [
+                                          {
+                                            "runs": [
+                                              {
+                                                "text": "Just invite 10 friends, family, coworkers or social media followers and enjoy one year's free premium design resources."
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "fontSize": {
+                                        "$themeRef": "tokens.typography.body"
+                                      },
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      },
+                                      "bold": false,
+                                      "italic": false,
+                                      "decoration": "none"
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "left",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "fill",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.fontSize": {
+                                        "slotId": "tokens.typography.body",
+                                        "mode": "theme",
+                                        "tokenPath": "tokens.typography.body",
+                                        "fieldKind": "style"
+                                      },
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-text-10",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "Visit your referral page to …"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "Visit your referral page to learn how you can invite your friends or simply share your personal referral link below."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.caption"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.surface"
+                                  },
+                                  "bold": false,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.caption",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.caption",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.surface",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.surface",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-text-11",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "https://www.rawpixel.com/use…"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "https://www.rawpixel.com/user/9074436/referral"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.caption"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.secondary"
+                                  },
+                                  "bold": false,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.caption",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.caption",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.secondary",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.secondary",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-text-12",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "We're glad you're with us!\nS…"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "We're glad you're with us!"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "Say hello or ask us (almost anything :)"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.caption"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.surface"
+                                  },
+                                  "bold": false,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.caption",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.caption",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.surface",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.surface",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-row-1",
+                                "type": "layout",
+                                "blockMeta": {
+                                  "blockType": "layout.container",
+                                  "name": "社交图标栏"
+                                },
+                                "props": {
+                                  "direction": "horizontal",
+                                  "gapMode": "fixed",
+                                  "gap": {
+                                    "$themeRef": "tokens.spacing.gap"
+                                  }
+                                },
+                                "wrapperStyle": {
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "center"
+                                  },
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.gap": {
+                                    "slotId": "tokens.spacing.gap",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.spacing.gap",
+                                    "fieldKind": "style"
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "id": "template-mqhos2xu-32-icon-1",
+                                    "type": "icon",
+                                    "blockMeta": {
+                                      "blockType": "content.icon",
+                                      "name": "facebook"
+                                    },
+                                    "props": {
+                                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/facebook.svg",
+                                      "size": "16px",
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      }
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "hug",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "template-mqhos2xu-32-icon-2",
+                                    "type": "icon",
+                                    "blockMeta": {
+                                      "blockType": "content.icon",
+                                      "name": "x"
+                                    },
+                                    "props": {
+                                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/x.svg",
+                                      "size": "16px",
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      }
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "hug",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "template-mqhos2xu-32-icon-3",
+                                    "type": "icon",
+                                    "blockMeta": {
+                                      "blockType": "content.icon",
+                                      "name": "instagram"
+                                    },
+                                    "props": {
+                                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/instagram.svg",
+                                      "size": "16px",
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      }
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "hug",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "template-mqhos2xu-32-icon-4",
+                                    "type": "icon",
+                                    "blockMeta": {
+                                      "blockType": "content.icon",
+                                      "name": "pinterest"
+                                    },
+                                    "props": {
+                                      "src": "https://cdn.jsdelivr.net/npm/simple-icons@13.16.0/icons/pinterest.svg",
+                                      "size": "16px",
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      }
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "hug",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "id": "template-mqhos2xu-32-icon-5",
+                                    "type": "icon",
+                                    "blockMeta": {
+                                      "blockType": "content.icon",
+                                      "name": "gmail"
+                                    },
+                                    "props": {
+                                      "src": "",
+                                      "size": "16px",
+                                      "color": {
+                                        "$themeRef": "colors.surface"
+                                      }
+                                    },
+                                    "wrapperStyle": {
+                                      "contentAlign": {
+                                        "horizontal": "center",
+                                        "vertical": "top"
+                                      },
+                                      "widthMode": "hug",
+                                      "heightMode": "hug",
+                                      "border": {
+                                        "style": "solid",
+                                        "color": "rgba(0,0,0,0)",
+                                        "top": "0",
+                                        "right": "0",
+                                        "bottom": "0",
+                                        "left": "0"
+                                      },
+                                      "borderRadius": {
+                                        "topLeft": "0",
+                                        "topRight": "0",
+                                        "bottomRight": "0",
+                                        "bottomLeft": "0"
+                                      }
+                                    },
+                                    "bindings": {
+                                      "props.color": {
+                                        "slotId": "colors.surface",
+                                        "mode": "theme",
+                                        "tokenPath": "colors.surface",
+                                        "fieldKind": "style"
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-text-13",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "Copyright ©2025 rawpixel Ltd…"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "Copyright ©2025 rawpixel Ltd, UK Company No. 09381487 All rights reserved."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.caption"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.secondary"
+                                  },
+                                  "bold": false,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.caption",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.caption",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.secondary",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.secondary",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              },
+                              {
+                                "id": "template-mqhos2xu-32-text-14",
+                                "type": "text",
+                                "blockMeta": {
+                                  "blockType": "content.text",
+                                  "name": "This email was sent to hello…"
+                                },
+                                "props": {
+                                  "textBody": {
+                                    "paragraphs": [
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "This email was sent to hello@SmilesDavis.yez"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "You've received it because you're subscribed to our newsletter."
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": "View in browser | Unsubscribe"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "runs": [
+                                          {
+                                            "text": ""
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "fontSize": {
+                                    "$themeRef": "tokens.typography.caption"
+                                  },
+                                  "color": {
+                                    "$themeRef": "colors.secondary"
+                                  },
+                                  "bold": false,
+                                  "italic": false,
+                                  "decoration": "none"
+                                },
+                                "wrapperStyle": {
+                                  "contentAlign": {
+                                    "horizontal": "center",
+                                    "vertical": "top"
+                                  },
+                                  "widthMode": "fill",
+                                  "heightMode": "hug",
+                                  "border": {
+                                    "style": "solid",
+                                    "color": "rgba(0,0,0,0)",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0"
+                                  },
+                                  "borderRadius": {
+                                    "topLeft": "0",
+                                    "topRight": "0",
+                                    "bottomRight": "0",
+                                    "bottomLeft": "0"
+                                  }
+                                },
+                                "bindings": {
+                                  "props.fontSize": {
+                                    "slotId": "tokens.typography.caption",
+                                    "mode": "theme",
+                                    "tokenPath": "tokens.typography.caption",
+                                    "fieldKind": "style"
+                                  },
+                                  "props.color": {
+                                    "slotId": "colors.secondary",
+                                    "mode": "theme",
+                                    "tokenPath": "colors.secondary",
+                                    "fieldKind": "style"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "template-mqhos2xu-32-stack-17",
+                    "type": "layout",
+                    "blockMeta": {
+                      "blockType": "layout.container",
+                      "name": "页脚栏"
+                    },
+                    "props": {
+                      "direction": "vertical",
+                      "gapMode": "fixed",
+                      "gap": {
+                        "$themeRef": "tokens.spacing.gap"
+                      }
+                    },
+                    "wrapperStyle": {
+                      "widthMode": "fill",
+                      "heightMode": "hug",
+                      "contentAlign": {
+                        "horizontal": "center",
+                        "vertical": "top"
+                      },
+                      "border": {
+                        "style": "solid",
+                        "color": "rgba(0,0,0,0)",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0"
+                      },
+                      "borderRadius": {
+                        "topLeft": "0",
+                        "topRight": "0",
+                        "bottomRight": "0",
+                        "bottomLeft": "0"
+                      },
+                      "padding": {
+                        "top": {
+                          "$themeRef": "tokens.spacing.section"
+                        },
+                        "right": {
+                          "$themeRef": "tokens.spacing.section"
+                        },
+                        "bottom": {
+                          "$themeRef": "tokens.spacing.section"
+                        },
+                        "left": {
+                          "$themeRef": "tokens.spacing.section"
+                        }
+                      }
+                    },
+                    "bindings": {
+                      "props.gap": {
+                        "slotId": "tokens.spacing.gap",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.gap",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.top": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.right": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.bottom": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      },
+                      "wrapperStyle.padding.left": {
+                        "slotId": "tokens.spacing.section",
+                        "mode": "theme",
+                        "tokenPath": "tokens.spacing.section",
+                        "fieldKind": "style"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

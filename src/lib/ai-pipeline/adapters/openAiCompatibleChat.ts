@@ -39,7 +39,7 @@ export type ChatCompletionsFallbackPolicy = {
   ) => boolean;
 };
 
-function chatCompletionsUrl(baseUrl: string): string {
+export function chatCompletionsUrl(baseUrl: string): string {
   return `${baseUrl.replace(/\/$/, "")}/chat/completions`;
 }
 

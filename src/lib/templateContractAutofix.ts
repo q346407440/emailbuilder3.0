@@ -13,7 +13,7 @@
 
 import { clampSpacingPxString, EMAIL_CONTAINER_SPACING_MAX_PX } from "./spacingPxCap";
 import { borderRadiusZeroFlat } from "./boxModelFlat";
-import { isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
+import { hasSiblingDimensionAnchorInNestedTree } from "./wrapperHugConstraint";
 import {
   inferSemanticBlockTypeForMeta,
   normalizeRuntimeTypeAlias,
@@ -145,6 +145,22 @@ const fixChildFillUnderHugParent: IssueFixer = (issueLine, ctx) => {
   return true;
 };
 
+/** 容器 hug 无子级锚点 → 回落 fill（与 wrapperHugConstraint 协调层一致）。 */
+const fixContainerHugWithoutChildAnchor: IssueFixer = (issueLine, ctx) => {
+  const m =
+    /^blocks\.([^.]+)\.wrapperStyle\.(widthMode|heightMode): layout\/grid\/image\/emailRoot .* hug/.exec(
+      issueLine
+    );
+  if (!m) return false;
+  const block = findBlockByIdInTemplateTree(ctx.template, m[1]!);
+  if (!block || !isRecord(block.wrapperStyle)) return false;
+  const modeKey = m[2]!;
+  if ((block.wrapperStyle as AnyRecord)[modeKey] !== "hug") return false;
+  (block.wrapperStyle as AnyRecord)[modeKey] = "fill";
+  ctx.fixes.push(`blocks.${m[1]} wrapperStyle.${modeKey} hug→fill（子级无锚点）`);
+  return true;
+};
+
 /** 按钮外层 hug 同轴下胶囊 fill → 回落 hug（与 wrapperFillConstraint 协调层一致）。 */
 const fixButtonBodyFillUnderWrapperHug: IssueFixer = (issueLine, ctx) => {
   const m =
@@ -176,11 +192,21 @@ function cascadeFillUnderHug(subtreeRoot: AnyRecord, ctx: FixContext): void {
       if (isRecord(ws)) {
         // 谓词复用 wrapperFillConstraint 单一真源；落盘树节点与 EmailBlock 结构兼容
         const parentBlock = parent as unknown as EmailBlock;
-        if (ws.widthMode === "fill" && isChildFillBlockedByParentHug(parentBlock, "width")) {
+        const childBlock = child as unknown as EmailBlock;
+        const childId = typeof childBlock.id === "string" ? childBlock.id : "";
+        if (
+          ws.widthMode === "fill" &&
+          parentBlock.wrapperStyle?.widthMode === "hug" &&
+          !hasSiblingDimensionAnchorInNestedTree(parentBlock, childId, "width")
+        ) {
           ws.widthMode = "hug";
           ctx.fixes.push(`blocks.${child.id} wrapperStyle.widthMode fill→hug（级联）`);
         }
-        if (ws.heightMode === "fill" && isChildFillBlockedByParentHug(parentBlock, "height")) {
+        if (
+          ws.heightMode === "fill" &&
+          parentBlock.wrapperStyle?.heightMode === "hug" &&
+          !hasSiblingDimensionAnchorInNestedTree(parentBlock, childId, "height")
+        ) {
           ws.heightMode = "hug";
           ctx.fixes.push(`blocks.${child.id} wrapperStyle.heightMode fill→hug（级联）`);
         }
@@ -483,6 +509,7 @@ const ISSUE_FIXERS: readonly IssueFixer[] = [
   fixMissingBlockMeta,
   fixMissingWrapperBorderRadius,
   fixChildFillUnderHugParent,
+  fixContainerHugWithoutChildAnchor,
   fixButtonBodyFillUnderWrapperHug,
   fixImageBackgroundImageString,
   fixSpacingExceedsMax,

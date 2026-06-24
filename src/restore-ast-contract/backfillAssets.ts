@@ -1,5 +1,5 @@
 import { createDefaultAssetResolver } from "../lib/ai-pipeline/assetResolve";
-import { IMAGE_PLACEHOLDER_PUBLIC_PATH } from "../lib/imagePlaceholder";
+import { IMAGE_PLACEHOLDER_PUBLIC_PATH, ICON_PLACEHOLDER_PUBLIC_PATH } from "../lib/imagePlaceholder";
 import {
   resolveStoreBadgeAssetId,
   resolveStoreBadgeUrl,
@@ -16,7 +16,7 @@ export type ResolvedAssetEntry = {
   ok: boolean;
   url?: string;
   alt?: string;
-  /** 摄影图搜图失败但已回落本地占位图时为 true（badge / icon 不适用）。 */
+  /** 摄影图 / 图标搜图失败但已回落本地占位时为 true（store badge 不适用）。 */
   placeholderFallback?: boolean;
   reason?: string;
   detail?: string;
@@ -93,7 +93,14 @@ async function resolveOne(
   if (result.ok) {
     return { ...base, ok: true, url: result.url };
   }
-  return { ...base, ok: false, reason: result.reason, detail: result.detail };
+  return {
+    ...base,
+    ok: true,
+    url: ICON_PLACEHOLDER_PUBLIC_PATH,
+    placeholderFallback: true,
+    reason: result.reason,
+    detail: result.detail,
+  };
 }
 
 /** 批量搜索 + 验活，产出可落盘清单（第 3 步）。 */
@@ -184,7 +191,9 @@ export function remapResolvedManifestToRequests(
       kind: "icon",
       query: req.query,
       pack: req.pack,
-      ok: false,
+      ok: true,
+      url: ICON_PLACEHOLDER_PUBLIC_PATH,
+      placeholderFallback: true,
       reason: "MANIFEST_QUERY_MISS",
     };
   });

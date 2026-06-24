@@ -1,6 +1,10 @@
-import type { LlmClient, LlmMessage, LlmResponseFormat } from "../ports/LlmClient";
+import type { LlmClient, LlmMessage, LlmResponseFormat, LlmStreamHandlers } from "../ports/LlmClient";
 import { parseLlmJson } from "../parseLlmJson";
-import { AI_PIPELINE_STEP_TIMEOUT_MS } from "../../../layout-variant-ai-contract/constants";
+import {
+  AI_PIPELINE_STEP_TIMEOUT_MS,
+  RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS,
+  RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+} from "../../../layout-variant-ai-contract/constants";
 import type {
   DoubaoReasoningEffort,
   DoubaoThinkingType,
@@ -15,10 +19,15 @@ import { readDefaultLlmGenerationParams } from "../../../layout-variant-ai-contr
 import { readDoubaoEnvConfig, readDoubaoEnvConfigOrNull } from "../llmVendorConfig";
 import { toOpenAiCompatibleGenerationFields } from "../llmGenerationParamsApply";
 import {
+  OpenAiChatCompletionsError,
   postOpenAiChatCompletionsOnce,
   postOpenAiChatCompletionsWithBodyVariants,
   type PostOpenAiChatCompletionsOptions,
 } from "./openAiCompatibleChat";
+import {
+  postOpenAiChatCompletionsStream,
+  type PostOpenAiChatCompletionsStreamOptions,
+} from "./openAiCompatibleChatStream";
 import {
   buildDoubaoResponseFormatBodies,
   isDoubaoResponseFormatUnsupported,
@@ -80,7 +89,74 @@ export type CreateDoubaoClientOptions = {
   timeoutMs?: number;
   runtime: DoubaoClientRuntimeConfig;
   generationParams: LlmGenerationParams;
+  /** 流式 idle / 绝对超时；RestoreAst 传入，其余走默认。 */
+  streamIdleTimeoutMs?: number;
+  streamAbsoluteTimeoutMs?: number;
 };
+
+function doubaoStreamPostOptions(
+  runtime: DoubaoClientRuntimeConfig,
+  handlers: LlmStreamHandlers,
+  streamIdleTimeoutMs = RESTORE_AST_LLM_STREAM_IDLE_TIMEOUT_MS,
+  streamAbsoluteTimeoutMs = RESTORE_AST_GENERATE_ABSOLUTE_TIMEOUT_MS
+): PostOpenAiChatCompletionsStreamOptions {
+  return {
+    vendorLabel: DOUBAO_VENDOR_LABEL,
+    idleTimeoutMs: streamIdleTimeoutMs,
+    absoluteTimeoutMs: streamAbsoluteTimeoutMs,
+    augmentBaseBody: () => buildDoubaoChatCompletionsExtensions(runtime),
+    onDelta: handlers.onDelta,
+  };
+}
+
+async function doubaoCompleteStream(
+  runtime: DoubaoClientRuntimeConfig,
+  generation: ReturnType<typeof toOpenAiCompatibleGenerationFields>,
+  messages: LlmMessage[],
+  responseFormat: LlmResponseFormat | undefined,
+  handlers: LlmStreamHandlers,
+  options: Pick<CreateDoubaoClientOptions, "streamIdleTimeoutMs" | "streamAbsoluteTimeoutMs">
+): Promise<string> {
+  const config = resolveDoubaoApiConfig(runtime);
+  const request = {
+    model: config.model,
+    messages,
+    ...generation,
+  };
+  const formatVariants = buildDoubaoResponseFormatBodies(responseFormat);
+  const variants = formatVariants.length > 0 ? formatVariants : [{}];
+  let lastError: Error | null = null;
+
+  for (let i = 0; i < variants.length; i += 1) {
+    try {
+      const content = await postOpenAiChatCompletionsStream(
+        config,
+        request,
+        doubaoStreamPostOptions(
+          runtime,
+          handlers,
+          options.streamIdleTimeoutMs,
+          options.streamAbsoluteTimeoutMs
+        ),
+        variants[i]!,
+        i + 1
+      );
+      parseLlmJson(content);
+      return content;
+    } catch (e) {
+      if (!(e instanceof OpenAiChatCompletionsError)) throw e;
+      lastError = e;
+      const status = e.status ?? 0;
+      const canFallback =
+        responseFormat != null &&
+        i < variants.length - 1 &&
+        isDoubaoResponseFormatUnsupported(status, e.message);
+      if (!canFallback) throw e;
+    }
+  }
+
+  throw lastError ?? new OpenAiChatCompletionsError(`${DOUBAO_VENDOR_LABEL} 流式 API 调用失败`);
+}
 
 export function createDoubaoClientWithProfile(options: CreateDoubaoClientOptions): LlmClient {
   const timeoutMs = options.timeoutMs ?? AI_PIPELINE_STEP_TIMEOUT_MS;
@@ -109,6 +185,13 @@ export function createDoubaoClientWithProfile(options: CreateDoubaoClientOptions
       );
       parseLlmJson(content);
       return content;
+    },
+    async completeStream(
+      messages: LlmMessage[],
+      responseFormat: LlmResponseFormat | undefined,
+      handlers: LlmStreamHandlers
+    ): Promise<string> {
+      return doubaoCompleteStream(runtime, generation, messages, responseFormat, handlers, options);
     },
   };
 }

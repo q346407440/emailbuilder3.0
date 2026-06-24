@@ -1,8 +1,8 @@
 /**
  * 外层容器布局协调层：结构性编辑后按固定顺序归一化 wrapperStyle。
  *
- * 顺序：① 尺寸 fill 回落 → ② contentAlign 回落
- * 规则真源：wrapperFillConstraint / contentAlignConfigurability。
+ * 顺序：① 子级 fill 回落 → ② 容器 hug 回落 → ③ contentAlign 回落
+ * 规则真源：wrapperFillConstraint / wrapperHugConstraint / contentAlignConfigurability。
  */
 import type { EmailBlock, EmailTemplate, WrapperStyle } from "../types/email";
 import {
@@ -15,9 +15,14 @@ import {
   type ButtonBodyDimensionModeChange,
   type WrapperDimensionModeChange,
 } from "./wrapperFillConstraint";
+import {
+  normalizeContainerHugDimensionModes,
+  type ContainerHugDimensionModeChange,
+} from "./wrapperHugConstraint";
 
 export type WrapperReconcileReasonCode =
   | "fill_blocked_by_parent_hug"
+  | "hug_blocked_by_missing_child_anchor"
   | "button_body_fill_blocked_by_wrapper_hug"
   | "content_align_axis_not_configurable";
 
@@ -36,6 +41,16 @@ function mapDimensionChanges(changes: WrapperDimensionModeChange[]): WrapperReco
     from: c.from,
     to: c.to,
     reasonCode: "fill_blocked_by_parent_hug" as const,
+  }));
+}
+
+function mapContainerHugChanges(changes: ContainerHugDimensionModeChange[]): WrapperReconcileChange[] {
+  return changes.map((c) => ({
+    blockId: c.blockId,
+    field: c.axis === "width" ? "wrapperStyle.widthMode" : "wrapperStyle.heightMode",
+    from: c.from,
+    to: c.to,
+    reasonCode: "hug_blocked_by_missing_child_anchor" as const,
   }));
 }
 
@@ -67,19 +82,15 @@ function mapContentAlignChanges(changes: ContentAlignEffectivenessChange[]): Wra
 
 function collectSubtreeBlockIds(template: EmailTemplate, rootBlockId: string): string[] {
   const out: string[] = [];
-  const queue = [rootBlockId];
-  const seen = new Set<string>();
-  while (queue.length > 0) {
-    const id = queue.shift()!;
-    if (seen.has(id)) continue;
-    seen.add(id);
+  const walk = (id: string) => {
     const block = template.blocks[id];
-    if (!block) continue;
-    out.push(id);
+    if (!block) return;
     for (const childId of block.children ?? []) {
-      queue.push(childId);
+      walk(childId);
     }
-  }
+    out.push(id);
+  };
+  walk(rootBlockId);
   return out;
 }
 
@@ -88,11 +99,11 @@ function collectBlocksInTreeOrder(template: EmailTemplate): string[] {
   const walk = (id: string) => {
     const block = template.blocks[id];
     if (!block) return;
-    if (block.type !== "emailRoot") {
-      out.push(id);
-    }
     for (const childId of block.children ?? []) {
       walk(childId);
+    }
+    if (block.type !== "emailRoot") {
+      out.push(id);
     }
   };
   walk(template.rootBlockId);
@@ -127,6 +138,16 @@ export function reconcileBlockWrapperStyle(
     allChanges.push(...mapDimensionChanges(fillResult.changes));
   }
 
+  const hugResult = normalizeContainerHugDimensionModes(template, blockId, {
+    ...block,
+    wrapperStyle: ws,
+  });
+  if (hugResult.changed) {
+    ws = hugResult.wrapperStyle;
+    touched = true;
+    allChanges.push(...mapContainerHugChanges(hugResult.changes));
+  }
+
   if (block.type === "button") {
     const bodyResult = normalizeButtonBodyDimensionModes(template, blockId, {
       ...block,
@@ -152,12 +173,25 @@ export function reconcileBlockWrapperStyle(
 }
 
 /** 结构性布局编辑后：协调以 `rootBlockId` 为根的子树（含根节点）。原地修改 `template.blocks`。 */
-export function reconcileLayoutStructuralSubtreeInPlace(
+function collectAncestorBlockIds(template: EmailTemplate, blockId: string): string[] {
+  const out: string[] = [];
+  let parentId = template.blocks[blockId]?.parentId;
+  while (parentId) {
+    out.push(parentId);
+    parentId = template.blocks[parentId]?.parentId;
+  }
+  return out;
+}
+
+function reconcileBlockIdsInPlace(
   template: EmailTemplate,
-  rootBlockId: string
+  blockIds: string[]
 ): WrapperReconcileChange[] {
   const allChanges: WrapperReconcileChange[] = [];
-  for (const blockId of collectSubtreeBlockIds(template, rootBlockId)) {
+  const seen = new Set<string>();
+  for (const blockId of blockIds) {
+    if (seen.has(blockId)) continue;
+    seen.add(blockId);
     const block = template.blocks[blockId];
     if (!block || block.type === "emailRoot") continue;
     const result = reconcileBlockWrapperStyle(template, blockId, block);
@@ -172,24 +206,35 @@ export function reconcileLayoutStructuralSubtreeInPlace(
   return allChanges;
 }
 
-/** 全模板协调（迁移 / 批量校验修复）。按树序处理。 */
+export function reconcileLayoutStructuralSubtreeInPlace(
+  template: EmailTemplate,
+  rootBlockId: string
+): WrapperReconcileChange[] {
+  const blockIds = [
+    ...collectSubtreeBlockIds(template, rootBlockId),
+    ...collectAncestorBlockIds(template, rootBlockId),
+  ];
+  const allChanges: WrapperReconcileChange[] = [];
+  for (let pass = 0; pass < 16; pass += 1) {
+    const passChanges = reconcileBlockIdsInPlace(template, blockIds);
+    if (passChanges.length === 0) break;
+    allChanges.push(...passChanges);
+  }
+  return allChanges;
+}
+
+/** 全模板协调（迁移 / 批量校验修复）。按后序树序迭代至固定点。 */
 export function reconcileTemplateWrapperStyles(template: EmailTemplate): {
   template: EmailTemplate;
   changes: WrapperReconcileChange[];
 } {
   const next = structuredClone(template) as EmailTemplate;
   const allChanges: WrapperReconcileChange[] = [];
-  for (const blockId of collectBlocksInTreeOrder(next)) {
-    const block = next.blocks[blockId];
-    if (!block) continue;
-    const result = reconcileBlockWrapperStyle(next, blockId, block);
-    if (result.changed) {
-      block.wrapperStyle = result.wrapperStyle;
-      if (result.props !== undefined) {
-        block.props = result.props;
-      }
-      allChanges.push(...result.changes);
-    }
+  const blockIds = collectBlocksInTreeOrder(next);
+  for (let pass = 0; pass < 16; pass += 1) {
+    const passChanges = reconcileBlockIdsInPlace(next, blockIds);
+    if (passChanges.length === 0) break;
+    allChanges.push(...passChanges);
   }
   return { template: next, changes: allChanges };
 }

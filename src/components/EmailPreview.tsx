@@ -252,6 +252,9 @@ function horizontalRowInnerTableLayout(
   });
   const childTdWidthStyle = (childId: string): CSSProperties => {
     const child = template.blocks[childId];
+    const childIsVerticalLayout =
+      child?.type === "layout" &&
+      (child.props as { direction?: string } | undefined)?.direction === "vertical";
     return layoutRowChildTdWidthStyle(child?.wrapperStyle?.widthMode, child?.wrapperStyle?.width, {
       innerTableFullWidth,
       innerTableUsesFixedLayout,
@@ -259,6 +262,7 @@ function horizontalRowInnerTableLayout(
       childCount,
       rowHasFillWidthChild: hasFillWidthChild,
       rowHasHugWidthChild: hasHugWidthChild,
+      childIsVerticalLayout,
     });
   };
   const childTdWidthAttr = (childId: string): string | undefined => {
@@ -334,7 +338,10 @@ function renderBackgroundImageOverlayChildren(opts: {
     childIds,
     gapAuto
   );
-  const fillRowInnerHeight = layoutRowInnerShouldFillParentHeight(wrapperStyle, childIds.length);
+  const fillRowInnerHeight = layoutRowInnerShouldFillParentHeight(wrapperStyle, childIds.length, {
+    template,
+    childIds,
+  });
 
   if (isRow) {
     const { innerTableStyle, childTdWidthStyle, childTdWidthAttr, omitSpacerGapCells } = horizontalRowInnerTableLayout(
@@ -767,7 +774,10 @@ function BlockViewImpl({ id, template, canvasBlockView, onSelectBlock }: BlockVi
       b.children,
       gapAuto
     );
-    const fillRowInnerHeight = layoutRowInnerShouldFillParentHeight(b.wrapperStyle, b.children.length);
+    const fillRowInnerHeight = layoutRowInnerShouldFillParentHeight(b.wrapperStyle, b.children.length, {
+      template,
+      childIds: b.children,
+    });
 
     if (isRow) {
       const { innerTableStyle, childTdWidthStyle, childTdWidthAttr, omitSpacerGapCells } = horizontalRowInnerTableLayout(

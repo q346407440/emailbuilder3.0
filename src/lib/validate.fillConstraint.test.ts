@@ -126,7 +126,7 @@ describe("validateTemplate · 高度轴 fill 约束", () => {
     assert.equal(hasIssue(issues, "blocks.child.wrapperStyle.heightMode"), true);
   });
 
-  it("父横向 + 父高 hug + 子高 fill => 不命中高度轴校验", () => {
+  it("父横向 + 父高 hug + 子高 fill 且无兄弟锚点 => 命中高度轴校验", () => {
     const template = buildTemplateForFillConstraint({
       parentDirection: "horizontal",
       parentWidthMode: "fill",
@@ -134,6 +134,28 @@ describe("validateTemplate · 高度轴 fill 约束", () => {
       childWidthMode: "hug",
       childHeightMode: "fill",
     });
+    const issues = validateTemplate(template);
+    assert.equal(hasIssue(issues, "blocks.child.wrapperStyle.heightMode"), true);
+  });
+
+  it("父横向 + 父高 hug + 子高 fill 但有兄弟高度锚点 => 不命中", () => {
+    const template = buildTemplateForFillConstraint({
+      parentDirection: "horizontal",
+      parentWidthMode: "fill",
+      parentHeightMode: "hug",
+      childWidthMode: "hug",
+      childHeightMode: "fill",
+    });
+    template.blocks.parent.children = ["anchor", "child"];
+    template.blocks.anchor = {
+      id: "anchor",
+      type: "text",
+      parentId: "parent",
+      children: [],
+      wrapperStyle: { widthMode: "hug", heightMode: "hug", contentAlign: { horizontal: "left", vertical: "top" } },
+      props: { text: "撑高" },
+      bindings: {},
+    };
     const issues = validateTemplate(template);
     assert.equal(hasIssue(issues, "blocks.child.wrapperStyle.heightMode"), false);
   });

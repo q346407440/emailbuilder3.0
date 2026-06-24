@@ -59,7 +59,14 @@ export {
 } from "./buttonHeight";
 export { astToTemplate } from "./astToTemplate";
 export type { AstToTemplateOptions, AstToTemplateResult } from "./astToTemplate";
+export {
+  DEFAULT_EMAIL_CANVAS_LITERAL,
+  resolveEmailCanvasBackground,
+  resolveEmailCanvasLiteral,
+  isValidEmailCanvas,
+} from "./resolveEmailCanvas";
 export { collapseRootSiblingPaddingSeams } from "./collapseRootSiblingPaddingSeams";
+export type { CollapseRootSiblingPaddingSeamsOptions } from "./collapseRootSiblingPaddingSeams";
 export type { AssetRequest } from "./buildCtx";
 export {
   resolveAstAssetRequests,

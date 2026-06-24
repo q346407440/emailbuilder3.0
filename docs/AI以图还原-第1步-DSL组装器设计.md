@@ -67,14 +67,14 @@ type BuildCtx = {
 
 | AST `t` | runtime / blockType | props（本体） | box（wrapperStyle） | 派生 & 管死 | 可绑定字段 |
 |---|---|---|---|---|---|
-| `email` | `emailRoot` / `email.root` | **盒子在 props**：`backgroundColor`/`padding`/`border`/`width`/`gapMode`/`gap` | 仅 `widthMode`/`heightMode` | id、blockMeta、padding 默认 0、width 默认 600px；**禁** visibility/repeat | `props.backgroundColor`→`colors.*` |
+| `email` | `emailRoot` / `email.root` | **盒子在 props**：`backgroundColor`（含 AST `canvas`）/`padding`/`border`/`width`/`gapMode`/`gap` | 仅 `widthMode`/`heightMode` | id、blockMeta、padding 默认 0、width 默认 600px；`canvas` 省略→`#FFFFFF` 字面量；**禁** visibility/repeat | `props.backgroundColor`→`colors.*` 或 hex 字面量 |
 | `stack` | `layout` / `layout.container` | `direction:'vertical'`、`gapMode`、`gap` | contentAlign/bg/padding/border/borderRadius | blockMeta（**name 由 `title` 派生**）；contentAlign 两轴必填；borderRadius 缺省补 0；border 缺省 `borderNone()` | `gap`、`backgroundColor`、`padding`、`borderRadius` |
 | `row` | `layout` / `layout.container` | `direction:'horizontal'`、`gapMode`、`gap` | 同上；`align`→`contentAlign.horizontal`；**`crossAlign`→`contentAlign.vertical`**（省略=start/贴顶）；**`align:between`→`gapMode:'auto'`**（space-between，子块须 hug） | 同 stack | 同 stack |
 | `grid` | `grid` / `layout.grid` | `columns`、`gap`、`cellWidthMode`/`cellWidth`、`cellHeightMode`/`cellHeight` | contentAlign/padding | **AST child 直接落为 grid 子块**（无额外 layout 壳）；columns 夹 1..6 | `gap`、`padding` |
 | `text` | `text` / `content.text` | `textBody.paragraphs`（**正文唯一真源**，非 `props.content`）、`fontSize`/`color`/`bold`/`italic` | contentAlign（**`align` 优先**，否则继承父 stack horizontal） | blockMeta；role→fontSize、tone→color | `fontSize`→`tokens.typography.*`、`color`→`colors.*` |
 | `image` | `image` / `content.image` | 资源在 `wrapperStyle.backgroundImage.src`（**占位，待第 3 步回填**）；叠字用 `direction`/`gap` | **通栏/非 row**：`widthMode:'fill'`、`heightMode:'fixed'`、`height`；**横排 row 内** + 有 `aspect` → `fixed` 宽（`widthPx = heightPx × w/h`，下限 72px）+ 右侧兄弟 `fill`；row 内无 `aspect` → 兜底 3:4 再算；**有 overlay children** → `contentAlign` 由 `align` + `crossAlign` 经 `mapImageOverlayAlign`（双轴缺省 center/center） | **`height`(px) 必填语义**；**row 内可选 `aspect:{w,h}`**；**叠放可选 `align` + `crossAlign`**（九宫格双轴）；**禁止 AI 写宽 px**；query 入 `ctx.assets`；overlay children | `backgroundImage.src` 为 content（非主题） |
 | `icon` | `icon` / `content.icon` | `src`（占位待回填）、`color`、`size`、`link` | contentAlign | query 入 `ctx.assets`；tone→color、size 档→px | `color`→`colors.*`、`size`→可绑 |
-| `button` | `button` / `action.button` | `text`、`link`、`buttonStyle.{backgroundColor,textColor,fontSize,border,borderRadius,widthMode,heightMode,height,...}` | contentAlign；外层 **`widthMode:'fill'`**/`heightMode:'hug'` | **无 variant**：默认 pill；`width`→`buttonStyle.widthMode`（缺省 hug）；`height`→`buttonStyle.heightMode`（缺省 hug；`relaxed`→`fixed`+48px）；`tone`/`radius` 覆盖；**禁 buttonStyle.padding** | `buttonStyle.backgroundColor`→`colors.primary`(CTA)、`buttonStyle.borderRadius`→`radius.cta` |
+| `button` | `button` / `action.button` | `text`、`link`、`buttonStyle.{backgroundColor,textColor,fontSize,border,borderRadius,widthMode,heightMode,height,...}` | contentAlign；外层 **`widthMode:'fill'`**/`heightMode:'hug'` | **无 variant**：省略 `border`→实心（bg `colors.primary`，`tone` 覆盖填充）；写 `border`→线框（bg `colors.surface`+四边 border，`borderTone` 管描边与字色）；`width`/`height`/`radius` 同前；**禁 buttonStyle.padding** | 实心：`buttonStyle.backgroundColor`→`colors.primary`；线框：bg→`colors.surface`、border→`colors.*`；`borderRadius`→`radius.cta` |
 | `divider` | `divider` / `separator.divider` | `color`、`lineWidthMode`、`lineWidth`、`height` | 占位/留白 | tone→color | `color`→`colors.*` |
 | `progress` | `progress` / `indicator.progress` | `value`、`max`、`trackColor`、`fillColor`、`barWidth*`/`barHeight`/`barBorderRadius` | contentAlign | value 夹 0..100；max 默认 100 | `fillColor`/`trackColor`→`colors.*`、`barBorderRadius`→`radius.*` |
 
@@ -82,18 +82,14 @@ type BuildCtx = {
 
 ### 4.1 builder 具体默认取值（按常规已定，附来源）
 
-**① 按钮（无 variant，默认 pill CTA）**——`props.text`=label、`props.link`=`{href, type:'external'}`；`buttonStyle`：
+**① 按钮（实心 / 线框，由 AST `border` 判别）**——`props.text`=label、`props.link`=`{href, type:'external'}`；`buttonStyle`：
 
-| buttonStyle 字段 | 默认 | emit |
-|---|---|---|
-| `backgroundColor` | CTA 色 | 绑 `colors.primary`（`tone` 可覆盖） |
-| `textColor` | 反白 | 绑 `colors.surface` |
-| `fontSize` | 正文档 | 绑 `tokens.typography.body` |
-| `borderRadius` | CTA 圆角 | 绑 `radius.cta`（`radius` 可覆盖） |
-| `border` | 无 | `borderNone()` 字面量 |
-| `bold` / `italic` | `false` | 字面量 |
-| `widthMode` | `hug` | 字面量；`width:fill` → `fill` |
-| `heightMode` | `hug` | 字面量；`height:relaxed` → `fixed` + `48px` |
+| 形态 | `backgroundColor` | `textColor` | `border` |
+|---|---|---|---|
+| **实心**（省略 `border`） | 绑 `colors.primary`（`tone` 可覆盖**填充色**） | 反白，绑 `colors.surface` | `borderNone()` |
+| **线框**（写 `border`） | 绑 `colors.surface` | 与 `borderTone`（或 `tone`）同色档 | 四边实线，色同 `borderTone` |
+
+共用：`fontSize`→`tokens.typography.body`；`borderRadius`→`radius.cta`（`radius` 可覆盖）；`widthMode`/`heightMode` 由 AST `width`/`height` 控制（`relaxed`→`fixed`+48px）。
 
 外层 `wrapperStyle`：`widthMode:'fill'`、`heightMode:'hug'`、`contentAlign` 的 horizontal **继承直接父 stack 的 `align`**（缺省 center）、vertical 恒 `center`；`buttonStyle.widthMode` / `buttonStyle.heightMode` 由 AST `width` / `height` 控制。
 
@@ -198,5 +194,5 @@ type BuildCtx = {
   1. **正文默认墨色 = `#1A1A1A`** —— 源自 `mjsMotherSnippets` `textBlock` 默认 `color`。不占 token 槽、不随主题切换。
   2. **图片尺寸** —— 通栏/非 row：`height`(px) + `widthMode:fill`（对齐 `coverImage`/`imageContainer`，`heightMode:'fixed'`、`fit:'cover'`）。**横排 row 内**：读 AST `aspect:{w,h}`（缺省 3:4）→ `widthPx = heightPx × (w/h)`（下限 72px）→ `widthMode:fixed`；**宽不由 AI 写 px**。
   3. **grid 子块** = AST `children` 逐项 `buildNode`，直接挂到 `layout.grid`（与 stack/row 同级通用递归，无 cell 包装）。
-  4. **button 无 variant 体系** —— 默认即项目 pill 按钮（`buttonBlock` 形状）：背景绑 `colors.primary`(CTA)、圆角绑 `radius.cta`；`tone`/`radius` 可覆盖。
+  4. **button 无 variant 体系** —— **实心**（省略 `border`）：背景绑 `colors.primary`，`tone` 仅覆盖填充色；**线框**（写 `border`）：背景绑 `colors.surface`，`borderTone` 管描边与文字色。圆角绑 `radius.cta`；`tone` 在线框上勿当填充色。
 - 注意：以上复用 helper 的**形状/结构默认**，但**颜色角色按新 4 色语义重定**（如按钮 bg 用 `primary`/CTA，而非旧 helper 的 `secondary`）。

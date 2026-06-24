@@ -41,6 +41,11 @@ import { validateRenderDefaultsForbiddenFields } from "../render-defaults-contra
 import { EMAIL_ROOT_FIXED_WIDTH, emailRootWidthMismatchReason } from "../render-defaults-contract/values";
 import { layoutBackgroundImageRenderable } from "./wrapperBackgroundImage";
 import { getFillValidationReason, getButtonBodyFillValidationReason, isButtonBodyFillBlockedByWrapperHug, isChildFillBlockedByParentHug } from "./wrapperFillConstraint";
+import {
+  getHugValidationReason,
+  isContainerHugBlockedByMissingChildAnchor,
+  isHugConstraintContainer,
+} from "./wrapperHugConstraint";
 import { extractInterpolationSlotIds } from "./interpolateText";
 import { getAtPath } from "./paths";
 import { isRepeatHostBlock } from "./repeatHostBlock";
@@ -586,8 +591,8 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
 
   for (const [id, block] of Object.entries(t.blocks)) {
     const parent = block.parentId ? t.blocks[block.parentId] : undefined;
-    const widthFillBlocked = isChildFillBlockedByParentHug(parent, "width");
-    const heightFillBlocked = isChildFillBlockedByParentHug(parent, "height");
+    const widthFillBlocked = isChildFillBlockedByParentHug(t, id, "width");
+    const heightFillBlocked = isChildFillBlockedByParentHug(t, id, "height");
     if (widthFillBlocked && block.wrapperStyle?.widthMode === "fill") {
       issues.push({
         path: `blocks.${id}.wrapperStyle.widthMode`,
@@ -599,6 +604,27 @@ export function validateTemplateStructure(t: EmailTemplate): ValidationIssue[] {
         path: `blocks.${id}.wrapperStyle.heightMode`,
         reason: getFillValidationReason("height"),
       });
+    }
+
+    if (isHugConstraintContainer(block)) {
+      if (
+        block.wrapperStyle?.widthMode === "hug" &&
+        isContainerHugBlockedByMissingChildAnchor(t, id, "width", block)
+      ) {
+        issues.push({
+          path: `blocks.${id}.wrapperStyle.widthMode`,
+          reason: getHugValidationReason("width"),
+        });
+      }
+      if (
+        block.wrapperStyle?.heightMode === "hug" &&
+        isContainerHugBlockedByMissingChildAnchor(t, id, "height", block)
+      ) {
+        issues.push({
+          path: `blocks.${id}.wrapperStyle.heightMode`,
+          reason: getHugValidationReason("height"),
+        });
+      }
     }
 
     const wsRaw = block.wrapperStyle;
